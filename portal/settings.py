@@ -22,6 +22,7 @@ import django.db.models.signals
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 
+from portal import branding
 from portal.process import process_name
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -182,6 +183,7 @@ TEMPLATES = [
                 "portal.context_processors.user_capabilities",
                 "portal.navigation.navigation",
                 "speakers.context_processors.speaker_module",
+                "portal.branding_views.brand",
             ],
         },
     },
@@ -301,9 +303,12 @@ AUTHENTICATION_BACKENDS = [
 
 SITE_ID = 1
 
+# Instance identity (name, colours, logo, doc links), read from the environment.
+BRAND = branding.from_env()
+
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
-ACCOUNT_EMAIL_SUBJECT_PREFIX = "[PyLadiesCon Dev] "
+ACCOUNT_EMAIL_SUBJECT_PREFIX = f"[{BRAND.short_name}] "
 LOGIN_REDIRECT_URL = "/"
 ACCOUNT_LOGIN_METHODS = {"username"}
 ACCOUNT_SIGNUP_FIELDS = [

@@ -1,4 +1,5 @@
 import pytest
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.urls import reverse
 from pytest_django.asserts import assertRedirects
@@ -44,6 +45,8 @@ class TestPortalIndex:
         assert response.context["landing_stats"]["editions"] == 1
 
     def test_landing_footer_shows_grouped_resources(self, client, conference):
+        conference.coc_url = "https://example.org/coc/"
+        conference.save()
         content = client.get(reverse("index")).content.decode()
         # The role-grouped external reference links live in the footer.
         assert "Keynote speaker guide" in content  # footer-only marker
@@ -718,9 +721,12 @@ class TestConferenceBanner:
 class TestBranding:
     def test_brand_assets_loaded(self, client, conference):
         content = client.get(reverse("chapters")).content.decode()
-        # PyLadiesCon logo (navbar + favicon) and the brand display font.
-        assert "pyladiescon-logo" in content
-        assert "Orbitron" in content
+        # The instance theme stylesheet and the generated favicon, both
+        # versioned by the brand's content hash.
+        version = settings.BRAND.version
+        assert f'{reverse("brand_theme_css")}?v={version}' in content
+        assert f'{reverse("brand_favicon")}?v={version}' in content
+        assert settings.BRAND.short_name in content
 
 
 @pytest.mark.django_db

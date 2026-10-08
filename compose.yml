@@ -48,8 +48,12 @@ services:
       DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,[::1]
       SECRET_KEY: verysecure
       DATABASE_URL: postgresql://pyladiescon:pyladiescon@postgres:5432/pyladiescon
-      DJANGO_DEFAULT_FROM_EMAIL: PyLadiesCon <pyladiescon@example.com>
+      DJANGO_DEFAULT_FROM_EMAIL: Flashlights <flashlights@example.com>
       DJANGO_EMAIL_HOST: maildev
+      # Instance identity; portal/branding.py lists every key.
+      SITE_TITLE: Flashlights (dev)
+      SITE_SHORT_NAME: Flashlights
+      BRAND_PRESET: teal
       DJANGO_EMAIL_PORT: 1025
       CELERY_BROKER_URL: redis://redis:6379/0
     depends_on:
@@ -78,7 +82,7 @@ services:
       DEBUG: True
       # The worker sends the emails, so it needs the same email config as web;
       # without DJANGO_EMAIL_HOST settings falls back to the console backend.
-      DJANGO_DEFAULT_FROM_EMAIL: PyLadiesCon <pyladiescon@example.com>
+      DJANGO_DEFAULT_FROM_EMAIL: Flashlights <flashlights@example.com>
       DJANGO_EMAIL_HOST: maildev
       DJANGO_EMAIL_PORT: 1025
     depends_on:

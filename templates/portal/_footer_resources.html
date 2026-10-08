@@ -57,17 +57,22 @@
                     <a class="link-light text-decoration-none"
                        href="https://conference.pyladies.com">{% trans "Conference site" %}</a>
                 </li>
-                <li class="mb-2">
-                    <a class="link-light text-decoration-none" href="https://pyladies.com">{% trans "PyLadies" %}</a>
-                </li>
-                <li class="mb-2">
-                    <a class="link-light text-decoration-none"
-                       href="{{ active_conference.coc_url|default:'https://2025.conference.pyladies.com/en/coc/' }}">{% trans "Code of Conduct" %}</a>
-                </li>
-                <li class="mb-2">
-                    <a class="link-light text-decoration-none"
-                       href="https://pyladiescon-portal-docs.netlify.app/">{% trans "Portal documentation" %}</a>
-                </li>
+                {% if active_conference.coc_url %}
+                    <li class="mb-2">
+                        <a class="link-light text-decoration-none"
+                           href="{{ active_conference.coc_url }}">{% trans "Code of Conduct" %}</a>
+                    </li>
+                {% endif %}
+                {% if brand.terms_url %}
+                    <li class="mb-2">
+                        <a class="link-light text-decoration-none" href="{{ brand.terms_url }}">{% trans "Terms of Service" %}</a>
+                    </li>
+                {% endif %}
+                {% if brand.docs_url %}
+                    <li class="mb-2">
+                        <a class="link-light text-decoration-none" href="{{ brand.docs_url }}">{% trans "Documentation" %}</a>
+                    </li>
+                {% endif %}
             </ul>
         </div>
     </div>

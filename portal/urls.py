@@ -20,7 +20,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-from portal import views
+from portal import branding_views, views
 from portal_account import views as portal_account_views
 from speakers import delivery_views as speakers_delivery_views
 from speakers import export_views as speakers_export_views
@@ -28,6 +28,8 @@ from volunteer import views as volunteer_view
 
 urlpatterns = [
     path("", views.index, name="index"),
+    path("theme.css", branding_views.theme_css, name="brand_theme_css"),
+    path("favicon.svg", branding_views.favicon_svg, name="brand_favicon"),
     path(
         "organize/",
         views.OrganizerDashboardView.as_view(),

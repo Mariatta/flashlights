@@ -60,9 +60,13 @@
                 <div class="form-check">
                     {{ form.tos_agreement }}
                     <label class="form-check-label" for="{{ form.tos_agreement.id_for_label }}">
-                        I agree to the <a href="https://pyladiescon-portal-docs.netlify.app/policies/terms_of_use/"
+                        {% if brand.terms_url %}
+                            I agree to the <a href="{{ brand.terms_url }}"
     target="_blank"
     rel="noopener noreferrer">Terms of Service</a>
+                        {% else %}
+                            I agree to the Terms of Service
+                        {% endif %}
                     </label>
                     {% if form.tos_agreement.errors %}
                         <div class="invalid-feedback d-block">

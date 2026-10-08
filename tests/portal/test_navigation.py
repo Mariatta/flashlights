@@ -104,6 +104,9 @@ def test_every_hub_url_names_a_hub():
 # goes wrong mid-flow, which is exactly what "start next year" did.
 HOME_NAMES = {
     "index",
+    # Brand assets, not pages: the instance stylesheet and generated favicon.
+    "brand_theme_css",
+    "brand_favicon",
     "chapters",
     "dashboard_gallery",
     "portal_stats",
