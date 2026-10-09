@@ -1,0 +1,15 @@
+{% comment %}
+"Kind: name" chips for a person, linked when a URL is set. Include with `person`.
+{% endcomment %}
+{% for affiliation in person.affiliations.all %}
+    <span class="badge text-bg-light border me-1">
+        {{ affiliation.get_kind_display }}:
+        {% if affiliation.url %}
+            <a href="{{ affiliation.url }}" rel="noopener">{{ affiliation.name }}</a>
+        {% else %}
+            {{ affiliation.name }}
+        {% endif %}
+    </span>
+{% empty %}
+    <span class="text-secondary">Not specified</span>
+{% endfor %}

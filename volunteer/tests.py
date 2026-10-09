@@ -26,7 +26,7 @@ class VolunteerProfileSocialMediaValidationTests(TestCase):
         )
         self.conference = Conference.objects.create(
             year=2025,
-            name="PyLadiesCon 2025",
+            name="Flashlights 2025",
             slug="2025",
             is_active=True,
             pretix_event_slug="2025",

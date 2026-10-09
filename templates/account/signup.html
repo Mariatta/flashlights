@@ -44,9 +44,13 @@
                 <div class="form-check mb-3">
                     {{ form.coc_agreement }}
                     <label class="form-check-label" for="{{ form.coc_agreement.id_for_label }}">
-                        I agree to the <a href="{{ active_conference.coc_url|default:'https://2025.conference.pyladies.com/en/coc/' }}"
+                        {% if active_conference.coc_url %}
+                            I agree to the <a href="{{ active_conference.coc_url }}"
     target="_blank"
     rel="noopener noreferrer">Code of Conduct</a>
+                        {% else %}
+                            I agree to the Code of Conduct
+                        {% endif %}
                     </label>
                     {% if form.coc_agreement.errors %}
                         <div class="invalid-feedback d-block">

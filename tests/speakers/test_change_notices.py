@@ -76,9 +76,9 @@ class TestChangeNotices:
         by_to = {tuple(m.to): m for m in mail.outbox}
         speaker_mail = by_to[("ada@example.com",)]
         assert speaker_mail.subject.endswith(
-            "PyLadiesCon 2025: Update to your todo list"
+            "Flashlights 2025: Update to your todo list"
         )
-        assert "Thank you for being a speaker at PyLadiesCon 2025" in speaker_mail.body
+        assert "Thank you for being a speaker at Flashlights 2025" in speaker_mail.body
         assert (
             "Your session:" in speaker_mail.body
             and "not scheduled yet" in speaker_mail.body
@@ -97,7 +97,7 @@ class TestChangeNotices:
         assert "Promo" in organizer_mail.body and "for Ada" in organizer_mail.body
         assert "Thank you for being" not in organizer_mail.body
         assert (
-            "Thank you for volunteering with us at PyLadiesCon 2025"
+            "Thank you for volunteering with us at Flashlights 2025"
             in organizer_mail.body
         )
         assert "Go to your queue for more details" in organizer_mail.body
@@ -155,7 +155,7 @@ class TestChangeNotices:
             conference, "x", ItemOwner.SPEAKER, presenter=make_presenter(conference)
         )
         mail.outbox.clear()
-        assert send_checklist_change_notices_task() == "PyLadiesCon 2025: 1 email(s)"
+        assert send_checklist_change_notices_task() == "Flashlights 2025: 1 email(s)"
         enabled.speaker_module_enabled = False
         enabled.save()
         assert (

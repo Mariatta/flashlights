@@ -2,7 +2,7 @@ from django.core.cache import cache
 from django.db.models import Count, Sum
 
 from attendee.models import (
-    PARTICIPATED_IN_PREVIOUS_EVENT_CHOICES,
+    FIRST_EVENT_ANSWER,
     AttendeeProfile,
     PretixOrder,
     PretixOrderstatus,
@@ -735,9 +735,7 @@ def get_first_time_attendee_count(conference):
     if not first_time_attendee_count:
         first_time_attendee_count = AttendeeProfile.objects.filter(
             order__status=PretixOrderstatus.PAID,
-            participated_in_previous_event__contains=[
-                PARTICIPATED_IN_PREVIOUS_EVENT_CHOICES[2][0]
-            ],
+            participated_in_previous_event__contains=[FIRST_EVENT_ANSWER],
             order__conference=conference,
         ).count()
 
@@ -892,7 +890,7 @@ def get_alltime_landing_stats():
                 .distinct()
                 .count()
             ),
-            # Distinct PyLadies chapters that volunteers belong to.
+            # Distinct chapters that volunteers belong to.
             "chapters": (
                 VolunteerProfile.objects.filter(chapter__isnull=False)
                 .values("chapter")

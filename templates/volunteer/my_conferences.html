@@ -3,7 +3,7 @@
 {% block breadcrumb %}
     {% url 'volunteer:index' as bc_url %}
     {% trans "Volunteer" as bc_section %}
-    {% trans "My conferences" as bc_page %}
+    {% trans "My events" as bc_page %}
     {% include "portal/_breadcrumbs.html" with section=bc_section section_url=bc_url page=bc_page %}
 {% endblock breadcrumb %}
 {% block sidebar_title %}
@@ -15,7 +15,7 @@
 {% block content %}
     <div class="container px-4 py-3">
         <h1 class="h3 mb-3">
-            {% trans "Your Conferences" %}
+            {% trans "Your Events" %}
         </h1>
         <p class="text-muted">
             {% trans "Editions you have volunteered for." %}

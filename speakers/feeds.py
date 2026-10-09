@@ -119,7 +119,7 @@ def event_lines(row):
         location = "All rooms"
     lines = [
         "BEGIN:VEVENT",
-        f"UID:session-{session.pk}@{conference.slug}.pyladiescon-portal",
+        f"UID:session-{session.pk}@{conference.slug}.flashlights",
         f"DTSTAMP:{_stamp(row.published_at)}",
         f"DTSTART:{_stamp(row.start_utc)}",
         f"DTEND:{_stamp(row.end_utc)}",
@@ -138,7 +138,7 @@ def render_calendar(name, rows):
     lines = [
         "BEGIN:VCALENDAR",
         "VERSION:2.0",
-        "PRODID:-//PyLadiesCon portal//speakers//EN",
+        "PRODID:-//Flashlights//speakers//EN",
         "CALSCALE:GREGORIAN",
         f"X-WR-CALNAME:{escape_text(name)}",
     ]

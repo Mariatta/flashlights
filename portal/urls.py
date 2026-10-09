@@ -30,6 +30,13 @@ urlpatterns = [
     path("", views.index, name="index"),
     path("theme.css", branding_views.theme_css, name="brand_theme_css"),
     path("favicon.svg", branding_views.favicon_svg, name="brand_favicon"),
+    path("favicon.png", branding_views.favicon_png, name="brand_favicon_png"),
+    path(
+        "apple-touch-icon.png",
+        branding_views.apple_touch_icon,
+        name="brand_apple_touch_icon",
+    ),
+    path("share-card.png", branding_views.share_card, name="brand_share_card"),
     path(
         "organize/",
         views.OrganizerDashboardView.as_view(),
@@ -97,11 +104,6 @@ urlpatterns = [
         "teams/new/",
         volunteer_view.TeamCreate.as_view(),
         name="team_new",
-    ),
-    path(
-        "chapters/",
-        volunteer_view.PyladiesChaptersList.as_view(),
-        name="chapters",
     ),
     path(
         "teams/<int:pk>",

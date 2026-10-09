@@ -117,7 +117,7 @@ class TestPublicStats:
     ):
         cache.delete(f"{CACHE_KEY_TASKS}_{conference.year}")
         content = client.get(reverse("portal_stats")).content.decode()
-        assert "Conference Tasks" not in content
+        assert "Event Tasks" not in content
         data = client.get(reverse("portal_stats_json")).json()["stats"]
         assert CACHE_KEY_TASKS_TOTAL not in data
         assert CACHE_KEY_TASKS_TOTAL not in get_stats_cached_values(conference)
@@ -160,7 +160,7 @@ class TestDashboards:
         client.force_login(organizer)
         response = client.get(reverse("organizer_dashboard"))
         content = response.content.decode()
-        assert "Conference tasks" in content
+        assert "Event tasks" in content
         assert response.context["task_stats"]["unassigned"] == 1
         assert "Speakers: 1 of 3 done (33%). Team: 1 of 3 done (33%)." in content
         assert reverse("speakers:checklist_board") in content
@@ -170,4 +170,4 @@ class TestDashboards:
         client.force_login(organizer)
         response = client.get(reverse("organizer_dashboard"))
         assert response.context["task_stats"] is None
-        assert "Conference tasks" not in response.content.decode()
+        assert "Event tasks" not in response.content.decode()

@@ -1,4 +1,5 @@
 import pytest
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.utils import timezone
@@ -59,7 +60,7 @@ def publish(
     body="Be **kind**.",
     key="speaker",
     title=None,
-    url="https://conference.pyladies.com/docs/",
+    url="https://docs.example.org/speakers/",
 ):
     handbook = Handbook.objects.create(
         conference=conference,
@@ -111,7 +112,7 @@ class TestSpeakerGuide:
         assert (
             'data-guide="speaker"' in content and 'data-guide="workshop"' not in content
         )
-        assert 'href="https://conference.pyladies.com/docs/"' in content
+        assert 'href="https://docs.example.org/speakers/"' in content
         assert "I have read the Speaker guide (version 1)" in content
 
     def test_acknowledge_records_receipt_per_version(
@@ -287,7 +288,7 @@ class TestHandbookList:
         response = client.post(LIST, {"key": "Performer", "title": "Performer guide"})
         assertRedirects(response, editor("performer"))
         draft = Handbook.draft(conference, "performer")
-        assert draft.title == "Performer guide" and draft.url.startswith("https://")
+        assert draft.title == "Performer guide" and draft.url == settings.BRAND.docs_url
         response = client.post(LIST, {"key": "performer", "title": "Again"})
         assert "already exists" in response.context["new_form"].errors["key"][0]
 
@@ -307,7 +308,7 @@ class TestHandbookEditor:
         client.force_login(organizer)
         assert (
             client.get(editor()).context["form"].initial["url"]
-            == "https://conference.pyladies.com/docs/"
+            == settings.BRAND.docs_url
         )
         response = client.post(
             editor(),

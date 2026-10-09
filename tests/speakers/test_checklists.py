@@ -113,7 +113,7 @@ class TestInstantiateOnAccept:
         assert bio.due_date == invitation.accepted_at.date() + timedelta(days=7)
         assert bio.auto_complete_rule == AutoRule.BIO_AND_HEADSHOT
         assert bio.is_automatic is True
-        register = presenter.checklist_items.get(title="Register for the conference")
+        register = presenter.checklist_items.get(title="Register for the event")
         assert register.due_date == date(2026, 11, 21)
         slot_item = presenter.checklist_items.get(title="Confirm your scheduled slot")
         assert slot_item.due_date is None  # no slot yet
@@ -128,9 +128,9 @@ class TestInstantiateOnAccept:
         accepted = invitation.accepted_at.date()
         # The general items are created by the same acceptance, off-session.
         by_title = {i.title: i for i in presenter.checklist_items.all()}
-        assert by_title[
-            "Join the PyLadiesCon Discord"
-        ].due_date == accepted + timedelta(days=14)
+        assert by_title["Join the event Discord"].due_date == accepted + timedelta(
+            days=14
+        )
         assert by_title[
             "Discord channel and speaker role assigned"
         ].due_date == accepted + timedelta(days=14)

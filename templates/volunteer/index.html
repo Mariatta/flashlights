@@ -23,7 +23,7 @@
             <div class="card mb-4">
                 <div class="card-body">
                     <h2 class="h5">
-                        {% trans "Start volunteering with PyLadiesCon" %}
+                        {% blocktranslate with short_name=brand.short_name %}Start volunteering with {{ short_name }}{% endblocktranslate %}
                     </h2>
                     <p class="text-secondary">
                         {% blocktranslate %}Create your volunteer profile and our team will review it, then match you to a team that needs help.{% endblocktranslate %}
@@ -39,13 +39,18 @@
                             {% trans "You get access to the tools and Discord once onboarded." %}
                         </li>
                     </ol>
-                    {% if active_conference %}
+                    {% if active_conference and active_conference.volunteer_application_open %}
                         <a class="btn btn-primary"
                            href="{% url 'volunteer:volunteer_profile_new' %}">{% trans "Create my volunteer profile" %}</a>
+                    {% elif active_conference %}
+                        <p class="mb-0 text-secondary">
+                            <i class="fa-solid fa-circle-info"></i>
+                            {% blocktranslate with year=active_conference.year %}We are not taking new volunteer applications for {{ year }} right now.{% endblocktranslate %}
+                        </p>
                     {% else %}
                         <p class="mb-0 text-secondary">
                             <i class="fa-solid fa-circle-info"></i>
-                            {% trans "Volunteer sign-ups open once the next conference is active." %}
+                            {% trans "Volunteer sign-ups open once the next event is active." %}
                         </p>
                     {% endif %}
                 </div>
@@ -103,7 +108,7 @@
                                 {% trans "Application cancelled" %}
                             </div>
                             <div class="small text-secondary">
-                                {% blocktranslate with year=profile.conference.year %}You've withdrawn from volunteering for PyLadiesCon {{ year }}.{% endblocktranslate %}
+                                {% blocktranslate with year=profile.conference.year short_name=brand.short_name %}You've withdrawn from volunteering for {{ short_name }} {{ year }}.{% endblocktranslate %}
                             </div>
                         </div>
                         <div class="d-flex gap-2">
@@ -194,7 +199,7 @@
             {% endif %}
             {# My conferences. #}
             <h2 class="h6 text-body-emphasis mb-2">
-                {% trans "My conferences" %}
+                {% trans "My events" %}
             </h2>
             <div class="list-group mb-4">
                 <a href="{% url 'volunteer:my_conferences' %}"

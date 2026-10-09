@@ -87,7 +87,7 @@ class TestTopNavSections:
 
     def test_a_page_outside_every_hub_marks_home(self, client, portal_user, conference):
         client.force_login(portal_user)
-        nav = _nav(client.get(reverse("chapters")).content.decode())
+        nav = _nav(client.get(reverse("portal_stats")).content.decode())
         assert _current(nav) == "Home"
 
     def test_each_hub_marks_its_own_tab(

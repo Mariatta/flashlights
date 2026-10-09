@@ -45,7 +45,7 @@ settings_row.organizers_email = "organizers@example.com"
 settings_row.default_video_length_limit_minutes = 10
 settings_row.proposals_open = True
 settings_row.proposals_intro_md = (
-    f"We are taking proposals for PyLadiesCon {YEAR}. "
+    f"We are taking proposals for the {YEAR} edition. "
     "A title and two sentences is enough to start."
 )
 settings_row.save()
@@ -63,7 +63,5 @@ for user in User.objects.all():
         defaults={"verified": True, "primary": True},
     )
 
-Site.objects.update_or_create(
-    pk=1, defaults={"domain": DOMAIN, "name": "PyLadiesCon Portal"}
-)
+Site.objects.update_or_create(pk=1, defaults={"domain": DOMAIN, "name": "Flashlights"})
 print(f"Screencast data ready for {conference} on {DOMAIN}.")

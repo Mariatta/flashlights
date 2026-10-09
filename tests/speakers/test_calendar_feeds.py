@@ -120,7 +120,7 @@ class TestPublicFeed:
         assert "LOCATION:main-stage" in text
         assert "SEQUENCE:0" in text
         assert "Hidden draft" not in text
-        assert "UID:session-" in text and "@2025.pyladiescon-portal" in text
+        assert "UID:session-" in text and "@2025.flashlights" in text
 
     def test_filters(self, client, enabled, conference):
         room = make_room(conference)
@@ -274,7 +274,7 @@ class TestPersonalFeed:
 
     def test_bad_or_foreign_tokens_are_404(self, client, enabled, conference):
         other = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024"
+            year=2024, name="Flashlights 2024", slug="2024"
         )
         stranger = make_presenter(other)
         assert (

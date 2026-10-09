@@ -42,7 +42,7 @@ class TestSponsorshipProfileForm:
 
     def test_can_target_a_specific_conference(self, form_data, conference):
         past = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024"
+            year=2024, name="Flashlights 2024", slug="2024"
         )
         form = SponsorshipProfileForm(data={**form_data, "conference": past.id})
         assert form.is_valid()
@@ -59,7 +59,7 @@ class TestSponsorshipProfileForm:
 
     def test_tier_choices_scoped_to_active_conference(self, conference):
         past = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024"
+            year=2024, name="Flashlights 2024", slug="2024"
         )
         active_tier = SponsorshipTier.objects.create(
             name="Active Tier", amount=1000, description="d", conference=conference
@@ -75,7 +75,7 @@ class TestSponsorshipProfileForm:
 
     def test_tier_must_match_chosen_conference(self, form_data, conference):
         past = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024"
+            year=2024, name="Flashlights 2024", slug="2024"
         )
         active_tier = SponsorshipTier.objects.create(
             name="Active Tier", amount=1000, description="d", conference=conference
@@ -184,7 +184,7 @@ class TestSponsorshipProfileForm:
 
     def test_edit_scopes_tiers_to_sponsors_edition(self, conference):
         past = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024"
+            year=2024, name="Flashlights 2024", slug="2024"
         )
         past_tier = SponsorshipTier.objects.create(
             conference=past, name="Old", amount=1, description="d"

@@ -14,9 +14,17 @@
         {% if brand.favicon %}
             <link rel="icon" href="{{ brand.favicon }}" />
         {% else %}
+            {# Generated: the SVG for modern browsers, its PNG twin for Safari and the iOS home screen. #}
             <link rel="icon"
                   type="image/svg+xml"
                   href="{% url 'brand_favicon' %}?v={{ brand.version }}" />
+            <link rel="icon"
+                  type="image/png"
+                  sizes="32x32"
+                  href="{% url 'brand_favicon_png' %}?v={{ brand.version }}" />
+            <link rel="apple-touch-icon"
+                  sizes="180x180"
+                  href="{% url 'brand_apple_touch_icon' %}?v={{ brand.version }}" />
         {% endif %}
         <meta property="og:title"
               content="{% block og_title %}{{ brand.title }}{% endblock og_title %}" />
@@ -26,12 +34,11 @@
               content="{% block og_type %}website{% endblock og_type %}" />
         <meta property="og:url"
               content="{% block og_url %}{{ request.build_absolute_uri }}{% endblock og_url %}" />
-        {% if brand.og_image %}
-            <meta property="og:image"
-                  content="{% block og_image %}{{ brand.og_image }}{% endblock og_image %}" />
-            <meta property="og:image:alt"
-                  content="{% block og_image_alt %}{{ brand.title }}{% endblock og_image_alt %}">
-        {% endif %}
+        {# The instance's own share image, or the generated card at an absolute URL, which is what link previews need. #}
+        <meta property="og:image"
+              content="{% block og_image %}{% if brand.og_image %}{{ brand.og_image }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% url 'brand_share_card' %}?v={{ brand.version }}{% endif %}{% endblock og_image %}" />
+        <meta property="og:image:alt"
+              content="{% block og_image_alt %}{{ brand.title }}{% endblock og_image_alt %}">
         <meta property="og:site_name" content="{{ brand.title }}" />
         <meta property="og:locale" content="en_US">
         {% block extra_head %}
@@ -72,7 +79,7 @@
                     {{ brand.short_name }}
                 </a>
                 {% if active_conference %}
-                    <span class="badge bg-secondary me-2" title="Active conference edition">{{ active_conference.year }}</span>
+                    <span class="badge bg-secondary me-2" title="Active event edition">{{ active_conference.year }}</span>
                 {% endif %}
                 <button class="navbar-toggler"
                         type="button"
@@ -96,7 +103,7 @@
                                {% if nav_section == "home" %}aria-current="page"{% endif %}
                                href="{% url "index" %}">{% trans "Home" %}</a>
                         </li>
-                        {% if user.is_authenticated %}
+                        {% if user.is_authenticated and volunteering_enabled %}
                             <li class="nav-item">
                                 <a class="nav-link{% if nav_section == "volunteer" %} active{% endif %}"
                                    {% if nav_section == "volunteer" %}aria-current="page"{% endif %}
@@ -131,12 +138,11 @@
                                data-bs-toggle="dropdown"
                                aria-expanded="false">{% trans "Community" %}</a>
                             <ul class="dropdown-menu" aria-labelledby="navCommunity">
-                                <li>
-                                    <a class="dropdown-item" href="{% url 'chapters' %}">{% trans "PyLadies chapters" %}</a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="{% url 'portal_stats' %}">{% trans "Stats" %}</a>
-                                </li>
+                                {% if stats_public %}
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'portal_stats' %}">{% trans "Stats" %}</a>
+                                    </li>
+                                {% endif %}
                                 {% if brand.docs_url %}
                                     <li>
                                         <a class="dropdown-item" href="{{ brand.docs_url }}">{% trans "Documentation" %}</a>
@@ -144,24 +150,8 @@
                                 {% endif %}
                             </ul>
                         </li>
-                        <li class="nav-item">
-                            <form action="{% url 'set_language' %}" method="post">
-                                {% csrf_token %}
-                                <input name="next" type="hidden" value="{{ redirect_to }}">
-                                <select name="language">
-                                    {% get_current_language as LANGUAGE_CODE %}
-                                    {% get_available_languages as LANGUAGES %}
-                                    {% get_language_info_list for LANGUAGES as languages %}
-                                    {% for language in languages %}
-                                        <option value="{{ language.code }}"
-                                                {% if language.code == LANGUAGE_CODE %}selected{% endif %}>
-                                            {{ language.name_local }} ({{ language.code }})
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                                <input type="submit" value="Go">
-                            </form>
-                        </li>
+                        {# The language switcher is off until a second translation #}
+                        {# is maintained for this instance: English only, for now. #}
                     </ul>
                     {% if user.is_authenticated %}
                         <div class="dropdown text-end navbar-nav">
@@ -254,8 +244,8 @@
             {% endblock footer_resources %}
             <div class="container py-3 d-flex align-items-center justify-content-between">
                 <span>
-                    Problems with this site? File an issue in our
-                    <a href="https://github.com/pyladies/pyladiescon-portal">GitHub repository</a>, or open a pull request.
+                    Runs on <a href="https://github.com/mariatta/flashlights">Flashlights</a>.
+                    Problems with this site? File an issue there, or open a pull request.
                 </span>
                 {% block footer_text %}
                 {% endblock footer_text %}

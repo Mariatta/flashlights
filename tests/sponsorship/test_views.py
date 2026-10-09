@@ -26,7 +26,7 @@ class TestSponsorshipConferenceScoping:
 
     def test_admin_can_switch_year(self, client, admin_user, conference):
         past = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024"
+            year=2024, name="Flashlights 2024", slug="2024"
         )
         self._sponsor("Active Sponsor", conference)
         self._sponsor("Past Sponsor", past)
@@ -48,7 +48,7 @@ class TestSponsorshipConferenceScoping:
 
     def test_stats_follow_selected_year(self, client, admin_user, conference):
         past = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024", sponsorship_goal=9999
+            year=2024, name="Flashlights 2024", slug="2024", sponsorship_goal=9999
         )
         client.force_login(admin_user)
         url = reverse("sponsorship:sponsorship_list")
@@ -71,7 +71,7 @@ class TestSponsorshipConferenceScoping:
 
     def test_tier_filter_scoped_to_selected_year(self, client, admin_user, conference):
         past = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024"
+            year=2024, name="Flashlights 2024", slug="2024"
         )
         active_tier = SponsorshipTier.objects.create(
             name="Gold", amount=1000, conference=conference
@@ -98,7 +98,7 @@ class TestSponsorshipConferenceScoping:
         self, client, portal_user, conference
     ):
         past = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024"
+            year=2024, name="Flashlights 2024", slug="2024"
         )
         # approved for the past edition only, not the active one
         VolunteerProfile.objects.create(
@@ -128,7 +128,7 @@ class TestSponsorshipConferenceScoping:
             discord_username="d",
         )
         past = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024"
+            year=2024, name="Flashlights 2024", slug="2024"
         )
         past_sponsor = self._sponsor("Past Sponsor", past)
         client.force_login(portal_user)
@@ -276,7 +276,10 @@ class TestSponsorshipViews:
     def test_manager_sees_sponsorship_resources_card(
         self, client, admin_user, conference
     ):
-        # Managers get the sponsorship resources card below the sponsor table.
+        # Managers get the sponsorship resources card below the sponsor table,
+        # once the edition has a prospectus to point at.
+        conference.sponsors_url = "https://2025.example.org/sponsors/"
+        conference.save()
         client.force_login(admin_user)
         content = client.get(reverse("sponsorship:sponsorship_list")).content.decode()
         assert "Sponsorship resources" in content
@@ -702,9 +705,11 @@ class TestSponsorshipCreateViews:
         assert not response.context["can_send_invoice"]
 
     def test_send_invoice_view_updates_status_and_sends_email(
-        self, client, admin_user, conference
+        self, client, admin_user, conference, settings
     ):
         """Test that send invoice view updates status and sends email."""
+        settings.ACCOUNTING_EMAIL = "accounting@example.org"
+        settings.SPONSORSHIP_EMAIL = "sponsors@example.org"
         from django.core import mail
 
         tier = SponsorshipTier.objects.create(
@@ -744,7 +749,7 @@ class TestSponsorshipCreateViews:
         # Find the PSF invoice email
         psf_email = None
         for email in mail.outbox:
-            if "PyLadiesCon Sponsorship Contract Request: Test Corp" in email.subject:
+            if "Flashlights sponsorship contract request: Test Corp" in email.subject:
                 psf_email = email
                 break
         assert psf_email is not None
@@ -889,7 +894,7 @@ class TestSponsorshipTierCRUD:
 
     def test_list_scoped_to_selected_year(self, client, admin_user, conference):
         past = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024"
+            year=2024, name="Flashlights 2024", slug="2024"
         )
         active_tier = self._tier(conference, name="Active")
         past_tier = SponsorshipTier.objects.create(

@@ -5,7 +5,6 @@ This command creates sample data for testing and development purposes:
 - Users with various roles (admin, volunteer, staff, superuser)
 - Teams and Roles
 - Volunteer Profiles in various states
-- PyLadies Chapters
 - Sponsorship Tiers and Profiles
 - Individual Donations
 
@@ -33,7 +32,6 @@ from sponsorship.models import (
 from sponsorship.signals import sponsorship_profile_signal
 from volunteer.constants import ApplicationStatus, Region
 from volunteer.models import (
-    PyladiesChapter,
     Role,
     Team,
     VolunteerProfile,
@@ -68,7 +66,6 @@ class Command(BaseCommand):
         # Generate data
         self._generate_conference()
         self._generate_users()
-        self._generate_pyladies_chapters()
         self._generate_roles()
         self._generate_teams()
         self._generate_volunteer_profiles()
@@ -82,21 +79,20 @@ class Command(BaseCommand):
 
     def _generate_conference(self):
         """Generate the active conference every other record is scoped to."""
-        self.stdout.write("Generating conference...")
+        self.stdout.write("Generating event...")
 
         self.conference, created = Conference.objects.get_or_create(
             year=2025,
             defaults={
-                "name": "PyLadiesCon 2025",
+                "name": "Flashlights 2025",
                 "slug": "2025",
                 "is_active": True,
+                "volunteer_application_open": True,
                 "pretix_event_slug": "2025",
             },
         )
         verb = "Created" if created else "Using existing"
-        self.stdout.write(
-            self.style.SUCCESS(f"  ✓ {verb} conference: {self.conference}\n")
-        )
+        self.stdout.write(self.style.SUCCESS(f"  ✓ {verb} event: {self.conference}\n"))
 
     def _generate_users(self):
         """Generate sample users with various roles."""
@@ -208,87 +204,6 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(f"Created {created_count} new users\n"))
 
-    def _generate_pyladies_chapters(self):
-        """Generate sample PyLadies chapters."""
-        self.stdout.write("Generating PyLadies chapters...")
-
-        chapters_data = [
-            {
-                "chapter_name": "San Francisco",
-                "chapter_description": "PyLadies SF - San Francisco Bay Area",
-                "chapter_email": "sf@pyladies.com",
-                "chapter_website": "https://www.meetup.com/pyladies-sf/",
-            },
-            {
-                "chapter_name": "New York",
-                "chapter_description": "PyLadies NYC - New York City",
-                "chapter_email": "nyc@pyladies.com",
-                "chapter_website": "https://www.meetup.com/pyladies-nyc/",
-            },
-            {
-                "chapter_name": "London",
-                "chapter_description": "PyLadies London - United Kingdom",
-                "chapter_email": "london@pyladies.com",
-                "chapter_website": "https://www.meetup.com/pyladies-london/",
-            },
-            {
-                "chapter_name": "Berlin",
-                "chapter_description": "PyLadies Berlin - Germany",
-                "chapter_email": "berlin@pyladies.com",
-                "chapter_website": "https://www.meetup.com/pyladies-berlin/",
-            },
-            {
-                "chapter_name": "Tokyo",
-                "chapter_description": "PyLadies Tokyo - Japan",
-                "chapter_email": "tokyo@pyladies.com",
-                "chapter_website": "https://www.meetup.com/pyladies-tokyo/",
-            },
-            {
-                "chapter_name": "São Paulo",
-                "chapter_description": "PyLadies SP - São Paulo, Brazil",
-                "chapter_email": "sp@pyladies.com",
-                "chapter_website": "https://www.meetup.com/pyladies-sp/",
-            },
-            {
-                "chapter_name": "PyLadies Lagos",
-                "chapter_description": "PyLadies Lagos - Nigeria",
-                "chapter_email": "lagos@pyladies.com",
-                "chapter_website": "https://www.meetup.com/pyladies-lagos/",
-            },
-            {
-                "chapter_name": "Sydney",
-                "chapter_description": "PyLadies Sydney - Australia",
-                "chapter_email": "sydney@pyladies.com",
-                "chapter_website": "https://www.meetup.com/pyladies-sydney/",
-            },
-        ]
-
-        created_count = 0
-        for chapter_data in chapters_data:
-            chapter, created = PyladiesChapter.objects.get_or_create(
-                chapter_name=chapter_data["chapter_name"],
-                defaults={
-                    "chapter_description": chapter_data["chapter_description"],
-                    "chapter_email": chapter_data["chapter_email"],
-                    "chapter_website": chapter_data["chapter_website"],
-                },
-            )
-            if created:
-                created_count += 1
-                self.stdout.write(
-                    self.style.SUCCESS(f"  ✓ Created chapter: {chapter.chapter_name}")
-                )
-            else:
-                self.stdout.write(
-                    self.style.WARNING(
-                        f"  ~ Chapter already exists: {chapter.chapter_name}"
-                    )
-                )
-
-        self.stdout.write(
-            self.style.SUCCESS(f"Created {created_count} new PyLadies chapters\n")
-        )
-
     def _generate_roles(self):
         """Generate sample volunteer roles."""
         self.stdout.write("Generating volunteer roles...")
@@ -320,7 +235,7 @@ class Command(BaseCommand):
             },
             {
                 "short_name": "Event Coordinator",
-                "description": "Help organize and coordinate conference events and activities",
+                "description": "Help organize and coordinate event activities",
             },
         ]
 
@@ -349,7 +264,7 @@ class Command(BaseCommand):
         teams_data = [
             {
                 "short_name": "Website Team",
-                "description": "Responsible for developing and maintaining the conference website",
+                "description": "Responsible for developing and maintaining the event website",
                 "open_to_new_members": True,
             },
             {
@@ -364,12 +279,12 @@ class Command(BaseCommand):
             },
             {
                 "short_name": "Design Team",
-                "description": "Creates visual assets and designs for the conference",
+                "description": "Creates visual assets and designs for the event",
                 "open_to_new_members": True,
             },
             {
                 "short_name": "Program Committee",
-                "description": "Reviews and selects talks and proposals for the conference",
+                "description": "Reviews and selects talks and proposals for the event",
                 "open_to_new_members": False,
             },
             {
@@ -422,10 +337,9 @@ class Command(BaseCommand):
         # Get the volunteers (non-staff users)
         volunteers = User.objects.filter(username__startswith="volunteer")
 
-        # Get teams, roles, and chapters for assignment
+        # Get teams and roles for assignment
         teams = list(Team.objects.all())
         roles = list(Role.objects.all())
-        chapters = list(PyladiesChapter.objects.all())
 
         if not volunteers.exists():
             self.stdout.write(
@@ -447,20 +361,18 @@ class Command(BaseCommand):
                     teams[:2] if len(teams) >= 2 else teams
                 ),  # Website & Social Media
                 "roles": roles[:2] if len(roles) >= 2 else roles,  # Frontend & Backend
-                "chapter": chapters[0] if chapters else None,  # San Francisco
             },
             {
                 "user": volunteers[1],  # volunteer2
                 "status": ApplicationStatus.APPROVED,
                 "discord_username": "bob_helper",
-                "instagram_username": "bob_pyladies",
+                "instagram_username": "bob_helper",
                 "region": Region.EUROPE,
                 "availability_hours_per_week": 5,
                 "teams": (
                     teams[1:3] if len(teams) >= 3 else teams
                 ),  # Social Media & Content
                 "roles": [roles[3]] if len(roles) >= 4 else [],  # Social Media Manager
-                "chapter": chapters[2] if len(chapters) >= 3 else None,  # London
             },
             {
                 "user": volunteers[2],  # volunteer3
@@ -471,7 +383,6 @@ class Command(BaseCommand):
                 "availability_hours_per_week": 8,
                 "teams": [],  # No team assignment yet (pending)
                 "roles": [roles[2]] if len(roles) >= 3 else [],  # Content Writer
-                "chapter": chapters[4] if len(chapters) >= 5 else None,  # Tokyo
             },
             {
                 "user": volunteers[3],  # volunteer4
@@ -482,18 +393,16 @@ class Command(BaseCommand):
                 "availability_hours_per_week": 3,
                 "teams": [],  # No team assignment (waitlisted)
                 "roles": [roles[4]] if len(roles) >= 5 else [],  # Designer
-                "chapter": chapters[5] if len(chapters) >= 6 else None,  # São Paulo
             },
             {
                 "user": volunteers[4],  # volunteer5
                 "status": ApplicationStatus.REJECTED,
                 "discord_username": "eve_brown",
-                "x_username": "eve_pyladies",
+                "x_username": "eve_brown",
                 "region": Region.AFRICA,
                 "availability_hours_per_week": 2,
                 "teams": [],  # No team assignment (rejected)
                 "roles": [],  # No roles assigned
-                "chapter": chapters[6] if len(chapters) >= 7 else None,  # Lagos
             },
         ]
 
@@ -513,7 +422,6 @@ class Command(BaseCommand):
                     "availability_hours_per_week": profile_data[
                         "availability_hours_per_week"
                     ],
-                    "chapter": profile_data["chapter"],
                 },
             )
 
@@ -559,7 +467,7 @@ class Command(BaseCommand):
             {
                 "name": "Supporter",
                 "amount": 10000.00,
-                "description": "Strong support tier with significant conference presence",
+                "description": "Strong support tier with significant event presence",
             },
             {
                 "name": "Contributor",

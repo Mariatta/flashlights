@@ -25,7 +25,7 @@ If you prefer a password, set one here: <{{ password_url }}>
 
 ## What happens next
 
-Your dashboard lists what we need from you before the conference, with due dates, and what the team is doing for you: <{{ dashboard_url }}>
+Your dashboard lists what we need from you before the event, with due dates, and what the team is doing for you: <{{ dashboard_url }}>
 
 Please check it now and again; we will also email reminders as dates approach.
 

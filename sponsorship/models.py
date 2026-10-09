@@ -24,6 +24,7 @@ class SponsorshipTier(BaseModel):
     # See docs/architecture/multi-year-conferences.md.
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.PROTECT,
         related_name="sponsorship_tiers",
     )
@@ -48,6 +49,7 @@ class SponsorshipProfile(BaseModel):
     # See docs/architecture/multi-year-conferences.md.
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.PROTECT,
         related_name="sponsorship_profiles",
     )
@@ -107,6 +109,7 @@ class IndividualDonation(BaseModel):
     # See docs/architecture/multi-year-conferences.md.
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.PROTECT,
         related_name="individual_donations",
     )

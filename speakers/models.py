@@ -1,7 +1,7 @@
 """Models for the speaker portal.
 
 Every row is scoped to a ``portal.Conference`` (the design document calls it a
-``Project``): that is the portal's per-edition tenant, so PyLadiesCon 2027 is a
+``Project``): that is the portal's per-edition tenant, so the 2027 edition is a
 new Conference row with the same code. See ``speakers/README.md``.
 """
 
@@ -153,6 +153,7 @@ class SpeakerSettings(TimestampedModel):
 
     conference = models.OneToOneField(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.CASCADE,
         related_name="speaker_settings",
     )
@@ -220,7 +221,7 @@ class SpeakerSettings(TimestampedModel):
         default="UTC",
         db_default="UTC",
         validators=[validate_timezone],
-        help_text="The organizers' default display timezone; the conference "
+        help_text="The organizers' default display timezone; the event "
         "itself has none.",
     )
     organizers_email = models.EmailField(
@@ -245,7 +246,7 @@ class SpeakerSettings(TimestampedModel):
         blank=True,
         default="",
         db_default="",
-        help_text="Event slug; blank uses the conference's pretix event slug.",
+        help_text="Event slug; blank uses the event's pretix event slug.",
     )
     pretix_api_token = EncryptedTextField(blank=True, default="", db_default="")
     pretix_webhook_secret = EncryptedTextField(
@@ -332,6 +333,7 @@ class ActivityLog(TimestampedModel):
 
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.PROTECT,
         related_name="speaker_activity",
     )
@@ -394,6 +396,7 @@ class Room(TimestampedModel):
 
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.PROTECT,
         related_name="rooms",
     )
@@ -430,6 +433,7 @@ class Presenter(TimestampedModel):
 
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.PROTECT,
         related_name="presenters",
     )
@@ -565,6 +569,7 @@ class PresenterRole(TimestampedModel):
 
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.CASCADE,
         related_name="presenter_roles",
     )
@@ -616,6 +621,7 @@ class SessionType(TimestampedModel):
 
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.CASCADE,
         related_name="session_types",
     )
@@ -709,6 +715,7 @@ class Session(TimestampedModel):
 
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.PROTECT,
         related_name="sessions",
     )
@@ -1034,6 +1041,7 @@ class Proposal(TimestampedModel):
 
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.PROTECT,
         related_name="proposals",
         editable=False,
@@ -1109,6 +1117,7 @@ class SessionPresenter(TimestampedModel):
 
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.PROTECT,
         related_name="session_presenters",
         editable=False,
@@ -1189,6 +1198,7 @@ class ScheduleSlot(TimestampedModel):
 
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.PROTECT,
         related_name="schedule_slots",
         editable=False,
@@ -1326,6 +1336,7 @@ class PublishedSlot(TimestampedModel):
 
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.PROTECT,
         related_name="published_slots",
         editable=False,
@@ -1388,6 +1399,7 @@ class Invitation(TimestampedModel):
 
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.PROTECT,
         related_name="speaker_invitations",
         editable=False,
@@ -1495,6 +1507,7 @@ class ChecklistTemplate(TimestampedModel):
 
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.PROTECT,
         related_name="checklist_templates",
     )
@@ -1611,6 +1624,7 @@ class ReadinessGate(TimestampedModel):
 
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.PROTECT,
         related_name="readiness_gates",
     )
@@ -1671,7 +1685,7 @@ class ChecklistTemplateItem(TimestampedModel):
     due_offset_days = models.IntegerField(
         default=0,
         help_text="Days after the invitation is accepted, or days before the "
-        "conference or session starts.",
+        "event or session starts.",
     )
     auto_complete_rule = models.CharField(
         max_length=32, choices=AutoRule.choices, blank=True
@@ -1853,6 +1867,7 @@ class ChecklistItem(TimestampedModel):
 
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.PROTECT,
         related_name="checklist_items",
     )
@@ -2074,6 +2089,7 @@ class MediaAsset(TimestampedModel):
 
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.PROTECT,
         related_name="media_assets",
         editable=False,
@@ -2284,6 +2300,7 @@ class MediaUpload(TimestampedModel):
 
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.PROTECT,
         related_name="media_uploads",
         editable=False,
@@ -2347,6 +2364,7 @@ class TranscriptionJob(TimestampedModel):
 
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.PROTECT,
         related_name="transcription_jobs",
         editable=False,
@@ -2406,7 +2424,10 @@ class MediaExport(TimestampedModel):
     """
 
     conference = models.ForeignKey(
-        "portal.Conference", on_delete=models.PROTECT, related_name="media_exports"
+        "portal.Conference",
+        verbose_name="event",
+        on_delete=models.PROTECT,
+        related_name="media_exports",
     )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -2453,6 +2474,7 @@ class Handbook(TimestampedModel):
 
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.PROTECT,
         related_name="handbooks",
     )
@@ -2468,7 +2490,7 @@ class Handbook(TimestampedModel):
         blank=True,
         default="",
         db_default="",
-        help_text="Where the guide lives, e.g. https://conference.pyladies.com/docs/",
+        help_text="Where the guide lives, usually a page on the event's docs site.",
     )
     body_md = models.TextField(
         blank=True, help_text="Optional note shown above the link. Markdown."
@@ -2552,6 +2574,7 @@ class HandbookReadReceipt(TimestampedModel):
 
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.PROTECT,
         related_name="handbook_receipts",
         editable=False,
@@ -2587,6 +2610,7 @@ class ReminderLog(TimestampedModel):
 
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.PROTECT,
         related_name="reminder_logs",
         editable=False,
@@ -2621,6 +2645,7 @@ class SharedFileNotice(TimestampedModel):
 
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.PROTECT,
         related_name="shared_file_notices",
         editable=False,

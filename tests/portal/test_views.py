@@ -1,9 +1,11 @@
 import pytest
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.test import override_settings
 from django.urls import reverse
 from pytest_django.asserts import assertRedirects
 
+from portal import branding
 from portal.common import get_alltime_landing_stats
 from portal.models import Conference
 from portal_account.models import PortalProfile
@@ -34,12 +36,22 @@ class TestPortalIndex:
         assert response.status_code == 200
 
     def test_public_landing_sections_and_real_numbers(self, client, conference):
-        response = client.get(reverse("index"))
+        with override_settings(
+            BRAND=branding.from_env({"DOCS_URL": "https://docs.example.org/"})
+        ):
+            response = client.get(reverse("index"))
         assert response.status_code == 200
         content = response.content.decode()
-        assert "How volunteering works" in content
-        assert "Find your team" in content
+        # Nothing leads: the name and description, then one section per way
+        # to take part. Volunteering is one of them on this instance.
+        assert settings.BRAND.title in content
         assert "Sign up to volunteer" in content
+        # Team descriptions live on the docs site, so the link needs one.
+        assert "Read the team descriptions" in content
+        assert (
+            "Read the team descriptions"
+            not in client.get(reverse("index")).content.decode()
+        )
         assert "Across all editions" in content  # band is cumulative
         # The band is bound to cumulative aggregates, not literals.
         assert response.context["landing_stats"]["editions"] == 1
@@ -47,23 +59,28 @@ class TestPortalIndex:
     def test_landing_footer_shows_grouped_resources(self, client, conference):
         conference.coc_url = "https://example.org/coc/"
         conference.save()
-        content = client.get(reverse("index")).content.decode()
+        conference.coc_url = "https://2025.example.org/coc/"
+        conference.save()
+        with override_settings(
+            BRAND=branding.from_env({"DOCS_URL": "https://docs.example.org/"})
+        ):
+            content = client.get(reverse("index")).content.decode()
         # The role-grouped external reference links live in the footer.
-        assert "Keynote speaker guide" in content  # footer-only marker
-        assert "Team descriptions" in content
+        assert "footer-heading" in content  # footer-only marker
+        assert 'href="https://docs.example.org/">Documentation</a>' in content
         assert "Code of Conduct" in content
 
     def test_inner_page_keeps_minimal_footer(self, client, conference):
         # Pages that don't opt into footer_resources keep the minimal footer.
-        content = client.get(reverse("chapters")).content.decode()
-        assert "Keynote speaker guide" not in content
+        content = client.get(reverse("portal_stats")).content.decode()
+        assert "footer-heading" not in content
 
     def test_hero_shows_this_year_signups_with_year(
         self, client, portal_user, conference
     ):
         VolunteerProfile.objects.create(user=portal_user, conference=conference)
         content = client.get(reverse("index")).content.decode()  # anonymous
-        assert "already signed up for PyLadiesCon" in content
+        assert "already signed up for Flashlights" in content
         assert str(conference.year) in content
 
     def test_hero_hides_signups_when_no_profiles_this_year(self, client, conference):
@@ -74,7 +91,7 @@ class TestPortalIndex:
         response = client.get(reverse("index"))
         assert response.status_code == 200
         content = response.content.decode()
-        assert "Active conference edition" in content  # the navbar badge
+        assert "Active event edition" in content  # the navbar badge
         assert str(conference.year) in content
 
     @pytest.mark.no_agreements
@@ -138,7 +155,7 @@ class TestPortalStats:
     def test_stats_doesnt_require_login(self, client):
         response = client.get(reverse("portal_stats"))
         assert response.status_code == 200
-        assert "PyLadiesCon Stats" in response.content.decode()
+        assert "stats and numbers" in response.content.decode()
 
     def test_stats_survives_no_active_conference(self, client):
         # No active edition must render the stats page, not 500.
@@ -153,7 +170,7 @@ class TestPortalStats:
 
     def test_stats_year_switcher_selects_requested_year(self, client, conference):
         past = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024"
+            year=2024, name="Flashlights 2024", slug="2024"
         )
         response = client.get(reverse("portal_stats") + "?year=2024")
         assert response.status_code == 200
@@ -167,7 +184,7 @@ class TestPortalStats:
     def test_stats_historical_year_renders_snapshot(self, client, conference):
         Conference.objects.create(
             year=2024,
-            name="PyLadiesCon 2024",
+            name="Flashlights 2024",
             slug="2024",
             proposals_count=164,
             historical_snapshot={
@@ -198,33 +215,6 @@ class TestPortalStats:
 
 
 @pytest.mark.django_db
-class TestPyladiesChapters:
-
-    def test_view_pyladies_chapters_is_public(self, client):
-        response = client.get(reverse("chapters"))
-        assert response.status_code == 200
-        assert "PyLadies Chapters" in response.content.decode()
-
-    def test_view_pyladies_chapters_displays_chapters(self, client):
-        chapter_1 = PyladiesChapter.objects.create(
-            chapter_name="vancouver",
-            chapter_description="Vancouver, Canada",
-            chapter_website="https://vancouver.pyladies.com/",
-        )
-        chapter_2 = PyladiesChapter.objects.create(
-            chapter_name="berlin", chapter_description="Berlin, Germany"
-        )
-
-        response = client.get(reverse("chapters"))
-        assert response.status_code == 200
-        assert chapter_1.chapter_name in response.content.decode()
-        assert chapter_2.chapter_name in response.content.decode()
-        assert chapter_1.chapter_description in response.content.decode()
-        assert chapter_2.chapter_description in response.content.decode()
-        assert chapter_1.chapter_website in response.content.decode()
-
-
-@pytest.mark.django_db
 class TestStatsJSON:
 
     def test_stats_json_endpoint(self, client):
@@ -239,7 +229,7 @@ class TestStatsJSON:
         assert "stats" in data
 
     def test_stats_json_accepts_year(self, client, conference):
-        Conference.objects.create(year=2024, name="PyLadiesCon 2024", slug="2024")
+        Conference.objects.create(year=2024, name="Flashlights 2024", slug="2024")
         response = client.get(reverse("portal_stats_json") + "?year=2024")
         assert response.status_code == 200
         assert "stats" in response.json()
@@ -251,7 +241,7 @@ class TestDashboardGallery:
     def test_dashboard_gallery_is_public(self, client):
         response = client.get(reverse("dashboard_gallery"))
         assert response.status_code == 200
-        assert "Gallery of Dashboard Visualization" in response.content.decode()
+        assert "Gallery of dashboard visualisations" in response.content.decode()
 
 
 @pytest.mark.django_db
@@ -302,7 +292,7 @@ class TestStartNewYear:
             reverse("start_new_year"),
             {
                 "year": 2026,
-                "name": "PyLadiesCon 2026",
+                "name": "Flashlights 2026",
                 "slug": "2026",
                 "clone_teams": "on",
                 "copy_tiers": "on",
@@ -541,6 +531,8 @@ class TestOrganizerDashboard:
         assert response.status_code in (302, 403)
 
     def test_renders_for_admin(self, client, admin_user, conference):
+        conference.sponsors_url = "https://2025.example.org/sponsors/"
+        conference.save()
         client.force_login(admin_user)
         response = client.get(reverse("organizer_dashboard"))
         assert response.status_code == 200
@@ -554,7 +546,7 @@ class TestOrganizerDashboard:
         assert "Sponsorship resources" in content
         assert "Sponsorship prospectus" in content
         # The footer resources stay on the logged-out landing only.
-        assert "Keynote speaker guide" not in content
+        assert "footer-heading" not in content
         assert "Portal documentation" not in content
 
     def test_staff_rail_omits_superuser_only_entries(
@@ -570,7 +562,7 @@ class TestOrganizerDashboard:
         conference.is_active = False
         conference.save()
         content = client.get(reverse("organizer_dashboard")).content.decode()
-        assert "No active conference." in content
+        assert "No active event." in content
         assert "Ask a superuser" in content
         assert reverse("conference_list") not in content
 
@@ -679,7 +671,7 @@ class TestOrganizerDashboard:
         conference.save()
         client.force_login(admin_user)
         content = client.get(reverse("organizer_dashboard")).content.decode()
-        assert "No active conference." in content
+        assert "No active event." in content
         assert reverse("conference_list") in content
         # It is an attention item, not the "nothing to do" state.
         assert "Nothing needs your attention" not in content
@@ -708,19 +700,19 @@ class TestConferenceBanner:
     def test_banner_shown_when_set(self, client, conference):
         conference.banner_text = "Call for proposals is open!"
         conference.save()
-        content = client.get(reverse("chapters")).content.decode()
+        content = client.get(reverse("portal_stats")).content.decode()
         assert 'id="conference-banner"' in content
         assert "Call for proposals is open!" in content
 
     def test_no_banner_when_empty(self, client, conference):
-        content = client.get(reverse("chapters")).content.decode()
+        content = client.get(reverse("portal_stats")).content.decode()
         assert 'id="conference-banner"' not in content
 
 
 @pytest.mark.django_db
 class TestBranding:
     def test_brand_assets_loaded(self, client, conference):
-        content = client.get(reverse("chapters")).content.decode()
+        content = client.get(reverse("portal_stats")).content.decode()
         # The instance theme stylesheet and the generated favicon, both
         # versioned by the brand's content hash.
         version = settings.BRAND.version
@@ -784,6 +776,9 @@ class TestConferenceUrls:
         content = client.get(reverse("portal_stats")).content.decode()
         assert "https://2026.example.com/sponsors/" in content
 
-    def test_template_falls_back_to_default_when_blank(self, client, conference):
+    def test_no_sponsor_callout_without_a_url(self, client, conference):
+        # No prospectus and no donation page: the callout stays off the page
+        # rather than pointing at a placeholder.
         content = client.get(reverse("portal_stats")).content.decode()
-        assert "2025.conference.pyladies.com/en/sponsors/" in content
+        assert "Sponsorship prospectus" not in content
+        assert "Sponsor us" not in content

@@ -37,7 +37,7 @@ from .factories import make_session, make_settings
 @pytest.fixture
 def other_conference(db):
     return Conference.objects.create(
-        year=2024, name="PyLadiesCon 2024", slug="pyladiescon-2024"
+        year=2024, name="Flashlights 2024", slug="pyladiescon-2024"
     )
 
 
@@ -219,7 +219,7 @@ class TestSeed:
         general = ChecklistTemplate.for_general(conference)
         general_titles = list(general.items.values_list("title", flat=True))
         assert general_titles[0] == "Update your bio and headshot"
-        assert "Join the PyLadiesCon Discord" in general_titles
+        assert "Join the event Discord" in general_titles
         assert "Do a tech check" in general_titles
         assert "Presenter in portal" in general_titles
         assert workshop.items.get(title="Read the workshop guide").once_per_presenter
@@ -269,11 +269,11 @@ class TestSeed:
         assert conference.checklist_templates.count() == 0
 
     def test_command_errors(self, conference):
-        with pytest.raises(CommandError, match="No conference matches"):
+        with pytest.raises(CommandError, match="No event matches"):
             call_command("seed_checklists", conference="nope")
         conference.is_active = False
         conference.save()
-        with pytest.raises(CommandError, match="No active conference"):
+        with pytest.raises(CommandError, match="No active event"):
             call_command("seed_checklists")
 
 

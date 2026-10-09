@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.utils.functional import SimpleLazyObject
 
 from portal_account.permissions import is_maintainer
@@ -9,6 +10,23 @@ from .models import Conference
 def active_conference(request):
     """Expose the active conference to all templates as ``active_conference``."""
     return {"active_conference": Conference.get_active()}
+
+
+def features(request):
+    """The instance's feature switches, for the nav, rails, landing page and
+    stats sections (``portal/settings.py``, "Feature switches").
+
+    * ``volunteering_enabled``: the Volunteer hub exists on this instance
+    * ``sponsorship_enabled``: sponsors, tiers and donations do
+    * ``stats_public``: the public stats pages are served
+    * ``pretix_configured``: attendee numbers can exist (a Pretix token is set)
+    """
+    return {
+        "volunteering_enabled": settings.VOLUNTEERING_ENABLED,
+        "sponsorship_enabled": settings.SPONSORSHIP_ENABLED,
+        "stats_public": settings.STATS_PUBLIC,
+        "pretix_configured": settings.PRETIX_CONFIGURED,
+    }
 
 
 def user_capabilities(request):
@@ -53,11 +71,14 @@ def user_capabilities(request):
         user=user, conference=Conference.get_active()
     ).first()
     is_approved = bool(profile and profile.is_approved)
+    # An instance without sponsorship has nobody who can see or manage it,
+    # so every rail and page reading these flags goes quiet together.
+    sponsorship = settings.SPONSORSHIP_ENABLED
 
     return {
         "is_organizer": is_organizer,
-        "can_manage_sponsorship": is_organizer,
-        "can_view_sponsorship": is_organizer or is_approved,
+        "can_manage_sponsorship": sponsorship and is_organizer,
+        "can_view_sponsorship": sponsorship and (is_organizer or is_approved),
         "active_volunteer_profile": profile,
         # Lazy on purpose: no template reads it since My teams left the
         # tabs for the personal rail, and a plain bool here would run its

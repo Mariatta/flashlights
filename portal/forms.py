@@ -85,7 +85,7 @@ class StartNewYearForm(forms.Form):
     conference_date = forms.DateField(
         required=False,
         widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
-        label="Conference date",
+        label="Event date",
     )
     pretix_event_slug = forms.CharField(
         required=False, max_length=100, label="Pretix event slug"
@@ -110,20 +110,20 @@ class StartNewYearForm(forms.Form):
     speaker_portal = forms.BooleanField(
         required=False,
         label="Enable the speaker portal for this edition",
-        help_text="Can be switched later on the conference edit form.",
+        help_text="Can be switched later on the event edit form.",
     )
     activate = forms.BooleanField(required=False, label="Activate this edition now")
 
     def clean_year(self):
         year = self.cleaned_data["year"]
         if Conference.objects.filter(year=year).exists():
-            raise forms.ValidationError("A conference for that year already exists.")
+            raise forms.ValidationError("An event for that year already exists.")
         return year
 
     def clean_slug(self):
         slug = self.cleaned_data["slug"]
         if Conference.objects.filter(slug=slug).exists():
-            raise forms.ValidationError("A conference with that slug already exists.")
+            raise forms.ValidationError("An event with that slug already exists.")
         return slug
 
 
@@ -180,6 +180,12 @@ class ConferenceForm(forms.ModelForm):
             "donate_url",
             "schedule_url",
         ]
+        labels = {"volunteer_application_open": "Taking volunteer applications"}
+        help_texts = {
+            "volunteer_application_open": "Advertises volunteering on the landing "
+            "page and opens volunteer sign-up for this edition. Off, the public "
+            "page says nothing about volunteering and the team keeps its hub."
+        }
         widgets = {
             "start_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
             "end_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),

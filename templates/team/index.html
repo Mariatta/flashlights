@@ -17,7 +17,7 @@
             <a class="btn btn-primary" href="{% url 'team_new' %}">{% trans "New Team" %}</a>
         </h1>
         {% if conferences %}
-            <div class="btn-group mb-3" role="group" aria-label="Conference year">
+            <div class="btn-group mb-3" role="group" aria-label="Event year">
                 {% for conference in conferences %}
                     <a href="?conference={{ conference.pk }}"
                        class="btn btn-sm {% if conference == selected_conference %}btn-primary{% else %}btn-outline-primary{% endif %}">

@@ -1,5 +1,5 @@
 """
-Celery configuration for PyLadies Portal.
+Celery configuration for the portal.
 
 This module sets up Celery for handling asynchronous tasks,
 particularly for sending emails in the background.

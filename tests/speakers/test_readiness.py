@@ -119,7 +119,7 @@ class TestWaitSources:
         assert not item(world["ada"], "Read the workshop guide").is_waiting
 
     def test_registration_waits_until_pretix_is_set_up(self, world, conference):
-        register = item(world["ada"], "Register for the conference")
+        register = item(world["ada"], "Register for the event")
         assert register.is_waiting
         assert register.waiting_reason == "registration is not open yet"
         settings_row = conference.speaker_settings
@@ -129,14 +129,14 @@ class TestWaitSources:
         settings_row.pretix_api_token = "token"
         settings_row.save()
         refresh_for_conference(conference)
-        assert not item(world["ada"], "Register for the conference").is_waiting
+        assert not item(world["ada"], "Register for the event").is_waiting
 
     def test_a_gate_holds_the_tech_check_until_an_organizer_opens_it(
         self, world, conference, organizer
     ):
         tech = item(world["ada"], "Do a tech check")
         assert tech.is_waiting
-        assert tech.waiting_reason == "booking opens closer to the conference"
+        assert tech.waiting_reason == "booking opens closer to the event"
         gate = ReadinessGate.objects.get(conference=conference, code="tech-check-open")
         assert gate.set_open(True, actor=organizer) is True
         # Flipping it again is not a move, so nothing is re-evaluated twice.
@@ -245,7 +245,7 @@ class TestWaitSources:
         assert not fresh.is_waiting  # ad hoc items name no source
 
     def test_an_item_with_no_source_is_never_waiting(self, world):
-        line = item(world["ada"], "Join the PyLadiesCon Discord")
+        line = item(world["ada"], "Join the event Discord")
         assert not line.is_waiting
         assert evaluate_readiness(line) == (False, "")
 
@@ -312,7 +312,7 @@ class TestOverride:
         assert tech.waiting_reason == "the organizers are holding this"
 
     def test_an_organizer_holds_an_item_shut(self, client, world, organizer):
-        discord = item(world["ada"], "Join the PyLadiesCon Discord")
+        discord = item(world["ada"], "Join the event Discord")
         client.force_login(organizer)
         client.post(
             reverse("speakers:item_ready", args=[discord.pk]), {"override": "HOLD"}
@@ -324,7 +324,7 @@ class TestOverride:
             complete_item(discord, actor=world["ada"].user)
 
     def test_an_unknown_answer_is_refused(self, client, world, organizer):
-        discord = item(world["ada"], "Join the PyLadiesCon Discord")
+        discord = item(world["ada"], "Join the event Discord")
         client.force_login(organizer)
         response = client.post(
             reverse("speakers:item_ready", args=[discord.pk]), {"override": "MAYBE"}
@@ -355,7 +355,7 @@ class TestOverride:
         )
 
     def test_only_organizers(self, client, world, speaker_user):
-        discord = item(world["ada"], "Join the PyLadiesCon Discord")
+        discord = item(world["ada"], "Join the event Discord")
         client.force_login(speaker_user)
         assert (
             client.post(
@@ -407,10 +407,10 @@ class TestGatesPage:
     def test_adding_a_gate_opens_the_items_that_named_it(
         self, client, world, conference, organizer
     ):
-        line = item(world["ada"], "Join the PyLadiesCon Discord").template_item
+        line = item(world["ada"], "Join the event Discord").template_item
         line.ready_gate_code = "discord-ready"
         line.save()
-        discord = item(world["ada"], "Join the PyLadiesCon Discord")
+        discord = item(world["ada"], "Join the event Discord")
         discord.ready_gate = None
         discord.waits_for_line = None
         discord.save()
@@ -565,7 +565,7 @@ class TestSeedsAndCloning:
         assert seed_readiness_gates(conference) == 0
 
     def test_gates_and_waits_clone_into_next_year(self, world, conference):
-        line = item(world["ada"], "Join the PyLadiesCon Discord").template_item
+        line = item(world["ada"], "Join the event Discord").template_item
         guide_line = item(world["ada"], "Read the workshop guide").template_item
         line.waits_for = guide_line
         line.save()
@@ -579,7 +579,7 @@ class TestSeedsAndCloning:
         # Last year's answer says nothing about this year's work.
         assert copied.is_open is False
         copied_discord = ChecklistTemplateItem.objects.get(
-            template__conference=next_year, title="Join the PyLadiesCon Discord"
+            template__conference=next_year, title="Join the event Discord"
         )
         assert copied_discord.waits_for is not None
         assert copied_discord.waits_for.template.conference == next_year
@@ -618,7 +618,7 @@ class TestStatusGuard:
         assert slot_item.is_waiting
 
     def test_the_message_falls_back_when_there_is_no_reason(self, world, organizer):
-        discord = item(world["ada"], "Join the PyLadiesCon Discord")
+        discord = item(world["ada"], "Join the event Discord")
         discord.is_waiting = True
         discord.save()
         with pytest.raises(ChecklistError, match="not ready to be worked on yet"):

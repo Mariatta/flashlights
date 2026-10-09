@@ -132,10 +132,10 @@
                                 {% endfor %}
                             {% endif %}
                         </div>
-                        {% bootstrap_field form.chapter %}
                         {% bootstrap_field form.region %}
                     </div>
                 </div>
+                {% include "affiliations/_formset.html" %}
                 <div class="card mb-4">
                     <div class="card-header">
                         <h5 class="card-title mb-0">
@@ -334,6 +334,7 @@
                     {% endif %}
                 </div>
             </form>
+            <script src="{% static 'affiliations/formset.js' %}" defer></script>
         </div>
     </main>
     <script>

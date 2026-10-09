@@ -44,7 +44,7 @@
         <div class="card-body">
             <div class="row mb-3">
                 <div class="col-md-3 fw-bold">
-                    {% trans "Conference:" %}
+                    {% trans "Event:" %}
                 </div>
                 <div class="col-md-9">
                     {{ object.conference }}
@@ -92,10 +92,10 @@
             </div>
             <div class="row mb-3">
                 <div class="col-md-3 fw-bold">
-                    {% trans "PyLadies Chapter:" %}
+                    {% trans "Affiliations:" %}
                 </div>
                 <div class="col-md-9">
-                    {{ object.chapter|default:"Not specified" }}
+                    {% include "affiliations/_list.html" with person=object.user %}
                 </div>
             </div>
             <div class="row mb-3">

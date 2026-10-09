@@ -34,7 +34,7 @@ from .factories import (
 
 @pytest.fixture
 def other_conference(db):
-    return Conference.objects.create(year=2024, name="PyLadiesCon 2024", slug="2024")
+    return Conference.objects.create(year=2024, name="Flashlights 2024", slug="2024")
 
 
 @pytest.mark.django_db

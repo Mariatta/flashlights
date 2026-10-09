@@ -22,10 +22,10 @@ class TestCloneTeamsAction:
 
     def test_clones_teams_from_previous_edition(self, client, admin_user):
         source = Conference.objects.create(
-            year=2025, name="PyLadiesCon 2025", slug="2025"
+            year=2025, name="Flashlights 2025", slug="2025"
         )
         target = Conference.objects.create(
-            year=2026, name="PyLadiesCon 2026", slug="2026"
+            year=2026, name="Flashlights 2026", slug="2026"
         )
         Team.objects.create(conference=source, short_name="Comms", description="c")
         client.force_login(admin_user)
@@ -38,7 +38,7 @@ class TestCloneTeamsAction:
 
     def test_warns_when_no_previous_edition(self, client, admin_user):
         target = Conference.objects.create(
-            year=2026, name="PyLadiesCon 2026", slug="2026"
+            year=2026, name="Flashlights 2026", slug="2026"
         )
         client.force_login(admin_user)
 
@@ -53,7 +53,7 @@ class TestCloneTeamsAction:
 class TestFreezeStatsAction:
     def test_freezes_selected_edition(self, client, admin_user):
         conf = Conference.objects.create(
-            year=2025, name="PyLadiesCon 2025", slug="2025"
+            year=2025, name="Flashlights 2025", slug="2025"
         )
         client.force_login(admin_user)
 

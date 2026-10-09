@@ -406,7 +406,7 @@ def send_schedule_update_email(presenter, session_changes, published_at):
             }
         )
     return send_email(
-        "The conference schedule was updated",
+        "The event schedule was updated",
         [presenter.email],
         markdown_template=SCHEDULE_UPDATE_TEMPLATE,
         context={

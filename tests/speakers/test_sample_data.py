@@ -70,7 +70,7 @@ class TestGenerateSpeakerSampleData:
             status=ItemStatus.DONE, completed_by__username="vol_kim"
         ).exists()
         assert ada_items.filter(
-            title="Register for the conference", due_date__lt=timezone.now().date()
+            title="Register for the event", due_date__lt=timezone.now().date()
         ).exists()
         grace = presenters["Grace Hopper"]
         assert grace.checklist_items.filter(title="Read the keynote guide").count() == 1
@@ -140,9 +140,9 @@ class TestGenerateSpeakerSampleData:
             "generate_speaker_sample_data", conference="2024", stdout=StringIO()
         )
         assert Session.objects.filter(conference=other).count() == 11
-        with pytest.raises(CommandError, match="No conference matches"):
+        with pytest.raises(CommandError, match="No event matches"):
             call_command("generate_speaker_sample_data", conference="nope")
         conference.is_active = False
         conference.save()
-        with pytest.raises(CommandError, match="No active conference"):
+        with pytest.raises(CommandError, match="No active event"):
             call_command("generate_speaker_sample_data")

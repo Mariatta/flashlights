@@ -79,7 +79,7 @@ and from speakers.context_processors.speaker_module:
 {% endif %}
 {% url 'volunteer:my_conferences' as my_conferences_url %}
 {% if active == "conferences" %}
-    {% include "portal/_sidebar_item.html" with url=my_conferences_url label=_("My conferences") icon="fa-calendar-days" active=True only %}
+    {% include "portal/_sidebar_item.html" with url=my_conferences_url label=_("My events") icon="fa-calendar-days" active=True only %}
 {% else %}
-    {% include "portal/_sidebar_item.html" with url=my_conferences_url label=_("My conferences") icon="fa-calendar-days" only %}
+    {% include "portal/_sidebar_item.html" with url=my_conferences_url label=_("My events") icon="fa-calendar-days" only %}
 {% endif %}

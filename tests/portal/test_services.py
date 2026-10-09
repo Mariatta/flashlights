@@ -28,10 +28,10 @@ def conference():
 class TestCloneTeams:
     def test_copies_team_structure_but_not_leads(self):
         source = Conference.objects.create(
-            year=2025, name="PyLadiesCon 2025", slug="2025"
+            year=2025, name="Flashlights 2025", slug="2025"
         )
         target = Conference.objects.create(
-            year=2026, name="PyLadiesCon 2026", slug="2026"
+            year=2026, name="Flashlights 2026", slug="2026"
         )
         lead = VolunteerProfile.objects.create(
             user=get_user_model().objects.create(username="lead"), conference=source
@@ -55,10 +55,10 @@ class TestCloneTeams:
 
     def test_skips_teams_already_present(self):
         source = Conference.objects.create(
-            year=2025, name="PyLadiesCon 2025", slug="2025"
+            year=2025, name="Flashlights 2025", slug="2025"
         )
         target = Conference.objects.create(
-            year=2026, name="PyLadiesCon 2026", slug="2026"
+            year=2026, name="Flashlights 2026", slug="2026"
         )
         Team.objects.create(conference=source, short_name="Comms", description="a")
         Team.objects.create(conference=source, short_name="Design", description="b")
@@ -80,10 +80,10 @@ class TestCloneTeams:
 class TestCloneSponsorshipTiers:
     def test_copies_tiers_skipping_existing(self):
         source = Conference.objects.create(
-            year=2025, name="PyLadiesCon 2025", slug="2025"
+            year=2025, name="Flashlights 2025", slug="2025"
         )
         target = Conference.objects.create(
-            year=2026, name="PyLadiesCon 2026", slug="2026"
+            year=2026, name="Flashlights 2026", slug="2026"
         )
         SponsorshipTier.objects.create(
             conference=source, name="Gold", amount=1000, description="g"
@@ -109,10 +109,10 @@ class TestCloneSponsorshipTiers:
 class TestBringForwardVolunteers:
     def test_brings_only_approved_as_pending(self):
         source = Conference.objects.create(
-            year=2025, name="PyLadiesCon 2025", slug="2025"
+            year=2025, name="Flashlights 2025", slug="2025"
         )
         target = Conference.objects.create(
-            year=2026, name="PyLadiesCon 2026", slug="2026"
+            year=2026, name="Flashlights 2026", slug="2026"
         )
         user_model = get_user_model()
         approved_user = user_model.objects.create(username="appr")
@@ -143,7 +143,7 @@ class TestFreezeStats:
     def test_snapshots_live_metrics_as_json_safe(self):
         cache.clear()
         conf = Conference.objects.create(
-            year=2025, name="PyLadiesCon 2025", slug="2025"
+            year=2025, name="Flashlights 2025", slug="2025"
         )
         SponsorshipProfile.objects.create(
             organization_name="Acme",

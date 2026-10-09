@@ -1,29 +1,34 @@
-<!-- Sponsor/Donate Callout -->
-<div class="container border rounded-3 p-4 mb-4 bg-light">
-    <div class="row align-items-center">
-        <div class="col-md-8">
-            <h3 class="mb-2">
-                Support PyLadiesCon!
-            </h3>
-            <p class="mb-0 text-muted">
-                Help us make PyLadiesCon possible by becoming a sponsor or making a donation.
-                Your support enables us to create an inclusive and accessible conference for the global PyLadies
-                community.
-            </p>
-        </div>
-        <div class="col-md-4 text-md-end mt-3 mt-md-0">
-            <a href="{{ active_conference.sponsors_url|default:'https://2025.conference.pyladies.com/en/sponsors/' }}"
-               target="_blank"
-               rel="noopener noreferrer"
-               class="btn btn-primary btn-lg me-2 mb-2">
-                <i class="bi bi-building"></i> Sponsor Us
-            </a>
-            <a href="{{ active_conference.donate_url|default:'https://2025.conference.pyladies.com/en/donate/' }}"
-               target="_blank"
-               rel="noopener noreferrer"
-               class="btn btn-success btn-lg mb-2">
-                <i class="bi bi-heart-fill"></i> Donate
-            </a>
+{% load i18n %}
+{# Sponsor and donate callout: only with a page to send people to. #}
+{% if sponsorship_enabled and active_conference.sponsors_url or sponsorship_enabled and active_conference.donate_url %}
+    <div class="container border rounded-3 p-4 mb-4 bg-light">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h3 class="mb-2">
+                    {% blocktranslate with short_name=brand.short_name %}Support {{ short_name }}{% endblocktranslate %}
+                </h3>
+                <p class="mb-0 text-muted">
+                    {% blocktranslate with short_name=brand.short_name %}Help us make {{ short_name }} possible by becoming a sponsor or making a donation. Your support keeps the event inclusive and accessible.{% endblocktranslate %}
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                {% if active_conference.sponsors_url %}
+                    <a href="{{ active_conference.sponsors_url }}"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="btn btn-primary btn-lg me-2 mb-2">
+                        <i class="fa-solid fa-handshake"></i> {% trans "Sponsor us" %}
+                    </a>
+                {% endif %}
+                {% if active_conference.donate_url %}
+                    <a href="{{ active_conference.donate_url }}"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="btn btn-success btn-lg mb-2">
+                        <i class="fa-solid fa-heart"></i> {% trans "Donate" %}
+                    </a>
+                {% endif %}
+            </div>
         </div>
     </div>
-</div>
+{% endif %}

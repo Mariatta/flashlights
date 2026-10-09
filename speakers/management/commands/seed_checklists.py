@@ -31,11 +31,11 @@ def resolve_conference(value):
     if not value:
         conference = Conference.get_active()
         if conference is None:
-            raise CommandError("No active conference; pass --conference.")
+            raise CommandError("No active event; pass --conference.")
         return conference
     conference = Conference.objects.filter(slug=value).first()
     if conference is None and value.isdigit():
         conference = Conference.objects.filter(year=int(value)).first()
     if conference is None:
-        raise CommandError(f"No conference matches {value!r}.")
+        raise CommandError(f"No event matches {value!r}.")
     return conference

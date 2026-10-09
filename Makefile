@@ -41,7 +41,11 @@ shell: .state/db-initialized
 	docker compose run --rm web /bin/bash
 
 dbshell: .state/db-initialized
-	docker compose exec postgres psql -U pyladiescon pyladiescon
+	docker compose exec postgres psql -U flashlights flashlights
+
+seed: .state/db-initialized
+	# Sample accounts and data for local development (DEBUG only)
+	docker compose run --rm web ./manage.py seed_dev_data
 
 manage: .state/db-initialized
 	# Run Django manage to accept arbitrary arguments

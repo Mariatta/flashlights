@@ -22,7 +22,7 @@ def bulk_waitlist_volunteers(modeladmin, request, queryset):
         volunteer.save()
 
 
-@admin.action(description="Bring selected volunteers forward to the active conference")
+@admin.action(description="Bring selected volunteers forward to the active event")
 def bring_forward_to_active_conference(modeladmin, request, queryset):
     """Carry returning volunteers into the active edition without re-applying.
 
@@ -32,7 +32,7 @@ def bring_forward_to_active_conference(modeladmin, request, queryset):
     active = Conference.get_active()
     if active is None:
         modeladmin.message_user(
-            request, "No active conference is set.", level=messages.ERROR
+            request, "No active event is set.", level=messages.ERROR
         )
         return
     created = 0

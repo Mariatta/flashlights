@@ -30,12 +30,12 @@ class MarkdownEmailRendererTest(TestCase):
     def test_markdown_to_html_with_links(self):
         """Test Markdown to HTML conversion with links."""
         markdown_content = (
-            "Visit [PyLadiesCon](https://conference.pyladies.com) for more info."
+            "Visit [Flashlights](https://flashlights.example.org) for more info."
         )
 
         result = self.renderer.markdown_to_html(markdown_content)
         self.assertIn(
-            '<a href="https://conference.pyladies.com">PyLadiesCon</a>', result
+            '<a href="https://flashlights.example.org">Flashlights</a>', result
         )
 
     def test_markdown_to_html_with_lists(self):
@@ -65,13 +65,13 @@ class MarkdownEmailRendererTest(TestCase):
     def test_markdown_to_text_with_links(self):
         """Test Markdown to text conversion preserves link text."""
         markdown_content = (
-            "Visit [PyLadiesCon](https://conference.pyladies.com) for more info."
+            "Visit [Flashlights](https://flashlights.example.org) for more info."
         )
 
         result = self.renderer.markdown_to_text(markdown_content)
-        self.assertIn("PyLadiesCon", result)
+        self.assertIn("Flashlights", result)
         self.assertNotIn(
-            "https://conference.pyladies.com", result
+            "https://flashlights.example.org", result
         )  # URL should be stripped in text version
 
     def test_html_sanitization(self):

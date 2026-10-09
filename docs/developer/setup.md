@@ -390,6 +390,36 @@ continue from the parts that already landed.
 (how long a presigned link lives, 3600 seconds by default) and
 `SPEAKER_MEDIA_UPLOAD_TTL_HOURS` have sensible defaults in `portal/settings.py`.
 
+### One command for everything: `seed_dev_data`
+
+The quickest way to a usable local instance. It runs both generators
+below, gives the accounts you will sign in as the password `password123`,
+adds a few affiliations, and prints the logins:
+
+=== "With Docker"
+
+    ```sh
+    make seed
+    ```
+
+=== "Without Docker"
+
+    ```sh
+    python manage.py seed_dev_data
+    ```
+
+| Account | Role |
+|---|---|
+| `admin_user` | Organizer (superuser) |
+| `organizer_lena` | Organizer (staff) |
+| `volunteer1` | Volunteer, approved |
+| `volunteer3` | Volunteer, pending review |
+| `ada` | Speaker, onboarded |
+| `sponsor_contact1` | Sponsor contact |
+
+Like the generators, it refuses to run unless `DEBUG=True`. Running it
+again is safe: existing rows are kept.
+
 ## Generate Sample Data (Optional)
 
 For local development and testing, you can generate sample data to populate your database with realistic test content. This command creates:

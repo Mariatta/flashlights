@@ -10,6 +10,7 @@ from unittest.mock import patch
 import boto3
 import pytest
 from django.apps import apps
+from django.conf import settings
 from django.contrib.auth.models import Group, Permission, User
 from django.core import mail
 from django.db import connection
@@ -186,15 +187,15 @@ class TestScope:
         year = world["loud"].conference.year
         assert (
             local_path(a["loud_v2"])
-            == f"pyladiescon-{year}/loud/raw_video/v2-take-2-.mp4"
+            == f"{settings.BRAND.slug}-{year}/loud/raw_video/v2-take-2-.mp4"
         )
         assert (
             local_path(a["loud_en"])
-            == f"pyladiescon-{year}/loud/transcript/v1-en-loud.vtt"
+            == f"{settings.BRAND.slug}-{year}/loud/transcript/v1-en-loud.vtt"
         )
         assert (
             local_path(a["quiet_poster"])
-            == f"pyladiescon-{year}/quiet/promo/v1-square-poster.png"
+            == f"{settings.BRAND.slug}-{year}/quiet/promo/v1-square-poster.png"
         )
 
     def test_summary(self):
@@ -240,10 +241,10 @@ class TestExport:
         assert "'=SUM(1)" in manifest  # never a formula
         script = write_script(export, entries, io.StringIO()).getvalue()
         assert script.startswith("#!/bin/sh\n") and "set -e" in script
-        assert "cat > pyladiescon-" in script and "MANIFEST\n" in script
+        assert f"cat > {settings.BRAND.slug}-" in script and "MANIFEST\n" in script
         assert script.count("curl -fL -C - --create-dirs -o ") == 4
         aria = write_aria2(entries, io.StringIO()).getvalue()
-        assert aria.count("\n  out=pyladiescon-") == 4
+        assert aria.count(f"\n  out={settings.BRAND.slug}-") == 4
         export.expires_at = timezone.now() - timedelta(minutes=1)
         export.save()
         with pytest.raises(ExportError):
@@ -280,7 +281,7 @@ class TestExport:
         )
         for name, marker in (
             ("download.sh", "#!/bin/sh"),
-            ("aria2.txt", "  out=pyladiescon-"),
+            ("aria2.txt", f"  out={settings.BRAND.slug}-"),
             ("manifest.csv", "path,session,presenters"),
         ):
             response = client.get(

@@ -150,7 +150,7 @@ class TestSendInvitation:
         mail.outbox.clear()
         send(invitation)
         assert str(invitation) == f"Invitation for {presenter} to {conference}"
-        assert mail.outbox[0].subject.endswith("You're invited to PyLadiesCon 2025")
+        assert mail.outbox[0].subject.endswith("You're invited to Flashlights 2025")
 
     def test_task_with_missing_invitation(self):
         assert "not found" in send_invitation_email_task(999999)

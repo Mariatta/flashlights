@@ -344,7 +344,7 @@ class TestAttendeeStats:
             experience_level="Intermediate",
             expectation_from_event=["Networking", "Learning"],
             heard_about=["Social Media"],
-            participated_in_previous_event=["PyLadiesCon 2023"],
+            participated_in_previous_event=["Flashlights 2023"],
             pyladies_chapter="San Francisco",
             age_range="19-25",
             organization_name="Umbrella Corp",
@@ -365,7 +365,7 @@ class TestAttendeeStats:
             experience_level="Junior",
             expectation_from_event=["Networking", "Speaking"],
             heard_about=["Meetup"],
-            participated_in_previous_event=["PyLadiesCon 2024"],
+            participated_in_previous_event=["Flashlights 2024"],
             pyladies_chapter="San Francisco",
             age_range="19-25",
             organization_name="Umbrella Corp",
@@ -386,7 +386,7 @@ class TestAttendeeStats:
             experience_level="Expert",
             expectation_from_event=["Teaching"],
             heard_about=["Conference"],
-            participated_in_previous_event=["PyLadiesCon 2023"],
+            participated_in_previous_event=["Flashlights 2023"],
             pyladies_chapter="San Francisco",
             age_range="19-25",
             organization_name="Umbrella Corp",
@@ -424,7 +424,7 @@ class TestHistoricalComparison:
         cache.delete(CACHE_KEY_HISTORICAL_COMPARISON)
         Conference.objects.create(
             year=2024,
-            name="PyLadiesCon 2024",
+            name="Flashlights 2024",
             slug="2024",
             proposals_count=192,
             historical_snapshot={

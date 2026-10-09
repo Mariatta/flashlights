@@ -30,7 +30,7 @@ class TestSpeakerModuleFlag:
 
     def test_flag_is_per_edition(self, conference):
         other = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024"
+            year=2024, name="Flashlights 2024", slug="2024"
         )
         SpeakerSettings.objects.create(conference=other, speaker_module_enabled=True)
         assert speaker_module_enabled(other) is True
@@ -38,7 +38,7 @@ class TestSpeakerModuleFlag:
 
     def test_str(self, conference):
         settings = SpeakerSettings.objects.create(conference=conference)
-        assert str(settings) == "Speaker settings (PyLadiesCon 2025)"
+        assert str(settings) == "Speaker settings (Flashlights 2025)"
 
 
 @pytest.mark.django_db
@@ -68,7 +68,7 @@ class TestSpeakerPortalIndex:
         response = client.get(reverse("speakers:index"))
         assert response.status_code == 200
         assert response.context["conference"] == conference
-        assert "PyLadiesCon 2025" in response.content.decode()
+        assert "Flashlights 2025" in response.content.decode()
 
 
 @pytest.mark.django_db
@@ -78,7 +78,7 @@ class TestSpeakerSettingsAdmin:
         client.force_login(admin_user)
         response = client.get(reverse("admin:speakers_speakersettings_changelist"))
         assert response.status_code == 200
-        assert "PyLadiesCon 2025" in response.content.decode()
+        assert "Flashlights 2025" in response.content.decode()
 
 
 @pytest.mark.django_db

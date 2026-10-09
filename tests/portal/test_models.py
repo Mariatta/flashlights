@@ -18,14 +18,14 @@ def conference():
 class TestConferenceModel:
     def test_str(self):
         conference = Conference.objects.create(
-            year=2025, name="PyLadiesCon 2025", slug="2025"
+            year=2025, name="Flashlights 2025", slug="2025"
         )
-        assert str(conference) == "PyLadiesCon 2025"
+        assert str(conference) == "Flashlights 2025"
 
     def test_defaults(self):
         """Fields fall back to their documented defaults."""
         conference = Conference.objects.create(
-            year=2025, name="PyLadiesCon 2025", slug="2025"
+            year=2025, name="Flashlights 2025", slug="2025"
         )
         assert conference.is_active is False
         assert conference.pretix_event_slug == ""
@@ -41,23 +41,23 @@ class TestConferenceModel:
         assert conference.historical_snapshot == {}
 
     def test_get_active_returns_none_when_no_active(self):
-        Conference.objects.create(year=2025, name="PyLadiesCon 2025", slug="2025")
+        Conference.objects.create(year=2025, name="Flashlights 2025", slug="2025")
         assert Conference.get_active() is None
 
     def test_get_active_returns_active_conference(self):
-        Conference.objects.create(year=2024, name="PyLadiesCon 2024", slug="2024")
+        Conference.objects.create(year=2024, name="Flashlights 2024", slug="2024")
         active = Conference.objects.create(
-            year=2025, name="PyLadiesCon 2025", slug="2025", is_active=True
+            year=2025, name="Flashlights 2025", slug="2025", is_active=True
         )
         assert Conference.get_active() == active
 
     def test_single_active_enforcer_on_create(self):
         """Activating a new conference deactivates any previously active one."""
         first = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024", is_active=True
+            year=2024, name="Flashlights 2024", slug="2024", is_active=True
         )
         second = Conference.objects.create(
-            year=2025, name="PyLadiesCon 2025", slug="2025", is_active=True
+            year=2025, name="Flashlights 2025", slug="2025", is_active=True
         )
 
         first.refresh_from_db()
@@ -69,10 +69,10 @@ class TestConferenceModel:
     def test_single_active_enforcer_on_update(self):
         """Flipping an inactive conference to active deactivates the other."""
         first = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024", is_active=True
+            year=2024, name="Flashlights 2024", slug="2024", is_active=True
         )
         second = Conference.objects.create(
-            year=2025, name="PyLadiesCon 2025", slug="2025", is_active=False
+            year=2025, name="Flashlights 2025", slug="2025", is_active=False
         )
 
         second.is_active = True
@@ -85,10 +85,10 @@ class TestConferenceModel:
     def test_saving_inactive_conference_keeps_active_untouched(self):
         """Re-saving an inactive row must not clear the active conference."""
         active = Conference.objects.create(
-            year=2025, name="PyLadiesCon 2025", slug="2025", is_active=True
+            year=2025, name="Flashlights 2025", slug="2025", is_active=True
         )
         inactive = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024", is_active=False
+            year=2024, name="Flashlights 2024", slug="2024", is_active=False
         )
 
         inactive.banner_text = "See you next year"
@@ -98,9 +98,9 @@ class TestConferenceModel:
         assert active.is_active is True
 
     def test_ordering_most_recent_first(self):
-        Conference.objects.create(year=2024, name="PyLadiesCon 2024", slug="2024")
-        Conference.objects.create(year=2026, name="PyLadiesCon 2026", slug="2026")
-        Conference.objects.create(year=2025, name="PyLadiesCon 2025", slug="2025")
+        Conference.objects.create(year=2024, name="Flashlights 2024", slug="2024")
+        Conference.objects.create(year=2026, name="Flashlights 2026", slug="2026")
+        Conference.objects.create(year=2025, name="Flashlights 2025", slug="2025")
         years = list(Conference.objects.values_list("year", flat=True))
         assert years == [2026, 2025, 2024]
 
@@ -109,7 +109,7 @@ class TestConferenceModel:
 class TestActiveConferenceContextProcessor:
     def test_returns_active_conference(self):
         active = Conference.objects.create(
-            year=2025, name="PyLadiesCon 2025", slug="2025", is_active=True
+            year=2025, name="Flashlights 2025", slug="2025", is_active=True
         )
         assert active_conference(None) == {"active_conference": active}
 
@@ -121,19 +121,19 @@ class TestActiveConferenceContextProcessor:
 class TestCanStartNextYear:
     def test_true_when_no_active_edition(self):
         # No active edition yet — allow creating the first.
-        Conference.objects.create(year=2025, name="PyLadiesCon 2025", slug="2025")
+        Conference.objects.create(year=2025, name="Flashlights 2025", slug="2025")
         assert Conference.can_start_next_year() is True
 
     def test_false_when_active_date_unset(self):
         Conference.objects.create(
-            year=2025, name="PyLadiesCon 2025", slug="2025", is_active=True
+            year=2025, name="Flashlights 2025", slug="2025", is_active=True
         )
         assert Conference.can_start_next_year() is False
 
     def test_false_when_active_date_in_future(self):
         Conference.objects.create(
             year=2025,
-            name="PyLadiesCon 2025",
+            name="Flashlights 2025",
             slug="2025",
             is_active=True,
             conference_date=date.today() + timedelta(days=2),
@@ -143,7 +143,7 @@ class TestCanStartNextYear:
     def test_true_when_active_date_passed(self):
         Conference.objects.create(
             year=2025,
-            name="PyLadiesCon 2025",
+            name="Flashlights 2025",
             slug="2025",
             is_active=True,
             conference_date=date.today() - timedelta(days=2),

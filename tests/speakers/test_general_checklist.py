@@ -52,12 +52,12 @@ class TestGeneralItems:
         accept_invitation(invitation)
         general = presenter.checklist_items.filter(session__isnull=True)
         titles = list(general.values_list("title", flat=True))
-        assert titles.count("Join the PyLadiesCon Discord") == 1
-        assert titles.count("Register for the conference") == 1
+        assert titles.count("Join the event Discord") == 1
+        assert titles.count("Register for the event") == 1
         assert titles.count("Read the workshop guide") == 1
         assert "Presenter in portal" in titles
         assert not presenter.checklist_items.filter(
-            session__isnull=False, title="Join the PyLadiesCon Discord"
+            session__isnull=False, title="Join the event Discord"
         ).exists()
         assert instantiate_general_checklist(presenter) == []
 
@@ -170,7 +170,7 @@ class TestSpeakerViews:
         detail = client.get(
             reverse("speakers:my_session_detail", args=[session.slug])
         ).content.decode()
-        assert "Join the PyLadiesCon Discord" not in detail
+        assert "Join the event Discord" not in detail
         assert "Confirm your scheduled slot" in detail
 
     def test_dashboard_shows_general_status(self, client, speaker):
@@ -178,7 +178,7 @@ class TestSpeakerViews:
         general = presenter.checklist_items.filter(
             session__isnull=True, owner=ItemOwner.SPEAKER
         )
-        complete_item(general.get(title="Join the PyLadiesCon Discord"))
+        complete_item(general.get(title="Join the event Discord"))
         client.force_login(user)
         content = client.get(reverse("speakers:my_dashboard")).content.decode()
         assert 'id="general-summary"' in content
@@ -201,7 +201,7 @@ class TestDedupeCommand:
         old_discord = ChecklistTemplateItem.objects.create(
             template=workshop,
             owner=ItemOwner.SPEAKER,
-            title="Join the PyLadiesCon Discord",
+            title="Join the event Discord",
         )
         guide = workshop.items.get(title="Read the workshop guide")
         guide.once_per_presenter = False
@@ -215,16 +215,14 @@ class TestDedupeCommand:
             )
             instantiate_presenter_checklist(link)
         assert (
-            presenter.checklist_items.filter(
-                title="Join the PyLadiesCon Discord"
-            ).count()
+            presenter.checklist_items.filter(title="Join the event Discord").count()
             == 2
         )
         done = presenter.checklist_items.filter(title="Read the workshop guide").first()
         complete_item(done, manual=False)
         # Loading the new defaults folds the Discord copies straight away.
         seed_checklists(conference)
-        discord = presenter.checklist_items.get(title="Join the PyLadiesCon Discord")
+        discord = presenter.checklist_items.get(title="Join the event Discord")
         assert discord.session is None
         assert discord.template_item.template == ChecklistTemplate.for_general(
             conference

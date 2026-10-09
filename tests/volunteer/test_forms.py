@@ -29,7 +29,7 @@ class TestReturningVolunteerPrefill:
         self, portal_user, conference
     ):
         past = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024"
+            year=2024, name="Flashlights 2024", slug="2024"
         )
         prior = VolunteerProfile.objects.create(
             user=portal_user,
@@ -52,7 +52,7 @@ class TestReturningVolunteerPrefill:
 
     def test_team_choices_scoped_to_active_conference(self, portal_user, conference):
         past = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024"
+            year=2024, name="Flashlights 2024", slug="2024"
         )
         active_team = Team.objects.create(
             short_name="Active Team",
@@ -103,7 +103,7 @@ class TestVolunteerProfileForm:
         """Test validation of required fields."""
         form = VolunteerProfileForm(user=portal_user, data={})
         assert not form.is_valid()
-        assert "language" in form.errors
+        assert "language" not in form.errors  # optional
         assert "region" in form.errors
         assert "discord_username" in form.errors
         assert "github_username" in form.errors
@@ -113,7 +113,7 @@ class TestVolunteerProfileForm:
             user=portal_user, data={"region": Region.NORTH_AMERICA}
         )
         assert not form.is_valid()
-        assert "language" in form.errors
+        assert "language" not in form.errors  # optional
         assert "discord_username" in form.errors
         assert "github_username" in form.errors
         assert "availability_hours_per_week" in form.errors
@@ -128,7 +128,7 @@ class TestVolunteerProfileForm:
         form = VolunteerProfileForm(user=portal_user, data={"discord_username": ["en"]})
         assert not form.is_valid()
         assert "region" in form.errors
-        assert "language" in form.errors
+        assert "language" not in form.errors  # optional
         assert "github_username" in form.errors
         assert "availability_hours_per_week" in form.errors
 
@@ -137,7 +137,7 @@ class TestVolunteerProfileForm:
         )
         assert not form.is_valid()
         assert "region" in form.errors
-        assert "language" in form.errors
+        assert "language" not in form.errors  # optional
         assert "discord_username" in form.errors
         assert "github_username" in form.errors
 
@@ -593,7 +593,7 @@ class TestVolunteerProfileForm:
         assert github_field.required is True
         assert github_field.max_length == 50
         assert "Required - Your GitHub username" in github_field.help_text
-        assert "PyLadiesCon repos" in github_field.help_text
+        assert "organisers' repositories" in github_field.help_text
         assert github_field.label == "GitHub Username"
 
     def test_github_username_valid_with_required_value(self, portal_user):
@@ -610,7 +610,7 @@ class TestVolunteerProfileForm:
 
         assert "Required" in help_text
         assert "GitHub username" in help_text
-        assert "PyLadiesCon repos" in help_text
+        assert "organisers' repositories" in help_text
         assert "volunteers" in help_text
 
     def test_form_save_with_github_username(self, portal_user):

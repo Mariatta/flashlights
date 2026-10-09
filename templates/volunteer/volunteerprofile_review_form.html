@@ -43,7 +43,7 @@
                         <thead>
                             <tr>
                                 <th>
-                                    Conference
+                                    Event
                                 </th>
                                 <th>
                                     Status
@@ -135,10 +135,10 @@
                         </div>
                         <div class="row">
                             <div class="col fw-bold">
-                                PyLadies Chapter
+                                Affiliations
                             </div>
                             <div class="col">
-                                {{ object.chapter|default:"Not specified" }}
+                                {% include "affiliations/_list.html" with person=object.user %}
                             </div>
                         </div>
                         <div class="row">

@@ -424,7 +424,7 @@ class TestReconcile:
         assert pretix_reconcile_task.autoretry_for == (PretixError,)
         reconcile_mock.side_effect = lambda conf: 3
         result = pretix_reconcile_task()
-        assert "PyLadiesCon 2025: 3 order(s)" in result and "Skipped" not in result
+        assert "Flashlights 2025: 3 order(s)" in result and "Skipped" not in result
 
     def test_task_with_nothing_configured(self, conference):
         assert pretix_reconcile_task() == "No edition has pretix configured"

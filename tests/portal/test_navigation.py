@@ -63,7 +63,6 @@ def test_a_request_that_matched_nothing_is_home():
     "view_name,expected",
     [
         ("index", HOME),
-        ("chapters", HOME),
         ("volunteer:index", VOLUNTEER),
         ("my_teams", VOLUNTEER),
         ("team_dashboard", VOLUNTEER),
@@ -107,7 +106,9 @@ HOME_NAMES = {
     # Brand assets, not pages: the instance stylesheet and generated favicon.
     "brand_theme_css",
     "brand_favicon",
-    "chapters",
+    "brand_favicon_png",
+    "brand_apple_touch_icon",
+    "brand_share_card",
     "dashboard_gallery",
     "portal_stats",
     "portal_stats_comparison",

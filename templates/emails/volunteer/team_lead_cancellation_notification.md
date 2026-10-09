@@ -24,10 +24,10 @@ and take the necessary steps to offboard the volunteer from your team and revoke
 As the team lead, you are responsible for completing the following offboarding tasks:
 
 - **Remove the Volunteer role on Discord.** Their Discord username is: **{{ profile.discord_username }}**.
-- **Remove access to PyLadiesCon GDrive** (if applicable).
+- **Remove access to the shared drive** (if applicable).
 - **Remove access to Jelly** (if applicable).
-- **Remove access to the PyLadiesCon Regular Meeting Calendar** (if applicable).
-- **Remove access to the PyLadiesCon 1Password account** (if applicable).
+- **Remove access to the organisers' meeting calendar** (if applicable).
+- **Remove access to the shared password manager** (if applicable).
 - **Remove access to GitHub repositories** (if applicable).
 
 **Please complete the above tasks within 24 hours.** 

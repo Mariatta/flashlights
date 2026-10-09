@@ -65,7 +65,7 @@ class TestSponsorshipImportExport:
 
     def test_import_respects_explicit_conference_year(self, admin_user, conference):
         past = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024"
+            year=2024, name="Flashlights 2024", slug="2024"
         )
         dataset = Dataset()
         dataset.headers = ["id", "organization_name", "conference", "main_contact_user"]

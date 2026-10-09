@@ -26,8 +26,8 @@ Thank you for your understanding and for your interest in volunteering with us!
 - **Mastodon URL:** {{ profile.mastodon_url }}
 - **X username:** {{ profile.x_username }}
 - **LinkedIn URL:** {{ profile.linkedin_url }}
-- **PyLadies Chapter:** {{ profile.chapter }}
 - **Region:** {{ profile.region }}
+- **Affiliations:** {% for affiliation in profile.user.affiliations.all %}{{ affiliation }}{% if not forloop.last %}; {% endif %}{% empty %}none{% endfor %}
 - **Additional Comments:** {{ profile.additional_comments }}
 
 If you would like to review or update your application at any time, go to your [Volunteer Dashboard](https://{{ current_site.domain }}{% url 'volunteer:index' %}).

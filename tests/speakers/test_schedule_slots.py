@@ -26,7 +26,7 @@ T0 = datetime(2026, 12, 5, 14, 0, tzinfo=timezone.utc)
 
 @pytest.fixture
 def other_conference(db):
-    return Conference.objects.create(year=2024, name="PyLadiesCon 2024", slug="2024")
+    return Conference.objects.create(year=2024, name="Flashlights 2024", slug="2024")
 
 
 def place(session, minutes=0, length=None, **kwargs):

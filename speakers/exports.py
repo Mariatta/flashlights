@@ -9,8 +9,10 @@ zip the media worker builds when the selection is small enough. Every
 path lays files out the same way, mirroring the bucket without the
 upload ids:
 
-    pyladiescon-<year>/<session-slug>/<kind>/v<n>[-<lang>][-<variant>]-<filename>
-    pyladiescon-<year>/manifest.csv
+    <brand>-<year>/<session-slug>/<kind>/v<n>[-<lang>][-<variant>]-<filename>
+    <brand>-<year>/manifest.csv
+
+where ``<brand>`` is the instance's short name as a slug (``settings.BRAND``).
 """
 
 import csv
@@ -146,7 +148,7 @@ def local_path(asset):
         name += f"-{_safe(asset.variant)}"
     name += "-" + _safe(asset.original_filename or asset.storage_key.rsplit("/", 1)[-1])
     return (
-        f"pyladiescon-{asset.session.conference.year}/{asset.session.slug}/"
+        f"{settings.BRAND.slug}-{asset.session.conference.year}/{asset.session.slug}/"
         f"{asset.kind.lower()}/{name}"
     )
 
@@ -223,7 +225,7 @@ def export_entries(export, user, with_urls=True):
 
 
 def manifest_path(export):
-    return f"pyladiescon-{export.conference.year}/manifest.csv"
+    return f"{settings.BRAND.slug}-{export.conference.year}/manifest.csv"
 
 
 def write_manifest(entries, stream):
@@ -248,7 +250,7 @@ def write_script(export, entries, stream):
         delimiter = f"MANIFEST_{secrets.token_hex(4)}"
     stream.write("#!/bin/sh\n")
     stream.write(
-        f"# PyLadiesCon {export.conference.year} media export {export.pk}: "
+        f"# {settings.BRAND.short_name} {export.conference.year} media export {export.pk}: "
         f"{len(entries)} files. Links expire at {export.expires_at:%Y-%m-%d %H:%M} UTC.\n"
         "# Keep this file to yourself: every link fetches the file it names.\n"
         "set -e\n"
@@ -319,7 +321,9 @@ def zip_url(export):
         return ""
     ttl = max(60, int((export.expires_at - timezone.now()).total_seconds()))
     return MediaBucket.from_settings().download_url(
-        export.zip_key, f"pyladiescon-{export.conference.year}-export.zip", ttl=ttl
+        export.zip_key,
+        f"{settings.BRAND.slug}-{export.conference.year}-export.zip",
+        ttl=ttl,
     )
 
 

@@ -89,6 +89,7 @@ LOGGING = {
             "sponsorship",
             "attendee",
             "speakers",
+            "affiliations",
         )
     },
 }
@@ -142,6 +143,7 @@ INSTALLED_APPS = [
     "sponsorship",
     "attendee",
     "speakers",
+    "affiliations",
 ]
 DJANGO_TABLES2_TEMPLATE = "portal/base-tables-responsive.html"
 
@@ -156,6 +158,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
     "django.middleware.locale.LocaleMiddleware",
+    "portal.middleware.FeatureSwitchMiddleware",
     # Last: it needs request.user, and it redirects rather than renders.
     "portal_account.agreements.AgreementRequiredMiddleware",
 ]
@@ -184,6 +187,7 @@ TEMPLATES = [
                 "portal.navigation.navigation",
                 "speakers.context_processors.speaker_module",
                 "portal.branding_views.brand",
+                "portal.context_processors.features",
             ],
         },
     },
@@ -305,6 +309,23 @@ SITE_ID = 1
 
 # Instance identity (name, colours, logo, doc links), read from the environment.
 BRAND = branding.from_env()
+
+# Feature switches (flashlights-architecture, decision 0007: the lite profile).
+# Parsed explicitly: "0", "false", "no" and "off" turn a switch off, anything
+# else leaves it on. Off, a feature's pages answer 404 (portal/middleware.py)
+# and its nav, rail, dashboard, landing and stats entries disappear.
+
+
+def _switch(name):
+    return os.getenv(name, "true").strip().lower() not in ("0", "false", "no", "off")
+
+
+#: The Volunteer hub: profiles, applications, teams.
+VOLUNTEERING_ENABLED = _switch("VOLUNTEERING_ENABLED")
+#: Sponsors, tiers, donations and their stats.
+SPONSORSHIP_ENABLED = _switch("SPONSORSHIP_ENABLED")
+#: The public stats pages (stats, year comparison, JSON feed, gallery).
+STATS_PUBLIC = _switch("STATS_PUBLIC")
 
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
@@ -480,7 +501,12 @@ if "DJANGO_EMAIL_HOST" in os.environ:
     # process for ever.
     EMAIL_TIMEOUT = int(os.getenv("DJANGO_EMAIL_TIMEOUT", "30"))
     EMAIL_USE_TLS = os.getenv("DJANGO_EMAIL_USE_TLS")
-    DEFAULT_FROM_EMAIL = os.getenv("DJANGO_DEFAULT_FROM_EMAIL")
+    # A sender is required by every SMTP server; an unset one used to reach
+    # the server as the string "None" and be refused at the first email.
+    DEFAULT_FROM_EMAIL = (
+        os.getenv("DJANGO_DEFAULT_FROM_EMAIL")
+        or f"{BRAND.short_name} <noreply@localhost>"
+    )
 else:
     # Otherwise, send emails to the console
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
@@ -501,6 +527,17 @@ CACHES = {
 
 PRETIX_API_TOKEN = os.getenv("PRETIX_API_TOKEN")
 PRETIX_WEBHOOK_SECRET = os.getenv("PRETIX_WEBHOOK_SECRET")
+# Attendee numbers come from Pretix; without a token there are none to show.
+PRETIX_CONFIGURED = bool(PRETIX_API_TOKEN)
+# The Pretix organizer slug this instance's ticket shop lives under; webhooks
+# for any other organizer are ignored.
+PRETIX_ORGANIZER = os.getenv("PRETIX_ORGANIZER", "")
+
+# Who receives a sponsorship contract request besides the sponsor: the
+# organisers' sponsorship contact and whoever issues invoices. Both optional;
+# the request email is skipped when neither is set.
+SPONSORSHIP_EMAIL = os.getenv("SPONSORSHIP_EMAIL", "")
+ACCOUNTING_EMAIL = os.getenv("ACCOUNTING_EMAIL", "")
 
 # Celery settings - using Redis.
 # Fall back to REDIS_URL, which managed platforms inject automatically when a

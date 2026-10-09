@@ -50,6 +50,7 @@ class Team(BaseModel):
     # See docs/architecture/multi-year-conferences.md.
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.PROTECT,
         related_name="teams",
     )
@@ -116,6 +117,7 @@ class VolunteerProfile(BaseModel):
     # See docs/architecture/multi-year-conferences.md.
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.PROTECT,
         related_name="volunteer_profiles",
     )
@@ -154,10 +156,12 @@ class VolunteerProfile(BaseModel):
     teams = models.ManyToManyField(
         "volunteer.Team", verbose_name="members", related_name="members", blank=True
     )
+    # Optional: a multilingual event asks, a local meetup does not.
     language = models.ManyToManyField(
         "volunteer.Language",
         verbose_name="languages",
         related_name="volunteer_profile",
+        blank=True,
     )
     additional_comments = models.CharField(max_length=1000, blank=True, null=True)
     availability_hours_per_week = models.PositiveIntegerField(default=1)

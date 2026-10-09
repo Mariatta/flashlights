@@ -38,7 +38,7 @@ class VolunteerProfileForm(ModelForm):
     github_username = forms.CharField(
         required=True,
         max_length=50,
-        help_text="Required - Your GitHub username (e.g., username). We'll grant read access to PyLadiesCon repos to our volunteers.",
+        help_text="Required - Your GitHub username (e.g., username). We grant volunteers read access to the organisers' repositories.",
         label="GitHub Username",
         error_messages={"required": "GitHub username is required."},
     )
@@ -48,9 +48,7 @@ class VolunteerProfileForm(ModelForm):
         queryset=Team.objects.filter(open_to_new_members=True),
         widget=forms.CheckboxSelectMultiple,
         help_text=mark_safe(
-            "See <a href='https://conference.pyladies.com/docs/' "
-            "target='_blank' rel='noopener'>the committee page</a> "
-            "for information on each one."
+            "Each team's description says what it does."
             "<br>Only teams that are open to new members are shown."
             "If the team is not listed, it means that it is now full and no longer accepting new members."
         ),
@@ -61,15 +59,18 @@ class VolunteerProfileForm(ModelForm):
         model = VolunteerProfile
         # conference is not shown in the form: new profiles are tied to the
         # active conference automatically in save().
+        # The chapter is a PyLadies notion the model keeps and the form
+        # hides.
         exclude = [
             "user",
             "application_status",
             "roles",
             "languages_spoken",
             "conference",
+            "chapter",
         ]
         help_texts = {
-            "github_username": "Required - Your GitHub username (e.g., username). We'll grant read access to PyLadiesCon repos to our volunteers.",
+            "github_username": "Required - Your GitHub username (e.g., username). We grant volunteers read access to the organisers' repositories.",
             "discord_username": "Required - Your Discord username for team communication (e.g., username or username#1234)",
             "instagram_username": "Instagram username without @ (e.g., username)",
             "bluesky_username": "Bluesky username (e.g., username or username.bsky.social)",
@@ -84,13 +85,11 @@ class VolunteerProfileForm(ModelForm):
                 "rel='noopener'>PSF’s D&amp;I Workgroup Membership handbook</a> "
                 "under “Which region should I be representing?” for guidance."
             ),
-            "chapter": "What PyLadies chapter are you a part of? If you are not part of any chapter leave this blank.",
-            "availability_hours_per_week": "Our volunteers are expected to commit at least 1 hour per week until the conference day."
+            "availability_hours_per_week": "Our volunteers are expected to commit at least 1 hour per week until the event day."
             "By sharing your availability, we can better match you with tasks and teams.",
         }
         labels = {
             "availability_hours_per_week": "What is your volunteering availability?",
-            "chapter": "PyLadies Chapter",
         }
 
     def clean_github_username(self):
@@ -243,7 +242,6 @@ class VolunteerProfileForm(ModelForm):
         "x_username",
         "linkedin_url",
         "region",
-        "chapter",
         "availability_hours_per_week",
     )
 

@@ -169,7 +169,7 @@ SESSIONS = [
         "Hands-on pytest and Django.",
     ),
     (
-        "The future of PyLadies",
+        "The future of the community",
         "KEYNOTE",
         Delivery.LIVE,
         "Where the community goes next.",
@@ -213,7 +213,7 @@ PRESENTERS = [
         "grace@example.com",
         "America/New_York",
         [
-            ("The future of PyLadies", "PRESENTER"),
+            ("The future of the community", "PRESENTER"),
             ("Testing Django applications", "PRESENTER"),
             ("Careers in open source", "MODERATOR"),
         ],
@@ -304,11 +304,11 @@ class Command(BaseCommand):
             if conference is None and value.isdigit():
                 conference = Conference.objects.filter(year=int(value)).first()
             if conference is None:
-                raise CommandError(f"No conference matches {value!r}.")
+                raise CommandError(f"No event matches {value!r}.")
         else:
             conference = Conference.get_active()
             if conference is None:
-                raise CommandError("No active conference; pass --conference.")
+                raise CommandError("No active event; pass --conference.")
         first_weekend = datetime(conference.year, 12, 5).date()
         # The only row the command changes rather than creates, and only
         # when the edition has no dates at all: the schedule slots below
@@ -347,16 +347,16 @@ class Command(BaseCommand):
         if "tech-check-open" in gates:
             gates["tech-check-open"].set_open(True, actor=None)
         for key, title, url in (
-            ("speaker", "Speaker guide", "https://conference.pyladies.com/docs/"),
+            ("speaker", "Speaker guide", "https://docs.example.org/speakers/"),
             (
                 "workshop",
                 "Workshop guide",
-                "https://conference.pyladies.com/docs/workshops/",
+                "https://docs.example.org/workshops/",
             ),
             (
                 "keynote",
                 "Keynote guide",
-                "https://conference.pyladies.com/docs/keynotes/",
+                "https://docs.example.org/keynotes/",
             ),
         ):
             if Handbook.current(self.conference, key) is None:
@@ -374,7 +374,7 @@ class Command(BaseCommand):
                 conference=self.conference,
                 key="performer",
                 title="Performer guide",
-                url="https://conference.pyladies.com/docs/pyjam/",
+                url="https://docs.example.org/performers/",
             )  # left as a draft on purpose
         Room.objects.get_or_create(
             conference=self.conference,
@@ -545,7 +545,7 @@ class Command(BaseCommand):
         start = datetime(self.conference.year, 12, 5, 14, 0, tzinfo=dt_timezone.utc)
         for title, offset in (
             ("Opening", 0),
-            ("The future of PyLadies", 1),
+            ("The future of the community", 1),
             ("Testing Django applications", 2),
         ):
             session = self.sessions[title]
@@ -576,7 +576,7 @@ class Command(BaseCommand):
         design = Team.objects.get(conference=self.conference, short_name="Design Team")
         # Deadlines in every state on Ada's list.
         for title, days in (
-            ("Register for the conference", -3),
+            ("Register for the event", -3),
             ("Confirm your scheduled slot", 2),
         ):
             ChecklistItem.objects.filter(presenter=ada, title=title).update(
@@ -621,7 +621,7 @@ class Command(BaseCommand):
                 "Record a 30-second promo clip",
                 ItemOwner.ORGANIZER,
                 presenter=grace,
-                session=self.sessions["The future of PyLadies"],
+                session=self.sessions["The future of the community"],
                 due_date=self.today - timedelta(days=1),
                 assignee=maya,
                 actor=self.users["organizer_lena"],

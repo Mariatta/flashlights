@@ -62,7 +62,6 @@ from .emails import render_invitation_preview
 from .feeds import presenter_feed_token, subscribe_links
 from .filters import PresenterFilter, SessionFilter
 from .forms import (
-    DEFAULT_GUIDE_URL,
     AdhocItemForm,
     AssignItemForm,
     ChecklistTemplateForm,
@@ -2574,15 +2573,16 @@ class HandbookListView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, Templa
         form = NewHandbookForm(request.POST, conference=self.conference)
         if not form.is_valid():
             return self.render_to_response(self.get_context_data(new_form=form))
-        # A new guide starts unpublished and pointed at the conference's
-        # docs index. That placeholder satisfies the editor's "a link or a
-        # note" check, which is deliberate: an organizer may publish a guide
-        # that only says "see the docs" and refine the address later.
+        # A new guide starts unpublished and pointed at the instance's docs
+        # site when there is one. That placeholder satisfies the editor's "a
+        # link or a note" check, which is deliberate: an organizer may
+        # publish a guide that only says "see the docs" and refine the
+        # address later.
         Handbook.objects.create(
             conference=self.conference,
             key=form.cleaned_data["key"],
             title=form.cleaned_data["title"],
-            url=DEFAULT_GUIDE_URL,
+            url=settings.BRAND.docs_url,
         )
         messages.success(request, f"Started the {form.cleaned_data['title']} guide.")
         return redirect("speakers:handbook_editor", key=form.cleaned_data["key"])
@@ -2610,7 +2610,7 @@ class HandbookEditorView(
         initial = (
             {"title": current.title, "url": current.url, "body_md": current.body_md}
             if current
-            else {"url": DEFAULT_GUIDE_URL}
+            else {"url": settings.BRAND.docs_url}
         )
         return HandbookForm(data, initial=initial)
 

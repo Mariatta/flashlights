@@ -142,6 +142,8 @@ def render_markdown_email(
     record keeps it and nothing else.
     """
     context["current_site"] = Site.objects.get_current()
+    # The instance's name for greetings and sign-offs (portal/branding.py).
+    context["brand"] = settings.BRAND
     renderer = MarkdownEmailRenderer()
     markdown_content = renderer.render_template(markdown_template, context)
     return (

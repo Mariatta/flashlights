@@ -16,13 +16,16 @@ than shipped. There is no custom CSS and the fonts are fixed.
 """
 
 import hashlib
+import io
 import os
 from dataclasses import dataclass
 
 from django.core.exceptions import ImproperlyConfigured
+from django.utils.text import slugify
+from PIL import Image, ImageDraw, ImageFont
 
 #: name -> (primary, hover, active, ink). The first three are the Popular
-#: theme's demo palettes; raspberry is the PyLadiesCon heritage palette.
+#: theme's demo palettes; raspberry is the upstream portal's heritage palette.
 PRESETS = {
     "teal": ("#0f766e", "#0d5f59", "#0b4f4a", "#142a36"),
     "copper": ("#b45309", "#92400e", "#7c2d12", "#142a36"),
@@ -96,6 +99,12 @@ class Brand:
         """One character for the generated favicon."""
         return self.short_name.strip()[:1].upper() or "F"
 
+    @property
+    def slug(self):
+        """The short name as a path-safe token: media export folders and
+        archive names start with it."""
+        return slugify(self.short_name) or "flashlights"
+
     def rgb(self, name):
         """``'r, g, b'`` for a colour field, the form Bootstrap's ``-rgb`` vars take."""
         return ", ".join(str(c) for c in parse_hex(getattr(self, name)))
@@ -125,11 +134,11 @@ class Brand:
 
     @property
     def version(self):
-        """Short content hash; the theme and favicon URLs carry it so caches
-        drop the old colours the moment the environment changes."""
-        return hashlib.sha256((self.theme_css() + self.initial).encode()).hexdigest()[
-            :12
-        ]
+        """Short content hash; the theme, favicon and share card URLs carry
+        it so caches drop the old colours or wording the moment the
+        environment changes."""
+        source = self.theme_css() + self.initial + self.title + self.description
+        return hashlib.sha256(source.encode()).hexdigest()[:12]
 
     def favicon_svg(self):
         """A rounded square in the primary colour with the title's initial."""
@@ -140,6 +149,53 @@ class Brand:
             f'font-size="38" font-weight="700" fill="#fff">{self.initial}</text>'
             "</svg>"
         )
+
+    def favicon_png(self, size=32):
+        """The SVG favicon's twin as a PNG, for Safari's tab icon and the iOS
+        home screen (180px), which do not read SVG."""
+        image = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+        draw = ImageDraw.Draw(image)
+        draw.rounded_rectangle(
+            (0, 0, size - 1, size - 1), radius=round(size * 14 / 64), fill=self.primary
+        )
+        _draw_centered(draw, self.initial, size / 2, size / 2, round(size * 0.6))
+        return _png_bytes(image)
+
+    def share_card_png(self):
+        """The default Open Graph image: primary background, the title and
+        description, and a small Flashlights mark. 1200 by 630, the size
+        every social network reads."""
+        width, height = 1200, 630
+        image = Image.new("RGB", (width, height), self.primary)
+        draw = ImageDraw.Draw(image)
+        _draw_centered(draw, self.title, width / 2, height * 0.42, 96, max_width=1080)
+        _draw_centered(
+            draw, self.description, width / 2, height * 0.62, 40, max_width=1080
+        )
+        _draw_centered(draw, "Flashlights", width / 2, height - 56, 28, opacity=170)
+        return _png_bytes(image)
+
+
+def _font(size):
+    """Pillow's bundled scalable font: the only one an image is guaranteed
+    to have, whatever the host."""
+    return ImageFont.load_default(size=size)
+
+
+def _draw_centered(draw, text, x, y, size, max_width=None, opacity=255):
+    """White text centred on (x, y), shrunk until it fits ``max_width``."""
+    font = _font(size)
+    if max_width:
+        while size > 16 and draw.textlength(text, font=font) > max_width:
+            size -= 4
+            font = _font(size)
+    draw.text((x, y), text, font=font, fill=(255, 255, 255, opacity), anchor="mm")
+
+
+def _png_bytes(image):
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG", optimize=True)
+    return buffer.getvalue()
 
 
 def from_env(environ=None):

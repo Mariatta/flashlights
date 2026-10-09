@@ -21,7 +21,7 @@ class Command(BaseCommand):
         else:
             conference = Conference.get_active()
         if conference is None:
-            raise CommandError("No conference found; pass --conference.")
+            raise CommandError("No event found; pass --conference.")
         types, roles = seed_program_types(conference)
         self.stdout.write(
             self.style.SUCCESS(

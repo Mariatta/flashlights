@@ -738,9 +738,6 @@ class NewHandbookForm(forms.Form):
         return key
 
 
-DEFAULT_GUIDE_URL = "https://conference.pyladies.com/docs/"
-
-
 class HandbookForm(forms.ModelForm):
     class Meta:
         model = Handbook
@@ -791,7 +788,7 @@ class PresenterInviteForm(InviteForm):
             .order_by("title")
             .distinct()
         ]
-        choices = [("", "The conference in general")]
+        choices = [("", "The event in general")]
         if theirs:
             choices.append(("Their sessions", theirs))
         if others:

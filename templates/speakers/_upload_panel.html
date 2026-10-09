@@ -17,7 +17,7 @@ static/js/media-upload.js. Params:
      data-kind="{{ kind|default:'' }}"
      data-start-url="{% url 'speakers:upload_start' session.slug %}"
      data-upload-url="{% url 'speakers:upload_detail' session.slug 0 %}"
-     data-storage-key="pyladiescon-upload:{{ session.conference_id }}:{{ session.slug }}:{{ request.user.pk }}"
+     data-storage-key="flashlights-upload:{{ session.conference_id }}:{{ session.slug }}:{{ request.user.pk }}"
      data-csrf="{{ csrf_token }}">
     <div class="alert alert-warning small py-2" data-role="resume" hidden>
         <i class="fa-solid fa-rotate-left"></i>

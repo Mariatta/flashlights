@@ -1,6 +1,5 @@
 {% extends "portal/base.html" %}
 {% load i18n %}
-{% load static %}
 {% block body %}
 {% endblock body %}
 {% block footer_resources %}
@@ -8,159 +7,34 @@
 {% endblock footer_resources %}
 {% block content %}
     <div class="container px-4 py-3" id="featured-3">
-        <h2 class="pb-2 border-bottom">
-            PyLadiesCon Portal
-        </h2>
-        {# Public landing: lead with the invitation, one primary CTA. #}
-        <div class="row align-items-center g-5 py-5">
-            <div class="col-lg-7 d-flex flex-column align-items-start gap-3">
-                <span class="badge text-bg-light border fs-6">{% trans "Free · Online · Global · Multilingual" %}</span>
-                <h1 class="display-4 fw-bold text-body-emphasis">
-                    {% trans "Help bring PyLadiesCon to women in tech, everywhere." %}
-                </h1>
-                <p class="fs-5 text-body-secondary">
-                    {% trans "PyLadiesCon is a free, online, global conference run entirely by volunteers. Join the team that makes it happen." %}
-                </p>
-                <div class="d-flex flex-wrap gap-2">
-                    <a href="{% url 'account_signup' %}" class="btn btn-primary btn-lg">
-                        <i class="fa-solid fa-user-plus"></i> {% trans "Sign up to volunteer" %}
-                    </a>
-                    {% if speaker_proposals_open %}
-                        <a href="{% url 'speakers:propose' %}" class="btn btn-primary btn-lg">
-                            <i class="fa-solid fa-paper-plane"></i> {% trans "Propose a session" %}
-                        </a>
-                    {% endif %}
-                    <a href="{% url 'account_login' %}"
-                       class="btn btn-outline-primary btn-lg">{% trans "Sign in" %}</a>
-                </div>
-                {# This year's momentum — only once someone has signed up. #}
-                {% if stats.volunteer_signups_count %}
-                    <p class="text-body-secondary mb-0">
-                        {% blocktranslate count counter=stats.volunteer_signups_count with year=active_conference.year %}Join {{ counter }} volunteer who has already signed up for PyLadiesCon {{ year }}.{% plural %}Join {{ counter }} volunteers who have already signed up for PyLadiesCon {{ year }}.{% endblocktranslate %}
-                    </p>
-                {% endif %}
-            </div>
-            <div class="col-lg-5 text-center">
-                <img src="{% static 'img/landing-hero.png' %}"
-                     alt="PyLadiesCon"
-                     width="2240"
-                     height="1260"
-                     class="img-fluid rounded-3">
-            </div>
-        </div>
-        {# Stats band: cumulative across all editions, from view context. #}
-        <div class="py-4 border-top border-bottom">
-            <div class="text-center text-uppercase text-body-secondary small fw-semibold mb-3">
-                {% trans "Across all editions" %}
-            </div>
-            <div class="row row-cols-2 row-cols-md-4 g-3 text-center">
-                <div class="col">
-                    <div class="display-5 fw-bold text-primary">
-                        {{ landing_stats.volunteers }}
-                    </div>
-                    <div class="text-body-secondary">
-                        {% trans "Volunteers" %}
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="display-5 fw-bold text-primary">
-                        {{ landing_stats.languages }}
-                    </div>
-                    <div class="text-body-secondary">
-                        {% trans "Languages" %}
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="display-5 fw-bold text-primary">
-                        {{ landing_stats.chapters }}
-                    </div>
-                    <div class="text-body-secondary">
-                        {% trans "PyLadies chapters" %}
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="display-5 fw-bold text-primary">
-                        {{ landing_stats.editions }}
-                    </div>
-                    <div class="text-body-secondary">
-                        {% trans "Editions" %}
-                    </div>
-                </div>
-            </div>
-        </div>
-        {# How volunteering works: same 3 steps as the volunteer hub. #}
+        {% comment %}
+        Public landing: the instance's name and description, a way in, and
+        one section per way to take part that this edition offers. Nothing
+        leads; what is open is what shows.
+        {% endcomment %}
         <div class="py-5">
-            <h2 class="text-center fw-bold text-body-emphasis mb-4">
-                {% trans "How volunteering works" %}
-            </h2>
-            <div class="row row-cols-1 row-cols-md-3 g-4">
-                <div class="col text-center">
-                    <div class="fa-2x text-primary mb-2">
-                        <i class="fa-solid fa-id-card"></i>
-                    </div>
-                    <h3 class="h5">
-                        {% trans "1. Fill in your profile" %}
-                    </h3>
-                    <p class="text-body-secondary">
-                        {% trans "Tell us your region, languages, and how you'd like to help." %}
-                    </p>
-                </div>
-                <div class="col text-center">
-                    <div class="fa-2x text-primary mb-2">
-                        <i class="fa-solid fa-people-arrows"></i>
-                    </div>
-                    <h3 class="h5">
-                        {% trans "2. We match you to a team" %}
-                    </h3>
-                    <p class="text-body-secondary">
-                        {% trans "Our team reviews your application and matches you to a team that needs help." %}
-                    </p>
-                </div>
-                <div class="col text-center">
-                    <div class="fa-2x text-primary mb-2">
-                        <i class="fa-solid fa-rocket"></i>
-                    </div>
-                    <h3 class="h5">
-                        {% trans "3. Get onboarded" %}
-                    </h3>
-                    <p class="text-body-secondary">
-                        {% trans "You get access to the tools and our Discord, and start making the conference happen." %}
-                    </p>
-                </div>
-            </div>
-        </div>
-        {# Find your team: static chips, decoupled from internal team data. #}
-        <div class="py-4 text-center">
-            <h2 class="fw-bold text-body-emphasis mb-3">
-                {% trans "Find your team" %}
-            </h2>
-            <p class="text-body-secondary">
-                {% trans "Volunteers organize into teams. Not sure where you fit? Read the team descriptions." %}
+            <h1 class="display-4 fw-bold text-body-emphasis">
+                {{ brand.title }}
+            </h1>
+            <p class="fs-5 text-body-secondary">
+                {{ brand.description }}
             </p>
-            <div class="d-flex flex-wrap justify-content-center gap-2 mb-3">
-                <a href="https://conference.pyladies.com/docs/"
-                   class="btn btn-outline-secondary btn-sm">{% trans "Communications" %}</a>
-                <a href="https://conference.pyladies.com/docs/"
-                   class="btn btn-outline-secondary btn-sm">{% trans "Programs" %}</a>
-                <a href="https://conference.pyladies.com/docs/"
-                   class="btn btn-outline-secondary btn-sm">{% trans "Design" %}</a>
-                <a href="https://conference.pyladies.com/docs/"
-                   class="btn btn-outline-secondary btn-sm">{% trans "Finance" %}</a>
-                <a href="https://conference.pyladies.com/docs/"
-                   class="btn btn-outline-secondary btn-sm">{% trans "Infrastructure" %}</a>
-            </div>
-            <a href="https://conference.pyladies.com/docs/" class="icon-link">
-                {% trans "Read the team descriptions" %} <i class="fa-solid fa-arrow-up-right-from-square"></i>
-            </a>
+            {% if not user.is_authenticated %}
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{% url 'account_login' %}" class="btn btn-primary btn-lg">{% trans "Sign in" %}</a>
+                    <a href="{% url 'account_signup' %}"
+                       class="btn btn-outline-primary btn-lg">{% trans "Create an account" %}</a>
+                </div>
+            {% endif %}
         </div>
         {% comment %}
         Speaking: only while the edition is taking proposals, and shown to
         visitors as well, because proposing does not need an account first.
         {% endcomment %}
         {% if speaker_proposals_open %}
-            <div class="py-4 text-center border-top">
+            <div class="py-4 border-top">
                 <h2 class="fw-bold text-body-emphasis mb-3">
-                    {% trans "Speak at PyLadiesCon" %}
+                    {% blocktranslate with title=brand.title %}Speak at {{ title }}{% endblocktranslate %}
                 </h2>
                 <p class="text-body-secondary">
                     {% trans "We are taking session proposals. A title and two sentences is enough to start, and first-time speakers are very welcome." %}
@@ -170,39 +44,76 @@
                 </a>
             </div>
         {% endif %}
-        {# Secondary CTAs: different audiences, kept subordinate. #}
-        <div class="row row-cols-1 row-cols-md-2 g-4 py-4">
-            <div class="col">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h3 class="h6 text-body-emphasis">
-                            <i class="fa-solid fa-hand-holding-dollar text-secondary"></i> {% trans "Sponsor PyLadiesCon" %}
-                        </h3>
-                        <p class="text-body-secondary mb-2">
-                            {% trans "Support a free, global conference for women in tech." %}
-                        </p>
-                        <a href="https://2025.conference.pyladies.com/en/sponsors/"
-                           class="icon-link">
-                            {% trans "Sponsorship prospectus" %} <i class="fa-solid fa-arrow-up-right-from-square"></i>
+        {% comment %}
+        Volunteering: only on instances that run it (VOLUNTEERING_ENABLED) and
+        only while this edition is taking applications (the edition form).
+        Otherwise the public page says nothing about volunteering; the team
+        still has its hub.
+        {% endcomment %}
+        {% if volunteering_enabled and active_conference.volunteer_application_open %}
+            <div class="py-4 border-top">
+                <h2 class="fw-bold text-body-emphasis mb-3">
+                    {% trans "Volunteer" %}
+                </h2>
+                <p class="text-body-secondary">
+                    {% blocktranslate with title=brand.title %}{{ title }} is run by volunteers. Fill in a profile, and we match you to a team that needs help.{% endblocktranslate %}
+                </p>
+                <a href="{% if user.is_authenticated %}{% url 'volunteer:index' %}{% else %}{% url 'account_signup' %}{% endif %}"
+                   class="btn btn-outline-primary btn-lg">
+                    <i class="fa-solid fa-user-plus"></i> {% trans "Sign up to volunteer" %}
+                </a>
+                {# This year's momentum: only once someone has signed up. #}
+                {% if stats.volunteer_signups_count %}
+                    <p class="text-body-secondary mt-3 mb-0">
+                        {% blocktranslate count counter=stats.volunteer_signups_count with year=active_conference.year short_name=brand.short_name %}Join {{ counter }} volunteer who has already signed up for {{ short_name }} {{ year }}.{% plural %}Join {{ counter }} volunteers who have already signed up for {{ short_name }} {{ year }}.{% endblocktranslate %}
+                    </p>
+                {% endif %}
+                {% if brand.docs_url %}
+                    <p class="mt-3 mb-0">
+                        <a href="{{ brand.docs_url }}" class="icon-link">
+                            {% trans "Read the team descriptions" %} <i class="fa-solid fa-arrow-up-right-from-square"></i>
                         </a>
+                    </p>
+                {% endif %}
+            </div>
+            {# Stats band: cumulative across all editions, from view context. #}
+            <div class="py-4 border-top">
+                <div class="text-center text-uppercase text-body-secondary small fw-semibold mb-3">
+                    {% trans "Across all editions" %}
+                </div>
+                <div class="row row-cols-2 g-3 text-center">
+                    <div class="col">
+                        <div class="display-5 fw-bold text-primary">
+                            {{ landing_stats.volunteers }}
+                        </div>
+                        <div class="text-body-secondary">
+                            {% trans "Volunteers" %}
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="display-5 fw-bold text-primary">
+                            {{ landing_stats.editions }}
+                        </div>
+                        <div class="text-body-secondary">
+                            {% trans "Editions" %}
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h3 class="h6 text-body-emphasis">
-                            <i class="fa-brands fa-discord text-secondary"></i> {% trans "Join the community" %}
-                        </h3>
-                        <p class="text-body-secondary mb-2">
-                            {% trans "Chat with the PyLadies community on Discord." %}
-                        </p>
-                        <a href="https://discord.com/invite/2fUN4ddVfP" class="icon-link">
-                            {% trans "Join our Discord" %} <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                        </a>
-                    </div>
-                </div>
+        {% endif %}
+        {# Sponsoring: only with a prospectus to point at. #}
+        {% if sponsorship_enabled and active_conference.sponsors_url %}
+            <div class="py-4 border-top">
+                <h2 class="fw-bold text-body-emphasis mb-3">
+                    {% blocktranslate with short_name=brand.short_name %}Sponsor {{ short_name }}{% endblocktranslate %}
+                </h2>
+                <p class="text-body-secondary">
+                    {% trans "Support the event and the community around it." %}
+                </p>
+                <a href="{{ active_conference.sponsors_url }}" class="icon-link">
+                    {% trans "Sponsorship prospectus" %} <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                </a>
             </div>
-        </div>
+        {% endif %}
     </div>
 {% endblock content %}

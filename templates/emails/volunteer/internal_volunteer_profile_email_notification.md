@@ -22,8 +22,8 @@ We're writing to let you know that a new volunteer has just signed up for **{{ p
 - **Mastodon URL:** {{ profile.mastodon_url }}
 - **X username:** {{ profile.x_username }}
 - **LinkedIn URL:** {{ profile.linkedin_url }}
-- **PyLadies Chapter:** {{ profile.chapter }}
 - **Region:** {{ profile.region }}
+- **Affiliations:** {% for affiliation in profile.user.affiliations.all %}{{ affiliation }}{% if not forloop.last %}; {% endif %}{% empty %}none{% endfor %}
 - **Additional Comments:** {{ profile.additional_comments }}
 
 To approve this volunteer and assign them to your teams, click [here](https://{{ current_site.domain }}{% url 'volunteer:volunteer_profile_manage' profile.id %}).

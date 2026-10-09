@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user
 from django.db.models import ProtectedError
@@ -48,7 +49,8 @@ def index(request):
     - Presenters who are not also volunteering this year: their speaker
       dashboard.
     - Everyone else: the volunteer hub (one consistent home, not a second
-      landing page).
+      landing page), or the public landing page when the instance does not
+      run volunteering.
     """
     user = get_user(request)
     if user.is_authenticated:
@@ -74,7 +76,8 @@ def index(request):
             ).exists()
         ):
             return redirect("speakers:my_dashboard")
-        return redirect("volunteer:index")
+        if settings.VOLUNTEERING_ENABLED:
+            return redirect("volunteer:index")
 
     context = {
         # Public landing band: cumulative numbers across all editions, plus this
@@ -125,11 +128,33 @@ def stats_json(request):
     return JsonResponse(context)
 
 
+#: Comparison chart -> the setting that makes its numbers meaningful here.
+#: A chart not listed (proposals) is always shown.
+COMPARISON_CHART_SWITCHES = {
+    "registrations_comparison": "PRETIX_CONFIGURED",
+    "sponsors_comparison": "SPONSORSHIP_ENABLED",
+    "sponsorship_amount_comparison": "SPONSORSHIP_ENABLED",
+    "donors_comparison": "SPONSORSHIP_ENABLED",
+    "donation_amount_comparison": "SPONSORSHIP_ENABLED",
+    "proceeds_comparison": "SPONSORSHIP_ENABLED",
+}
+
+
+def _chart_is_on(chart):
+    setting = COMPARISON_CHART_SWITCHES.get(chart["chart_id"])
+    return setting is None or getattr(settings, setting)
+
+
 def stats_comparison(request):
     """
-    Show year-over-year comparison charts across all conference editions.
+    Show year-over-year comparison charts across all event editions, each
+    chart only where its feature is on for this instance.
     """
-    context = {"historical_comparison": get_historical_comparison_data()}
+    context = {
+        "historical_comparison": [
+            chart for chart in get_historical_comparison_data() if _chart_is_on(chart)
+        ]
+    }
 
     return render(request, "portal/stats_comparison.html", context)
 
@@ -227,7 +252,7 @@ class StartNewYearView(SuperuserRequiredMixin, FormView):
         if not Conference.can_start_next_year():
             messages.info(
                 request,
-                "Next year's conference can be started once the current "
+                "Next year's event can be started once the current "
                 "edition's date has passed.",
             )
             return redirect("index")

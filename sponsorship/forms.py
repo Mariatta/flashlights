@@ -10,15 +10,15 @@ class SponsorshipProfileForm(forms.ModelForm):
 
     main_contact_user = forms.ModelChoiceField(
         queryset=User.objects.filter(is_staff=True),
-        help_text="Required. Main contact person from PyLadiesCon. Defaults to the person who creates the profile.",
+        help_text="Required. The organisers' contact person for this sponsor. Defaults to the person who creates the profile.",
         label="Internal Contact",
     )
     conference = forms.ModelChoiceField(
         queryset=Conference.objects.all(),
         required=False,
-        help_text="The conference edition this sponsorship is for. "
-        "Defaults to the active conference.",
-        label="Conference",
+        help_text="The event edition this sponsorship is for. "
+        "Defaults to the active event.",
+        label="Event",
     )
 
     class Meta:
@@ -89,14 +89,14 @@ class SponsorshipProfileForm(forms.ModelForm):
         if conference is None:
             self.add_error(
                 "conference",
-                "Select a conference. There is no active edition to default to.",
+                "Select an event. There is no active edition to default to.",
             )
         # Guard the (selector vs dropdown) gap: a tier must belong to the same
         # conference the sponsorship is for.
         if tier and conference and tier.conference_id != conference.pk:
             self.add_error(
                 "sponsorship_tier",
-                "This tier belongs to a different conference edition.",
+                "This tier belongs to a different event edition.",
             )
         return cleaned_data
 

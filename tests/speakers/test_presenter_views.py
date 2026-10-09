@@ -906,7 +906,7 @@ class TestInviteFromPresenterPage:
         assert "Send invitation" in content and "Their to-dos" not in content
         assert reverse("speakers:presenter_invite", args=[ada.slug]) in content
         assert "Django 101 (Presenter)" in content
-        assert "The conference in general" in content
+        assert "The event in general" in content
 
     def test_send_to_session_then_resend(self, client, organizer, presenters):
         ada, session = presenters["ada"], presenters["session"]

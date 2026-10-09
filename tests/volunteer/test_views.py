@@ -1,15 +1,16 @@
 import pytest
 from django.contrib.auth.models import User
 from django.contrib.messages import get_messages
+from django.test import override_settings
 from django.urls import reverse
 from pytest_django.asserts import assertRedirects
 
+from portal import branding
 from portal.models import Conference
 from volunteer.constants import Region
 from volunteer.models import (
     ApplicationStatus,
     Language,
-    PyladiesChapter,
     Role,
     Team,
     VolunteerProfile,
@@ -33,12 +34,15 @@ class TestVolunteer:
         # The hub shows the volunteering and speaking resource cards, not the
         # sitewide footer (that stays on the logged-out landing only).
         client.force_login(portal_user)
-        content = client.get(reverse("volunteer:index")).content.decode()
+        with override_settings(
+            BRAND=branding.from_env({"DOCS_URL": "https://docs.example.org/"})
+        ):
+            content = client.get(reverse("volunteer:index")).content.decode()
         assert "Volunteer resources" in content
-        assert "Team descriptions" in content
-        assert "Speaker resources" in content
-        assert "Keynote speaker guide" in content
-        assert "Portal documentation" not in content  # footer-only marker
+        assert 'href="https://docs.example.org/"' in content
+        # The speaker card is for presenters; this volunteer is not one.
+        assert "Speaker resources" not in content
+        assert "footer-heading" not in content  # footer-only marker
 
     def test_volunteer_profile_view_with_profile(self, client, portal_user, conference):
         profile = VolunteerProfile(user=portal_user, conference=conference)
@@ -337,9 +341,6 @@ class TestVolunteer:
 
     def test_new_volunteer_profile_form_submit(self, client, portal_user):
         client.force_login(portal_user)
-        chapter = PyladiesChapter.objects.create(
-            chapter_name="vancouver", chapter_description="Vancouver, Canada"
-        )
         assert VolunteerProfile.objects.filter(user=portal_user).count() == 0
         language = Language.objects.create(code="en", name="English")
         data = {
@@ -352,7 +353,6 @@ class TestVolunteer:
             "mastodon_url": "https://mastodon.social/@test",
             "x_username": "test_x",
             "linkedin_url": "https://www.linkedin.com/in/test",
-            "chapter": chapter.id,
             "additional_comments": "Blablabla",
             "availability_hours_per_week": 10,
             "region": Region.NORTH_AMERICA,
@@ -363,7 +363,7 @@ class TestVolunteer:
         profile = VolunteerProfile.objects.get(user=portal_user)
         assert profile.language.first() == language
         assert profile.region == Region.NORTH_AMERICA
-        assert profile.chapter == chapter
+        assert profile.chapter is None  # hidden from the form
         assert profile.discord_username == data["discord_username"]
         assert profile.github_username == data["github_username"]
         assert profile.bluesky_username == data["bluesky_username"]
@@ -379,9 +379,6 @@ class TestVolunteer:
     def test_edit_volunteer_profile_form_submit(self, client, portal_user, conference):
         language = Language.objects.create(code="en", name="English")
         client.force_login(portal_user)
-        chapter = PyladiesChapter.objects.create(
-            chapter_name="vancouver", chapter_description="Vancouver, Canada"
-        )
         profile = VolunteerProfile(user=portal_user, conference=conference)
         profile.region = Region.NORTH_AMERICA
         profile.discord_username = "blabla"
@@ -399,7 +396,6 @@ class TestVolunteer:
             "mastodon_url": "https://mastodon.social/@test",
             "x_username": "test_x",
             "linkedin_url": "https://www.linkedin.com/in/test",
-            "chapter": chapter.id,
             "additional_comments": "Blablabla",
             "availability_hours_per_week": 40,
             "region": Region.ASIA,
@@ -413,7 +409,7 @@ class TestVolunteer:
         profile = VolunteerProfile.objects.get(user=portal_user)
         assert profile.language.first() == language
         assert profile.region == Region.ASIA
-        assert profile.chapter == chapter
+        assert profile.chapter is None  # hidden from the form
         assert profile.discord_username == data["discord_username"]
         assert profile.github_username == data["github_username"]
         assert profile.bluesky_username == data["bluesky_username"]
@@ -794,7 +790,7 @@ class TestManageVolunteerApplications:
         self, client, admin_user, django_user_model, conference
     ):
         past = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024"
+            year=2024, name="Flashlights 2024", slug="2024"
         )
         applicant = django_user_model.objects.create_user(username="returning")
         role = Role.objects.create(short_name="Developer", description="d")
@@ -1266,7 +1262,7 @@ class TestVolunteerListYearSwitcher:
         self, client, admin_user, django_user_model, conference
     ):
         past = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024"
+            year=2024, name="Flashlights 2024", slug="2024"
         )
         active_user = django_user_model.objects.create_user(
             "activevol", email="a@example.com"
@@ -1298,7 +1294,7 @@ class TestVolunteerListYearSwitcher:
 class TestMyConferences:
     def test_lists_users_editions_newest_first(self, client, portal_user, conference):
         past = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024"
+            year=2024, name="Flashlights 2024", slug="2024"
         )
         VolunteerProfile.objects.create(
             user=portal_user, conference=conference, discord_username="d"
@@ -1313,7 +1309,7 @@ class TestMyConferences:
         assert response.status_code == 200
         profiles = list(response.context["profiles"])
         assert [p.conference.year for p in profiles] == [2025, 2024]
-        assert "Your Conferences" in response.content.decode()
+        assert "Your Events" in response.content.decode()
 
     def test_only_shows_own_profiles(self, client, portal_user, conference):
         from django.contrib.auth.models import User
@@ -1344,7 +1340,7 @@ class TestTeamList:
         self, client, admin_user, conference
     ):
         past = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024"
+            year=2024, name="Flashlights 2024", slug="2024"
         )
         active_team = Team.objects.create(
             short_name="Active Team", description="a", conference=conference
@@ -1590,11 +1586,14 @@ class TestTeamDashboard:
         # Leads point new members at the team descriptions/responsibilities.
         team = self._team(conference)
         client.force_login(admin_user)
-        content = client.get(
-            reverse("team_dashboard", kwargs={"pk": team.pk})
-        ).content.decode()
+        with override_settings(
+            BRAND=branding.from_env({"DOCS_URL": "https://docs.example.org/"})
+        ):
+            content = client.get(
+                reverse("team_dashboard", kwargs={"pk": team.pk})
+            ).content.decode()
         assert "Volunteer resources" in content
-        assert "Responsibilities" in content
+        assert 'href="https://docs.example.org/"' in content
 
     def test_non_lead_volunteer_denied(self, client, portal_user, conference):
         team = self._team(conference)
@@ -2058,7 +2057,7 @@ class TestMyTeams:
         self._lead(portal_user, conference)
         client.force_login(portal_user)
         # A page with no personal rail: the top nav is all there is.
-        html = client.get(reverse("chapters")).content.decode()
+        html = client.get(reverse("portal_stats")).content.decode()
         assert reverse("my_teams") not in html
         # The rail has it, whether or not they lead anything.
         html = client.get(reverse("volunteer:index")).content.decode()

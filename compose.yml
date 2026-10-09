@@ -5,13 +5,13 @@ services:
     ports:
       - "5433:5432"
     environment:
-      POSTGRES_USER: pyladiescon
-      POSTGRES_PASSWORD: pyladiescon
-      POSTGRES_DB: pyladiescon
+      POSTGRES_USER: flashlights
+      POSTGRES_PASSWORD: flashlights
+      POSTGRES_DB: flashlights
       POSTGRES_HOST_AUTH_METHOD: trust  # never do this in production!
       POSTGRES_FSYNC: null
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "pyladiescon", "-d", "pyladiescon"]
+      test: ["CMD", "pg_isready", "-U", "flashlights", "-d", "flashlights"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -36,7 +36,7 @@ services:
       target: dev
       args:
         WHISPER_MODEL: ${WHISPER_MODEL:-}
-    image: pyladiescon-portal-web:docker-compose
+    image: flashlights-web:docker-compose
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/code
@@ -47,13 +47,17 @@ services:
       DEBUG: True
       DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,[::1]
       SECRET_KEY: verysecure
-      DATABASE_URL: postgresql://pyladiescon:pyladiescon@postgres:5432/pyladiescon
+      DATABASE_URL: postgresql://flashlights:flashlights@postgres:5432/flashlights
       DJANGO_DEFAULT_FROM_EMAIL: Flashlights <flashlights@example.com>
       DJANGO_EMAIL_HOST: maildev
       # Instance identity; portal/branding.py lists every key.
       SITE_TITLE: Flashlights (dev)
       SITE_SHORT_NAME: Flashlights
       BRAND_PRESET: teal
+      # Feature switches, passed through from the shell: VOLUNTEERING_ENABLED=false make serve
+      VOLUNTEERING_ENABLED: ${VOLUNTEERING_ENABLED:-true}
+      SPONSORSHIP_ENABLED: ${SPONSORSHIP_ENABLED:-true}
+      STATS_PUBLIC: ${STATS_PUBLIC:-true}
       DJANGO_EMAIL_PORT: 1025
       CELERY_BROKER_URL: redis://redis:6379/0
     depends_on:
@@ -69,7 +73,7 @@ services:
         USER_ID: ${USER_ID:-1000}
         GROUP_ID: ${GROUP_ID:-1000}
         WHISPER_MODEL: ${WHISPER_MODEL:-}
-    image: pyladiescon-portal-celery:docker-compose
+    image: flashlights-celery:docker-compose
     # One worker for both queues in development (production has worker-media).
     command: celery -A portal worker -Q celery,media --loglevel=info
     working_dir: /code
@@ -77,7 +81,7 @@ services:
       - .:/code
     environment:
       CELERY_BROKER_URL: redis://redis:6379/0
-      DATABASE_URL: postgresql://pyladiescon:pyladiescon@postgres:5432/pyladiescon
+      DATABASE_URL: postgresql://flashlights:flashlights@postgres:5432/flashlights
       SECRET_KEY: verysecure
       DEBUG: True
       # The worker sends the emails, so it needs the same email config as web;
@@ -103,14 +107,14 @@ services:
         USER_ID: ${USER_ID:-1000}
         GROUP_ID: ${GROUP_ID:-1000}
         WHISPER_MODEL: ${WHISPER_MODEL:-}
-    image: pyladiescon-portal-beat:docker-compose
+    image: flashlights-beat:docker-compose
     command: celery -A portal beat --loglevel=info
     working_dir: /code
     volumes:
       - .:/code
     environment:
       CELERY_BROKER_URL: redis://redis:6379/0
-      DATABASE_URL: postgresql://pyladiescon:pyladiescon@postgres:5432/pyladiescon
+      DATABASE_URL: postgresql://flashlights:flashlights@postgres:5432/flashlights
       SECRET_KEY: verysecure
       DEBUG: True
     depends_on:

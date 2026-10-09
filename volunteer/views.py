@@ -16,6 +16,7 @@ from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
 
+from affiliations.views import AffiliationFormsetMixin
 from common.mixins import (
     AdminRequiredMixin,
     TeamLeadRequiredMixin,
@@ -35,7 +36,6 @@ from speakers.stats import my_task_stats
 from .forms import TeamForm, VolunteerProfileForm, VolunteerProfileReviewForm
 from .models import (  # Language,
     ApplicationStatus,
-    PyladiesChapter,
     Team,
     VolunteerProfile,
 )
@@ -308,7 +308,7 @@ class ManageVolunteerProfile(VolunteerAdminRequiredMixin, UpdateView):
         return context
 
 
-class VolunteerProfileCreate(CreateView):
+class VolunteerProfileCreate(AffiliationFormsetMixin, CreateView):
     model = VolunteerProfile
     template_name = "volunteer/volunteerprofile_form.html"
     success_url = reverse_lazy("volunteer:index")
@@ -316,13 +316,25 @@ class VolunteerProfileCreate(CreateView):
 
     def dispatch(self, request, *args, **kwargs):
         # Volunteer profiles are tied to the active edition; with none active
-        # there is nothing to sign up for, so don't offer (or accept) the form.
-        if request.user.is_authenticated and Conference.get_active() is None:
-            messages.info(
-                request,
-                "Volunteer sign-ups open once the next conference is active.",
-            )
-            return redirect("volunteer:index")
+        # there is nothing to sign up for, so don't offer (or accept) the
+        # form. An edition that is not taking applications (the flag on the
+        # edition form, which also keeps volunteering off the landing page)
+        # refuses the same way.
+        if request.user.is_authenticated:
+            active = Conference.get_active()
+            if active is None:
+                messages.info(
+                    request,
+                    "Volunteer sign-ups open once the next event is active.",
+                )
+                return redirect("volunteer:index")
+            if not active.volunteer_application_open:
+                messages.info(
+                    request,
+                    f"We are not taking new volunteer applications for "
+                    f"{active.year} right now.",
+                )
+                return redirect("volunteer:index")
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
@@ -340,7 +352,7 @@ class VolunteerProfileCreate(CreateView):
         return kwargs
 
 
-class VolunteerProfileUpdate(UpdateView):
+class VolunteerProfileUpdate(AffiliationFormsetMixin, UpdateView):
     model = VolunteerProfile
     template_name = "volunteer/volunteerprofile_form.html"
     success_url = reverse_lazy("volunteer:index")
@@ -735,11 +747,3 @@ class ReapplyVolunteeringView(VolunteerOrAdminRequiredMixin, View):
             "update your profile to pick the teams you'd like to join.",
         )
         return redirect("volunteer:volunteer_profile_edit", pk=profile.pk)
-
-
-class PyladiesChaptersList(ListView):
-    """View to display all the PyLadies Chapters we have in the System."""
-
-    model = PyladiesChapter
-    template_name = "pyladies_chapter/index.html"
-    context_object_name = "pyladies_chapters"

@@ -30,16 +30,14 @@ If you need any help, have questions, or no longer able to volunteer, please rea
 
 **Important:** Please complete these action items to activate your volunteering.
 
-- **Join our [Discord server](https://discord.com/invite/2fUN4ddVfP)** if you haven't done so. *Failure to join the Discord server within 7 days may result in cancellation of your volunteering activity.*
+- **Join the team's Discord server** if you haven't done so; your team lead sends the invitation. *Failure to join the Discord server within 7 days may result in cancellation of your volunteering activity.*
 
-- **Read the [Volunteer Guide](https://conference.pyladies.com/docs/)** to understand the roles of your team.
-
-- **Learn the [Volunteer Roles and Responsibilities Documentation](https://conference.pyladies.com/docs/roles_and_responsibilities/)** to understand the expectations.
+- **Read your team's description and the volunteer guide** to understand the roles of your team and what is expected.
 
 {% if not profile.github_username %}
-- **⚠️ Update your GitHub username:** Your GitHub profile is currently missing. You will be added to the [@pyladies/pyladiescon-volunteers](https://github.com/orgs/pyladies/teams/pyladiescon-volunteers) GitHub team to access our repositories. Please update your GitHub username on the portal through your [Volunteer Dashboard](https://{{ current_site.domain }}{% url 'volunteer:index' %}) and let your team lead know after you've done that.
+- **⚠️ Update your GitHub username:** Your GitHub profile is currently missing. You will be added to the volunteers' GitHub team to access our repositories. Please update your GitHub username on the portal through your [Volunteer Dashboard](https://{{ current_site.domain }}{% url 'volunteer:index' %}) and let your team lead know after you've done that.
 {% else %}
-- **GitHub Access:** You will be added to the [@pyladies/pyladiescon-volunteers](https://github.com/orgs/pyladies/teams/pyladiescon-volunteers) GitHub team using your GitHub username: **{{ profile.github_username }}**. This will give you access to the PyLadiesCon repositories.
+- **GitHub Access:** You will be added to the volunteers' GitHub team using your GitHub username: **{{ profile.github_username }}**. This will give you access to the organisers' repositories.
 {% endif %}
 
 {% if admin_onboarding %}
@@ -49,16 +47,16 @@ Since you've been added as a core organizing team (as a team lead, a staff, or a
 
 - The Organizer Role on Discord
 {% if not profile.github_username %}
-- Access to the [@pyladies/global-conference-organizers](https://github.com/orgs/pyladies/teams/global-conference-organizers) GitHub team (**⚠️ Please update your GitHub username on the portal first**)
+- Access to the organizers' GitHub team (**⚠️ Please update your GitHub username on the portal first**)
 {% else %}
-- Access to the [@pyladies/global-conference-organizers](https://github.com/orgs/pyladies/teams/global-conference-organizers) GitHub team
+- Access to the organizers' GitHub team
 {% endif %}
-- Access to the PyLadiesCon GDrive ({{ GDRIVE_FOLDER_ID }})
+- Access to the shared drive ({{ GDRIVE_FOLDER_ID }})
 - Invitation to [Jelly](https://letsjelly.com/)
-- Invitation to the PyLadiesCon Regular Meeting Calendar
-- Invitation to the PyLadiesCon 1Password account
+- Invitation to the organizers' meeting calendar
+- Invitation to the shared password manager
 
-You should be receiving additional emails and invites to the above items within a few days. Please be sure to follow through and activate your access to the above services and items since they are crucial to our conference. If you have not received those after 5 days or if you need them sooner, please reach out to the other core organizers on Discord.
+You should be receiving additional emails and invites to the above items within a few days. Please be sure to follow through and activate your access to the above services and items since they are crucial to our event. If you have not received those after 5 days or if you need them sooner, please reach out to the other core organizers on Discord.
 {% endif %}
 
 **Thank you!**

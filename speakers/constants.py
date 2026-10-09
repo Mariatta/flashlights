@@ -151,7 +151,7 @@ class ItemOwner(models.TextChoices):
 
 class DueAnchor(models.TextChoices):
     INVITATION_ACCEPTED = "INVITATION_ACCEPTED", "Days after the invitation is accepted"
-    CONFERENCE_START = "CONFERENCE_START", "Days before the conference starts"
+    CONFERENCE_START = "CONFERENCE_START", "Days before the event starts"
     SESSION_START = "SESSION_START", "Days before the session starts"
 
 

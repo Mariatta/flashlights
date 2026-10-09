@@ -3,7 +3,7 @@
 {% load django_bootstrap5 %}
 {% block breadcrumb %}
     {% url 'conference_list' as bc_url %}
-    {% trans "Conferences" as bc_section %}
+    {% trans "Events" as bc_section %}
     {% trans "Edit" as bc_page %}
     {% include "portal/_breadcrumbs.html" with section=bc_section section_url=bc_url page=bc_page %}
 {% endblock breadcrumb %}
@@ -16,7 +16,7 @@
 {% block content %}
     <div class="container px-4 py-3">
         <h1 class="h3 pb-2 mb-3 border-bottom">
-            {% trans "Edit Conference" %}: {{ object.name }}
+            {% trans "Edit Event" %}: {{ object.name }}
         </h1>
         <form method="post" class="col-md-8">
             {% csrf_token %}

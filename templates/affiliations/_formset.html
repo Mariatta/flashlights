@@ -1,0 +1,42 @@
+{% load i18n %}
+{% comment %}
+Affiliation rows on a profile form. Include inside the <form> with
+`affiliation_formset` and `affiliation_names` in context (AffiliationFormsetMixin).
+{% endcomment %}
+<div class="card mb-4" data-affiliations>
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            {% trans "Affiliations" %}
+        </h5>
+    </div>
+    <div class="card-body">
+        <p class="text-secondary small">
+            {% trans "Where you work, what you build, which communities you belong to. All optional; add as many as you like." %}
+        </p>
+        {{ affiliation_formset.management_form }}
+        {% if affiliation_formset.non_form_errors %}
+            <div class="alert alert-danger">
+                {{ affiliation_formset.non_form_errors }}
+            </div>
+        {% endif %}
+        <datalist id="affiliation-names">
+            {% for name in affiliation_names %}
+                <option value="{{ name }}">
+                </option>
+            {% endfor %}
+        </datalist>
+        <div data-affiliation-rows>
+            {% for row in affiliation_formset %}
+                {% include "affiliations/_row.html" with row=row %}
+            {% endfor %}
+        </div>
+        <template data-affiliation-empty>
+            {% include "affiliations/_row.html" with row=affiliation_formset.empty_form %}
+        </template>
+        <button type="button"
+                class="btn btn-outline-secondary btn-sm"
+                data-affiliation-add>
+            <i class="fa-solid fa-plus"></i> {% trans "Add another" %}
+        </button>
+    </div>
+</div>

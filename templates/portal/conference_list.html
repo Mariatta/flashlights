@@ -1,7 +1,7 @@
 {% extends "portal/base_sidebar.html" %}
 {% load i18n %}
 {% block breadcrumb %}
-    {% trans "Conferences" as bc_section %}
+    {% trans "Events" as bc_section %}
     {% include "portal/_breadcrumbs.html" with section=bc_section %}
 {% endblock breadcrumb %}
 {% block sidebar_title %}
@@ -14,11 +14,11 @@
     <div class="container px-4 py-3">
         <div class="d-flex flex-wrap justify-content-between align-items-center pb-2 mb-3 border-bottom gap-2">
             <h1 class="h3 mb-0">
-                {% trans "Conferences" %}
+                {% trans "Events" %}
             </h1>
             {% if can_start_next_year %}
                 <a href="{% url 'start_new_year' %}" class="btn btn-primary">
-                    <i class="fa-solid fa-plus"></i> {% trans "Start next conference" %}
+                    <i class="fa-solid fa-plus"></i> {% trans "Start next event" %}
                 </a>
             {% endif %}
         </div>

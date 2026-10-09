@@ -454,7 +454,8 @@ class TestVolunteerModel:
         assert profile.linkedin_url in body
         assert profile.region in body
         assert profile.user.first_name in body
-        assert profile.chapter.chapter_description in body
+        # The chapter is hidden from the portal, so the email leaves it out.
+        assert profile.chapter.chapter_description not in body
         assert profile.additional_comments in body
         assert str(profile.availability_hours_per_week) in body
 
@@ -758,7 +759,7 @@ class TestBringForwardTo:
         )
         source.teams.add(team)
         target = Conference.objects.create(
-            year=2026, name="PyLadiesCon 2026", slug="2026"
+            year=2026, name="Flashlights 2026", slug="2026"
         )
         mail.outbox.clear()
 
@@ -781,7 +782,7 @@ class TestBringForwardTo:
         from portal.models import Conference
 
         target = Conference.objects.create(
-            year=2026, name="PyLadiesCon 2026", slug="2026"
+            year=2026, name="Flashlights 2026", slug="2026"
         )
         source = VolunteerProfile.objects.create(
             user=portal_user, conference=conference

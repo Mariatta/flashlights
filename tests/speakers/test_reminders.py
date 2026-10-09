@@ -69,7 +69,7 @@ class TestSpeakerDigest:
         message = mail.outbox[0]
         assert message.to == ["ada@example.com"]
         assert "1 todo(s) with deadlines coming up" in message.subject
-        assert "Thank you for being a speaker at PyLadiesCon 2025" in message.body
+        assert "Thank you for being a speaker at Flashlights 2025" in message.body
         assert (
             "Django 101" in message.body
             and "todos have deadlines coming up" in message.body
@@ -235,7 +235,7 @@ class TestOrganizerDigest:
         assert "for Ada" in by_to[("lena@example.com",)].body
         team = by_to[("team@example.com",)]
         assert "Schedule mail" in team.body and "Nobody yet" in team.body
-        assert "Thank you for volunteering with us at PyLadiesCon 2025" in team.body
+        assert "Thank you for volunteering with us at Flashlights 2025" in team.body
         assert "mark them as done and we won't bother you" in team.body
         assert "2 team todo(s) with deadlines coming up" in team.subject
         assert "/speakers/checklists/queue/" in team.body
@@ -403,7 +403,7 @@ class TestTask:
             due_date=date.today() + timedelta(days=1),
         )
         mail.outbox.clear()
-        assert send_checklist_digests_task() == "PyLadiesCon 2025: 1 email(s)"
+        assert send_checklist_digests_task() == "Flashlights 2025: 1 email(s)"
         assert len(mail.outbox) == 1
 
     def test_task_with_nothing_enabled(self, conference):

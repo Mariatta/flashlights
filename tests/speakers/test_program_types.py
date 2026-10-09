@@ -103,7 +103,7 @@ class TestSeeding:
         out = StringIO()
         call_command("seed_program_types", conference="old", stdout=out)
         assert "0 session types" in out.getvalue()
-        with pytest.raises(CommandError, match="No conference"):
+        with pytest.raises(CommandError, match="No event"):
             call_command("seed_program_types", conference="nope")
 
 

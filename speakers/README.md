@@ -1,6 +1,6 @@
 # Speakers app
 
-The speaker portal for PyLadiesCon: sessions, presenters, invitations,
+The speaker portal: sessions, presenters, invitations,
 checklists, scheduling, media pipeline and the public program. The design is
 `docs/architecture/speaker-portal.md` on the docs site; the task breakdown
 that drives the build is kept by the maintainer outside the repository. This

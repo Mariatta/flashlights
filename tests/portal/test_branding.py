@@ -1,3 +1,10 @@
+import io
+
+from django.conf import settings
+from PIL import Image
+
+from common.markdown_emails import render_markdown_email
+
 """The instance identity seam: environment in, theme and tags out."""
 
 import pytest
@@ -141,7 +148,7 @@ class TestViews:
             }
         )
         with override_settings(BRAND=brand):
-            content = client.get(reverse("chapters")).content.decode()
+            content = client.get(reverse("portal_stats")).content.decode()
         assert '<meta property="og:site_name" content="Summit 2027" />' in content
         assert 'content="https://x.test/og.png"' in content
         assert '<link rel="icon" href="https://x.test/favicon.png" />' in content
@@ -151,8 +158,9 @@ class TestViews:
 
     def test_base_template_without_optional_assets(self, client, conference):
         with override_settings(BRAND=branding.from_env({})):
-            content = client.get(reverse("chapters")).content.decode()
-        assert "og:image" not in content
+            content = client.get(reverse("portal_stats")).content.decode()
+        # No share image of its own: the generated card stands in.
+        assert reverse("brand_share_card") in content
         assert "navbar-logo" not in content
         assert "Documentation" not in content
         assert reverse("brand_favicon") in content
@@ -192,3 +200,70 @@ class TestPolicyLinks:
         ):
             content = client.get(url).content.decode()
         assert 'href="https://x.test/terms/"' in content
+
+
+@pytest.mark.django_db
+class TestGeneratedImages:
+    """The PNG favicon twins and the share card, drawn with Pillow."""
+
+    def _png(self, client, name):
+        response = client.get(reverse(name))
+        assert response.status_code == 200
+        assert response["Content-Type"] == "image/png"
+        assert response["Cache-Control"].startswith("public, max-age=31536000")
+        return Image.open(io.BytesIO(response.content))
+
+    def test_favicon_png_sizes(self, client):
+        assert self._png(client, "brand_favicon_png").size == (32, 32)
+        assert self._png(client, "brand_apple_touch_icon").size == (180, 180)
+
+    def test_favicon_png_is_the_primary_colour(self, client):
+        image = self._png(client, "brand_favicon_png").convert("RGBA")
+        # A corner is transparent (the rounded square), the centre-top is
+        # the primary colour (above the initial).
+        assert image.getpixel((0, 0))[3] == 0
+        primary = branding.parse_hex(settings.BRAND.primary)
+        assert image.getpixel((16, 4))[:3] == primary
+
+    def test_share_card_is_open_graph_sized(self, client):
+        image = self._png(client, "brand_share_card")
+        assert image.size == (1200, 630)
+        assert image.getpixel((10, 10)) == branding.parse_hex(settings.BRAND.primary)
+
+    def test_long_titles_shrink_to_fit(self):
+        brand = branding.from_env(
+            {
+                "SITE_TITLE": "A " + "very " * 30 + "long event name",
+                "SITE_DESCRIPTION": "x",
+            }
+        )
+        assert Image.open(io.BytesIO(brand.share_card_png())).size == (1200, 630)
+
+    def test_version_follows_the_wording(self):
+        one = branding.from_env({"SITE_TITLE": "Summit"})
+        two = branding.from_env({"SITE_TITLE": "Summit", "SITE_DESCRIPTION": "Other"})
+        assert one.version != two.version
+
+    def test_base_template_links_the_generated_images(self, client, conference):
+        with override_settings(BRAND=branding.from_env({})):
+            content = client.get(reverse("portal_stats")).content.decode()
+        assert f'{reverse("brand_favicon_png")}?v=' in content
+        assert f'{reverse("brand_apple_touch_icon")}?v=' in content
+        assert f'content="http://testserver{reverse("brand_share_card")}?v=' in content
+        assert 'property="og:image:alt"' in content
+
+    def test_base_template_prefers_the_instance_share_image(self, client, conference):
+        brand = branding.from_env({"SITE_OG_IMAGE": "https://x.test/og.png"})
+        with override_settings(BRAND=brand):
+            content = client.get(reverse("portal_stats")).content.decode()
+        assert 'content="https://x.test/og.png"' in content
+        assert reverse("brand_share_card") not in content
+
+
+@pytest.mark.django_db
+class TestEmailWording:
+    def test_greeting_and_sign_off_use_the_title(self, conference):
+        markdown, _, text = render_markdown_email("emails/base_email.md", {})
+        assert "Hello from Flashlights." in markdown
+        assert "Thank you for using **Flashlights**." in markdown
+        assert "!" not in text

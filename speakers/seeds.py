@@ -5,8 +5,8 @@ seed an edition that has none. ``seed_checklists`` is idempotent: it keys
 templates on (scope, type, role, delivery) and items on their title. Types
 and roles are named by ``code`` and resolved to the edition's rows.
 
-The defaults are opinionated starting points for PyLadiesCon (they name
-Discord, the speaker guide, the PyJam post-production steps), not fixtures
+The defaults are opinionated starting points (they name Discord, the
+speaker guide, the performance post-production steps), not fixtures
 the code depends on: an edition may rename, drop or add lines freely.
 
 No default line is required. Accepting the invitation is the presenter's
@@ -63,14 +63,14 @@ DEFAULT_GATES = [
     (
         "tech-check-open",
         "Tech check booking open",
-        "booking opens closer to the conference",
+        "booking opens closer to the event",
         "Open once the team has the equipment and a way for speakers to book "
         "a slot.",
     ),
     (
         "upload-open",
         "Recording upload open",
-        "uploads open closer to the conference",
+        "uploads open closer to the event",
         "Open once the portal can take recordings and the team is ready to "
         "review them.",
     ),
@@ -123,7 +123,7 @@ WORKSHOP_GUIDE = _item(
     requires_handbook="workshop",
     ready_rule=ReadyRule.GUIDE_PUBLISHED,
     waiting_note="we are still writing it",
-    description_md="How a workshop runs at the conference, the setup we need from you and the deadlines. Ticks itself when you reach the end of the guide.",
+    description_md="How a workshop runs at the event, the setup we need from you and the deadlines. Ticks itself when you reach the end of the guide.",
     once_per_presenter=True,
 )
 KEYNOTE_GUIDE = _item(
@@ -140,20 +140,20 @@ KEYNOTE_GUIDE = _item(
 )
 REGISTER = _item(
     SPK,
-    "Register for the conference",
+    "Register for the event",
     CONF,
     14,
     AutoRule.PRETIX_REGISTERED,
     ready_rule=ReadyRule.REGISTRATION_OPEN,
     waiting_note="registration is not open yet",
-    description_md="Get your (free) ticket so you can join the conference platform. Ticks itself once your registration matches your email.",
+    description_md="Get your (free) ticket so you can join the event platform. Ticks itself once your registration matches your email.",
 )
 DISCORD = _item(
     SPK,
-    "Join the PyLadiesCon Discord",
+    "Join the event Discord",
     ACCEPTED,
     14,
-    description_md="Where the team, the other speakers and the attendees are during the conference; the link is in the speaker guide.",
+    description_md="Where the team, the other speakers and the attendees are during the event; the link is in the speaker guide.",
 )
 CONFIRM_SLOT = _item(
     SPK,

@@ -64,7 +64,7 @@ class TestAdminActions:
     def test_bring_forward_action(self, client, admin_user, conference):
         # conference (2025) is active by default; make 2026 the active edition.
         new_edition = Conference.objects.create(
-            year=2026, name="PyLadiesCon 2026", slug="2026", is_active=True
+            year=2026, name="Flashlights 2026", slug="2026", is_active=True
         )
         returner = User.objects.create_user("returner", email="r@example.com")
         profile = VolunteerProfile.objects.create(
@@ -111,7 +111,7 @@ class TestAdminActions:
         response = self._bring_forward(client, profile, "?conference=all")
 
         assert response.status_code == 200
-        assert "No active conference is set" in response.content.decode()
+        assert "No active event is set" in response.content.decode()
 
 
 @pytest.mark.django_db
@@ -231,7 +231,7 @@ class TestActiveConferenceFilter:
         """One profile in the active edition, one in a past edition."""
         active_user = User.objects.create_user("active_vol", email="a@example.com")
         past = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024"
+            year=2024, name="Flashlights 2024", slug="2024"
         )
         past_user = User.objects.create_user("past_vol", email="p@example.com")
         active_profile = VolunteerProfile.objects.create(

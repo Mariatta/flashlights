@@ -31,10 +31,12 @@ HEARD_ABOUT_CHOICES = [
     ("Conferences", "Conferences"),
     ("Local meetups", "Local meetups"),
 ]
+# The "first time here" answer, matched by the Pretix question mapping below
+# and counted for the first-time attendee stat.
+FIRST_EVENT_ANSWER = "No this is my first one"
 PARTICIPATED_IN_PREVIOUS_EVENT_CHOICES = [
-    ("PyLadiesCon 2024", "PyLadiesCon 2024"),
-    ("PyLadiesCon 2023", "PyLadiesCon 2023"),
-    ("No this is my first one", "No this is my first one"),
+    ("Yes, a previous edition", "Yes, a previous edition"),
+    (FIRST_EVENT_ANSWER, FIRST_EVENT_ANSWER),
 ]
 CURRENT_POSITION_CHOICES = [
     ("Engineer", "Engineer"),
@@ -108,6 +110,7 @@ class PretixOrder(BaseModel):
     # See docs/architecture/multi-year-conferences.md.
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         on_delete=models.PROTECT,
         related_name="pretix_orders",
     )
@@ -256,7 +259,7 @@ class AttendeeProfile(BaseModel):
         max_length=255,
         null=True,
         blank=True,
-        help_text="Your PyLadies chapter",
+        help_text="Your local chapter or group",
     )
     age_range = models.CharField(
         max_length=100, null=True, blank=True, help_text="Age range"

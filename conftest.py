@@ -83,9 +83,11 @@ def conference(request):
     request.getfixturevalue("db")
     return Conference.objects.create(
         year=2025,
-        name="PyLadiesCon 2025",
+        name="Flashlights 2025",
         slug="2025",
         is_active=True,
+        # The landing advertises volunteering only while this is on.
+        volunteer_application_open=True,
         pretix_event_slug="2025",
         sponsorship_goal=15000,
         donation_goal=2500,

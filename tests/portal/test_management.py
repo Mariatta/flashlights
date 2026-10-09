@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.core.management import CommandError, call_command
 
 from sponsorship.models import IndividualDonation, SponsorshipProfile, SponsorshipTier
-from volunteer.models import PyladiesChapter, Role, Team, VolunteerProfile
+from volunteer.models import Role, Team, VolunteerProfile
 
 
 @pytest.mark.django_db
@@ -75,17 +75,6 @@ class TestGenerateSampleDataCommand:
         for volunteer in volunteers:
             assert not volunteer.is_staff
             assert not volunteer.is_superuser
-
-    def test_generates_chapters(self, settings):
-        """Test that PyLadies chapters are created."""
-        settings.DEBUG = True
-        initial_count = PyladiesChapter.objects.count()
-
-        call_command("generate_sample_data", stdout=StringIO())
-
-        assert PyladiesChapter.objects.count() > initial_count
-        assert PyladiesChapter.objects.filter(chapter_name="San Francisco").exists()
-        assert PyladiesChapter.objects.filter(chapter_name="Tokyo").exists()
 
     def test_generates_roles(self, settings):
         """Test that volunteer roles are created."""
@@ -176,7 +165,6 @@ class TestGenerateSampleDataCommand:
         call_command("generate_sample_data", stdout=StringIO())
         first_run_counts = {
             "users": User.objects.count(),
-            "chapters": PyladiesChapter.objects.count(),
             "roles": Role.objects.count(),
             "teams": Team.objects.count(),
             "profiles": VolunteerProfile.objects.count(),
@@ -188,7 +176,6 @@ class TestGenerateSampleDataCommand:
         call_command("generate_sample_data", stdout=StringIO())
         second_run_counts = {
             "users": User.objects.count(),
-            "chapters": PyladiesChapter.objects.count(),
             "roles": Role.objects.count(),
             "teams": Team.objects.count(),
             "profiles": VolunteerProfile.objects.count(),

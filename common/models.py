@@ -59,6 +59,7 @@ class SentEmail(models.Model):
 
     conference = models.ForeignKey(
         "portal.Conference",
+        verbose_name="event",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,

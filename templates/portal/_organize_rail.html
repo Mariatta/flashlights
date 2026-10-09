@@ -25,24 +25,26 @@ layout, as before.
 {% else %}
     {% include "portal/_sidebar_item.html" with url=dashboard_url label=_("Dashboard") icon="fa-gauge-high" only %}
 {% endif %}
-{% url 'volunteer:volunteers_list' as volunteers_url %}
-{% if active == "volunteers" %}
-    {% include "portal/_sidebar_item.html" with url=volunteers_url label=_("Volunteers") icon="fa-users" active=True only %}
-{% else %}
-    {% include "portal/_sidebar_item.html" with url=volunteers_url label=_("Volunteers") icon="fa-users" only %}
-{% endif %}
-{% url 'teams' as teams_url %}
-{% if active == "teams" %}
-    {% include "portal/_sidebar_item.html" with url=teams_url label=_("Teams") icon="fa-users-rectangle" active=True only %}
-{% else %}
-    {% include "portal/_sidebar_item.html" with url=teams_url label=_("Teams") icon="fa-users-rectangle" only %}
+{% if volunteering_enabled %}
+    {% url 'volunteer:volunteers_list' as volunteers_url %}
+    {% if active == "volunteers" %}
+        {% include "portal/_sidebar_item.html" with url=volunteers_url label=_("Volunteers") icon="fa-users" active=True only %}
+    {% else %}
+        {% include "portal/_sidebar_item.html" with url=volunteers_url label=_("Volunteers") icon="fa-users" only %}
+    {% endif %}
+    {% url 'teams' as teams_url %}
+    {% if active == "teams" %}
+        {% include "portal/_sidebar_item.html" with url=teams_url label=_("Teams") icon="fa-users-rectangle" active=True only %}
+    {% else %}
+        {% include "portal/_sidebar_item.html" with url=teams_url label=_("Teams") icon="fa-users-rectangle" only %}
+    {% endif %}
 {% endif %}
 {% if can_manage_conferences %}
     {% url 'conference_list' as conferences_url %}
     {% if active == "conferences" %}
-        {% include "portal/_sidebar_item.html" with url=conferences_url label=_("Conferences") icon="fa-calendar-days" active=True only %}
+        {% include "portal/_sidebar_item.html" with url=conferences_url label=_("Events") icon="fa-calendar-days" active=True only %}
     {% else %}
-        {% include "portal/_sidebar_item.html" with url=conferences_url label=_("Conferences") icon="fa-calendar-days" only %}
+        {% include "portal/_sidebar_item.html" with url=conferences_url label=_("Events") icon="fa-calendar-days" only %}
     {% endif %}
 {% endif %}
 {% if speaker_module_enabled %}
@@ -143,8 +145,10 @@ layout, as before.
     {% include "portal/_sidebar_item.html" with url=maintenance_invitations_url label=_("Invitations") icon="fa-paper-plane" only %}
 {% endif %}
 <hr class="my-2">
-{% url 'team_new' as team_new_url %}
-{% include "portal/_sidebar_item.html" with url=team_new_url label=_("New team") icon="fa-plus" only %}
+{% if volunteering_enabled %}
+    {% url 'team_new' as team_new_url %}
+    {% include "portal/_sidebar_item.html" with url=team_new_url label=_("New team") icon="fa-plus" only %}
+{% endif %}
 {% if can_manage_sponsorship %}
     {% url 'sponsorship:sponsorship_profile_new' as add_sponsor_url %}
     {% if active == "add" %}

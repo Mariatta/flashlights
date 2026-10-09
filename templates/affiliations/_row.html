@@ -1,0 +1,34 @@
+{% load i18n %}
+<div class="row g-2 align-items-start mb-2" data-affiliation-row>
+    {{ row.id }}
+    <div class="col-md-3">
+        {{ row.kind }}
+        {% for error in row.kind.errors %}
+            <div class="invalid-feedback d-block">
+                {{ error }}
+            </div>
+        {% endfor %}
+    </div>
+    <div class="col-md-4">
+        {{ row.name }}
+        {% for error in row.name.errors %}
+            <div class="invalid-feedback d-block">
+                {{ error }}
+            </div>
+        {% endfor %}
+    </div>
+    <div class="col-md-4">
+        {{ row.url }}
+        {% for error in row.url.errors %}
+            <div class="invalid-feedback d-block">
+                {{ error }}
+            </div>
+        {% endfor %}
+    </div>
+    <div class="col-md-1 form-check pt-2">
+        {{ row.DELETE }}
+        <label class="form-check-label small" for="{{ row.DELETE.id_for_label }}">
+            {% trans "Remove" %}
+        </label>
+    </div>
+</div>

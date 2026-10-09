@@ -3,7 +3,6 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 
 from common.send_emails import send_email
-from sponsorship.constants import PSF_ACCOUNTING_EMAIL, SPONSORSHIP_COMMITTEE_EMAIL
 
 
 def send_sponsorship_status_emails(profile):
@@ -34,16 +33,27 @@ def send_sponsorship_status_emails(profile):
 
 
 def send_psf_invoice_request_email(profile):
-    """Send email to PSF accounting team requesting sponsorship contract
-    preparation. Through ``send_email``, so it is in the sent-email record
-    like every other email the portal sends."""
-    subject = f"PyLadiesCon Sponsorship Contract Request: {profile.organization_name}"
+    """Ask whoever issues invoices to prepare the sponsorship contract.
 
-    psf_accounting_emails = [PSF_ACCOUNTING_EMAIL, SPONSORSHIP_COMMITTEE_EMAIL]
+    Goes to ``ACCOUNTING_EMAIL`` and ``SPONSORSHIP_EMAIL`` (settings, both
+    optional) and is skipped when neither is set. Through ``send_email``, so
+    it is in the sent-email record like every other email the portal sends.
+    """
+    recipients = [
+        address
+        for address in (settings.ACCOUNTING_EMAIL, settings.SPONSORSHIP_EMAIL)
+        if address
+    ]
+    if not recipients:
+        return
+    subject = (
+        f"{settings.BRAND.short_name} sponsorship contract request: "
+        f"{profile.organization_name}"
+    )
 
     send_email(
         subject,
-        psf_accounting_emails,
+        recipients,
         markdown_template="sponsorship/email/psf_invoice_request.md",
         context={"profile": profile},
         conference=profile.conference,

@@ -10,8 +10,8 @@
     google.charts.setOnLoadCallback(drawChart);
     function drawChart() {
         {% if not historical_snapshot %}
-        {% include "sponsorship/sponsorship_charts.html" %}
-        {% include "volunteer/volunteer_charts.html" %}
+        {% if sponsorship_enabled %}{% include "sponsorship/sponsorship_charts.html" %}{% endif %}
+        {% if volunteering_enabled %}{% include "volunteer/volunteer_charts.html" %}{% endif %}
         {% endif %}
    }
     </script>
@@ -26,12 +26,12 @@
 {% block content %}
     <div class="container px-4 py-3" id="featured-3">
         <h2 class="pb-2 border-bottom">
-            PyLadiesCon Stats and Numbers — {{ selected_conference.year }}
+            {{ brand.short_name }} stats and numbers: {{ selected_conference.year }}
         </h2>
         <div class="row align-items-center mb-3">
             <div class="col-md-8">
                 {% if conferences %}
-                    <div class="btn-group" role="group" aria-label="Conference year">
+                    <div class="btn-group" role="group" aria-label="Event year">
                         {% for conference in conferences %}
                             <a href="?year={{ conference.year }}"
                                class="btn btn-sm {% if conference == selected_conference %}btn-primary{% else %}btn-outline-primary{% endif %}">
@@ -58,18 +58,20 @@
                 </p>
             </div>
             <div class="row g-3 mb-4 row-cols-2 row-cols-md-3">
-                <div class="col">
-                    <div class="card h-100 text-center">
-                        <div class="card-body">
-                            <h3 class="card-title">
-                                {{ historical_snapshot.registrations }}
-                            </h3>
-                            <p class="card-text text-muted mb-0">
-                                Registrations
-                            </p>
+                {% if historical_snapshot.registrations %}
+                    <div class="col">
+                        <div class="card h-100 text-center">
+                            <div class="card-body">
+                                <h3 class="card-title">
+                                    {{ historical_snapshot.registrations }}
+                                </h3>
+                                <p class="card-text text-muted mb-0">
+                                    Registrations
+                                </p>
+                            </div>
                         </div>
                     </div>
-                </div>
+                {% endif %}
                 <div class="col">
                     <div class="card h-100 text-center">
                         <div class="card-body">
@@ -82,59 +84,61 @@
                         </div>
                     </div>
                 </div>
-                <div class="col">
-                    <div class="card h-100 text-center">
-                        <div class="card-body">
-                            <h3 class="card-title">
-                                {{ historical_snapshot.sponsors }}
-                            </h3>
-                            <p class="card-text text-muted mb-0">
-                                Sponsors
-                            </p>
+                {% if sponsorship_enabled %}
+                    <div class="col">
+                        <div class="card h-100 text-center">
+                            <div class="card-body">
+                                <h3 class="card-title">
+                                    {{ historical_snapshot.sponsors }}
+                                </h3>
+                                <p class="card-text text-muted mb-0">
+                                    Sponsors
+                                </p>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col">
-                    <div class="card h-100 text-center">
-                        <div class="card-body">
-                            <h3 class="card-title">
-                                ${{ historical_snapshot.sponsorship_amount }}
-                            </h3>
-                            <p class="card-text text-muted mb-0">
-                                Sponsorship Amount
-                            </p>
+                    <div class="col">
+                        <div class="card h-100 text-center">
+                            <div class="card-body">
+                                <h3 class="card-title">
+                                    ${{ historical_snapshot.sponsorship_amount }}
+                                </h3>
+                                <p class="card-text text-muted mb-0">
+                                    Sponsorship Amount
+                                </p>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col">
-                    <div class="card h-100 text-center">
-                        <div class="card-body">
-                            <h3 class="card-title">
-                                {{ historical_snapshot.donors }}
-                            </h3>
-                            <p class="card-text text-muted mb-0">
-                                Donors
-                            </p>
+                    <div class="col">
+                        <div class="card h-100 text-center">
+                            <div class="card-body">
+                                <h3 class="card-title">
+                                    {{ historical_snapshot.donors }}
+                                </h3>
+                                <p class="card-text text-muted mb-0">
+                                    Donors
+                                </p>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col">
-                    <div class="card h-100 text-center">
-                        <div class="card-body">
-                            <h3 class="card-title">
-                                ${{ historical_snapshot.donation_amount }}
-                            </h3>
-                            <p class="card-text text-muted mb-0">
-                                Donations
-                            </p>
+                    <div class="col">
+                        <div class="card h-100 text-center">
+                            <div class="card-body">
+                                <h3 class="card-title">
+                                    ${{ historical_snapshot.donation_amount }}
+                                </h3>
+                                <p class="card-text text-muted mb-0">
+                                    Donations
+                                </p>
+                            </div>
                         </div>
                     </div>
-                </div>
+                {% endif %}
             </div>
         {% else %}
             <div class="alert alert-success" role="alert">
                 <h4 class="alert-heading">
-                    Live conference stats*
+                    Live event stats*
                 </h4>
                 <p class="mb-0">
                     Our stats are also available as a <a href="{% url 'portal_stats_json' %}">JSON endpoint</a> so that you can come up with your own visualization and dashboard.
@@ -147,44 +151,22 @@
                     <span class="text-muted">*Up to 5 minutes delay.</span>
                 </p>
             </div>
-            {% include "sponsorship/sponsorship_stats.html" %}
-            <!-- Sponsor/Donate Callout -->
-            <div class="container border rounded-3 p-4 mb-4 bg-light">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h3 class="mb-2">
-                            Support PyLadiesCon!
-                        </h3>
-                        <p class="mb-0 text-muted">
-                            Help us make PyLadiesCon possible by becoming a sponsor or making a donation.
-                            Your support enables us to create an inclusive and accessible conference for the global PyLadies
-                            community.
-                        </p>
-                    </div>
-                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                        <a href="{{ active_conference.sponsors_url|default:'https://2025.conference.pyladies.com/en/sponsors/' }}"
-                           target="_blank"
-                           rel="noopener noreferrer"
-                           class="btn btn-primary btn-lg me-2 mb-2">
-                            <i class="bi bi-building"></i> Sponsor Us
-                        </a>
-                        <a href="{{ active_conference.donate_url|default:'https://2025.conference.pyladies.com/en/donate/' }}"
-                           target="_blank"
-                           rel="noopener noreferrer"
-                           class="btn btn-success btn-lg mb-2">
-                            <i class="bi bi-heart-fill"></i> Donate
-                        </a>
-                    </div>
-                </div>
-            </div>
-            {% include "volunteer/volunteer_stats.html" %}
+            {% if sponsorship_enabled %}
+                {% include "sponsorship/sponsorship_stats.html" %}
+                {% include "portal/sponsor_donate_callout.html" %}
+            {% endif %}
+            {% if volunteering_enabled %}
+                {% include "volunteer/volunteer_stats.html" %}
+            {% endif %}
             {% comment %}
             Task numbers are off the public page for now, by the user's
             call on 23 September: the block and its figures are kept and
             tested, so putting them back is uncommenting this line.
             {% include "speakers/task_stats.html" %}
             {% endcomment %}
-            {% include "attendee/attendee_stats.html" %}
+            {% if pretix_configured %}
+                {% include "attendee/attendee_stats.html" %}
+            {% endif %}
         {% endif %}
     </div>
 {% endblock content %}

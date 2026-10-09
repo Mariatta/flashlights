@@ -35,7 +35,7 @@ class BaseModel(models.Model):
 
 
 class Conference(BaseModel):
-    """A single PyLadiesCon edition (2023, 2024, 2025, ...).
+    """A single edition of the event (2023, 2024, 2025, ...).
 
     Anchors all per-year configuration. Exactly one conference is active at a
     time; see ``save()`` and ``get_active()``. See
@@ -91,6 +91,9 @@ class Conference(BaseModel):
 
     class Meta:
         ordering = ["-year"]
+        # The class keeps its upstream name; people read "event".
+        verbose_name = "event"
+        verbose_name_plural = "events"
 
     def __str__(self):
         return self.name
