@@ -320,13 +320,71 @@ a.card:hover {
     color: var(--text-on-night);
 }
 
+/* Navbar spec: 64px bar, hub tabs 64px tall with the glowing 4px accent
+   underline on the current one, an edition chip in mono, the account as an
+   avatar initial. The underline is only drawn at desktop width, where the
+   tabs sit on the bar. */
+.navbar.bg-dark {
+    --bs-navbar-padding-y: 0;
+    min-height: 64px;
+}
+
 .navbar-dark .navbar-nav .nav-link {
     color: var(--text-on-night-muted);
+    font-weight: var(--weight-semibold);
+    position: relative;
 }
 
 .navbar-dark .navbar-nav .nav-link:hover,
 .navbar-dark .navbar-nav .nav-link.active {
     color: var(--text-on-night);
+}
+
+.navbar-dark .navbar-nav .nav-link.active {
+    font-weight: var(--weight-bold);
+}
+
+@media (min-width: 768px) {
+    .navbar-dark .navbar-nav .nav-link {
+        height: 64px;
+        display: inline-flex;
+        align-items: center;
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    .navbar-dark .navbar-nav .nav-link.active::after {
+        content: "";
+        position: absolute;
+        left: 0.75rem;
+        right: 0.75rem;
+        bottom: 0;
+        height: 4px;
+        border-radius: 4px 4px 0 0;
+        background: var(--accent);
+        box-shadow: 0 -4px 14px 2px rgba(var(--accent-rgb), 0.45);
+    }
+}
+
+.edition-chip {
+    font: var(--weight-semibold) 12px/1 var(--font-mono);
+    padding: 4px 7px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--night-600);
+    color: var(--night-200);
+}
+
+.avatar-initial {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--night-800);
+    border: 2px solid var(--accent);
+    color: var(--paper);
+    font: var(--weight-bold) 13px/1 var(--font-body);
 }
 
 .navbar-dark .navbar-brand {

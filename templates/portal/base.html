@@ -79,7 +79,7 @@
                     {{ brand.short_name }}
                 </a>
                 {% if active_conference %}
-                    <span class="badge bg-secondary me-2" title="Active event edition">{{ active_conference.year }}</span>
+                    <span class="edition-chip me-2" title="Active event edition">{{ active_conference.year }}</span>
                 {% endif %}
                 <button class="navbar-toggler"
                         type="button"
@@ -158,7 +158,7 @@
                             <a href="#"
                                class="nav-link d-block link-body-emphasis text-decoration-none dropdown-toggle"
                                data-bs-toggle="dropdown"
-                               aria-expanded="false">{% trans "Welcome, " %}{{ user.username }}</a>
+                               aria-expanded="false"><span class="avatar-initial me-2" aria-hidden="true">{{ user.username|first|upper }}</span>{{ user.username }}</a>
                             <ul class="dropdown-menu dropdown-menu-end text-small">
                                 {# Admin Area follows the organizer flag; Maintenance follows #}
                                 {# its own permission. A person may see either or both. #}
@@ -191,8 +191,8 @@
                     {% else %}
                         <div>
                             <a type="button"
-                               class="btn btn-outline-light"
-                               href="{% url 'account_login' %}">Login</a>
+                               class="btn btn-outline-light btn-sm"
+                               href="{% url 'account_login' %}">{% trans "Sign in" %}</a>
                         </div>
                     {% endif %}
                 </div>

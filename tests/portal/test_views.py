@@ -25,8 +25,9 @@ class TestPortalIndex:
 
         response = client.get(reverse("index"))
         assert response.status_code == 200
-        assert "Sign up" in response.content.decode()
-        assert "Login" in response.content.decode()
+        content = response.content.decode()
+        assert "Sign up" in content
+        assert reverse("account_login") in content  # the navbar's Sign in
 
     def test_index_survives_no_active_conference(self, client):
         # It is valid to have no active edition; the public landing must not 500
@@ -102,7 +103,7 @@ class TestPortalIndex:
         response = client.get(reverse("index"), follow=True)
 
         assert "Sign out" not in response.content.decode()
-        assert "Login" not in response.content.decode()
+        assert reverse("account_login") not in response.content.decode()
         assertRedirects(response, reverse("portal_account:agreements"))
 
     def test_index_authenticated_profile_already_created(self, client, portal_user):
@@ -139,7 +140,7 @@ class TestPageNotFound:
         assert response.status_code == 404
         content = response.content.decode()
         assert "Page not found" in content
-        assert "Login" in content and reverse("index") in content
+        assert reverse("account_login") in content and reverse("index") in content
 
     def test_signed_in_user_can_sign_out(self, client, portal_user):
         PortalProfile.objects.create(user=portal_user)
