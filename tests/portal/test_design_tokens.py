@@ -63,3 +63,24 @@ def test_every_page_loads_the_entry_stylesheet_and_nothing_remote(client, confer
     content = client.get(reverse("portal_stats")).content.decode()
     assert "css/flashlights" in content
     assert "fonts.googleapis.com" not in content and "unpkg.com" not in content
+
+
+def test_bootstrap_is_mapped_onto_the_tokens():
+    """portal.css re-themes Bootstrap through its variables (decision 0010):
+    body type and surface, radii, the focus ring, the status colours; the
+    old white logo chip for a navy navbar is gone."""
+    css = Path(finders.find("css/portal.css")).read_text()
+    for mapping in (
+        "--bs-body-font-family: var(--font-body);",
+        "--bs-body-bg: var(--surface-page);",
+        "--bs-border-radius: var(--radius-md);",
+        "--bs-border-radius-lg: var(--radius-lg);",
+        "--bs-focus-ring-color: var(--focus-halo);",
+        "--bs-success: var(--status-ok);",
+        "--bs-danger: var(--status-stop);",
+        "--bs-warning: var(--status-warn);",
+        "--bs-card-border-radius: var(--radius-lg);",
+        "min-height: var(--control-h-md);",
+    ):
+        assert mapping in css, mapping
+    assert ".navbar-logo {\n    background: #fff;" not in css

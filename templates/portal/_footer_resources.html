@@ -24,28 +24,30 @@
                 </ul>
             </div>
         {% endif %}
-        <div class="col">
-            <h3 class="h6 text-white-50 text-uppercase mb-3 footer-heading">
-                {% trans "About" %}
-            </h3>
-            <ul class="list-unstyled small mb-0">
-                {% if active_conference.coc_url %}
-                    <li class="mb-2">
-                        <a class="link-light text-decoration-none"
-                           href="{{ active_conference.coc_url }}">{% trans "Code of Conduct" %}</a>
-                    </li>
-                {% endif %}
-                {% if brand.terms_url %}
-                    <li class="mb-2">
-                        <a class="link-light text-decoration-none" href="{{ brand.terms_url }}">{% trans "Terms of Service" %}</a>
-                    </li>
-                {% endif %}
-                {% if brand.docs_url %}
-                    <li class="mb-2">
-                        <a class="link-light text-decoration-none" href="{{ brand.docs_url }}">{% trans "Documentation" %}</a>
-                    </li>
-                {% endif %}
-            </ul>
-        </div>
+        {% if active_conference.coc_url or brand.terms_url or brand.docs_url %}
+            <div class="col">
+                <h3 class="h6 text-white-50 text-uppercase mb-3 footer-heading">
+                    {% trans "About" %}
+                </h3>
+                <ul class="list-unstyled small mb-0">
+                    {% if active_conference.coc_url %}
+                        <li class="mb-2">
+                            <a class="link-light text-decoration-none"
+                               href="{{ active_conference.coc_url }}">{% trans "Code of Conduct" %}</a>
+                        </li>
+                    {% endif %}
+                    {% if brand.terms_url %}
+                        <li class="mb-2">
+                            <a class="link-light text-decoration-none" href="{{ brand.terms_url }}">{% trans "Terms of Service" %}</a>
+                        </li>
+                    {% endif %}
+                    {% if brand.docs_url %}
+                        <li class="mb-2">
+                            <a class="link-light text-decoration-none" href="{{ brand.docs_url }}">{% trans "Documentation" %}</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        {% endif %}
     </div>
 </div>

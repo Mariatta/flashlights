@@ -1,11 +1,356 @@
 /* Flashlights portal styling.
-   Every colour is a variable from the instance's theme stylesheet (served at
-   /theme.css from the environment, see portal/branding.py); nothing here is
-   a brand decision. */
+   Every colour is a variable: the design system's tokens (css/flashlights.css)
+   and the instance's accent (served at /theme.css from the environment, see
+   portal/branding.py). Nothing here is a brand decision.
+
+   The first section maps Bootstrap onto the tokens (decision 0010: Bootstrap
+   stays for grid, collapse, dropdown, modal and forms, re-themed through its
+   own variables). What follows is the portal's own components. */
+
+/* ---- Bootstrap on the tokens ------------------------------------------- */
+
+:root,
+[data-bs-theme="light"] {
+    --bs-font-sans-serif: var(--font-body);
+    --bs-font-monospace: var(--font-mono);
+    --bs-body-font-family: var(--font-body);
+    --bs-body-font-size: var(--text-md);
+    --bs-body-line-height: var(--leading-body);
+    --bs-body-color: var(--text-body);
+    --bs-body-color-rgb: 23, 23, 20;
+    --bs-body-bg: var(--surface-page);
+    --bs-emphasis-color: var(--text-strong);
+    --bs-secondary-color: var(--text-muted);
+    --bs-secondary-bg: var(--surface-sunken);
+    --bs-tertiary-bg: var(--surface-sunken);
+    --bs-heading-color: var(--text-strong);
+    --bs-border-color: var(--border-subtle);
+    --bs-border-width: var(--border-1);
+    --bs-border-radius: var(--radius-md);
+    --bs-border-radius-sm: var(--radius-sm);
+    --bs-border-radius-lg: var(--radius-lg);
+    --bs-border-radius-xl: var(--radius-lg);
+    --bs-link-decoration: underline;
+    /* Two-tone focus: accent halo inside a Night ring, visible on light and dark. */
+    --bs-focus-ring-width: 2px;
+    --bs-focus-ring-color: var(--focus-halo);
+    /* Status colours carry the design system's ok, warn and stop. */
+    --bs-success: var(--status-ok);
+    --bs-success-rgb: 31, 138, 76;
+    --bs-success-text-emphasis: var(--status-ok-ink);
+    --bs-success-bg-subtle: var(--status-ok-bg);
+    --bs-success-border-subtle: var(--status-ok);
+    --bs-danger: var(--status-stop);
+    --bs-danger-rgb: 208, 58, 34;
+    --bs-danger-text-emphasis: var(--status-stop-ink);
+    --bs-danger-bg-subtle: var(--status-stop-bg);
+    --bs-danger-border-subtle: var(--status-stop);
+    --bs-warning: var(--status-warn);
+    --bs-warning-rgb: 224, 122, 16;
+    --bs-warning-text-emphasis: var(--status-warn-ink);
+    --bs-warning-bg-subtle: var(--status-warn-bg);
+    --bs-warning-border-subtle: var(--status-warn);
+    --bs-info: var(--night-600);
+    --bs-info-rgb: 82, 79, 71;
+    --bs-info-text-emphasis: var(--night-700);
+    --bs-info-bg-subtle: var(--status-info-bg);
+    --bs-info-border-subtle: var(--night-300);
+    --bs-light: var(--surface-sunken);
+    --bs-light-rgb: 238, 235, 227;
+    --bs-secondary: var(--night-600);
+    --bs-secondary-rgb: 82, 79, 71;
+    --bs-secondary-text-emphasis: var(--night-700);
+    --bs-secondary-bg-subtle: var(--night-100);
+    --bs-secondary-border-subtle: var(--night-300);
+}
 
 body {
-    font-family: system-ui, sans-serif;
+    font: var(--type-body);
+    color: var(--text-body);
+    background: var(--surface-page);
 }
+
+h1, h2, h3, .h1, .h2, .h3, .display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
+    font-family: var(--font-display);
+    font-weight: var(--weight-bold);
+    letter-spacing: var(--tracking-display);
+}
+
+h1, .h1, .display-4 {
+    font-weight: var(--weight-black);
+}
+
+h4, h5, h6, .h4, .h5, .h6 {
+    font-family: var(--font-body);
+    font-weight: var(--weight-bold);
+}
+
+code, kbd, pre, samp, .font-monospace {
+    font-family: var(--font-mono);
+}
+
+/* Every focused control gets the same two-tone ring. */
+.btn:focus-visible,
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus,
+.nav-link:focus-visible,
+.dropdown-item:focus-visible,
+.page-link:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-focus);
+}
+
+/* Buttons: radius 8, 2px borders, 44px tall; one important element per view
+   gets the accent with a Night border. */
+.btn {
+    --bs-btn-border-width: var(--border-2);
+    --bs-btn-border-radius: var(--radius-md);
+    --bs-btn-font-weight: var(--weight-bold);
+    --bs-btn-padding-y: 0.5rem;
+    --bs-btn-padding-x: 1rem;
+    min-height: var(--control-h-md);
+    transition: background-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+
+.btn-sm {
+    min-height: var(--control-h-sm);
+}
+
+.btn-lg {
+    min-height: var(--control-h-lg);
+}
+
+.btn:active {
+    transform: translateY(1px);
+}
+
+.btn-secondary,
+.btn-dark {
+    --bs-btn-bg: var(--night-950);
+    --bs-btn-border-color: var(--night-950);
+    --bs-btn-color: var(--paper);
+    --bs-btn-hover-bg: var(--night-800);
+    --bs-btn-hover-border-color: var(--night-800);
+    --bs-btn-hover-color: var(--paper);
+    --bs-btn-active-bg: var(--night-700);
+    --bs-btn-active-border-color: var(--night-700);
+    --bs-btn-active-color: var(--paper);
+}
+
+.btn-outline-secondary,
+.btn-outline-dark {
+    --bs-btn-color: var(--text-strong);
+    --bs-btn-border-color: var(--night-950);
+    --bs-btn-hover-bg: var(--night-950);
+    --bs-btn-hover-border-color: var(--night-950);
+    --bs-btn-hover-color: var(--paper);
+    --bs-btn-active-bg: var(--night-950);
+    --bs-btn-active-color: var(--paper);
+}
+
+.btn-light,
+.btn-outline-light {
+    --bs-btn-color: var(--paper);
+    --bs-btn-border-color: var(--paper);
+    --bs-btn-bg: transparent;
+    --bs-btn-hover-bg: var(--paper);
+    --bs-btn-hover-color: var(--night-950);
+    --bs-btn-hover-border-color: var(--paper);
+}
+
+.btn-link {
+    --bs-btn-color: var(--text-link);
+    --bs-btn-hover-color: var(--text-link);
+    --bs-btn-border-width: 0;
+}
+
+/* Controls: 2px borders, radius 8, 44px tall; focus is a Night border inside
+   the accent halo. */
+.form-control,
+.form-select {
+    --bs-border-width: var(--border-2);
+    --bs-border-color: var(--border-default);
+    --bs-border-radius: var(--radius-md);
+    min-height: var(--control-h-md);
+    padding: 0.5rem 0.75rem;
+    color: var(--text-body);
+    background-color: var(--surface-card);
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--night-950);
+    background-color: var(--surface-card);
+    color: var(--text-body);
+}
+
+.form-control.is-invalid,
+.was-validated .form-control:invalid {
+    border-color: var(--status-stop);
+}
+
+.form-check-input {
+    width: 1.25em;
+    height: 1.25em;
+    border: 2px solid var(--night-500);
+    border-radius: var(--radius-sm);
+}
+
+.form-check-input:checked {
+    background-color: var(--night-950);
+    border-color: var(--night-950);
+}
+
+.form-switch .form-check-input:checked {
+    background-color: var(--night-950);
+}
+
+.form-label {
+    font-weight: var(--weight-bold);
+    color: var(--text-strong);
+}
+
+.form-text {
+    color: var(--text-muted);
+}
+
+/* Cards: white, 1px Night 200, radius 14. Borders over shadows. */
+.card {
+    --bs-card-bg: var(--surface-card);
+    --bs-card-border-color: var(--border-subtle);
+    --bs-card-border-radius: var(--radius-lg);
+    --bs-card-inner-border-radius: calc(var(--radius-lg) - 1px);
+    --bs-card-cap-bg: var(--surface-card);
+    --bs-card-cap-color: var(--text-strong);
+}
+
+.card-header {
+    font-weight: var(--weight-bold);
+}
+
+/* An interactive card lifts with the hard Night shadow. */
+a.card {
+    transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+
+a.card:hover {
+    transform: translateY(-2px);
+    border-color: var(--night-950);
+    box-shadow: 0 3px 0 var(--night-950);
+}
+
+/* Badges and alerts: status always pairs colour with a word. */
+.badge {
+    --bs-badge-border-radius: var(--radius-sm);
+    --bs-badge-font-weight: var(--weight-bold);
+    font-family: var(--font-body);
+}
+
+.badge.text-bg-light,
+.badge.bg-light {
+    color: var(--text-strong) !important;
+    border: 1px solid var(--border-subtle);
+}
+
+.badge.bg-secondary,
+.badge.text-bg-secondary {
+    background-color: var(--night-700) !important;
+    color: var(--paper) !important;
+}
+
+.alert {
+    --bs-alert-border-radius: var(--radius-lg);
+}
+
+.alert-info,
+.alert-light {
+    --bs-alert-color: var(--text-strong);
+    --bs-alert-bg: var(--status-info-bg);
+    --bs-alert-border-color: var(--night-300);
+}
+
+/* Tables, list groups, dropdowns, pagination and pills on the neutrals. */
+.table {
+    --bs-table-color: var(--text-body);
+    --bs-table-border-color: var(--border-subtle);
+    --bs-table-striped-bg: var(--surface-sunken);
+    --bs-table-hover-bg: var(--night-100);
+}
+
+.list-group {
+    --bs-list-group-border-color: var(--border-subtle);
+    --bs-list-group-border-radius: var(--radius-lg);
+    --bs-list-group-action-hover-bg: var(--surface-sunken);
+}
+
+.dropdown-menu {
+    --bs-dropdown-border-color: var(--border-subtle);
+    --bs-dropdown-border-radius: var(--radius-md);
+    --bs-dropdown-link-hover-bg: var(--surface-sunken);
+    --bs-dropdown-link-active-bg: var(--night-950);
+    --bs-dropdown-link-active-color: var(--paper);
+    box-shadow: var(--shadow-lg);
+}
+
+.pagination {
+    --bs-pagination-color: var(--text-strong);
+    --bs-pagination-border-color: var(--border-subtle);
+    --bs-pagination-active-bg: var(--night-950);
+    --bs-pagination-active-border-color: var(--night-950);
+    --bs-pagination-hover-bg: var(--surface-sunken);
+}
+
+.nav-pills {
+    --bs-nav-pills-link-active-bg: var(--night-950);
+    --bs-nav-pills-link-active-color: var(--paper);
+    --bs-nav-pills-border-radius: var(--radius-md);
+}
+
+.nav-link {
+    color: var(--text-strong);
+}
+
+/* Night surfaces: the navbar and footer carry the beam glow (effects.css),
+   tinted by the accent. Text on Night is Paper. */
+.navbar.bg-dark,
+.footer.bg-dark {
+    background-color: var(--surface-night) !important;
+    background-image: var(--beam-glow);
+    color: var(--text-on-night);
+}
+
+.navbar-dark .navbar-nav .nav-link {
+    color: var(--text-on-night-muted);
+}
+
+.navbar-dark .navbar-nav .nav-link:hover,
+.navbar-dark .navbar-nav .nav-link.active {
+    color: var(--text-on-night);
+}
+
+.navbar-dark .navbar-brand {
+    font-family: var(--font-display);
+    font-weight: var(--weight-black);
+    letter-spacing: -0.04em;
+    color: var(--text-on-night);
+}
+
+.footer a {
+    color: var(--text-link-on-night);
+}
+
+.footer .link-light {
+    color: var(--text-on-night) !important;
+}
+
+.text-body-secondary,
+.text-secondary,
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+/* ---- The portal's own components ---------------------------------------- */
 
 .btn-primary {
     /* The ink on a filled accent is chosen by contrast (Night on Beam,
@@ -44,10 +389,9 @@ body {
     background-color: var(--brand-primary) !important;
 }
 
-/* The colorful logo needs a light chip to read on the navy navbar. */
+/* A community's logo sits on the Night bar as it is; a rounded corner only. */
 .navbar-logo {
-    background: #fff;
-    padding: 3px;
+    border-radius: var(--radius-sm);
 }
 
 /* django-bootstrap5 tags required fields with the configured
@@ -67,11 +411,15 @@ body {
     }
 }
 
-/* Bootstrap compiles the active pill colour to a literal blue, so overriding
-   --bs-primary alone never reaches it. Point the rail's active item at the
-   brand colour instead. */
+/* The rail's active item is a Night pill (SideRail spec); the accent goes to
+   its icon. */
 .app-sidebar .nav-pills {
-    --bs-nav-pills-link-active-bg: var(--bs-primary);
+    --bs-nav-pills-link-active-bg: var(--night-950);
+    --bs-nav-pills-link-active-color: var(--paper);
+}
+
+.app-sidebar .nav-pills .nav-link.active i {
+    color: var(--accent);
 }
 
 /* Flex items default to min-width:auto, so a wide table would stretch the
