@@ -20,7 +20,25 @@
         </h1>
         <form method="post" class="col-md-8">
             {% csrf_token %}
-            {% bootstrap_form form %}
+            {% bootstrap_field form.year %}
+            {% bootstrap_field form.name %}
+            {% bootstrap_field form.slug %}
+            {# Every on/off switch for the edition in one place. #}
+            <fieldset class="card mb-4">
+                <legend class="card-header h6 mb-0">
+                    {% trans "What is on for this edition" %}
+                </legend>
+                <div class="card-body">
+                    {% bootstrap_field form.is_active %}
+                    {% if form.speaker_module_enabled %}
+                        {% bootstrap_field form.speaker_module_enabled %}
+                    {% endif %}
+                    {% bootstrap_field form.volunteer_application_open %}
+                    {% bootstrap_field form.sponsorship_open %}
+                    {% bootstrap_field form.accepting_donations %}
+                </div>
+            </fieldset>
+            {% bootstrap_form form exclude="year,name,slug,is_active,speaker_module_enabled,volunteer_application_open,sponsorship_open,accepting_donations" %}
             <button type="submit" class="btn btn-primary">
                 {% trans "Save" %}
             </button>

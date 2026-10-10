@@ -159,18 +159,19 @@ class ConferenceForm(forms.ModelForm):
 
     class Meta:
         model = Conference
+        # The switches sit together (the form renders them as one group).
         fields = [
             "year",
             "name",
             "slug",
             "is_active",
+            "volunteer_application_open",
+            "sponsorship_open",
+            "accepting_donations",
             "pretix_event_slug",
             "sponsorship_goal",
             "donation_goal",
             "proposals_count",
-            "volunteer_application_open",
-            "sponsorship_open",
-            "accepting_donations",
             "start_date",
             "end_date",
             "conference_date",
@@ -180,7 +181,12 @@ class ConferenceForm(forms.ModelForm):
             "donate_url",
             "schedule_url",
         ]
-        labels = {"volunteer_application_open": "Taking volunteer applications"}
+        labels = {
+            "is_active": "Active edition",
+            "volunteer_application_open": "Taking volunteer applications",
+            "sponsorship_open": "Taking sponsors",
+            "accepting_donations": "Taking donations",
+        }
         help_texts = {
             "volunteer_application_open": "Advertises volunteering on the landing "
             "page and opens volunteer sign-up for this edition. Off, the public "
