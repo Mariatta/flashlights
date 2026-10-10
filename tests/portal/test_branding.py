@@ -1,17 +1,15 @@
+"""The instance identity seam: environment in, theme, images and tags out."""
+
 import io
 
-from django.conf import settings
-from PIL import Image
-
-from common.markdown_emails import render_markdown_email
-
-"""The instance identity seam: environment in, theme and tags out."""
-
 import pytest
+from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.test import override_settings
 from django.urls import reverse
+from PIL import Image
 
+from common.markdown_emails import render_markdown_email
 from portal import branding
 
 
@@ -21,11 +19,13 @@ class TestFromEnv:
         assert brand.title == "Flashlights"
         assert brand.short_name == "Flashlights"
         assert brand.description == "Flashlights: the organisers' portal"
-        assert brand.preset == "teal"
-        assert brand.primary == "#0f766e"
-        assert brand.primary_hover == "#0d5f59"
-        assert brand.primary_active == "#0b4f4a"
-        assert brand.ink == "#142a36"
+        assert brand.preset == "beam"
+        assert brand.primary == "#ffd43b"
+        assert brand.primary_hover == "#ffe27a"
+        assert brand.primary_active == "#f2bd00"
+        # Beam cannot carry white text: Night on the button, Beam 700 as text.
+        assert brand.text_on_accent == branding.NIGHT
+        assert brand.accent_ink == "#7a5c00"
         assert brand.logo == brand.favicon == brand.og_image == ""
         assert brand.docs_url == brand.terms_url == ""
 
@@ -49,63 +49,83 @@ class TestFromEnv:
         assert brand.logo == "https://x.test/logo.svg"
         assert brand.favicon == "https://x.test/favicon.png"
         assert brand.og_image == "https://x.test/og.png"
-        assert (brand.primary, brand.ink) == ("#b45309", "#142a36")
+        assert brand.primary == "#b45309"
+        assert brand.text_on_accent == branding.WHITE  # a dark accent
+        assert brand.accent_ink == "#b45309"  # reads on Paper as it is
         assert brand.docs_url == "https://docs.test/"
         assert brand.terms_url == "https://x.test/terms/"
 
-    def test_raspberry_keeps_the_navy_ink(self):
-        brand = branding.from_env({"BRAND_PRESET": "raspberry"})
+    def test_teal_keeps_its_shades_and_white_ink(self):
+        brand = branding.from_env({"BRAND_PRESET": "teal"})
         assert (brand.primary, brand.primary_hover, brand.primary_active) == (
-            "#ee264d",
-            "#d11f42",
-            "#c01f3f",
+            "#0f766e",
+            "#0d5f59",
+            "#0b4f4a",
         )
-        assert brand.ink == "#152035"
+        assert brand.text_on_accent == branding.WHITE
 
     def test_unknown_preset_is_refused_with_the_choices(self):
         with pytest.raises(ImproperlyConfigured) as excinfo:
             branding.from_env({"BRAND_PRESET": "neon"})
-        assert "copper, indigo, raspberry, teal" in str(excinfo.value)
+        assert "beam, copper, indigo, raspberry, teal" in str(excinfo.value)
 
-    def test_custom_primary_derives_the_shades(self):
+    def test_dark_custom_accent_darkens_both_ways(self):
         brand = branding.from_env({"BRAND_PRIMARY": "#1D4ED8"})
-        assert brand.preset == "teal"  # the preset still supplies the ink
         assert brand.primary == "#1d4ed8"
         assert brand.primary_hover == "#1a45be"
         assert brand.primary_active == "#173ead"
+        assert brand.text_on_accent == branding.WHITE
+        assert brand.accent_ink == "#1d4ed8"
+
+    def test_light_custom_accent_lightens_on_hover_and_takes_night_ink(self):
+        brand = branding.from_env({"BRAND_PRIMARY": "#ffff00"})
+        assert brand.text_on_accent == branding.NIGHT
+        assert brand.primary_hover == "#ffff4c"  # lighter
+        assert brand.primary_active == "#e6e600"  # darker
+        # Yellow text on Paper does not read; the ink is darkened until it does.
+        assert brand.accent_ink != "#ffff00"
+        paper = branding.parse_hex(branding.PAPER)
+        assert branding.contrast(branding.parse_hex(brand.accent_ink), paper) >= 4.5
 
     @pytest.mark.parametrize("value", ["1d4ed8", "#1d4e", "#zzzzzz", "blue"])
     def test_malformed_primary_is_refused(self, value):
         with pytest.raises(ImproperlyConfigured, match="rrggbb"):
             branding.from_env({"BRAND_PRIMARY": value})
 
-    def test_pale_primary_is_refused_for_contrast(self):
-        with pytest.raises(ImproperlyConfigured) as excinfo:
-            branding.from_env({"BRAND_PRIMARY": "#ffff00"})
-        message = str(excinfo.value)
-        assert "1.1:1 contrast" in message
-        assert "at least 3:1" in message
+    @pytest.mark.parametrize("value", ["#000000", "#ffffff", "#808080", "#ff00ff"])
+    def test_every_colour_gets_an_ink_that_reads(self, value):
+        """Against Night or against white, one ink always clears 3:1, so no
+        accent is refused; the mid-grey worst case clears it on both."""
+        brand = branding.from_env({"BRAND_PRIMARY": value})
+        rgb = branding.parse_hex(value)
+        assert branding.contrast(rgb, branding.parse_hex(brand.text_on_accent)) >= 3
 
 
 class TestBrand:
     def test_theme_css_carries_every_token(self):
         css = branding.from_env({"BRAND_PRESET": "indigo"}).theme_css()
-        assert "--brand-primary: #4f46e5;" in css
-        assert "--brand-primary-rgb: 79, 70, 229;" in css
-        assert "--brand-primary-hover: #4338ca;" in css
-        assert "--brand-primary-active: #3730a3;" in css
-        assert "--brand-ink: #142a36;" in css
-        assert "--bs-primary: var(--brand-primary);" in css
-        assert "--bs-link-hover-color-rgb: var(--brand-primary-hover-rgb);" in css
+        assert "--accent: #4f46e5;" in css
+        assert "--accent-rgb: 79, 70, 229;" in css
+        assert "--accent-hover: #4338ca;" in css
+        assert "--accent-press: #3730a3;" in css
+        assert "--accent-ink: #4f46e5;" in css
+        assert "--text-on-accent: #ffffff;" in css
+        assert "--focus-halo: var(--accent);" in css
+        # The portal's older names and Bootstrap's build on the accent; the
+        # ink (navbar, footer) is the fixed Night.
+        assert "--brand-primary: var(--accent);" in css
+        assert "--brand-ink: #0f0f0d;" in css
+        assert "--bs-primary: var(--accent);" in css
+        assert "--bs-link-color: var(--accent-ink);" in css
 
     def test_version_changes_with_the_colours_and_the_initial(self):
-        teal = branding.from_env({})
+        beam = branding.from_env({})
         copper = branding.from_env({"BRAND_PRESET": "copper"})
         renamed = branding.from_env({"SITE_TITLE": "Summit"})
-        assert len(teal.version) == 12
-        assert teal.version != copper.version
-        assert teal.version != renamed.version
-        assert teal.version == branding.from_env({}).version
+        assert len(beam.version) == 12
+        assert beam.version != copper.version
+        assert beam.version != renamed.version
+        assert beam.version == branding.from_env({}).version
 
     def test_favicon_uses_the_initial_and_primary(self):
         brand = branding.from_env(
@@ -114,7 +134,9 @@ class TestBrand:
         svg = brand.favicon_svg()
         assert brand.initial == "S"
         assert 'fill="#b45309"' in svg
-        assert ">S</text>" in svg
+        assert 'fill="#ffffff">S</text>' in svg  # white on a dark accent
+        beam = branding.from_env({"SITE_SHORT_NAME": "summit"}).favicon_svg()
+        assert 'fill="#0f0f0d">S</text>' in beam  # Night on Beam
 
     def test_blank_initial_falls_back(self):
         brand = branding.from_env({"SITE_SHORT_NAME": "  "})

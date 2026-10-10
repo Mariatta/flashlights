@@ -8,6 +8,12 @@ body {
 }
 
 .btn-primary {
+    /* The ink on a filled accent is chosen by contrast (Night on Beam,
+       white on teal), never assumed white. */
+    --bs-btn-color: var(--text-on-accent);
+    --bs-btn-hover-color: var(--text-on-accent);
+    --bs-btn-active-color: var(--text-on-accent);
+    --bs-btn-disabled-color: var(--text-on-accent);
     --bs-btn-bg: var(--brand-primary);
     --bs-btn-border-color: var(--brand-primary);
     --bs-btn-hover-bg: var(--brand-primary-hover);
@@ -19,8 +25,10 @@ body {
 }
 
 .btn-outline-primary {
-    --bs-btn-color: var(--brand-primary);
+    --bs-btn-color: var(--accent-ink);
     --bs-btn-border-color: var(--brand-primary);
+    --bs-btn-hover-color: var(--text-on-accent);
+    --bs-btn-active-color: var(--text-on-accent);
     --bs-btn-hover-bg: var(--brand-primary);
     --bs-btn-hover-border-color: var(--brand-primary);
     --bs-btn-active-bg: var(--brand-primary);
@@ -28,7 +36,8 @@ body {
 }
 
 .text-primary {
-    color: var(--brand-primary) !important;
+    /* Accent-coloured text must read on Paper: Beam 700, not Beam. */
+    color: var(--accent-ink) !important;
 }
 
 .bg-primary {

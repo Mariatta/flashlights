@@ -9,10 +9,14 @@ instance:
 ``SITE_FAVICON``, ``SITE_OG_IMAGE``, ``BRAND_PRESET``, ``BRAND_PRIMARY``,
 ``DOCS_URL``, ``TERMS_URL``.
 
-Colours come from a preset, each checked for contrast once, with one custom
-primary colour as the escape hatch; hover and active shades are derived from
-it. A custom colour that cannot carry white text is refused at boot rather
-than shipped. There is no custom CSS and the fonts are fixed.
+Colours (decision 0010): the design system fixes the chrome (Night, Paper,
+type, spacing); the accent is the one instance colour. It comes from a
+preset, ``beam`` by default, or from ``BRAND_PRIMARY`` as the escape hatch.
+The ink on the accent is chosen by contrast, Night on a light accent and
+white on a dark one, and the hover and press shades are derived in the
+right direction. Every colour has an ink that reads: against Night or
+against white, one of the two always clears 3:1, so nothing is refused.
+There is no custom CSS and the fonts are fixed.
 """
 
 import hashlib
@@ -24,20 +28,31 @@ from django.core.exceptions import ImproperlyConfigured
 from django.utils.text import slugify
 from PIL import Image, ImageDraw, ImageFont
 
-#: name -> (primary, hover, active, ink). The first three are the Popular
-#: theme's demo palettes; raspberry is the upstream portal's heritage palette.
+#: name -> (accent, hover, press). Beam is the design system's own palette;
+#: teal, copper and indigo are the Popular theme's demo palettes; raspberry
+#: is the upstream portal's heritage palette.
 PRESETS = {
-    "teal": ("#0f766e", "#0d5f59", "#0b4f4a", "#142a36"),
-    "copper": ("#b45309", "#92400e", "#7c2d12", "#142a36"),
-    "indigo": ("#4f46e5", "#4338ca", "#3730a3", "#142a36"),
-    "raspberry": ("#ee264d", "#d11f42", "#c01f3f", "#152035"),
+    "beam": ("#ffd43b", "#ffe27a", "#f2bd00"),
+    "teal": ("#0f766e", "#0d5f59", "#0b4f4a"),
+    "copper": ("#b45309", "#92400e", "#7c2d12"),
+    "indigo": ("#4f46e5", "#4338ca", "#3730a3"),
+    "raspberry": ("#ee264d", "#d11f42", "#c01f3f"),
 }
-DEFAULT_PRESET = "teal"
+#: A preset may pin the accent's text shade on Paper instead of deriving it:
+#: Beam's is the design system's Beam 700.
+PRESET_INKS = {"beam": "#7a5c00"}
+DEFAULT_PRESET = "beam"
 DEFAULT_TITLE = "Flashlights"
 
-#: WCAG minimum for user-interface components and large text, which is what
-#: the primary colour carries: filled buttons with white labels.
+#: The design system's fixed neutrals; the accent is read against them.
+NIGHT = "#0f0f0d"
+PAPER = "#f7f5ef"
+WHITE = "#ffffff"
+
+#: WCAG minimum for user-interface components and large text (filled
+#: buttons), and for body text (accent-coloured text on Paper).
 MIN_CONTRAST = 3.0
+TEXT_CONTRAST = 4.5
 
 
 def parse_hex(value):
@@ -68,14 +83,52 @@ def _luminance(rgb):
     return 0.2126 * r + 0.7152 * g + 0.0722 * b
 
 
+def contrast(a, b):
+    """WCAG contrast ratio between two colours, given as RGB tuples."""
+    la, lb = sorted((_luminance(a), _luminance(b)), reverse=True)
+    return (la + 0.05) / (lb + 0.05)
+
+
 def contrast_with_white(rgb):
     """WCAG contrast ratio between a colour and white."""
-    return 1.05 / (_luminance(rgb) + 0.05)
+    return contrast(rgb, parse_hex(WHITE))
 
 
 def darken(rgb, amount):
     """Mix a colour towards black by ``amount`` (0 keeps it, 1 is black)."""
     return tuple(round(c * (1 - amount)) for c in rgb)
+
+
+def lighten(rgb, amount):
+    """Mix a colour towards white by ``amount`` (0 keeps it, 1 is white)."""
+    return tuple(round(c + (255 - c) * amount) for c in rgb)
+
+
+def text_on(rgb):
+    """The ink a filled accent carries: Night on a light colour, white on a
+    dark one, whichever reads better. One of the two always clears 3:1."""
+    return (
+        NIGHT if contrast(rgb, parse_hex(NIGHT)) >= contrast_with_white(rgb) else WHITE
+    )
+
+
+def ink_on_paper(rgb):
+    """The accent as a text colour on Paper: the accent itself when it reads,
+    otherwise darkened until it does (Beam yellow becomes Beam 700)."""
+    paper = parse_hex(PAPER)
+    ink = rgb
+    while contrast(ink, paper) < TEXT_CONTRAST and ink != (0, 0, 0):
+        ink = darken(ink, 0.1)
+    return _to_hex(ink)
+
+
+def accent_shades(primary):
+    """Hover and press shades for a custom accent: a light accent lightens
+    on hover and darkens on press, a dark one darkens both ways."""
+    rgb = parse_hex(primary)
+    if text_on(rgb) == NIGHT:
+        return _to_hex(lighten(rgb, 0.3)), _to_hex(darken(rgb, 0.1))
+    return _to_hex(darken(rgb, 0.12)), _to_hex(darken(rgb, 0.2))
 
 
 @dataclass(frozen=True)
@@ -90,7 +143,9 @@ class Brand:
     primary: str
     primary_hover: str
     primary_active: str
-    ink: str
+    #: The accent as text on Paper, and the text on a filled accent.
+    accent_ink: str
+    text_on_accent: str
     docs_url: str
     terms_url: str
 
@@ -110,25 +165,36 @@ class Brand:
         return ", ".join(str(c) for c in parse_hex(getattr(self, name)))
 
     def theme_css(self):
-        """The stylesheet ``portal.css`` builds on: every brand colour as a variable."""
+        """The stylesheet ``portal.css`` builds on: the accent and its
+        shades as variables, under the design system's names and the
+        portal's older ``--brand-*`` names, plus Bootstrap's."""
+        night_rgb = ", ".join(str(c) for c in parse_hex(NIGHT))
         return (
             ":root {\n"
-            f"    --brand-primary: {self.primary};\n"
-            f"    --brand-primary-rgb: {self.rgb('primary')};\n"
-            f"    --brand-primary-hover: {self.primary_hover};\n"
-            f"    --brand-primary-hover-rgb: {self.rgb('primary_hover')};\n"
-            f"    --brand-primary-active: {self.primary_active};\n"
-            f"    --brand-ink: {self.ink};\n"
-            f"    --brand-ink-rgb: {self.rgb('ink')};\n"
-            "    --bs-primary: var(--brand-primary);\n"
-            "    --bs-primary-rgb: var(--brand-primary-rgb);\n"
-            "    --bs-primary-text-emphasis: var(--brand-primary-active);\n"
+            f"    --accent: {self.primary};\n"
+            f"    --accent-rgb: {self.rgb('primary')};\n"
+            f"    --accent-hover: {self.primary_hover};\n"
+            f"    --accent-hover-rgb: {self.rgb('primary_hover')};\n"
+            f"    --accent-press: {self.primary_active};\n"
+            f"    --accent-ink: {self.accent_ink};\n"
+            f"    --text-on-accent: {self.text_on_accent};\n"
+            "    --focus-halo: var(--accent);\n"
+            "    --brand-primary: var(--accent);\n"
+            "    --brand-primary-rgb: var(--accent-rgb);\n"
+            "    --brand-primary-hover: var(--accent-hover);\n"
+            "    --brand-primary-hover-rgb: var(--accent-hover-rgb);\n"
+            "    --brand-primary-active: var(--accent-press);\n"
+            f"    --brand-ink: {NIGHT};\n"
+            f"    --brand-ink-rgb: {night_rgb};\n"
+            "    --bs-primary: var(--accent);\n"
+            "    --bs-primary-rgb: var(--accent-rgb);\n"
+            "    --bs-primary-text-emphasis: var(--accent-ink);\n"
             "    --bs-dark: var(--brand-ink);\n"
             "    --bs-dark-rgb: var(--brand-ink-rgb);\n"
-            "    --bs-link-color: var(--brand-primary);\n"
-            "    --bs-link-color-rgb: var(--brand-primary-rgb);\n"
-            "    --bs-link-hover-color: var(--brand-primary-hover);\n"
-            "    --bs-link-hover-color-rgb: var(--brand-primary-hover-rgb);\n"
+            "    --bs-link-color: var(--accent-ink);\n"
+            "    --bs-link-color-rgb: var(--accent-rgb);\n"
+            "    --bs-link-hover-color: var(--accent-press);\n"
+            "    --bs-link-hover-color-rgb: var(--accent-hover-rgb);\n"
             "}\n"
         )
 
@@ -146,7 +212,7 @@ class Brand:
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
             f'<rect width="64" height="64" rx="14" fill="{self.primary}"/>'
             '<text x="32" y="44" text-anchor="middle" font-family="system-ui, sans-serif" '
-            f'font-size="38" font-weight="700" fill="#fff">{self.initial}</text>'
+            f'font-size="38" font-weight="700" fill="{self.text_on_accent}">{self.initial}</text>'
             "</svg>"
         )
 
@@ -158,7 +224,14 @@ class Brand:
         draw.rounded_rectangle(
             (0, 0, size - 1, size - 1), radius=round(size * 14 / 64), fill=self.primary
         )
-        _draw_centered(draw, self.initial, size / 2, size / 2, round(size * 0.6))
+        _draw_centered(
+            draw,
+            self.initial,
+            size / 2,
+            size / 2,
+            round(size * 0.6),
+            ink=self.text_on_accent,
+        )
         return _png_bytes(image)
 
     def share_card_png(self):
@@ -168,11 +241,22 @@ class Brand:
         width, height = 1200, 630
         image = Image.new("RGB", (width, height), self.primary)
         draw = ImageDraw.Draw(image)
-        _draw_centered(draw, self.title, width / 2, height * 0.42, 96, max_width=1080)
+        ink = self.text_on_accent
         _draw_centered(
-            draw, self.description, width / 2, height * 0.62, 40, max_width=1080
+            draw, self.title, width / 2, height * 0.42, 96, max_width=1080, ink=ink
         )
-        _draw_centered(draw, "Flashlights", width / 2, height - 56, 28, opacity=170)
+        _draw_centered(
+            draw,
+            self.description,
+            width / 2,
+            height * 0.62,
+            40,
+            max_width=1080,
+            ink=ink,
+        )
+        _draw_centered(
+            draw, "Flashlights", width / 2, height - 56, 28, opacity=170, ink=ink
+        )
         return _png_bytes(image)
 
 
@@ -182,14 +266,14 @@ def _font(size):
     return ImageFont.load_default(size=size)
 
 
-def _draw_centered(draw, text, x, y, size, max_width=None, opacity=255):
-    """White text centred on (x, y), shrunk until it fits ``max_width``."""
+def _draw_centered(draw, text, x, y, size, max_width=None, opacity=255, ink=WHITE):
+    """Text in ``ink`` centred on (x, y), shrunk until it fits ``max_width``."""
     font = _font(size)
     if max_width:
         while size > 16 and draw.textlength(text, font=font) > max_width:
             size -= 4
             font = _font(size)
-    draw.text((x, y), text, font=font, fill=(255, 255, 255, opacity), anchor="mm")
+    draw.text((x, y), text, font=font, fill=parse_hex(ink) + (opacity,), anchor="mm")
 
 
 def _png_bytes(image):
@@ -208,19 +292,12 @@ def from_env(environ=None):
         raise ImproperlyConfigured(
             f"BRAND_PRESET {preset!r} is not one of: {', '.join(sorted(PRESETS))}"
         )
-    primary, hover, active, ink = PRESETS[preset]
+    primary, hover, active = PRESETS[preset]
     custom = env.get("BRAND_PRIMARY", "").strip()
     if custom:
-        rgb = parse_hex(custom)
-        ratio = contrast_with_white(rgb)
-        if ratio < MIN_CONTRAST:
-            raise ImproperlyConfigured(
-                f"BRAND_PRIMARY {custom} has {ratio:.1f}:1 contrast against white; "
-                f"white button text needs at least {MIN_CONTRAST:.0f}:1. Pick a darker colour."
-            )
-        primary = _to_hex(rgb)
-        hover = _to_hex(darken(rgb, 0.12))
-        active = _to_hex(darken(rgb, 0.2))
+        primary = _to_hex(parse_hex(custom))
+        hover, active = accent_shades(primary)
+    rgb = parse_hex(primary)
     return Brand(
         title=title,
         short_name=short_name,
@@ -233,7 +310,9 @@ def from_env(environ=None):
         primary=primary,
         primary_hover=hover,
         primary_active=active,
-        ink=ink,
+        accent_ink=(PRESET_INKS.get(preset) if not custom else None)
+        or ink_on_paper(rgb),
+        text_on_accent=text_on(rgb),
         docs_url=env.get("DOCS_URL", "").strip(),
         terms_url=env.get("TERMS_URL", "").strip(),
     )

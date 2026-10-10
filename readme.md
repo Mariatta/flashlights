@@ -22,8 +22,8 @@ Hayes song.
 | `SITE_SHORT_NAME` | Navbar wordmark | the title |
 | `SITE_DESCRIPTION` | Open Graph description | "<title>: the organisers' portal" |
 | `SITE_LOGO`, `SITE_FAVICON`, `SITE_OG_IMAGE` | Absolute URLs. Unset, a favicon (SVG plus PNG twins for Safari and iOS) and a share card are generated from the title and the primary colour | unset |
-| `BRAND_PRESET` | `teal`, `copper`, `indigo` or `raspberry` | `teal` |
-| `BRAND_PRIMARY` | A custom `#rrggbb` primary; hover and active shades are derived; refused below 3:1 contrast on white | unset |
+| `BRAND_PRESET` | The accent: `beam`, `teal`, `copper`, `indigo` or `raspberry`. The chrome (Night, Paper, type) is fixed | `beam` |
+| `BRAND_PRIMARY` | A custom `#rrggbb` accent; the ink on it (Night or white), its text shade on Paper and the hover and press shades are derived | unset |
 | `DOCS_URL`, `TERMS_URL` | Documentation and terms of service links; left out when unset | unset |
 | `VOLUNTEERING_ENABLED` | `false` hides the Volunteer hub, its nav and organizer entries and the landing section; its pages answer 404 | `true` |
 | `SPONSORSHIP_ENABLED` | `false` hides sponsors, tiers, donations, their stats and dashboard tiles; its pages answer 404 | `true` |
