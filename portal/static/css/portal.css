@@ -500,15 +500,133 @@ a.card:hover {
     }
 }
 
-/* The rail's active item is a Night pill (SideRail spec); the accent goes to
-   its icon. */
+/* Side rail (SideRail spec): items 9px by 12px with radius 8, hover on
+   Night 100, the active one a Night pill with the accent on its icon; the
+   section headings and the title are mono eyebrows; counts are mono pills,
+   accent on the active item. */
 .app-sidebar .nav-pills {
     --bs-nav-pills-link-active-bg: var(--night-950);
     --bs-nav-pills-link-active-color: var(--paper);
+    --bs-nav-link-color: var(--text-strong);
+    --bs-nav-link-hover-color: var(--text-strong);
+    --bs-nav-link-padding-y: 9px;
+    --bs-nav-link-padding-x: 12px;
+    gap: 2px;
+}
+
+.app-sidebar .nav-pills .nav-link:hover:not(.active) {
+    background: var(--night-100);
+}
+
+.app-sidebar .nav-pills .nav-link.active {
+    font-weight: var(--weight-bold);
+}
+
+.app-sidebar .nav-pills .nav-link i {
+    width: 20px;
+    font-size: 18px;
+    text-align: center;
 }
 
 .app-sidebar .nav-pills .nav-link.active i {
     color: var(--accent);
+}
+
+.app-sidebar .nav-pills .nav-link .badge {
+    font: var(--weight-semibold) 12px/1 var(--font-mono);
+    padding: 4px 7px;
+    background: var(--night-100) !important;
+    color: var(--night-950) !important;
+    border: 1px solid var(--night-200);
+}
+
+.app-sidebar .nav-pills .nav-link.active .badge {
+    background: var(--accent) !important;
+    color: var(--text-on-accent) !important;
+    border-color: transparent;
+}
+
+.app-sidebar .text-uppercase,
+.app-sidebar hr + .text-uppercase {
+    font: var(--type-eyebrow);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--text-muted) !important;
+}
+
+.app-sidebar hr {
+    border-color: var(--border-subtle);
+    opacity: 1;
+}
+
+/* Breadcrumbs (Breadcrumbs spec): small, muted, chevron dividers, the
+   current page strong. */
+.breadcrumb {
+    --bs-breadcrumb-divider: "\203A";
+    --bs-breadcrumb-divider-color: var(--text-muted);
+    --bs-breadcrumb-item-active-color: var(--text-strong);
+    font: var(--type-small);
+}
+
+.breadcrumb a {
+    color: var(--text-muted);
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    color: var(--text-strong);
+    text-decoration: underline;
+}
+
+.breadcrumb-item.active {
+    font-weight: var(--weight-bold);
+}
+
+/* Tabs inside a page (Tabs spec): underline tabs on a 2px subtle rule, the
+   selected one on a 3px Night rule; counts are mono pills. */
+.nav-tabs {
+    --bs-nav-tabs-border-width: 0;
+    --bs-nav-link-color: var(--text-muted);
+    --bs-nav-link-hover-color: var(--text-strong);
+    --bs-nav-tabs-link-active-color: var(--text-strong);
+    --bs-nav-tabs-link-active-bg: transparent;
+    --bs-nav-link-font-weight: var(--weight-semibold);
+    --bs-nav-link-padding-y: 10px;
+    --bs-nav-link-padding-x: 14px;
+    gap: 4px;
+    border-bottom: 2px solid var(--border-subtle);
+}
+
+.nav-tabs .nav-link {
+    margin-bottom: -2px;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    border-radius: 0;
+    white-space: nowrap;
+}
+
+.nav-tabs .nav-link:hover,
+.nav-tabs .nav-link:focus-visible {
+    border-color: transparent;
+    isolation: auto;
+}
+
+.nav-tabs .nav-link.active {
+    font-weight: var(--weight-bold);
+    border-bottom-color: var(--night-950);
+}
+
+.nav-tabs .nav-link .badge {
+    font: var(--weight-semibold) 12px/1 var(--font-mono);
+    padding: 3px 6px;
+    margin-left: 6px;
+    background: var(--night-100) !important;
+    color: var(--night-950) !important;
+}
+
+.nav-tabs .nav-link.active .badge {
+    background: var(--accent) !important;
+    color: var(--text-on-accent) !important;
 }
 
 /* Flex items default to min-width:auto, so a wide table would stretch the

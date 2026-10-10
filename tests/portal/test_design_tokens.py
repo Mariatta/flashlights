@@ -81,6 +81,10 @@ def test_bootstrap_is_mapped_onto_the_tokens():
         "--bs-warning: var(--status-warn);",
         "--bs-card-border-radius: var(--radius-lg);",
         "min-height: var(--control-h-md);",
+        # The rail, breadcrumbs and tabs (SideRail, Breadcrumbs, Tabs specs).
+        "--bs-nav-pills-link-active-bg: var(--night-950);",
+        '--bs-breadcrumb-divider: "\\203A";',
+        "border-bottom: 3px solid transparent;",
     ):
         assert mapping in css, mapping
     assert ".navbar-logo {\n    background: #fff;" not in css
