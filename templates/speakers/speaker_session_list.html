@@ -21,7 +21,7 @@
             {# One way in for everyone: a session starts as a proposal. #}
             <a class="btn btn-sm btn-outline-primary"
                href="{% url 'speakers:propose' %}">
-                <i class="fa-solid fa-paper-plane"></i> {% trans "Propose another session" %}
+                <i class="icon-send"></i> {% trans "Propose another session" %}
             </a>
         {% endif %}
     </div>
@@ -70,7 +70,7 @@
                             {# A proposal has no checklist yet, and it is edited on the proposal page. #}
                             <a class="btn btn-sm btn-outline-primary"
                                href="{% url 'speakers:my_session_detail' link.session.slug %}#checklist">
-                                <i class="fa-solid fa-list-check"></i> {% trans "Checklist" %}
+                                <i class="icon-list-check"></i> {% trans "Checklist" %}
                             </a>
                             <a class="btn btn-sm btn-outline-secondary"
                                href="{% url 'speakers:my_session_edit' link.session.slug %}">{% trans "Edit details" %}</a>

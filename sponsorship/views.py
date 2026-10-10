@@ -169,9 +169,9 @@ class SponsorshipProfileTable(tables.Table):
         # Icon-only in the table (tooltip + aria-label for accessibility).
         return format_html(
             '<a href="{}" class="btn btn-sm btn-primary" title="Edit" '
-            'aria-label="Edit"><i class="fa-solid fa-pencil"></i></a> '
+            'aria-label="Edit"><i class="icon-pencil"></i></a> '
             '<a href="{}" class="btn btn-sm btn-outline-danger" title="Delete" '
-            'aria-label="Delete"><i class="fa-solid fa-trash"></i></a>',
+            'aria-label="Delete"><i class="icon-trash"></i></a>',
             edit_url,
             delete_url,
         )

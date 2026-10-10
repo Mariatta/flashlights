@@ -84,3 +84,35 @@ def test_bootstrap_is_mapped_onto_the_tokens():
     ):
         assert mapping in css, mapping
     assert ".navbar-logo {\n    background: #fff;" not in css
+
+
+def test_no_font_awesome_remains():
+    """Icons are Lucide (icon-<name>); the Font Awesome kit and its classes
+    are gone from templates, Python and scripts."""
+    root = Path(finders.find("css")).parent.parent.parent
+    folders = (
+        "templates",
+        "portal",
+        "speakers",
+        "volunteer",
+        "sponsorship",
+        "attendee",
+        "common",
+        "affiliations",
+    )
+    for folder in folders:
+        for path in (root / folder).rglob("*"):
+            if (
+                path.suffix in (".html", ".py", ".js", ".md")
+                and "migrations" not in path.parts
+            ):
+                text = path.read_text()
+                assert not re.search(r"\bfa-[a-z0-9]", text), path
+                assert "fontawesome" not in text, path
+
+
+@pytest.mark.django_db
+def test_pages_use_lucide_classes_only(client, conference):
+    content = client.get("/").content.decode()
+    assert "kit.fontawesome.com" not in content
+    assert "fa-solid" not in content

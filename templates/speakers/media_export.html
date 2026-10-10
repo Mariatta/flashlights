@@ -203,7 +203,7 @@
             </div>
             <div class="col-12 d-flex flex-wrap align-items-center gap-3">
                 <button class="btn btn-outline-secondary" type="submit">
-                    <i class="fa-solid fa-filter"></i> {% trans "Apply selection" %}
+                    <i class="icon-filter"></i> {% trans "Apply selection" %}
                 </button>
                 <span>
                     {% blocktranslate count counter=file_count %}<strong>{{ counter }}</strong> file{% plural %}<strong>{{ counter }}</strong> files{% endblocktranslate %}
@@ -229,7 +229,7 @@
         <button class="btn btn-primary"
                 type="submit"
                 {% if not file_count %}disabled{% endif %}>
-            <i class="fa-solid fa-download"></i> {% trans "Make the export" %}
+            <i class="icon-download"></i> {% trans "Make the export" %}
         </button>
         <span class="text-secondary small ms-2">
             {% trans "Its links live for twelve hours and fetch the files for whoever has them." %}

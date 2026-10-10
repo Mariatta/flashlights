@@ -36,11 +36,11 @@ Params: group (media.asset_groups), session, can_edit
                             {% if asset.is_machine_made %}
                                 {% trans "Made by the portal's transcription engine, not yet reviewed" as draft_title %}
                                 <span class="badge text-bg-warning" title="{{ draft_title }}">
-                                    <i class="fa-solid fa-robot"></i> {% trans "machine draft" %} · {{ asset.generated_by }}
+                                    <i class="icon-bot"></i> {% trans "machine draft" %} · {{ asset.generated_by }}
                                 </span>
                             {% endif %}
                             {% if group.job and group.job.is_open %}
-                            <span class="text-secondary"><i class="fa-solid fa-hourglass-half"></i>
+                            <span class="text-secondary"><i class="icon-hourglass"></i>
                             {% if group.job.status == "RUNNING" %}
                                 {% blocktranslate with since=group.job.started_at|timesince %}Transcribing, started {{ since }} ago{% endblocktranslate %}
                             {% else %}
@@ -48,10 +48,10 @@ Params: group (media.asset_groups), session, can_edit
                             {% endif %}
                         </span>
                     {% elif group.job and group.job.status == "FAILED" %}
-                        <span class="text-danger" title="{{ group.job.error }}"><i class="fa-solid fa-triangle-exclamation"></i> {% trans "Transcription failed" %}: {{ group.job.error }}</span>
+                        <span class="text-danger" title="{{ group.job.error }}"><i class="icon-triangle-alert"></i> {% trans "Transcription failed" %}: {{ group.job.error }}</span>
                     {% endif %}
                     {% if asset.thumbnail_error %}
-                        <span class="text-danger" title="{{ asset.thumbnail_error }}"><i class="fa-solid fa-triangle-exclamation"></i> {% trans "no thumbnail" %}</span>
+                        <span class="text-danger" title="{{ asset.thumbnail_error }}"><i class="icon-triangle-alert"></i> {% trans "no thumbnail" %}</span>
                     {% endif %}
                 </div>
             </div>
@@ -80,7 +80,7 @@ Params: group (media.asset_groups), session, can_edit
         {% elif asset.probe_error %}
             {% trans "Length not measured" as not_measured %}
             <span class="text-danger" title="{{ asset.probe_error }}">
-                <i class="fa-solid fa-triangle-exclamation"></i> {{ not_measured }}
+                <i class="icon-triangle-alert"></i> {{ not_measured }}
             </span>
         {% endif %}
     </td>
@@ -105,18 +105,18 @@ Params: group (media.asset_groups), session, can_edit
                     <input type="hidden" name="shared" value="0">
                     {% trans "Shared; click to take it back" as unshare_title %}
                     <button class="btn btn-sm btn-info" type="submit" title="{{ unshare_title }}">
-                        <i class="fa-solid fa-share-nodes"></i> {% trans "Shared" %}
+                        <i class="icon-share-2"></i> {% trans "Shared" %}
                     </button>
                 {% else %}
                     <input type="hidden" name="shared" value="1">
                     <button class="btn btn-sm btn-outline-secondary" type="submit">
-                        <i class="fa-solid fa-share-nodes"></i> {% trans "Share" %}
+                        <i class="icon-share-2"></i> {% trans "Share" %}
                     </button>
                 {% endif %}
             </form>
         {% elif asset.shared_with_speaker %}
             <span class="badge text-bg-info" title="{{ shared_title }}">
-                <i class="fa-solid fa-share-nodes"></i> {% trans "Shared" %}
+                <i class="icon-share-2"></i> {% trans "Shared" %}
             </span>
         {% elif asset.kind == "RAW_VIDEO" %}
             {% trans "The speaker's own file" as own_title %}
@@ -129,7 +129,7 @@ Params: group (media.asset_groups), session, can_edit
         {% if asset.storage_key or asset.file %}
             <a class="btn btn-sm btn-outline-primary"
                href="{% url 'speakers:media_download' session.slug asset.pk %}">
-                <i class="fa-solid fa-download"></i> {% trans "Download" %}
+                <i class="icon-download"></i> {% trans "Download" %}
             </a>
         {% endif %}
         <button class="btn btn-sm btn-outline-secondary"
@@ -138,7 +138,7 @@ Params: group (media.asset_groups), session, can_edit
                 data-bs-target="#more-{{ group.id }}"
                 aria-expanded="false"
                 aria-controls="more-{{ group.id }}">
-            <i class="fa-solid fa-ellipsis"></i> {% trans "More" %}
+            <i class="icon-ellipsis"></i> {% trans "More" %}
         </button>
     </td>
 </tr>
@@ -151,13 +151,13 @@ Params: group (media.asset_groups), session, can_edit
                 {% endif %}
                 {% if asset.notes_md and not can_edit %}
                     <div class="small text-secondary mt-2">
-                        <i class="fa-regular fa-note-sticky"></i> {{ asset.notes_md }}
+                        <i class="icon-sticky-note"></i> {{ asset.notes_md }}
                     </div>
                 {% endif %}
                 {% if group.history %}
                     <details class="mt-3">
                         <summary class="small">
-                            <i class="fa-solid fa-clock-rotate-left"></i>
+                            <i class="icon-history"></i>
                             {% blocktranslate count counter=group.history|length %}{{ counter }} earlier version{% plural %}{{ counter }} earlier versions{% endblocktranslate %}
                         </summary>
                         <ul class="list-unstyled mt-2 mb-0 d-grid gap-1">
@@ -231,7 +231,7 @@ Params: group (media.asset_groups), session, can_edit
                               hx-swap="outerHTML">
                             {% csrf_token %}
                             <button class="btn btn-sm btn-outline-secondary" type="submit">
-                                <i class="fa-solid fa-closed-captioning"></i>
+                                <i class="icon-captions"></i>
                                 {% if group.job and group.job.status == "FAILED" %}
                                     {% trans "Retry the transcription" %}
                                 {% else %}
@@ -249,7 +249,7 @@ Params: group (media.asset_groups), session, can_edit
                         data-name="{{ group.confirm_name }}"
                         data-label="{{ group.title|default:group.label }}"
                         data-versions="{{ versions_text }}">
-                    <i class="fa-solid fa-trash"></i> {% trans "Delete every version" %}
+                    <i class="icon-trash"></i> {% trans "Delete every version" %}
                 </button>
             </div>
         {% endif %}

@@ -7,7 +7,7 @@ accepted session says whether it is arranged, scheduled or public.
 {% endcomment %}
 <span class="badge {% if session.status == 'PUBLISHED' or session.status == 'SCHEDULED' %}text-bg-success{% elif session.status == 'CONFIRMED' %}text-bg-info{% elif session.status == 'CANCELLED' or session.status == 'REJECTED' %}text-bg-secondary{% else %}text-bg-light border{% endif %}">
     {% if session.status == "PROPOSED" %}
-        <i class="fa-solid fa-hourglass-half"></i>
+        <i class="icon-hourglass"></i>
     {% endif %}
     {{ session.speaker_status }}
 </span>

@@ -28,7 +28,7 @@
                 <div class="card h-100">
                     <div class="card-body">
                         <div class="text-secondary small mb-1">
-                            <i class="fa-solid fa-user-check"></i> {% trans "Onboarded" %}
+                            <i class="icon-user-check"></i> {% trans "Onboarded" %}
                         </div>
                         <div class="fs-3 fw-medium">
                             {{ onboarded_count }}
@@ -44,7 +44,7 @@
                     <div class="card h-100">
                         <div class="card-body">
                             <div class="text-secondary small mb-1">
-                                <i class="fa-solid fa-hand-holding-dollar"></i> {% trans "Sponsorship" %}
+                                <i class="icon-hand-coins"></i> {% trans "Sponsorship" %}
                             </div>
                             <div class="fs-3 fw-medium">
                                 {{ sponsorship_goal_percent }}%
@@ -64,7 +64,7 @@
                     <div class="card h-100">
                         <div class="card-body">
                             <div class="text-secondary small mb-1">
-                                <i class="fa-solid fa-heart"></i> {% trans "Donations" %}
+                                <i class="icon-heart"></i> {% trans "Donations" %}
                             </div>
                             <div class="fs-3 fw-medium">
                                 {{ donation_goal_percent }}%
@@ -86,7 +86,7 @@
                     <div class="card h-100">
                         <div class="card-body">
                             <div class="text-secondary small mb-1">
-                                <i class="fa-solid fa-ticket"></i> {% trans "Attendees" %}
+                                <i class="icon-ticket"></i> {% trans "Attendees" %}
                             </div>
                             <div class="fs-3 fw-medium">
                                 {{ attendee_count }}
@@ -124,13 +124,13 @@
                     {% if can_manage_conferences %}
                         <a href="{% url 'conference_list' %}"
                            class="list-group-item list-group-item-action list-group-item-danger d-flex align-items-center">
-                            <i class="fa-solid fa-calendar-xmark fa-fw me-3"></i>
+                            <i class="icon-calendar-x icon-fw me-3"></i>
                             <span class="flex-grow-1"><strong>{% trans "No active event." %}</strong> {% trans "Activate an event so the portal reports on the current year." %}</span>
-                            <i class="fa-solid fa-chevron-right"></i>
+                            <i class="icon-chevron-right"></i>
                         </a>
                     {% else %}
                         <div class="list-group-item list-group-item-danger d-flex align-items-center">
-                            <i class="fa-solid fa-calendar-xmark fa-fw me-3"></i>
+                            <i class="icon-calendar-x icon-fw me-3"></i>
                             <span class="flex-grow-1"><strong>{% trans "No active event." %}</strong> {% trans "Ask a superuser to activate one so the portal reports on the current year." %}</span>
                         </div>
                     {% endif %}
@@ -138,31 +138,31 @@
                 {% if pending_reviews and volunteering_enabled %}
                     <a href="{% url 'volunteer:volunteers_list' %}?application_status={{ pending_status|urlencode }}"
                        class="list-group-item list-group-item-action list-group-item-warning d-flex align-items-center">
-                        <i class="fa-solid fa-clipboard-list fa-fw me-3"></i>
+                        <i class="icon-clipboard-list icon-fw me-3"></i>
                         <span class="flex-grow-1">{% blocktranslate count counter=pending_reviews %}<strong>{{ counter }} volunteer application</strong> pending review.{% plural %}<strong>{{ counter }} volunteer applications</strong> pending review.{% endblocktranslate %}</span>
-                        <i class="fa-solid fa-chevron-right"></i>
+                        <i class="icon-chevron-right"></i>
                     </a>
                 {% endif %}
                 {% if unled_teams and volunteering_enabled %}
                     <a href="{% url 'teams' %}"
                        class="list-group-item list-group-item-action list-group-item-warning d-flex align-items-center">
-                        <i class="fa-solid fa-user-slash fa-fw me-3"></i>
+                        <i class="icon-user-x icon-fw me-3"></i>
                         <span class="flex-grow-1">{% blocktranslate count counter=unled_teams %}<strong>{{ counter }} team</strong> has no lead assigned.{% plural %}<strong>{{ counter }} teams</strong> have no lead assigned.{% endblocktranslate %}</span>
-                        <i class="fa-solid fa-chevron-right"></i>
+                        <i class="icon-chevron-right"></i>
                     </a>
                 {% endif %}
                 {% if awaiting_invoice and sponsorship_enabled %}
                     <a href="{% url 'sponsorship:sponsorship_list' %}"
                        class="list-group-item list-group-item-action list-group-item-warning d-flex align-items-center">
-                        <i class="fa-solid fa-file-invoice fa-fw me-3"></i>
+                        <i class="icon-receipt icon-fw me-3"></i>
                         <span class="flex-grow-1">{% blocktranslate count counter=awaiting_invoice %}<strong>{{ counter }} sponsor</strong> committed but not yet invoiced.{% plural %}<strong>{{ counter }} sponsors</strong> committed but not yet invoiced.{% endblocktranslate %}</span>
-                        <i class="fa-solid fa-chevron-right"></i>
+                        <i class="icon-chevron-right"></i>
                     </a>
                 {% endif %}
             </div>
         {% else %}
             <div class="alert alert-light border mb-4">
-                <i class="fa-solid fa-circle-check text-success"></i> {% trans "Nothing needs your attention right now." %}
+                <i class="icon-circle-check text-success"></i> {% trans "Nothing needs your attention right now." %}
             </div>
         {% endif %}
         {# ---- Quick actions ---- #}
@@ -175,7 +175,7 @@
                     <a href="{% url 'volunteer:volunteers_list' %}"
                        class="card h-100 text-decoration-none">
                         <div class="card-body d-flex align-items-center gap-3">
-                            <i class="fa-solid fa-users fs-5 text-primary"></i>
+                            <i class="icon-users fs-5 text-primary"></i>
                             <span class="text-body">{% trans "Review volunteers" %}</span>
                         </div>
                     </a>
@@ -183,7 +183,7 @@
                 <div class="col">
                     <a href="{% url 'teams' %}" class="card h-100 text-decoration-none">
                         <div class="card-body d-flex align-items-center gap-3">
-                            <i class="fa-solid fa-users-rectangle fs-5 text-primary"></i>
+                            <i class="icon-users-round fs-5 text-primary"></i>
                             <span class="text-body">{% trans "Manage teams" %}</span>
                         </div>
                     </a>
@@ -194,7 +194,7 @@
                     <a href="{% url 'sponsorship:sponsorship_list' %}"
                        class="card h-100 text-decoration-none">
                         <div class="card-body d-flex align-items-center gap-3">
-                            <i class="fa-solid fa-hand-holding-dollar fs-5 text-primary"></i>
+                            <i class="icon-hand-coins fs-5 text-primary"></i>
                             <span class="text-body">{% trans "Manage sponsors" %}</span>
                         </div>
                     </a>
@@ -203,7 +203,7 @@
                     <a href="{% url 'sponsorship:sponsorship_profile_new' %}"
                        class="card h-100 text-decoration-none">
                         <div class="card-body d-flex align-items-center gap-3">
-                            <i class="fa-solid fa-plus fs-5 text-primary"></i>
+                            <i class="icon-plus fs-5 text-primary"></i>
                             <span class="text-body">{% trans "Add sponsor" %}</span>
                         </div>
                     </a>
@@ -214,7 +214,7 @@
                     <a href="{% url 'conference_list' %}"
                        class="card h-100 text-decoration-none">
                         <div class="card-body d-flex align-items-center gap-3">
-                            <i class="fa-solid fa-calendar-days fs-5 text-primary"></i>
+                            <i class="icon-calendar-days fs-5 text-primary"></i>
                             <span class="text-body">{% trans "Events" %}</span>
                         </div>
                     </a>
@@ -225,7 +225,7 @@
                     <a href="{% url 'start_new_year' %}"
                        class="card h-100 text-decoration-none">
                         <div class="card-body d-flex align-items-center gap-3">
-                            <i class="fa-solid fa-calendar-plus fs-5 text-primary"></i>
+                            <i class="icon-calendar-plus fs-5 text-primary"></i>
                             <span class="text-body">{% trans "Start next year" %}</span>
                         </div>
                     </a>
@@ -235,7 +235,7 @@
                 <a href="{% url 'admin:index' %}"
                    class="card h-100 text-decoration-none">
                     <div class="card-body d-flex align-items-center gap-3">
-                        <i class="fa-solid fa-user-shield fs-5 text-primary"></i>
+                        <i class="icon-shield-check fs-5 text-primary"></i>
                         <span class="text-body">{% trans "Admin area" %}</span>
                     </div>
                 </a>

@@ -26,7 +26,7 @@ the team's, so the performer's history list leaves it out)
           title="{{ asset.creation_date|date:'j M Y H:i' }} UTC{% if asset.uploaded_by %} · {{ asset.uploaded_by.get_full_name|default:asset.uploaded_by.username }}{% endif %}{% if asset.notes_md and show_notes %} · {{ asset.notes_md }}{% endif %}">
         {{ asset.creation_date|date:"j M" }}
         {% if asset.notes_md and show_notes %}
-            <i class="fa-regular fa-note-sticky"></i>
+            <i class="icon-sticky-note"></i>
         {% endif %}
     </span>
     {% if asset.shared_with_speaker %}
@@ -38,7 +38,7 @@ the team's, so the performer's history list leaves it out)
            href="{% url 'speakers:media_download' session.slug asset.pk %}"
            title="{{ download_label }}"
            aria-label="{{ download_label }}">
-            <i class="fa-solid fa-download"></i>
+            <i class="icon-download"></i>
         </a>
     {% endif %}
 </div>

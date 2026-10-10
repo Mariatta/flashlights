@@ -38,7 +38,7 @@ Unscheduled list and its open popover goes with it.
                             <details class="schedule-card-menu">
                                 <summary class="btn btn-sm btn-outline-secondary schedule-card-edit"
                                          aria-label="{% blocktrans with title=session.title %}Place {{ title }}{% endblocktrans %}">
-                                    <i class="fa-solid fa-calendar-plus" aria-hidden="true"></i>
+                                    <i class="icon-calendar-plus" aria-hidden="true"></i>
                                 </summary>
                                 <div class="schedule-card-popover card shadow">
                                     {% url 'speakers:session_slot' session.slug as slot_url %}

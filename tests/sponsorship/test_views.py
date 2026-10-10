@@ -481,8 +481,8 @@ class TestSponsorshipViews:
         sponsors_table = response.context["table"]
         action_button = sponsors_table.render_actions("", profile)
         assert "btn-primary" in action_button
-        assert "fa-pencil" in action_button  # edit icon
-        assert "fa-trash" in action_button  # delete icon
+        assert "icon-pencil" in action_button  # edit icon
+        assert "icon-trash" in action_button  # delete icon
         assert (
             reverse("sponsorship:sponsorship_profile_edit", args=[profile.pk])
             in action_button

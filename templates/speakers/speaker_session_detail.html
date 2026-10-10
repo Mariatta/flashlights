@@ -46,7 +46,7 @@ upload action open the tab their target lives in.
             {% if video %}
                 <a class="btn {% if video.current %}btn-outline-primary{% else %}btn-primary{% endif %}"
                    href="#video">
-                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <i class="icon-cloud-upload"></i>
                     {% if video.current %}
                         {% trans "Replace video" %}
                     {% else %}
@@ -56,7 +56,7 @@ upload action open the tab their target lives in.
             {% endif %}
             <a class="btn btn-outline-primary"
                href="{% url 'speakers:my_session_edit' session.slug %}">
-                <i class="fa-solid fa-pen"></i> {% trans "Edit details" %}
+                <i class="icon-pen"></i> {% trans "Edit details" %}
             </a>
         </div>
     </div>
@@ -322,7 +322,7 @@ upload action open the tab their target lives in.
                         <div class="card mb-4" id="video">
                             <div class="card-header d-flex flex-wrap align-items-center gap-2">
                                 <span>
-                                    <i class="fa-solid fa-film"></i> {% trans "Your video" %}
+                                    <i class="icon-film"></i> {% trans "Your video" %}
                                 </span>
                                 {% if video.current %}
                                     <span class="badge text-bg-success">v{{ video.current.version }}</span>
@@ -349,11 +349,11 @@ upload action open the tab their target lives in.
                                     {% include "speakers/_media_preview.html" with asset=video.current session=session %}
                                     {% if video.current.duration_seconds is None and video.current.probe_error %}
                                         <div class="small text-secondary mb-3">
-                                            <i class="fa-solid fa-triangle-exclamation"></i> {% trans "The length could not be checked automatically; the team will look." %}
+                                            <i class="icon-triangle-alert"></i> {% trans "The length could not be checked automatically; the team will look." %}
                                         </div>
                                     {% elif video.current.duration_seconds is None %}
                                         <div class="small text-secondary mb-3">
-                                            <i class="fa-regular fa-clock"></i> {% trans "Length not checked yet." %}
+                                            <i class="icon-clock"></i> {% trans "Length not checked yet." %}
                                         </div>
                                     {% elif video.limit_minutes %}
                                         {% with length=video.current.duration_seconds|duration %}
@@ -390,7 +390,7 @@ upload action open the tab their target lives in.
                                 {% include "speakers/_upload_panel.html" with session=session kind="RAW_VIDEO" open_uploads=video.open_uploads accept="video/*" line_titles=line_titles panel_id="video" %}
                                 {% if auto_transcribe %}
                                     <div class="small text-secondary mt-2">
-                                        <i class="fa-solid fa-closed-captioning"></i>
+                                        <i class="icon-captions"></i>
                                         {% trans "Your recording is transcribed by the portal's own tooling and reviewed by the team; nothing is sent to an outside service." %}
                                     </div>
                                 {% endif %}
@@ -407,7 +407,7 @@ upload action open the tab their target lives in.
                                             data-name="{{ video.confirm_name }}"
                                             data-label="{{ video_label }}"
                                             data-versions="{{ versions_text }}">
-                                        <i class="fa-solid fa-trash"></i> {% trans "Delete my video" %}
+                                        <i class="icon-trash"></i> {% trans "Delete my video" %}
                                     </button>
                                     <span class="text-secondary ms-2">{% trans "Removes every version you uploaded." %}</span>
                                 </div>
@@ -432,7 +432,7 @@ upload action open the tab their target lives in.
                     {% if team_files %}
                         <div class="card mb-4" id="team-files">
                             <div class="card-header">
-                                <i class="fa-solid fa-folder-open"></i> {% trans "Files from the team" %}
+                                <i class="icon-folder-open"></i> {% trans "Files from the team" %}
                             </div>
                             <ul class="list-group list-group-flush">
                                 {% for asset in team_files %}
@@ -454,7 +454,7 @@ upload action open the tab their target lives in.
                                         {% if asset.storage_key or asset.file %}
                                             <a class="btn btn-sm btn-outline-primary ms-auto"
                                                href="{% url 'speakers:media_download' session.slug asset.pk %}">
-                                                <i class="fa-solid fa-download"></i> {% trans "Download" %}
+                                                <i class="icon-download"></i> {% trans "Download" %}
                                             </a>
                                         {% endif %}
                                         <div class="w-100">

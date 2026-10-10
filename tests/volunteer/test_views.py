@@ -554,12 +554,12 @@ class TestManageVolunteers:
         render_username_for_superuser = volunteer_table.render_username(
             portal_user, profile
         )
-        assert "fa-user-secret" in render_username_for_superuser
+        assert "icon-eye-off" in render_username_for_superuser
 
         render_username_not_superuser = volunteer_table.render_username(
             another_user, another_profile
         )
-        assert "fa-user-secret" not in render_username_not_superuser
+        assert "icon-eye-off" not in render_username_not_superuser
 
         render_application_status = volunteer_table.render_application_status(
             ApplicationStatus.APPROVED
@@ -591,7 +591,7 @@ class TestManageVolunteers:
         assert "btn-primary" in action_button
         # Icon and word: an unlabelled icon was read as anything but Review.
         assert (
-            "fa-clipboard-list" in action_button and "</i> Review</a>" in action_button
+            "icon-clipboard-list" in action_button and "</i> Review</a>" in action_button
         )
         # The word is visible, so no title repeats it.
         assert "title=" not in action_button

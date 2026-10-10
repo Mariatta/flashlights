@@ -38,7 +38,7 @@ Expects: board (board.build_post_production_board)
                             {% endif %}
                             {% if row.blocked_note %}
                                 <div class="small text-danger">
-                                    <i class="fa-solid fa-ban"></i> {{ row.blocked_note }}
+                                    <i class="icon-ban"></i> {{ row.blocked_note }}
                                 </div>
                             {% elif row.overdue %}
                                 <div class="small text-danger">
@@ -87,13 +87,13 @@ Expects: board (board.build_post_production_board)
                                     <a class="link-body-emphasis text-decoration-none d-block"
                                        href="{% url 'speakers:item_detail' cell.pk %}">
                                         {% if cell.is_done %}
-                                            <i class="fa-solid fa-check"></i>
+                                            <i class="icon-check"></i>
                                         {% elif cell.status == "BLOCKED" %}
-                                            <i class="fa-solid fa-ban"></i>
+                                            <i class="icon-ban"></i>
                                         {% elif cell.status == "SKIPPED" %}
-                                            <i class="fa-solid fa-forward"></i>
+                                            <i class="icon-forward"></i>
                                         {% elif cell.is_waiting %}
-                                            <i class="fa-solid fa-hourglass-half text-secondary"></i>
+                                            <i class="icon-hourglass text-secondary"></i>
                                         {% elif cell.due_date %}
                                             <span class="small">{{ cell.due_date|date:"j M" }}</span>
                                         {% else %}

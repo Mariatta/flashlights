@@ -34,14 +34,14 @@
         </div>
     {% else %}
         <div class="alert alert-secondary small">
-            <i class="fa-solid fa-key"></i>
+            <i class="icon-key"></i>
             {% trans "Every link in this export fetches the file it names for whoever has it, until it expires. Keep the script and the manifest to yourself." %}
         </div>
         <div class="row g-3">
             <div class="col-lg-6">
                 <div class="card h-100 border-primary-subtle">
                     <div class="card-header">
-                        <i class="fa-solid fa-file-zipper"></i> {% trans "Download as one zip" %}
+                        <i class="icon-file-archive"></i> {% trans "Download as one zip" %}
                     </div>
                     <div class="card-body small">
                         {% if not zip_allowed %}
@@ -53,11 +53,11 @@
                                 {% blocktranslate with when=export.zip_built_at|date:"j M H:i" %}Built {{ when }} UTC, with the manifest inside.{% endblocktranslate %}
                             </p>
                             <a class="btn btn-primary" href="{{ zip_link }}">
-                                <i class="fa-solid fa-download"></i> {% trans "Download the zip" %}
+                                <i class="icon-download"></i> {% trans "Download the zip" %}
                             </a>
                         {% elif export.zip_status == "QUEUED" or export.zip_status == "RUNNING" %}
                             <p class="mb-0">
-                                <i class="fa-solid fa-hourglass-half"></i>
+                                <i class="icon-hourglass"></i>
                                 {% trans "Being built; you will get an email with the link. Reload this page to check." %}
                             </p>
                         {% else %}
@@ -73,7 +73,7 @@
                                   action="{% url 'speakers:media_export_zip' export.pk %}">
                                 {% csrf_token %}
                                 <button class="btn btn-primary" type="submit">
-                                    <i class="fa-solid fa-file-zipper"></i> {% trans "Build the zip" %}
+                                    <i class="icon-file-archive"></i> {% trans "Build the zip" %}
                                 </button>
                             </form>
                         {% endif %}
@@ -83,7 +83,7 @@
             <div class="col-lg-6">
                 <div class="card h-100">
                     <div class="card-header">
-                        <i class="fa-solid fa-terminal"></i> {% trans "Advanced: a script for the terminal" %}
+                        <i class="icon-terminal"></i> {% trans "Advanced: a script for the terminal" %}
                     </div>
                     <div class="card-body small">
                         <p>
@@ -91,7 +91,7 @@
                         </p>
                         <a class="btn btn-outline-primary btn-sm"
                            href="{% url 'speakers:media_export_file' export.pk 'download.sh' %}">
-                            <i class="fa-solid fa-download"></i> download.sh
+                            <i class="icon-download"></i> download.sh
                         </a>
                         <a class="btn btn-outline-secondary btn-sm"
                            href="{% url 'speakers:media_export_file' export.pk 'aria2.txt' %}">aria2 input</a>

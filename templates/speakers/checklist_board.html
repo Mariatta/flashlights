@@ -26,12 +26,12 @@
             {% if tab == "POST_PRODUCTION" and is_organizer %}
                 <a class="btn btn-outline-primary btn-sm"
                    href="{% url 'speakers:media_export' %}">
-                    <i class="fa-solid fa-download"></i> {% trans "Download files" %}
+                    <i class="icon-download"></i> {% trans "Download files" %}
                 </a>
             {% endif %}
             <a class="btn btn-outline-secondary btn-sm"
                href="{% url 'speakers:checklist_board_export' %}?tab={{ tab|lower }}">
-                <i class="fa-solid fa-file-csv"></i> {% trans "Export CSV" %}
+                <i class="icon-file-spreadsheet"></i> {% trans "Export CSV" %}
             </a>
         </div>
     </div>
@@ -69,7 +69,7 @@
                             {% trans "Presenter" %}
                         </th>
                         <th class="text-center" title="{{ overdue_label }}">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <i class="icon-triangle-alert"></i>
                         </th>
                         {% for column in board.columns %}
                             <th class="board-col small fw-normal">
@@ -100,11 +100,11 @@
                                     {% if not cell %}
                                         —
                                     {% elif cell.is_done %}
-                                        <i class="fa-solid fa-check"></i>
+                                        <i class="icon-check"></i>
                                     {% elif cell.status == "BLOCKED" %}
-                                        <i class="fa-solid fa-ban"></i>
+                                        <i class="icon-ban"></i>
                                     {% elif cell.status == "SKIPPED" %}
-                                        <i class="fa-solid fa-forward"></i>
+                                        <i class="icon-forward"></i>
                                     {% elif cell.due_date %}
                                         <span class="small">{{ cell.due_date|date:"j M" }}</span>
                                     {% endif %}

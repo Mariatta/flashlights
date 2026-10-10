@@ -41,7 +41,7 @@ open the tab their target lives in.
             {% endif %}
             {% if waiting_on %}
                 <div class="small text-warning-emphasis mt-2">
-                    <i class="fa-solid fa-hourglass-half"></i>
+                    <i class="icon-hourglass"></i>
                     {% trans "Waiting on:" %} {{ waiting_on|join:", " }}
                 </div>
             {% endif %}
@@ -50,20 +50,20 @@ open the tab their target lives in.
             <div class="d-flex flex-wrap gap-2" id="quick-actions">
                 {% if glance.invites_unsent %}
                     <a class="btn btn-primary" href="#presenters">
-                        <i class="fa-solid fa-paper-plane"></i> {% trans "Invite" %}
+                        <i class="icon-send"></i> {% trans "Invite" %}
                     </a>
                 {% endif %}
                 {% if can_upload_media and media_on %}
                     <a class="btn btn-outline-primary" href="#add-file">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> {% trans "Add file" %}
+                        <i class="icon-cloud-upload"></i> {% trans "Add file" %}
                     </a>
                 {% endif %}
                 <a class="btn btn-outline-primary" href="#add-item">
-                    <i class="fa-solid fa-list-check"></i> {% trans "Add item" %}
+                    <i class="icon-list-check"></i> {% trans "Add item" %}
                 </a>
                 <a class="btn btn-outline-primary"
                    href="{% url 'speakers:session_edit' session.slug %}">
-                    <i class="fa-solid fa-pen"></i> {% trans "Edit" %}
+                    <i class="icon-pen"></i> {% trans "Edit" %}
                 </a>
             </div>
         {% endif %}
@@ -73,7 +73,7 @@ open the tab their target lives in.
             <div class="card-body d-flex flex-wrap align-items-center gap-3">
                 <div class="flex-grow-1">
                     <h2 class="h6 text-body-emphasis mb-1">
-                        <i class="fa-solid fa-paper-plane text-secondary"></i>
+                        <i class="icon-send text-secondary"></i>
                         {% blocktranslate with name=proposal.presenter.display_name date=proposal.submitted_at|date:"j M Y" %}Proposed by {{ name }}, {{ date }}{% endblocktranslate %}
                     </h2>
                     <p class="text-body-secondary mb-0 small">
@@ -376,10 +376,9 @@ open the tab their target lives in.
                                                 {% endif %}
                                             </span>
                                             {% if link.is_confirmed %}
-                                                <i class="fa-solid fa-check text-success" title="{{ confirmed_label }}"></i>
+                                                <i class="icon-check text-success" title="{{ confirmed_label }}"></i>
                                             {% else %}
-                                                <i class="fa-regular fa-clock text-secondary"
-                                                   title="{{ pending_label }}"></i>
+                                                <i class="icon-clock text-secondary" title="{{ pending_label }}"></i>
                                             {% endif %}
                                         </div>
                                         {% if invitation %}
@@ -414,7 +413,7 @@ open the tab their target lives in.
                                                               name="message_md"
                                                               rows="3">{% if invitation %}{{ invitation.message_md }}{% endif %}</textarea>
                                                     <button class="btn btn-sm btn-primary" type="submit">
-                                                        <i class="fa-solid fa-paper-plane"></i> {% trans "Send" %}
+                                                        <i class="icon-send"></i> {% trans "Send" %}
                                                     </button>
                                                 </form>
                                                 {% include "speakers/_invitation_preview_slot.html" with pk=link.pk %}
@@ -498,7 +497,7 @@ open the tab their target lives in.
                     {% if video and can_download_media %}
                         <div class="card mb-3" id="video-card">
                             <div class="card-header">
-                                <i class="fa-solid fa-film"></i> {% trans "Video" %}
+                                <i class="icon-film"></i> {% trans "Video" %}
                             </div>
                             <div class="card-body small">
                                 {% if video.current %}
@@ -634,7 +633,7 @@ open the tab their target lives in.
                 {# Adding comes first: it is what the tab is opened for most; the list follows under a rule. #}
                 <div class="card mb-4" id="add-file">
                     <div class="card-header">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> {% trans "Add a file" %}
+                        <i class="icon-cloud-upload"></i> {% trans "Add a file" %}
                     </div>
                     <div class="card-body">
                         {% include "speakers/_upload_panel.html" with session=session kinds=media_kinds with_language=True with_variant=True open_uploads=open_uploads line_titles=line_titles panel_id="files" %}
@@ -652,7 +651,7 @@ open the tab their target lives in.
                 {% if is_organizer and media_groups %}
                     <a class="btn btn-sm btn-outline-secondary"
                        href="{% url 'speakers:media_export' %}?sessions_mode=some&sessions={{ session.slug }}&kinds=RAW_VIDEO&kinds=INTRO&kinds=OUTRO&kinds=PROCESSED_VIDEO&kinds=TRANSCRIPT&kinds=TRANSLATION&kinds=TITLE_CARD&kinds=THUMBNAIL&kinds=PROMO&kinds=OTHER">
-                        <i class="fa-solid fa-download"></i> {% trans "Download all files of this session" %}
+                        <i class="icon-download"></i> {% trans "Download all files of this session" %}
                     </a>
                 {% endif %}
             </div>

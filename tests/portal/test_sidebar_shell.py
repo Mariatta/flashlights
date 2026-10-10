@@ -50,13 +50,13 @@ class TestSidebarShell:
     def test_sidebar_item_include_marks_active(self):
         html = _render(
             '{% include "portal/_sidebar_item.html" with url="/inbox" '
-            'label="Inbox" icon="fa-inbox" active=True badge=3 %}'
+            'label="Inbox" icon="icon-inbox" active=True badge=3 %}'
         )
         assert 'href="/inbox"' in html
         assert "Inbox" in html
         assert "active" in html
         assert 'aria-current="page"' in html
-        assert "fa-inbox" in html
+        assert "icon-inbox" in html
         assert "3" in html  # the badge
 
     def test_sidebar_item_inactive_has_no_active_marker(self):

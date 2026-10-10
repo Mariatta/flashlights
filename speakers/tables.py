@@ -62,7 +62,7 @@ class SessionTable(tables.Table):
                         ""
                         if link.is_confirmed
                         else format_html(
-                            ' <i class="fa-regular fa-clock text-secondary" '
+                            ' <i class="icon-clock text-secondary" '
                             'title="Not yet confirmed"></i>'
                         )
                     ),
@@ -202,7 +202,7 @@ class PresenterTable(tables.Table):
     def render_account(self, record):
         if record.user_id is None:
             return format_html('<span class="text-secondary">not yet</span>')
-        return format_html('<i class="fa-solid fa-check text-success"></i> linked')
+        return format_html('<i class="icon-check text-success"></i> linked')
 
     def render_liaison(self, value):
         return value.get_full_name() or value.username

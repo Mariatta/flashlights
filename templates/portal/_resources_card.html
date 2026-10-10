@@ -30,21 +30,21 @@ Placement map (one group per surface):
                 {% if group == "volunteering" %}
                     <li class="list-inline-item me-3 mb-1">
                         <a href="{{ brand.docs_url }}" class="icon-link text-decoration-none">
-                            {% trans "Documentation" %} <i class="fa-solid fa-arrow-up-right-from-square fa-xs"></i>
+                            {% trans "Documentation" %} <i class="icon-external-link icon-xs"></i>
                         </a>
                     </li>
                 {% elif group == "speaking" %}
                     <li class="list-inline-item me-3 mb-1">
                         <a href="{% url 'speakers:my_guide' %}"
                            class="icon-link text-decoration-none">
-                            {% trans "Speaker guide" %} <i class="fa-solid fa-book-open fa-xs"></i>
+                            {% trans "Speaker guide" %} <i class="icon-book-open icon-xs"></i>
                         </a>
                     </li>
                 {% else %}
                     <li class="list-inline-item me-3 mb-1">
                         <a href="{{ active_conference.sponsors_url }}"
                            class="icon-link text-decoration-none">
-                            {% trans "Sponsorship prospectus" %} <i class="fa-solid fa-arrow-up-right-from-square fa-xs"></i>
+                            {% trans "Sponsorship prospectus" %} <i class="icon-external-link icon-xs"></i>
                         </a>
                     </li>
                 {% endif %}

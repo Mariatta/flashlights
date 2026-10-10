@@ -53,31 +53,31 @@
                     {% if attention_unsigned %}
                         <a href="{% querystring progress_status=status_agreement_sent %}"
                            class="js-preserve-scroll list-group-item list-group-item-action list-group-item-warning d-flex align-items-center">
-                            <i class="fa-solid fa-file-signature fa-fw me-3"></i>
+                            <i class="icon-file-pen icon-fw me-3"></i>
                             <span class="flex-grow-1">{% blocktranslate count counter=attention_unsigned %}{{ counter }} agreement awaiting signature{% plural %}{{ counter }} agreements awaiting signature{% endblocktranslate %}</span>
-                            <i class="fa-solid fa-chevron-right"></i>
+                            <i class="icon-chevron-right"></i>
                         </a>
                     {% endif %}
                     {% if attention_awaiting_invoice %}
                         <a href="{% querystring progress_status=status_agreement_signed %}"
                            class="js-preserve-scroll list-group-item list-group-item-action list-group-item-warning d-flex align-items-center">
-                            <i class="fa-solid fa-file-invoice fa-fw me-3"></i>
+                            <i class="icon-receipt icon-fw me-3"></i>
                             <span class="flex-grow-1">{% blocktranslate count counter=attention_awaiting_invoice %}{{ counter }} signed sponsor awaiting invoice{% plural %}{{ counter }} signed sponsors awaiting invoice{% endblocktranslate %}</span>
-                            <i class="fa-solid fa-chevron-right"></i>
+                            <i class="icon-chevron-right"></i>
                         </a>
                     {% endif %}
                     {% if attention_unpaid %}
                         <a href="{% querystring progress_status=status_invoiced %}"
                            class="js-preserve-scroll list-group-item list-group-item-action list-group-item-warning d-flex align-items-center">
-                            <i class="fa-solid fa-money-bill-wave fa-fw me-3"></i>
+                            <i class="icon-banknote icon-fw me-3"></i>
                             <span class="flex-grow-1">{% blocktranslate count counter=attention_unpaid %}{{ counter }} invoiced sponsor not yet paid{% plural %}{{ counter }} invoiced sponsors not yet paid{% endblocktranslate %}</span>
-                            <i class="fa-solid fa-chevron-right"></i>
+                            <i class="icon-chevron-right"></i>
                         </a>
                     {% endif %}
                 </div>
             {% else %}
                 <div class="alert alert-light border mb-3">
-                    <i class="fa-solid fa-circle-check text-success"></i> {% trans "No sponsors need attention right now." %}
+                    <i class="icon-circle-check text-success"></i> {% trans "No sponsors need attention right now." %}
                 </div>
             {% endif %}
             <div class="mb-3 d-flex flex-wrap gap-1 align-items-center"

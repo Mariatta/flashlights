@@ -47,7 +47,7 @@
             <div class="mb-3">
                 <a href="{% url 'team_edit' team.id %}"
                    class="btn btn-sm btn-outline-secondary">
-                    <i class="fa-solid fa-pencil"></i> {% trans "Edit team" %}
+                    <i class="icon-pencil"></i> {% trans "Edit team" %}
                 </a>
             </div>
         {% endif %}
@@ -111,7 +111,7 @@
         {# Promoted queue — the one thing a lead has to act on. #}
         {% if can_manage_members and pending.count %}
             <div class="alert alert-warning d-flex align-items-center" role="alert">
-                <i class="fa-solid fa-clipboard-list fa-fw me-2"></i>
+                <i class="icon-clipboard-list icon-fw me-2"></i>
                 <span class="flex-grow-1">
                     {% blocktranslate count counter=pending.count %}<strong>{{ counter }} application</strong> is waiting for review.{% plural %}<strong>{{ counter }} applications</strong> are waiting for review.{% endblocktranslate %}
                 </span>
@@ -136,7 +136,7 @@
             </ul>
         {% else %}
             <p class="text-danger">
-                <i class="fa-solid fa-triangle-exclamation"></i> {% trans "No lead assigned." %}
+                <i class="icon-triangle-alert"></i> {% trans "No lead assigned." %}
             </p>
         {% endif %}
         {# Roster status filter: show all, or just one status. Client-side, so #}
@@ -211,7 +211,7 @@
         {% if can_manage_members and unassigned_applicants %}
             <div class="mt-5">
                 <h3 class="h5">
-                    <i class="fa-solid fa-user-plus text-primary"></i>
+                    <i class="icon-user-plus text-primary"></i>
                     {% trans "Applicants without a team" %}
                     <span class="badge bg-primary rounded-pill">{{ unassigned_applicants.count }}</span>
                 </h3>
@@ -252,7 +252,7 @@
                                               action="{% url 'team_add_applicant' team.id applicant.id %}">
                                             {% csrf_token %}
                                             <button type="submit" class="btn btn-sm btn-outline-primary">
-                                                <i class="fa-solid fa-plus"></i> {% trans "Add to team" %}
+                                                <i class="icon-plus"></i> {% trans "Add to team" %}
                                             </button>
                                         </form>
                                     </td>

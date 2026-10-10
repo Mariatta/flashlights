@@ -11,7 +11,7 @@ detail pages. Params:
 {% endcomment %}
 <div class="mb-3">
     {% if item.is_waiting %}
-        <span class="badge text-bg-light border"><i class="fa-solid fa-hourglass-half"></i> {% trans "Waiting" %}</span>
+        <span class="badge text-bg-light border"><i class="icon-hourglass"></i> {% trans "Waiting" %}</span>
     {% endif %}
     <span class="badge {% if item.is_done %}text-bg-success{% elif item.status == 'BLOCKED' %}text-bg-danger{% elif item.status == 'SKIPPED' %}text-bg-secondary{% elif item.overdue %}text-bg-warning{% else %}text-bg-light border{% endif %}">
         {{ item.get_status_display }}
@@ -23,7 +23,7 @@ detail pages. Params:
         <span class="badge text-bg-light border">{% trans "Required" %}</span>
     {% endif %}
     {% if item.is_automatic %}
-        <span class="badge text-bg-light border"><i class="fa-solid fa-wand-magic-sparkles"></i> {% trans "Ticks itself" %}</span>
+        <span class="badge text-bg-light border"><i class="icon-wand-sparkles"></i> {% trans "Ticks itself" %}</span>
     {% endif %}
 </div>
 {% if item.is_waiting and item.waiting_reason %}

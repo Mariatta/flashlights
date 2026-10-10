@@ -40,7 +40,7 @@
                     {% trans "We are taking session proposals. A title and two sentences is enough to start, and first-time speakers are very welcome." %}
                 </p>
                 <a href="{% url 'speakers:propose' %}" class="btn btn-primary btn-lg">
-                    <i class="fa-solid fa-paper-plane"></i> {% trans "Propose a session" %}
+                    <i class="icon-send"></i> {% trans "Propose a session" %}
                 </a>
             </div>
         {% endif %}
@@ -60,7 +60,7 @@
                 </p>
                 <a href="{% if user.is_authenticated %}{% url 'volunteer:index' %}{% else %}{% url 'account_signup' %}{% endif %}"
                    class="btn btn-outline-primary btn-lg">
-                    <i class="fa-solid fa-user-plus"></i> {% trans "Sign up to volunteer" %}
+                    <i class="icon-user-plus"></i> {% trans "Sign up to volunteer" %}
                 </a>
                 {# This year's momentum: only once someone has signed up. #}
                 {% if stats.volunteer_signups_count %}
@@ -71,7 +71,7 @@
                 {% if brand.docs_url %}
                     <p class="mt-3 mb-0">
                         <a href="{{ brand.docs_url }}" class="icon-link">
-                            {% trans "Read the team descriptions" %} <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                            {% trans "Read the team descriptions" %} <i class="icon-external-link"></i>
                         </a>
                     </p>
                 {% endif %}
@@ -111,7 +111,7 @@
                     {% trans "Support the event and the community around it." %}
                 </p>
                 <a href="{{ active_conference.sponsors_url }}" class="icon-link">
-                    {% trans "Sponsorship prospectus" %} <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    {% trans "Sponsorship prospectus" %} <i class="icon-external-link"></i>
                 </a>
             </div>
         {% endif %}

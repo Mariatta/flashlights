@@ -18,7 +18,7 @@
             </h1>
             {% if can_start_next_year %}
                 <a href="{% url 'start_new_year' %}" class="btn btn-primary">
-                    <i class="fa-solid fa-plus"></i> {% trans "Start next event" %}
+                    <i class="icon-plus"></i> {% trans "Start next event" %}
                 </a>
             {% endif %}
         </div>
@@ -62,11 +62,11 @@
                             <a href="{% url 'conference_edit' conference.pk %}"
                                class="btn btn-sm btn-outline-primary"
                                title="Edit"
-                               aria-label="Edit"><i class="fa-solid fa-pencil"></i></a>
+                               aria-label="Edit"><i class="icon-pencil"></i></a>
                             <a href="{% url 'conference_delete' conference.pk %}"
                                class="btn btn-sm btn-outline-danger"
                                title="Delete"
-                               aria-label="Delete"><i class="fa-solid fa-trash"></i></a>
+                               aria-label="Delete"><i class="icon-trash"></i></a>
                         </td>
                     </tr>
                 {% endfor %}

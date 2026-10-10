@@ -9,25 +9,25 @@ Expects:
 {% endcomment %}
 {% url 'maintenance_accounts' as accounts_url %}
 {% if active == "accounts" %}
-    {% include "portal/_sidebar_item.html" with url=accounts_url label=_("Accounts") icon="fa-user-shield" active=True only %}
+    {% include "portal/_sidebar_item.html" with url=accounts_url label=_("Accounts") icon="icon-shield-check" active=True only %}
 {% else %}
-    {% include "portal/_sidebar_item.html" with url=accounts_url label=_("Accounts") icon="fa-user-shield" only %}
+    {% include "portal/_sidebar_item.html" with url=accounts_url label=_("Accounts") icon="icon-shield-check" only %}
 {% endif %}
 {% url 'maintenance_emails' as emails_url %}
 {% if active == "emails" %}
-    {% include "portal/_sidebar_item.html" with url=emails_url label=_("Emails") icon="fa-envelope-open-text" active=True only %}
+    {% include "portal/_sidebar_item.html" with url=emails_url label=_("Emails") icon="icon-mail-open" active=True only %}
 {% else %}
-    {% include "portal/_sidebar_item.html" with url=emails_url label=_("Emails") icon="fa-envelope-open-text" only %}
+    {% include "portal/_sidebar_item.html" with url=emails_url label=_("Emails") icon="icon-mail-open" only %}
 {% endif %}
 {% url 'maintenance_exports' as exports_url %}
 {% if active == "exports" %}
-    {% include "portal/_sidebar_item.html" with url=exports_url label=_("File exports") icon="fa-file-zipper" active=True only %}
+    {% include "portal/_sidebar_item.html" with url=exports_url label=_("File exports") icon="icon-file-archive" active=True only %}
 {% else %}
-    {% include "portal/_sidebar_item.html" with url=exports_url label=_("File exports") icon="fa-file-zipper" only %}
+    {% include "portal/_sidebar_item.html" with url=exports_url label=_("File exports") icon="icon-file-archive" only %}
 {% endif %}
 {% url 'maintenance_invitations' as invitations_url %}
 {% if active == "invitations" %}
-    {% include "portal/_sidebar_item.html" with url=invitations_url label=_("Invitations") icon="fa-paper-plane" active=True only %}
+    {% include "portal/_sidebar_item.html" with url=invitations_url label=_("Invitations") icon="icon-send" active=True only %}
 {% else %}
-    {% include "portal/_sidebar_item.html" with url=invitations_url label=_("Invitations") icon="fa-paper-plane" only %}
+    {% include "portal/_sidebar_item.html" with url=invitations_url label=_("Invitations") icon="icon-send" only %}
 {% endif %}

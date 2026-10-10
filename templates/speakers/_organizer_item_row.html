@@ -30,19 +30,19 @@ automatic items get a dashed box nobody can click.
             {% if item.is_waiting %}
                 <span class="checklist-box checklist-box-waiting"
                       title="{{ waiting_label }}">
-                    <i class="fa-solid fa-hourglass-half"></i>
+                    <i class="icon-hourglass"></i>
                 </span>
             {% elif item.is_automatic %}
                 <span class="checklist-box checklist-box-static {% if item.is_done %}checklist-box-done{% elif item.status == 'BLOCKED' %}checklist-box-blocked{% elif item.status == 'SKIPPED' %}checklist-box-skipped{% endif %}"
                       title="{{ auto_label }}">
                     {% if item.is_done %}
-                        <i class="fa-solid fa-check"></i>
+                        <i class="icon-check"></i>
                     {% elif item.status == "BLOCKED" %}
-                        <i class="fa-solid fa-exclamation"></i>
+                        <i class="icon-circle-alert"></i>
                     {% elif item.status == "SKIPPED" %}
-                        <i class="fa-solid fa-minus"></i>
+                        <i class="icon-minus"></i>
                     {% else %}
-                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <i class="icon-wand-sparkles"></i>
                     {% endif %}
                 </span>
             {% else %}
@@ -61,11 +61,11 @@ automatic items get a dashed box nobody can click.
                             title="{% if item.is_open %}{{ do_label }}{% else %}{{ undo_label }}{% endif %}"
                             aria-pressed="{% if item.is_done %}true{% else %}false{% endif %}">
                         {% if item.is_done %}
-                            <i class="fa-solid fa-check"></i>
+                            <i class="icon-check"></i>
                         {% elif item.status == "SKIPPED" %}
-                            <i class="fa-solid fa-minus"></i>
+                            <i class="icon-minus"></i>
                         {% elif item.status == "BLOCKED" %}
-                            <i class="fa-solid fa-exclamation"></i>
+                            <i class="icon-circle-alert"></i>
                         {% endif %}
                     </button>
                 </form>

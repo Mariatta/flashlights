@@ -33,11 +33,11 @@
         <div class="d-flex gap-2">
             <a class="btn btn-outline-secondary"
                href="{% url 'speakers:template_edit' template.pk %}">
-                <i class="fa-solid fa-pen"></i> {% trans "Rename / settings" %}
+                <i class="icon-pen"></i> {% trans "Rename / settings" %}
             </a>
             <a class="btn btn-primary"
                href="{% url 'speakers:template_item_add' template.pk %}">
-                <i class="fa-solid fa-plus"></i> {% trans "Add item" %}
+                <i class="icon-plus"></i> {% trans "Add item" %}
             </a>
         </div>
     </div>
@@ -92,7 +92,7 @@
                                         type="submit"
                                         {% if forloop.first %}disabled{% endif %}
                                         aria-label="{{ up_label }}">
-                                    <i class="fa-solid fa-arrow-up"></i>
+                                    <i class="icon-arrow-up"></i>
                                 </button>
                             </form>
                             <form method="post"
@@ -103,7 +103,7 @@
                                         type="submit"
                                         {% if forloop.last %}disabled{% endif %}
                                         aria-label="{{ down_label }}">
-                                    <i class="fa-solid fa-arrow-down"></i>
+                                    <i class="icon-arrow-down"></i>
                                 </button>
                             </form>
                         </td>
@@ -139,7 +139,7 @@
                         </td>
                         <td>
                             {% if item.is_required %}
-                                <i class="fa-solid fa-check"></i>
+                                <i class="icon-check"></i>
                             {% endif %}
                         </td>
                         <td>

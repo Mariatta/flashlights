@@ -35,7 +35,7 @@ their personal rail and may only mark it done or reopen it.
     <p class="mb-2">
         <a href="{% url 'speakers:checklist_queue' %}"
            class="text-secondary text-decoration-none">
-            <i class="fa-solid fa-arrow-left"></i>
+            <i class="icon-arrow-left"></i>
             {% trans "My volunteering tasks" %}
         </a>
     </p>
@@ -85,14 +85,14 @@ their personal rail and may only mark it done or reopen it.
                                         name="override"
                                         value="OPEN"
                                         type="submit">
-                                    <i class="fa-solid fa-lock-open"></i> {% trans "Open it anyway" %}
+                                    <i class="icon-lock-open"></i> {% trans "Open it anyway" %}
                                 </button>
                             {% else %}
                                 <button class="btn btn-sm btn-outline-secondary w-100"
                                         name="override"
                                         value="HOLD"
                                         type="submit">
-                                    <i class="fa-solid fa-hourglass-half"></i> {% trans "Hold it shut" %}
+                                    <i class="icon-hourglass"></i> {% trans "Hold it shut" %}
                                 </button>
                             {% endif %}
                         </form>
@@ -116,14 +116,14 @@ their personal rail and may only mark it done or reopen it.
                                         name="status"
                                         value="DONE"
                                         type="submit">
-                                    <i class="fa-solid fa-check"></i> {% trans "Mark as done" %}
+                                    <i class="icon-check"></i> {% trans "Mark as done" %}
                                 </button>
                             {% else %}
                                 <button class="btn btn-outline-secondary w-100"
                                         name="status"
                                         value="TODO"
                                         type="submit">
-                                    <i class="fa-solid fa-rotate-left"></i> {% trans "Reopen" %}
+                                    <i class="icon-rotate-ccw"></i> {% trans "Reopen" %}
                                 </button>
                             {% endif %}
                         </form>

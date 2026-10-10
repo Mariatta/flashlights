@@ -21,11 +21,11 @@
             <form method="post" action="{% url 'speakers:template_seed' %}">
                 {% csrf_token %}
                 <button class="btn btn-outline-secondary" type="submit">
-                    <i class="fa-solid fa-seedling"></i> {% trans "Load defaults" %}
+                    <i class="icon-sprout"></i> {% trans "Load defaults" %}
                 </button>
             </form>
             <a class="btn btn-primary" href="{% url 'speakers:template_create' %}">
-                <i class="fa-solid fa-plus"></i> {% trans "New template" %}
+                <i class="icon-plus"></i> {% trans "New template" %}
             </a>
         </div>
     </div>

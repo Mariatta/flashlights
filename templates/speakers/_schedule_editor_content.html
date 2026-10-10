@@ -15,12 +15,12 @@ mode (spreadsheet view): header controls, day tabs, alerts, the board.
     <div class="d-flex align-items-center gap-2">
         {% if wide %}
             <a class="btn btn-outline-secondary btn-sm" href="?{{ base_query }}">
-                <i class="fa-solid fa-compress" aria-hidden="true"></i> {% trans "Exit wide" %}
+                <i class="icon-minimize" aria-hidden="true"></i> {% trans "Exit wide" %}
             </a>
         {% else %}
             <a class="btn btn-outline-secondary btn-sm"
                href="?{{ base_query }}&amp;wide=1">
-                <i class="fa-solid fa-expand" aria-hidden="true"></i> {% trans "Wide" %}
+                <i class="icon-expand" aria-hidden="true"></i> {% trans "Wide" %}
             </a>
         {% endif %}
         <label class="form-label small mb-0 d-flex align-items-center gap-1">
@@ -55,11 +55,11 @@ mode (spreadsheet view): header controls, day tabs, alerts, the board.
                 type="button"
                 disabled
                 title="{{ preview_hint }}">
-            <i class="fa-solid fa-eye" aria-hidden="true"></i> {% trans "Preview as public" %}
+            <i class="icon-eye" aria-hidden="true"></i> {% trans "Preview as public" %}
         </button>
         <details class="schedule-card-menu">
             <summary class="btn btn-primary btn-sm">
-                <i class="fa-solid fa-bullhorn" aria-hidden="true"></i> {% trans "Publish schedule" %}
+                <i class="icon-megaphone" aria-hidden="true"></i> {% trans "Publish schedule" %}
                 {% if unpublished_total %}
                     <span class="badge text-bg-light ms-1">{{ unpublished_total }}</span>
                 {% endif %}
@@ -90,7 +90,7 @@ mode (spreadsheet view): header controls, day tabs, alerts, the board.
         {% if not all_days %}
             <details class="schedule-card-menu">
                 <summary class="btn btn-outline-danger btn-sm">
-                    <i class="fa-solid fa-calendar-xmark" aria-hidden="true"></i> {% trans "Unschedule all" %}
+                    <i class="icon-calendar-x" aria-hidden="true"></i> {% trans "Unschedule all" %}
                 </summary>
                 <div class="schedule-card-popover card shadow p-2 vstack gap-2 text-start">
                     <span class="small">

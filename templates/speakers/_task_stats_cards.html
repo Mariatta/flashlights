@@ -13,7 +13,7 @@ Task numbers as a row of small cards plus a done/open/overdue bar. Params:
         <div class="card h-100">
             <div class="card-body">
                 <div class="text-secondary small mb-1">
-                    <i class="fa-solid fa-list-check"></i> {% trans "Done" %}
+                    <i class="icon-list-check"></i> {% trans "Done" %}
                 </div>
                 <div class="fs-3 fw-medium">
                     {{ stats.done_percent }}%
@@ -28,7 +28,7 @@ Task numbers as a row of small cards plus a done/open/overdue bar. Params:
         <div class="card h-100 {% if stats.overdue %}border-danger-subtle{% endif %}">
             <div class="card-body">
                 <div class="text-secondary small mb-1">
-                    <i class="fa-solid fa-triangle-exclamation"></i> {% trans "Overdue" %}
+                    <i class="icon-triangle-alert"></i> {% trans "Overdue" %}
                 </div>
                 <div class="fs-3 fw-medium {% if stats.overdue %}text-danger{% endif %}">
                     {{ stats.overdue }}
@@ -43,7 +43,7 @@ Task numbers as a row of small cards plus a done/open/overdue bar. Params:
         <div class="card h-100">
             <div class="card-body">
                 <div class="text-secondary small mb-1">
-                    <i class="fa-solid fa-calendar-week"></i> {% trans "Due this week" %}
+                    <i class="icon-calendar-range"></i> {% trans "Due this week" %}
                 </div>
                 <div class="fs-3 fw-medium {% if stats.due_this_week %}text-warning-emphasis{% endif %}">
                     {{ stats.due_this_week }}
@@ -59,7 +59,7 @@ Task numbers as a row of small cards plus a done/open/overdue bar. Params:
             <div class="card-body">
                 {% if stats.unassigned is not None %}
                     <div class="text-secondary small mb-1">
-                        <i class="fa-solid fa-user-slash"></i> {% trans "Unassigned" %}
+                        <i class="icon-user-x"></i> {% trans "Unassigned" %}
                     </div>
                     <div class="fs-3 fw-medium {% if stats.unassigned %}text-warning-emphasis{% endif %}">
                         {{ stats.unassigned }}
@@ -69,7 +69,7 @@ Task numbers as a row of small cards plus a done/open/overdue bar. Params:
                     </div>
                 {% else %}
                     <div class="text-secondary small mb-1">
-                        <i class="fa-solid fa-inbox"></i> {% trans "Open" %}
+                        <i class="icon-inbox"></i> {% trans "Open" %}
                     </div>
                     <div class="fs-3 fw-medium">
                         {{ stats.open }}

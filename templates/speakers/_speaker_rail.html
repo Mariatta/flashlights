@@ -12,45 +12,45 @@ Uses from speakers.context_processors.speaker_module:
 {% endcomment %}
 {% url 'speakers:my_dashboard' as dashboard_url %}
 {% if active == "dashboard" %}
-    {% include "portal/_sidebar_item.html" with url=dashboard_url label=_("Dashboard") icon="fa-house" active=True only %}
+    {% include "portal/_sidebar_item.html" with url=dashboard_url label=_("Dashboard") icon="icon-house" active=True only %}
 {% else %}
-    {% include "portal/_sidebar_item.html" with url=dashboard_url label=_("Dashboard") icon="fa-house" only %}
+    {% include "portal/_sidebar_item.html" with url=dashboard_url label=_("Dashboard") icon="icon-house" only %}
 {% endif %}
 {% url 'speakers:my_checklist' as checklist_url %}
 {% if active == "checklist" %}
-    {% include "portal/_sidebar_item.html" with url=checklist_url label=_("My speaker checklist") icon="fa-list-check" active=True only %}
+    {% include "portal/_sidebar_item.html" with url=checklist_url label=_("My speaker checklist") icon="icon-list-check" active=True only %}
 {% else %}
-    {% include "portal/_sidebar_item.html" with url=checklist_url label=_("My speaker checklist") icon="fa-list-check" only %}
+    {% include "portal/_sidebar_item.html" with url=checklist_url label=_("My speaker checklist") icon="icon-list-check" only %}
 {% endif %}
 {% url 'speakers:my_profile' as profile_url %}
 {% if active == "profile" %}
-    {% include "portal/_sidebar_item.html" with url=profile_url label=_("My speaker profile") icon="fa-id-card" active=True only %}
+    {% include "portal/_sidebar_item.html" with url=profile_url label=_("My speaker profile") icon="icon-id-card" active=True only %}
 {% else %}
-    {% include "portal/_sidebar_item.html" with url=profile_url label=_("My speaker profile") icon="fa-id-card" only %}
+    {% include "portal/_sidebar_item.html" with url=profile_url label=_("My speaker profile") icon="icon-id-card" only %}
 {% endif %}
 {% url 'speakers:my_sessions' as sessions_url %}
 {% if active == "sessions" %}
-    {% include "portal/_sidebar_item.html" with url=sessions_url label=_("My sessions") icon="fa-chalkboard-user" active=True only %}
+    {% include "portal/_sidebar_item.html" with url=sessions_url label=_("My sessions") icon="icon-presentation" active=True only %}
 {% else %}
-    {% include "portal/_sidebar_item.html" with url=sessions_url label=_("My sessions") icon="fa-chalkboard-user" only %}
+    {% include "portal/_sidebar_item.html" with url=sessions_url label=_("My sessions") icon="icon-presentation" only %}
 {% endif %}
 {% if has_speaker_proposals %}
     {% url 'speakers:my_proposals' as my_proposals_url %}
     {% if active == "proposals" %}
-        {% include "portal/_sidebar_item.html" with url=my_proposals_url label=_("My proposals") icon="fa-paper-plane" active=True only %}
+        {% include "portal/_sidebar_item.html" with url=my_proposals_url label=_("My proposals") icon="icon-send" active=True only %}
     {% else %}
-        {% include "portal/_sidebar_item.html" with url=my_proposals_url label=_("My proposals") icon="fa-paper-plane" only %}
+        {% include "portal/_sidebar_item.html" with url=my_proposals_url label=_("My proposals") icon="icon-send" only %}
     {% endif %}
 {% endif %}
 {% url 'speakers:my_guide' as guide_url %}
 {% if active == "guide" %}
-    {% include "portal/_sidebar_item.html" with url=guide_url label=_("Speaker guide") icon="fa-book-open" active=True only %}
+    {% include "portal/_sidebar_item.html" with url=guide_url label=_("Speaker guide") icon="icon-book-open" active=True only %}
 {% else %}
-    {% include "portal/_sidebar_item.html" with url=guide_url label=_("Speaker guide") icon="fa-book-open" only %}
+    {% include "portal/_sidebar_item.html" with url=guide_url label=_("Speaker guide") icon="icon-book-open" only %}
 {% endif %}
 {% url 'speakers:my_schedule' as schedule_url %}
 {% if active == "schedule" %}
-    {% include "portal/_sidebar_item.html" with url=schedule_url label=_("Schedule") icon="fa-calendar-days" active=True only %}
+    {% include "portal/_sidebar_item.html" with url=schedule_url label=_("Schedule") icon="icon-calendar-days" active=True only %}
 {% else %}
-    {% include "portal/_sidebar_item.html" with url=schedule_url label=_("Schedule") icon="fa-calendar-days" only %}
+    {% include "portal/_sidebar_item.html" with url=schedule_url label=_("Schedule") icon="icon-calendar-days" only %}
 {% endif %}

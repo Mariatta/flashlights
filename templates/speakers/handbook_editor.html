@@ -38,7 +38,7 @@
                     {% trans "Save draft" %}
                 </button>
                 <button class="btn btn-primary" type="submit" name="action" value="publish">
-                    <i class="fa-solid fa-paper-plane"></i> {% trans "Publish" %}
+                    <i class="icon-send"></i> {% trans "Publish" %}
                 </button>
             </form>
         </div>
@@ -59,7 +59,7 @@
                                 {% endif %}
                             </span>
                             <span class="text-secondary" title="{{ readers_label }}">
-                                <i class="fa-solid fa-book-open-reader"></i> {{ version.reader_count }}
+                                <i class="icon-book-open-text"></i> {{ version.reader_count }}
                             </span>
                         </li>
                     {% empty %}

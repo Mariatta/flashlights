@@ -12,11 +12,11 @@ row, else the board's)
          height="{% if size == 'sm' %}36{% else %}54{% endif %}"
          class="media-thumb rounded border">
 {% elif asset.preview_kind == "audio" %}
-    <span class="media-thumb-icon text-secondary"><i class="fa-solid fa-music"></i></span>
+    <span class="media-thumb-icon text-secondary"><i class="icon-music"></i></span>
 {% elif asset.preview_kind == "video" %}
-    <span class="media-thumb-icon text-secondary"><i class="fa-solid fa-film"></i></span>
+    <span class="media-thumb-icon text-secondary"><i class="icon-film"></i></span>
 {% elif asset.preview_kind == "image" %}
-    <span class="media-thumb-icon text-secondary"><i class="fa-regular fa-image"></i></span>
+    <span class="media-thumb-icon text-secondary"><i class="icon-image"></i></span>
 {% else %}
-    <span class="media-thumb-icon text-secondary"><i class="fa-regular fa-file"></i></span>
+    <span class="media-thumb-icon text-secondary"><i class="icon-file"></i></span>
 {% endif %}

@@ -179,14 +179,14 @@ class VolunteerProfileTable(tables.Table):
         ]:
             render_html = format_html(
                 '<a href="{}" class="btn btn-sm btn-primary">'
-                '<i class="fa-solid fa-clipboard-list"></i> {}</a> ',
+                '<i class="icon-clipboard-list"></i> {}</a> ',
                 url,
                 _("Review"),
             )
         elif application_status == ApplicationStatus.APPROVED:
             render_html = format_html(
                 '<a href="{}" class="btn btn-sm btn-info">'
-                '<i class="fa-solid fa-gear"></i> {}</a> ',
+                '<i class="icon-settings"></i> {}</a> ',
                 url,
                 _("Manage"),
             )
@@ -202,9 +202,7 @@ class VolunteerProfileTable(tables.Table):
         )
 
         if record.user.is_superuser:
-            html_content = format_html(
-                '{} <i class="fa-solid fa-user-secret"></i>', html_content
-            )
+            html_content = format_html('{} <i class="icon-eye-off"></i>', html_content)
         return html_content
 
     def render_teams(self, value, record):

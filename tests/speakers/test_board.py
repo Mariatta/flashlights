@@ -354,7 +354,7 @@ class TestPresenterPageChecklists:
             r'<button[^>]*value="DONE"[^>]*class="checklist-box "', content
         )
         assert 'checklist-title-done">Update bio</a>' not in content
-        assert "fa-rotate-left" not in content
+        assert "icon-rotate-ccw" not in content
         grace = people["grace"]
         content = client.get(grace.get_absolute_url()).content.decode()
         assert 'checklist-title-done">Update bio</a>' in content
@@ -1048,7 +1048,7 @@ class TestQueuePage:
         assert "for the session Django 101" in content
         assert "via the Design team" in content
         assert "checklist-due-overdue" in content and "no deadline" in content
-        assert 'value="DONE"' in content and "fa-rotate-left" not in content
+        assert 'value="DONE"' in content and "icon-rotate-ccw" not in content
         grouped = client.get(QUEUE, {"view": "presenter"})
         names = [(g["presenter"] or g["session"]).pk for g in grouped.context["groups"]]
         assert names == [ada.pk, people["session"].pk, grace.pk]

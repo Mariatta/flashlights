@@ -21,30 +21,30 @@ layout, as before.
 {% endcomment %}
 {% url 'organizer_dashboard' as dashboard_url %}
 {% if active == "dashboard" %}
-    {% include "portal/_sidebar_item.html" with url=dashboard_url label=_("Dashboard") icon="fa-gauge-high" active=True only %}
+    {% include "portal/_sidebar_item.html" with url=dashboard_url label=_("Dashboard") icon="icon-gauge" active=True only %}
 {% else %}
-    {% include "portal/_sidebar_item.html" with url=dashboard_url label=_("Dashboard") icon="fa-gauge-high" only %}
+    {% include "portal/_sidebar_item.html" with url=dashboard_url label=_("Dashboard") icon="icon-gauge" only %}
 {% endif %}
 {% if volunteering_enabled %}
     {% url 'volunteer:volunteers_list' as volunteers_url %}
     {% if active == "volunteers" %}
-        {% include "portal/_sidebar_item.html" with url=volunteers_url label=_("Volunteers") icon="fa-users" active=True only %}
+        {% include "portal/_sidebar_item.html" with url=volunteers_url label=_("Volunteers") icon="icon-users" active=True only %}
     {% else %}
-        {% include "portal/_sidebar_item.html" with url=volunteers_url label=_("Volunteers") icon="fa-users" only %}
+        {% include "portal/_sidebar_item.html" with url=volunteers_url label=_("Volunteers") icon="icon-users" only %}
     {% endif %}
     {% url 'teams' as teams_url %}
     {% if active == "teams" %}
-        {% include "portal/_sidebar_item.html" with url=teams_url label=_("Teams") icon="fa-users-rectangle" active=True only %}
+        {% include "portal/_sidebar_item.html" with url=teams_url label=_("Teams") icon="icon-users-round" active=True only %}
     {% else %}
-        {% include "portal/_sidebar_item.html" with url=teams_url label=_("Teams") icon="fa-users-rectangle" only %}
+        {% include "portal/_sidebar_item.html" with url=teams_url label=_("Teams") icon="icon-users-round" only %}
     {% endif %}
 {% endif %}
 {% if can_manage_conferences %}
     {% url 'conference_list' as conferences_url %}
     {% if active == "conferences" %}
-        {% include "portal/_sidebar_item.html" with url=conferences_url label=_("Events") icon="fa-calendar-days" active=True only %}
+        {% include "portal/_sidebar_item.html" with url=conferences_url label=_("Events") icon="icon-calendar-days" active=True only %}
     {% else %}
-        {% include "portal/_sidebar_item.html" with url=conferences_url label=_("Events") icon="fa-calendar-days" only %}
+        {% include "portal/_sidebar_item.html" with url=conferences_url label=_("Events") icon="icon-calendar-days" only %}
     {% endif %}
 {% endif %}
 {% if speaker_module_enabled %}
@@ -53,62 +53,62 @@ layout, as before.
     </div>
     {% url 'speakers:session_list' as sessions_url %}
     {% if active == "sessions" %}
-        {% include "portal/_sidebar_item.html" with url=sessions_url label=_("Sessions") icon="fa-chalkboard-user" active=True only %}
+        {% include "portal/_sidebar_item.html" with url=sessions_url label=_("Sessions") icon="icon-presentation" active=True only %}
     {% else %}
-        {% include "portal/_sidebar_item.html" with url=sessions_url label=_("Sessions") icon="fa-chalkboard-user" only %}
+        {% include "portal/_sidebar_item.html" with url=sessions_url label=_("Sessions") icon="icon-presentation" only %}
     {% endif %}
     {% if is_organizer %}
         {% url 'speakers:schedule_editor' as schedule_url %}
         {% if active == "schedule" %}
-            {% include "portal/_sidebar_item.html" with url=schedule_url label=_("Schedule") icon="fa-calendar-week" active=True only %}
+            {% include "portal/_sidebar_item.html" with url=schedule_url label=_("Schedule") icon="icon-calendar-range" active=True only %}
         {% else %}
-            {% include "portal/_sidebar_item.html" with url=schedule_url label=_("Schedule") icon="fa-calendar-week" only %}
+            {% include "portal/_sidebar_item.html" with url=schedule_url label=_("Schedule") icon="icon-calendar-range" only %}
         {% endif %}
     {% endif %}
     {% url 'speakers:presenter_list' as presenters_url %}
     {% if active == "presenters" %}
-        {% include "portal/_sidebar_item.html" with url=presenters_url label=_("Presenters") icon="fa-user-group" active=True only %}
+        {% include "portal/_sidebar_item.html" with url=presenters_url label=_("Presenters") icon="icon-users" active=True only %}
     {% else %}
-        {% include "portal/_sidebar_item.html" with url=presenters_url label=_("Presenters") icon="fa-user-group" only %}
+        {% include "portal/_sidebar_item.html" with url=presenters_url label=_("Presenters") icon="icon-users" only %}
     {% endif %}
     {% if speaker_proposals_open %}
         {% url 'speakers:proposal_queue' as proposals_url %}
         {% if active == "proposals" %}
-            {% include "portal/_sidebar_item.html" with url=proposals_url label=_("Proposals") icon="fa-paper-plane" badge=pending_proposal_count active=True only %}
+            {% include "portal/_sidebar_item.html" with url=proposals_url label=_("Proposals") icon="icon-send" badge=pending_proposal_count active=True only %}
         {% else %}
-            {% include "portal/_sidebar_item.html" with url=proposals_url label=_("Proposals") icon="fa-paper-plane" badge=pending_proposal_count only %}
+            {% include "portal/_sidebar_item.html" with url=proposals_url label=_("Proposals") icon="icon-send" badge=pending_proposal_count only %}
         {% endif %}
     {% endif %}
     {% url 'speakers:checklist_board' as checklists_url %}
     {% if active == "checklists" %}
-        {% include "portal/_sidebar_item.html" with url=checklists_url label=_("Checklists") icon="fa-table-cells" active=True only %}
+        {% include "portal/_sidebar_item.html" with url=checklists_url label=_("Checklists") icon="icon-layout-grid" active=True only %}
     {% else %}
-        {% include "portal/_sidebar_item.html" with url=checklists_url label=_("Checklists") icon="fa-table-cells" only %}
+        {% include "portal/_sidebar_item.html" with url=checklists_url label=_("Checklists") icon="icon-layout-grid" only %}
     {% endif %}
     {% if is_organizer %}
         {% url 'speakers:readiness_gates' as gates_url %}
         {% if active == "gates" %}
-            {% include "portal/_sidebar_item.html" with url=gates_url label=_("Readiness gates") icon="fa-hourglass-half" active=True only %}
+            {% include "portal/_sidebar_item.html" with url=gates_url label=_("Readiness gates") icon="icon-hourglass" active=True only %}
         {% else %}
-            {% include "portal/_sidebar_item.html" with url=gates_url label=_("Readiness gates") icon="fa-hourglass-half" only %}
+            {% include "portal/_sidebar_item.html" with url=gates_url label=_("Readiness gates") icon="icon-hourglass" only %}
         {% endif %}
         {% url 'speakers:program_types' as program_types_url %}
         {% if active == "program_types" %}
-            {% include "portal/_sidebar_item.html" with url=program_types_url label=_("Types and roles") icon="fa-tags" active=True only %}
+            {% include "portal/_sidebar_item.html" with url=program_types_url label=_("Types and roles") icon="icon-tags" active=True only %}
         {% else %}
-            {% include "portal/_sidebar_item.html" with url=program_types_url label=_("Types and roles") icon="fa-tags" only %}
+            {% include "portal/_sidebar_item.html" with url=program_types_url label=_("Types and roles") icon="icon-tags" only %}
         {% endif %}
         {% url 'speakers:template_list' as templates_url %}
         {% if active == "templates" %}
-            {% include "portal/_sidebar_item.html" with url=templates_url label=_("Checklist templates") icon="fa-list-check" active=True only %}
+            {% include "portal/_sidebar_item.html" with url=templates_url label=_("Checklist templates") icon="icon-list-check" active=True only %}
         {% else %}
-            {% include "portal/_sidebar_item.html" with url=templates_url label=_("Checklist templates") icon="fa-list-check" only %}
+            {% include "portal/_sidebar_item.html" with url=templates_url label=_("Checklist templates") icon="icon-list-check" only %}
         {% endif %}
         {% url 'speakers:handbook_list' as handbook_url %}
         {% if active == "handbook" %}
-            {% include "portal/_sidebar_item.html" with url=handbook_url label=_("Speaker guides") icon="fa-book-open" active=True only %}
+            {% include "portal/_sidebar_item.html" with url=handbook_url label=_("Speaker guides") icon="icon-book-open" active=True only %}
         {% else %}
-            {% include "portal/_sidebar_item.html" with url=handbook_url label=_("Speaker guides") icon="fa-book-open" only %}
+            {% include "portal/_sidebar_item.html" with url=handbook_url label=_("Speaker guides") icon="icon-book-open" only %}
         {% endif %}
     {% endif %}
 {% endif %}
@@ -118,15 +118,15 @@ layout, as before.
     </div>
     {% url 'sponsorship:sponsorship_list' as sponsors_url %}
     {% if active == "sponsors" %}
-        {% include "portal/_sidebar_item.html" with url=sponsors_url label=_("Sponsors") icon="fa-handshake" active=True only %}
+        {% include "portal/_sidebar_item.html" with url=sponsors_url label=_("Sponsors") icon="icon-handshake" active=True only %}
     {% else %}
-        {% include "portal/_sidebar_item.html" with url=sponsors_url label=_("Sponsors") icon="fa-handshake" only %}
+        {% include "portal/_sidebar_item.html" with url=sponsors_url label=_("Sponsors") icon="icon-handshake" only %}
     {% endif %}
     {% url 'sponsorship:tier_list' as tiers_url %}
     {% if active == "tiers" %}
-        {% include "portal/_sidebar_item.html" with url=tiers_url label=_("Tiers") icon="fa-layer-group" active=True only %}
+        {% include "portal/_sidebar_item.html" with url=tiers_url label=_("Tiers") icon="icon-layers" active=True only %}
     {% else %}
-        {% include "portal/_sidebar_item.html" with url=tiers_url label=_("Tiers") icon="fa-layer-group" only %}
+        {% include "portal/_sidebar_item.html" with url=tiers_url label=_("Tiers") icon="icon-layers" only %}
     {% endif %}
 {% endif %}
 {% if is_maintainer %}
@@ -136,32 +136,32 @@ layout, as before.
         {% trans "Maintenance" %}
     </div>
     {% url 'maintenance_accounts' as maintenance_accounts_url %}
-    {% include "portal/_sidebar_item.html" with url=maintenance_accounts_url label=_("Accounts") icon="fa-user-shield" only %}
+    {% include "portal/_sidebar_item.html" with url=maintenance_accounts_url label=_("Accounts") icon="icon-shield-check" only %}
     {% url 'maintenance_emails' as maintenance_emails_url %}
-    {% include "portal/_sidebar_item.html" with url=maintenance_emails_url label=_("Emails") icon="fa-envelope-open-text" only %}
+    {% include "portal/_sidebar_item.html" with url=maintenance_emails_url label=_("Emails") icon="icon-mail-open" only %}
     {% url 'maintenance_exports' as maintenance_exports_url %}
-    {% include "portal/_sidebar_item.html" with url=maintenance_exports_url label=_("File exports") icon="fa-file-zipper" only %}
+    {% include "portal/_sidebar_item.html" with url=maintenance_exports_url label=_("File exports") icon="icon-file-archive" only %}
     {% url 'maintenance_invitations' as maintenance_invitations_url %}
-    {% include "portal/_sidebar_item.html" with url=maintenance_invitations_url label=_("Invitations") icon="fa-paper-plane" only %}
+    {% include "portal/_sidebar_item.html" with url=maintenance_invitations_url label=_("Invitations") icon="icon-send" only %}
 {% endif %}
 <hr class="my-2">
 {% if volunteering_enabled %}
     {% url 'team_new' as team_new_url %}
-    {% include "portal/_sidebar_item.html" with url=team_new_url label=_("New team") icon="fa-plus" only %}
+    {% include "portal/_sidebar_item.html" with url=team_new_url label=_("New team") icon="icon-plus" only %}
 {% endif %}
 {% if can_manage_sponsorship %}
     {% url 'sponsorship:sponsorship_profile_new' as add_sponsor_url %}
     {% if active == "add" %}
-        {% include "portal/_sidebar_item.html" with url=add_sponsor_url label=_("Add sponsor") icon="fa-plus" active=True only %}
+        {% include "portal/_sidebar_item.html" with url=add_sponsor_url label=_("Add sponsor") icon="icon-plus" active=True only %}
     {% else %}
-        {% include "portal/_sidebar_item.html" with url=add_sponsor_url label=_("Add sponsor") icon="fa-plus" only %}
+        {% include "portal/_sidebar_item.html" with url=add_sponsor_url label=_("Add sponsor") icon="icon-plus" only %}
     {% endif %}
 {% endif %}
 {% if can_start_next_year %}
     {% url 'start_new_year' as next_year_url %}
     {% if active == "next_year" %}
-        {% include "portal/_sidebar_item.html" with url=next_year_url label=_("Start next year") icon="fa-calendar-plus" active=True only %}
+        {% include "portal/_sidebar_item.html" with url=next_year_url label=_("Start next year") icon="icon-calendar-plus" active=True only %}
     {% else %}
-        {% include "portal/_sidebar_item.html" with url=next_year_url label=_("Start next year") icon="fa-calendar-plus" only %}
+        {% include "portal/_sidebar_item.html" with url=next_year_url label=_("Start next year") icon="icon-calendar-plus" only %}
     {% endif %}
 {% endif %}

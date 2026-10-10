@@ -37,13 +37,13 @@ dict), lanes, days.
                   role="img"
                   aria-label="{{ double_booked }}"
                   title="{% for warning in card.warnings %}{{ warning }}{% if not forloop.last %}; {% endif %}{% endfor %}">
-                <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                <i class="icon-triangle-alert" aria-hidden="true"></i>
             </span>
         {% endif %}
         <details class="schedule-card-menu">
             <summary class="btn btn-sm btn-outline-secondary schedule-card-edit"
                      aria-label="{% blocktrans with title=card.session.title %}Move {{ title }}{% endblocktrans %}">
-                <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                <i class="icon-pen" aria-hidden="true"></i>
             </summary>
             <div class="schedule-card-popover card shadow">
                 {% url 'speakers:session_slot' card.session.slug as slot_url %}

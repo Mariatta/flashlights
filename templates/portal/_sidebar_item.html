@@ -1,10 +1,10 @@
 {% comment %}
 Reusable left-rail item. Include with:
-    {% include "portal/_sidebar_item.html" with url=some_url label="Label" icon="fa-inbox" active=is_current badge=count %}
+    {% include "portal/_sidebar_item.html" with url=some_url label="Label" icon="icon-inbox" active=is_current badge=count %}
 Params:
     url    — href (required)
     label  — visible text (required)
-    icon   — Font Awesome class without the "fa-solid " prefix (optional)
+    icon   — Lucide class, "icon-<name>" (optional)
     active — truthy to mark the current section (optional)
     badge  — small count/label shown on the right (optional)
 {% endcomment %}
@@ -12,7 +12,7 @@ Params:
    href="{{ url }}"
    {% if active %}aria-current="page"{% endif %}>
     {% if icon %}
-        <i class="fa-solid {{ icon }} fa-fw me-2"></i>
+        <i class="{{ icon }} icon-fw me-2" aria-hidden="true"></i>
     {% endif %}
     <span class="flex-grow-1">{{ label }}</span>
     {% if badge or badge == 0 %}

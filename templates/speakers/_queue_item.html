@@ -23,17 +23,17 @@ why and cannot be ticked. The tick form swaps this row in place over htmx.
         {% if item.is_waiting %}
             <span class="checklist-box checklist-box-waiting"
                   title="{{ waiting_label }}">
-                <i class="fa-solid fa-hourglass-half"></i>
+                <i class="icon-hourglass"></i>
             </span>
         {% elif item.is_automatic %}
             <span class="checklist-box checklist-box-static {% if item.is_done %}checklist-box-done{% elif item.status == 'BLOCKED' %}checklist-box-blocked{% endif %}"
                   title="{{ auto_label }}">
                 {% if item.is_done %}
-                    <i class="fa-solid fa-check"></i>
+                    <i class="icon-check"></i>
                 {% elif item.status == "BLOCKED" %}
-                    <i class="fa-solid fa-exclamation"></i>
+                    <i class="icon-circle-alert"></i>
                 {% else %}
-                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <i class="icon-wand-sparkles"></i>
                 {% endif %}
             </span>
         {% else %}
@@ -55,9 +55,9 @@ why and cannot be ticked. The tick form swaps this row in place over htmx.
                         aria-label="{% if item.is_open %}{{ do_label }}{% else %}{{ undo_label }}{% endif %}"
                         aria-pressed="{% if item.is_done %}true{% else %}false{% endif %}">
                     {% if item.is_done %}
-                        <i class="fa-solid fa-check"></i>
+                        <i class="icon-check"></i>
                     {% elif item.status == "BLOCKED" %}
-                        <i class="fa-solid fa-exclamation"></i>
+                        <i class="icon-circle-alert"></i>
                     {% endif %}
                 </button>
             </form>

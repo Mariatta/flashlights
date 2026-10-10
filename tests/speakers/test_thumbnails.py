@@ -254,7 +254,7 @@ class TestOnThePages:
         client.force_login(organizer)
         html = client.get(session.get_absolute_url()).content.decode()
         assert f'<img src="{thumb}"' in html and "no thumbnail" in html
-        assert "fa-regular fa-image" in html  # the poster's icon while it has none
+        assert "icon-image" in html  # the poster's icon while it has none
         html = client.get(
             reverse("speakers:checklist_board"), {"tab": "post_production"}
         ).content.decode()
@@ -274,7 +274,7 @@ class TestOnThePages:
         html = client.get(
             reverse("speakers:my_session_detail", args=[session.slug])
         ).content.decode()
-        assert "fa-regular fa-image" in html  # the shared poster, no thumbnail yet
+        assert "icon-image" in html  # the shared poster, no thumbnail yet
         assert client.get(thumb).status_code == 302  # their own raw video
         stranger = User.objects.create_user("s", email="s@x.org")
         client.force_login(stranger)

@@ -40,14 +40,14 @@
                            href="{{ guide.handbook.url }}"
                            target="_blank"
                            rel="noopener noreferrer">
-                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                            <i class="icon-external-link"></i>
                             {% blocktranslate with title=guide.handbook.title %}Open the {{ title }}{% endblocktranslate %}
                         </a>
                     </p>
                 {% endif %}
                 {% if guide.receipt %}
                     <div class="alert alert-success mb-0">
-                        <i class="fa-solid fa-check"></i>
+                        <i class="icon-check"></i>
                         {% blocktranslate with date=guide.receipt.read_at|date:"j F Y" version=guide.handbook.version %}You confirmed on {{ date }} that you read version {{ version }}. Thank you!{% endblocktranslate %}
                     </div>
                 {% else %}
@@ -65,7 +65,7 @@
                             </label>
                         </div>
                         <button class="btn btn-primary btn-sm" type="submit">
-                            <i class="fa-solid fa-check"></i> {% trans "Confirm" %}
+                            <i class="icon-check"></i> {% trans "Confirm" %}
                         </button>
                     </form>
                 {% endif %}

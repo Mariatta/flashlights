@@ -12,7 +12,7 @@ Params: asset, session
     {% url 'speakers:media_preview' session.slug asset.pk as preview_url %}
     <details class="media-preview mt-2">
         <summary class="small">
-            <i class="fa-regular fa-eye"></i> {% trans "Preview" %}
+            <i class="icon-eye"></i> {% trans "Preview" %}
         </summary>
         <div class="mt-2">
             {% if asset.preview_kind == "image" %}
@@ -36,7 +36,7 @@ Params: asset, session
                         class="media-preview-text w-100 rounded border bg-body"></iframe>
                 <div class="small mt-1">
                     <a href="{{ preview_url }}" target="_blank" rel="noopener">
-                        <i class="fa-solid fa-arrow-up-right-from-square"></i> {% trans "Open as text in a new tab" %}
+                        <i class="icon-external-link"></i> {% trans "Open as text in a new tab" %}
                     </a>
                 </div>
             {% else %}

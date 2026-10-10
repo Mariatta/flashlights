@@ -12,7 +12,7 @@
     <p class="mb-2">
         <a href="{% url 'speakers:my_checklist' %}"
            class="text-secondary text-decoration-none">
-            <i class="fa-solid fa-arrow-left"></i> {% trans "My speaker checklist" %}
+            <i class="icon-arrow-left"></i> {% trans "My speaker checklist" %}
         </a>
     </p>
     <h1 class="h3 mb-3">
@@ -26,7 +26,7 @@
                     {% if guide %}
                         <p class="mt-3 mb-0">
                             <a href="{% url 'speakers:my_guide' %}">
-                                <i class="fa-solid fa-book-open"></i>
+                                <i class="icon-book-open"></i>
                                 {% blocktranslate with title=guide.title %}Read the {{ title }} and confirm it there{% endblocktranslate %}
                             </a>
                         </p>
@@ -39,7 +39,7 @@
                 <div class="card-body">
                     {% if item.is_waiting %}
                         <p class="text-secondary small mb-0">
-                            <i class="fa-solid fa-hourglass-half"></i>
+                            <i class="icon-hourglass"></i>
                             {% trans "Nothing to do here yet. We will let you know when it is ready." %}
                         </p>
                     {% elif tickable %}
@@ -50,17 +50,17 @@
                                    value="{% url 'speakers:my_item_detail' item.pk %}">
                             {% if item.is_done %}
                                 <button type="submit" class="btn btn-outline-secondary w-100">
-                                    <i class="fa-solid fa-rotate-left"></i> {% trans "Mark as not done" %}
+                                    <i class="icon-rotate-ccw"></i> {% trans "Mark as not done" %}
                                 </button>
                             {% else %}
                                 <button type="submit" class="btn btn-success w-100">
-                                    <i class="fa-solid fa-check"></i> {% trans "Mark as done" %}
+                                    <i class="icon-check"></i> {% trans "Mark as done" %}
                                 </button>
                             {% endif %}
                         </form>
                     {% elif item.owner == "SPEAKER" %}
                         <p class="text-secondary small mb-0">
-                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            <i class="icon-wand-sparkles"></i>
                             {% trans "This item ticks itself once the portal sees it done." %}
                         </p>
                     {% else %}
