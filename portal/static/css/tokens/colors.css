@@ -1,0 +1,78 @@
+/* Flashlights color system.
+   Night + Paper neutrals (warm graphite, never navy) and one signal accent: Beam,
+   the yellow of a small flashlight in the dark. No pink/blue coding anywhere.
+   Every text pairing listed in readme.md meets WCAG AA (most AAA). */
+:root {
+  /* Night → Paper: warm neutral ramp */
+  --night-950: #0f0f0d;
+  --night-900: #171714;
+  --night-800: #23221e;
+  --night-700: #37352f;
+  --night-600: #524f47;
+  --night-500: #706c62;
+  --night-400: #9a968b;
+  --night-300: #c6c2b6;
+  --night-200: #e2dfd5;
+  --night-100: #eeebe3;
+  --paper: #f7f5ef;
+  --white: #ffffff;
+
+  /* Beam — the one accent */
+  --beam-200: #fff0b3;
+  --beam-300: #ffe27a;
+  --beam-400: #ffd43b;
+  --beam-500: #f2bd00;
+  --beam-600: #c99a00;
+  --beam-700: #7a5c00;
+
+  /* Semantic */
+  --ok-700: #145c34;   --ok-500: #1f8a4c;  --ok-100: #dcf1e2;
+  --stop-700: #9e2414; --stop-500: #d03a22; --stop-100: #fbe1db;
+  --warn-700: #8a4200; --warn-500: #e07a10; --warn-100: #fde8d2;
+
+  /* Semantic aliases — light (default) */
+  --surface-page: var(--paper);
+  --surface-card: var(--white);
+  --surface-sunken: var(--night-100);
+  --surface-night: var(--night-950);
+  --surface-night-raised: var(--night-800);
+  --text-strong: var(--night-950);
+  --text-body: var(--night-900);
+  --text-muted: var(--night-600);
+  --text-on-night: var(--paper);
+  --text-on-night-muted: var(--night-300);
+  --text-on-beam: var(--night-950);
+  --text-link: var(--night-950);
+  --text-link-on-night: var(--beam-400);
+  --border-subtle: var(--night-200);
+  --border-default: var(--night-300);
+  --border-strong: var(--night-950);
+  --accent: var(--beam-400);
+  --accent-hover: var(--beam-300);
+  --accent-press: var(--beam-500);
+  --accent-ink: var(--beam-700);
+  --focus-ring: var(--night-950);
+  --focus-halo: var(--beam-400);
+
+  --status-ok: var(--ok-500);       --status-ok-ink: var(--ok-700);     --status-ok-bg: var(--ok-100);
+  --status-stop: var(--stop-500);   --status-stop-ink: var(--stop-700); --status-stop-bg: var(--stop-100);
+  --status-warn: var(--warn-500);   --status-warn-ink: var(--warn-700); --status-warn-bg: var(--warn-100);
+  --status-info-bg: var(--night-100);
+}
+
+/* Night theme scope — put data-theme="night" on any container */
+[data-theme="night"] {
+  --surface-page: var(--night-950);
+  --surface-card: var(--night-900);
+  --surface-sunken: var(--night-800);
+  --text-strong: var(--paper);
+  --text-body: var(--night-100);
+  --text-muted: var(--night-300);
+  --text-link: var(--beam-400);
+  --border-subtle: var(--night-800);
+  --border-default: var(--night-700);
+  --border-strong: var(--paper);
+  --focus-ring: var(--beam-400);
+  --focus-halo: var(--night-950);
+  --status-info-bg: var(--night-800);
+}

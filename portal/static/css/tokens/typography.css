@@ -1,0 +1,38 @@
+:root {
+  --font-display: "Bricolage Grotesque", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-body: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", system-ui, sans-serif;
+  --font-mono: "Atkinson Hyperlegible Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* Scale (px at 16px root) */
+  --text-xs: 0.8125rem;   /* 13 */
+  --text-sm: 0.9375rem;   /* 15 */
+  --text-md: 1.0625rem;   /* 17 body */
+  --text-lg: 1.25rem;     /* 20 */
+  --text-xl: 1.625rem;    /* 26 */
+  --text-2xl: 2.125rem;   /* 34 */
+  --text-3xl: 3rem;       /* 48 */
+  --text-4xl: 4.5rem;     /* 72 */
+
+  --weight-regular: 400;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-black: 800;
+
+  --leading-tight: 1.05;
+  --leading-snug: 1.25;
+  --leading-body: 1.55;
+
+  --tracking-display: -0.025em;
+  --tracking-eyebrow: 0.09em;
+
+  /* Semantic roles */
+  --type-display: var(--weight-black) var(--text-4xl)/var(--leading-tight) var(--font-display);
+  --type-h1: var(--weight-black) var(--text-3xl)/var(--leading-tight) var(--font-display);
+  --type-h2: var(--weight-bold) var(--text-2xl)/var(--leading-snug) var(--font-display);
+  --type-h3: var(--weight-bold) var(--text-xl)/var(--leading-snug) var(--font-display);
+  --type-h4: var(--weight-bold) var(--text-lg)/var(--leading-snug) var(--font-body);
+  --type-body: var(--weight-regular) var(--text-md)/var(--leading-body) var(--font-body);
+  --type-small: var(--weight-regular) var(--text-sm)/var(--leading-body) var(--font-body);
+  --type-eyebrow: var(--weight-semibold) var(--text-xs)/1.2 var(--font-mono);
+  --type-mono: var(--weight-regular) var(--text-sm)/1.4 var(--font-mono);
+}

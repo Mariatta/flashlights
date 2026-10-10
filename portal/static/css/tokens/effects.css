@@ -1,0 +1,15 @@
+:root {
+  --shadow-sm: 0 1px 0 rgba(15, 15, 13, 0.08);
+  --shadow-md: 0 2px 0 rgba(15, 15, 13, 0.9);           /* "hard" offset used on primary cards on hover */
+  --shadow-lg: 0 18px 40px -12px rgba(15, 15, 13, 0.35); /* toasts, dialogs, menus */
+  --ring-focus: 0 0 0 2px var(--focus-halo), 0 0 0 4px var(--focus-ring);
+
+  /* The beam: a soft yellow spotlight used ONLY on night surfaces. */
+  --beam-glow: radial-gradient(60% 80% at 50% 0%, rgba(255, 212, 59, 0.22), rgba(255, 212, 59, 0) 70%);
+
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 360ms;
+}

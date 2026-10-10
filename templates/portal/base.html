@@ -47,6 +47,8 @@
         {% endblock extra_head %}
         {% bootstrap_css %}
         {% bootstrap_javascript %}
+        {# The design system's tokens, fonts and icons (self-hosted), then the instance's accent, then the portal's own rules. #}
+        <link rel="stylesheet" href="{% static 'css/flashlights.css' %}">
         <link rel="stylesheet"
               href="{% url 'brand_theme_css' %}?v={{ brand.version }}">
         <link rel="stylesheet" href="{% static 'css/portal.css' %}">
