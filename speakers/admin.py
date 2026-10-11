@@ -3,6 +3,7 @@ from django.contrib import admin
 
 from portal.admin_filters import ActiveConferenceFilter
 
+from .constants import EventFormat
 from .models import (
     ActivityLog,
     AllowedOrigin,
@@ -86,6 +87,29 @@ class SpeakerSettingsAdmin(admin.ModelAdmin):
         "pretix_organizer",
         "pretix_last_synced_at",
     )
+    #: Decision 0013: settings an in-person edition has no use for.
+    ONLINE_ONLY_FIELDS = (
+        "default_premiere_location",
+        "default_video_length_limit_minutes",
+    )
+
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = super().get_fieldsets(request, obj)
+        if obj is None or obj.event_format != EventFormat.IN_PERSON:
+            return fieldsets
+        return tuple(
+            (
+                title,
+                {
+                    **options,
+                    "fields": tuple(
+                        f for f in options["fields"] if f not in self.ONLINE_ONLY_FIELDS
+                    ),
+                },
+            )
+            for title, options in fieldsets
+        )
+
     fieldsets = (
         (
             None,

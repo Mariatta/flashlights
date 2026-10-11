@@ -16,6 +16,7 @@ from .constants import (
     DEFAULT_GUIDE_KEY,
     RESERVED_SLUGS,
     SLUG_MAX_LENGTH,
+    ChecklistScope,
     Delivery,
     ItemOwner,
     SessionLevel,
@@ -33,6 +34,7 @@ from .models import (
     Session,
     SessionPresenter,
     SessionType,
+    is_in_person,
     volunteer_discord_username,
 )
 from .people import assignee_candidates, liaison_candidates, picker_label
@@ -154,6 +156,12 @@ class SessionForm(forms.ModelForm):
         )
         self.fields["kind"].queryset = types
         self.fields["kind"].label = "Type"
+        # Decision 0013: an in-person edition's sessions are live, and a
+        # premiere is an online notion.
+        self.in_person = is_in_person(conference)
+        if self.in_person:
+            del self.fields["delivery"]
+            del self.fields["premiere_location"]
         self.fields["duration_minutes"].help_text = (
             "Leave blank to use the default for the type: "
             + ", ".join(
@@ -169,6 +177,8 @@ class SessionForm(forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
+        if self.in_person:
+            cleaned["delivery"] = self.instance.delivery = Delivery.LIVE
         delivery = cleaned.get("delivery")
         if not delivery and cleaned.get("kind"):
             delivery = cleaned["kind"].default_delivery
@@ -549,6 +559,10 @@ class SessionTypeForm(forms.ModelForm):
         self.fields["default_role"].queryset = roles
         if self.instance.pk and self.instance.sessions.exists():
             self.fields["code"].disabled = True
+        # Decision 0013: every type of an in-person edition is live.
+        if is_in_person(conference):
+            del self.fields["default_delivery"]
+            self.instance.default_delivery = Delivery.LIVE
 
     def clean_code(self):
         return _unique_code(self, SessionType, "session type")
@@ -667,11 +681,18 @@ class ChecklistTemplateForm(forms.ModelForm):
         self.fields["role"].queryset = PresenterRole.objects.filter(
             conference=conference
         ).filter(keep_role)
+        # Decision 0013: in person, a session template can only be live, so
+        # there is nothing to choose.
+        self.in_person = is_in_person(conference)
+        if self.in_person:
+            del self.fields["delivery"]
 
     def clean(self):
         """Per-edition uniqueness of the key; the model's ``clean()`` (run by
         the ModelForm after this) reports the scope/role/delivery rules."""
         cleaned = super().clean()
+        if self.in_person and cleaned.get("scope") == ChecklistScope.SESSION:
+            cleaned["delivery"] = self.instance.delivery = Delivery.LIVE
         if self.errors:
             return cleaned
         clash = ChecklistTemplate.objects.filter(

@@ -11,7 +11,7 @@ organizers changed.
 """
 
 from .constants import Delivery
-from .models import PresenterRole, SessionType
+from .models import PresenterRole, SessionType, is_in_person
 
 # code, name, the word the thank-you preface uses, sort order
 DEFAULT_ROLES = [
@@ -76,6 +76,8 @@ def seed_program_types(conference):
         roles[code] = role
         roles_created += created
     types_created = 0
+    # Decision 0013: nothing is pre-recorded at an in-person edition.
+    in_person = is_in_person(conference)
     for (
         code,
         name,
@@ -93,7 +95,7 @@ def seed_program_types(conference):
                 "name": name,
                 "is_content": is_content,
                 "default_duration_minutes": duration,
-                "default_delivery": delivery,
+                "default_delivery": Delivery.LIVE if in_person else delivery,
                 "spans_all_rooms": spans,
                 "sort_order": order,
                 "default_role": roles[role_codes[0]] if role_codes else None,

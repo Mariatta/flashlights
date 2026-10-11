@@ -387,6 +387,25 @@ class AllowedOrigin(TimestampedModel):
         super().save(*args, **kwargs)
 
 
+def event_format(conference):
+    """The edition's format (decision 0013): online with no edition or no
+    settings row, which is what every edition was before the field."""
+    if conference is None:
+        return EventFormat.ONLINE
+    stored = (
+        SpeakerSettings.objects.filter(conference=conference)
+        .values_list("event_format", flat=True)
+        .first()
+    )
+    return stored or EventFormat.ONLINE
+
+
+def is_in_person(conference):
+    """Whether the edition leaves out the online-only parts of the module:
+    pre-recorded delivery, premieres, the tech check and the upload gate."""
+    return event_format(conference) == EventFormat.IN_PERSON
+
+
 def media_for_speakers(conference):
     """Whether speakers in ``conference`` upload and see shared files
     (design §8.8); off with no conference, no settings row, or the switch

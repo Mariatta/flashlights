@@ -40,6 +40,7 @@ from .models import (
     ReadinessGate,
     SessionType,
     SpeakerSettings,
+    is_in_person,
 )
 from .program_types import (
     clone_program_types,
@@ -376,6 +377,9 @@ POST_PRODUCTION = [
 ]
 
 # (scope, name, type code, role code, delivery, items)
+# The performer's lines are about the video they upload before the event.
+PERFORMER_NAME = "PyJam performer"
+
 DEFAULT_TEMPLATES = [
     (
         ChecklistScope.GENERAL,
@@ -435,7 +439,7 @@ DEFAULT_TEMPLATES = [
     ),
     (
         ChecklistScope.PRESENTER,
-        "PyJam performer",
+        PERFORMER_NAME,
         "PYJAM",
         "PERFORMER",
         "",
@@ -505,8 +509,12 @@ def seed_checklists(conference):
 
 def seed_readiness_gates(conference):
     """Create the default gates for an edition, shut. Existing gates keep
-    whatever organizers changed, including whether they are open."""
+    whatever organizers changed, including whether they are open. An
+    in-person edition gets none: both defaults guard online-only lines
+    (decision 0013)."""
     created = 0
+    if is_in_person(conference):
+        return created
     for code, name, waiting_note, description in DEFAULT_GATES:
         _, made = ReadinessGate.objects.get_or_create(
             conference=conference,
@@ -530,7 +538,15 @@ def _seed_checklists(conference):
     roles = {r.code: r for r in PresenterRole.objects.filter(conference=conference)}
     templates_created = items_created = described = 0
     skipped = []
+    in_person = is_in_person(conference)
     for scope, name, kind, role, delivery, items in DEFAULT_TEMPLATES:
+        # Decision 0013: in person there is no video to upload before the
+        # event and no tech check over a call.
+        if in_person and (delivery == Delivery.PRE_RECORDED or name == PERFORMER_NAME):
+            skipped.append((name, "online editions only"))
+            continue
+        if in_person and scope == ChecklistScope.GENERAL:
+            items = [i for i in items if i is not TECH_CHECK]
         # The every-presenter template names no kind, role or delivery: its
         # lines are about the person, not about a session.
         if kind and kind not in kinds:
