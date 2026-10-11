@@ -548,8 +548,17 @@ class TestManageVolunteers:
         expected_team_render = f'<a href="{expected_team_url}" class="badge bg-secondary">{team.short_name}</a> '
         assert team_render == expected_team_render
 
+        # The name cell is a PersonRow: avatar initials, the name (or the
+        # username when there is none) linked to the profile, the username.
         name_render = volunteer_table.render_name(None, another_profile)
-        assert name_render == another_user.get_full_name()
+        assert "person-avatar" in name_render
+        assert (
+            reverse(
+                "volunteer:volunteer_profile_detail", kwargs={"pk": another_profile.pk}
+            )
+            in name_render
+        )
+        assert another_user.username in name_render
 
         render_username_for_superuser = volunteer_table.render_username(
             portal_user, profile
@@ -565,25 +574,25 @@ class TestManageVolunteers:
             ApplicationStatus.APPROVED
         )
         assert ApplicationStatus.APPROVED in render_application_status
-        assert "bg-success" in render_application_status
+        assert "status-chip-ok" in render_application_status
 
         render_application_status = volunteer_table.render_application_status(
             ApplicationStatus.REJECTED
         )
         assert ApplicationStatus.REJECTED in render_application_status
-        assert "bg-danger" in render_application_status
+        assert "status-chip-stop" in render_application_status
 
         render_application_status = volunteer_table.render_application_status(
             ApplicationStatus.CANCELLED
         )
         assert ApplicationStatus.CANCELLED in render_application_status
-        assert "bg-secondary" in render_application_status
+        assert "status-chip-neutral" in render_application_status
 
         render_application_status = volunteer_table.render_application_status(
             ApplicationStatus.PENDING
         )
         assert ApplicationStatus.PENDING in render_application_status
-        assert "bg-warning" in render_application_status
+        assert "status-chip-warn" in render_application_status
 
         another_profile.application_status = ApplicationStatus.PENDING
         another_profile.save()

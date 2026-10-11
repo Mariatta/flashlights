@@ -2,6 +2,8 @@ import django_tables2 as tables
 from django.urls import reverse
 from django.utils.html import format_html, format_html_join
 
+from portal.people import person_cell
+
 from .constants import SessionStatus
 from .models import InvitationStatus, Presenter, Session
 
@@ -178,7 +180,7 @@ class PresenterTable(tables.Table):
         }
 
     def render_display_name(self, value, record):
-        return format_html('<a href="{}">{}</a>', record.get_absolute_url(), value)
+        return person_cell(value, href=record.get_absolute_url())
 
     def render_sessions(self, record):
         if not record.session_links:

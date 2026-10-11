@@ -29,6 +29,7 @@ from portal.common import (
     get_volunteer_teams_stat_cache,
 )
 from portal.models import Conference
+from portal.people import person_cell, status_chip
 from speakers.models import speaker_module_enabled
 from speakers.permissions import can_work_queue
 from speakers.stats import my_task_stats
@@ -154,16 +155,20 @@ class VolunteerProfileTable(tables.Table):
             "thead": {"class": "table-light"},
         }
 
+    def render_name(self, value, record):
+        """The person as a PersonRow cell: avatar, full name, username."""
+        name = record.user.get_full_name() or record.user.username
+        url = reverse("volunteer:volunteer_profile_detail", kwargs={"pk": record.pk})
+        return person_cell(name, href=url, meta=record.user.username)
+
     def render_application_status(self, value):
-        """Render the application status with a badge."""
-        if value == ApplicationStatus.APPROVED:
-            return format_html('<span class="badge bg-success">{}</span>', value)
-        elif value == ApplicationStatus.REJECTED:
-            return format_html('<span class="badge bg-danger">{}</span>', value)
-        elif value == ApplicationStatus.CANCELLED:
-            return format_html('<span class="badge bg-secondary">{}</span>', value)
-        else:
-            return format_html('<span class="badge bg-warning">{}</span>', value)
+        """The status as a chip: a tone and the word, never colour alone."""
+        tone = {
+            ApplicationStatus.APPROVED: "ok",
+            ApplicationStatus.REJECTED: "stop",
+            ApplicationStatus.CANCELLED: "neutral",
+        }.get(value, "warn")
+        return status_chip(value, tone)
 
     def render_actions(self, value, record):
         """Render the actions column.
@@ -217,10 +222,6 @@ class VolunteerProfileTable(tables.Table):
                 team.short_name,
             )
         return html_content
-
-    def render_name(self, value, record):
-        """Render the volunteer's full name."""
-        return record.user.get_full_name()
 
 
 class VolunteerProfileList(VolunteerAdminRequiredMixin, SingleTableMixin, FilterView):
