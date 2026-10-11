@@ -29,7 +29,6 @@ from portal.constants import (
     CACHE_KEY_TEAMS_COUNT,
     CACHE_KEY_TOTAL_FUNDS_RAISED,
     CACHE_KEY_TOTAL_SPONSORSHIPS,
-    CACHE_KEY_VOLUNTEER_BREAKDOWN,
     CACHE_KEY_VOLUNTEER_ONBOARDED_COUNT,
     CACHE_KEY_VOLUNTEER_SIGNUPS_COUNT,
     DONATIONS_GOAL,
@@ -82,7 +81,6 @@ def get_volunteer_stats_dict(conference):
         get_volunteer_onboarded_stat_cache(conference)
     )
     stats_dict[CACHE_KEY_TEAMS_COUNT] = get_volunteer_teams_stat_cache(conference)
-    stats_dict[CACHE_KEY_VOLUNTEER_BREAKDOWN] = get_volunteer_breakdown(conference)
     return stats_dict
 
 
@@ -458,40 +456,6 @@ def get_sponsorship_breakdown(conference):
             STATS_CACHE_TIMEOUT,
         )
     return sponsorship_breakdown
-
-
-def get_volunteer_breakdown(conference):
-    """Returns the volunteer breakdown stats"""
-    cache_key = f"{CACHE_KEY_VOLUNTEER_BREAKDOWN}_{conference.year}"
-    volunteer_breakdown = cache.get(cache_key)
-
-    if not volunteer_breakdown:
-        volunteer_breakdown = []
-
-        volunteers = VolunteerProfile.objects.filter(conference=conference)
-
-        # Breakdown by region
-        volunteers_by_region = (
-            volunteers.filter(region__isnull=False)
-            .values("region")
-            .annotate(count=Count("id"))
-        )
-        result = [[data["region"], data["count"]] for data in volunteers_by_region]
-        volunteer_breakdown.append(
-            {
-                "title": "Volunteers By Region",
-                "columns": ["Region", "Volunteers"],
-                "data": result,
-                "chart_id": "volunteers_by_region",
-            }
-        )
-
-        cache.set(
-            cache_key,
-            volunteer_breakdown,
-            STATS_CACHE_TIMEOUT,
-        )
-    return volunteer_breakdown
 
 
 def get_total_donations_amount_cache(conference):

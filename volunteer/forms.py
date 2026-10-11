@@ -59,8 +59,8 @@ class VolunteerProfileForm(ModelForm):
         model = VolunteerProfile
         # conference is not shown in the form: new profiles are tied to the
         # active conference automatically in save().
-        # The chapter is a PyLadies notion the model keeps and the form
-        # hides.
+        # The chapter and the region are PyLadies notions the model keeps
+        # and the form hides.
         exclude = [
             "user",
             "application_status",
@@ -68,6 +68,7 @@ class VolunteerProfileForm(ModelForm):
             "languages_spoken",
             "conference",
             "chapter",
+            "region",
         ]
         help_texts = {
             "github_username": "Required - Your GitHub username (e.g., username). We grant volunteers read access to the organisers' repositories.",
@@ -77,14 +78,6 @@ class VolunteerProfileForm(ModelForm):
             "mastodon_url": "Mastodon handle (e.g., @username@instance.tld or https://instance.tld/@username)",
             "x_username": "X/Twitter username without @ (e.g., username)",
             "linkedin_url": "LinkedIn URL (e.g., linkedin.com/in/username)",
-            "region": mark_safe(
-                "Which region do you normally reside in? "
-                "See <a href='https://docs.google.com/document/"
-                "d/1LTx1dhT0aUCk-_bWWKDaMx6c6bPkuFnZko39-rX_Utc/"
-                "edit?tab=t.0#heading=h.whpl50rtq0dg' target='_blank' "
-                "rel='noopener'>PSF’s D&amp;I Workgroup Membership handbook</a> "
-                "under “Which region should I be representing?” for guidance."
-            ),
             "availability_hours_per_week": "Our volunteers are expected to commit at least 1 hour per week until the event day."
             "By sharing your availability, we can better match you with tasks and teams.",
         }
@@ -241,7 +234,6 @@ class VolunteerProfileForm(ModelForm):
         "mastodon_url",
         "x_username",
         "linkedin_url",
-        "region",
         "availability_hours_per_week",
     )
 

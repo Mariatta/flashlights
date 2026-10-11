@@ -94,7 +94,6 @@ class VolunteerProfileAdmin(ImportExportModelAdmin):
         "user__first_name",
         "user__last_name",
         "user__email",
-        "region",
         "availability_hours_per_week",
         "application_status",
         "creation_date",
@@ -104,10 +103,9 @@ class VolunteerProfileAdmin(ImportExportModelAdmin):
         "user__email",
         "user__first_name",
         "user__last_name",
-        "region",
         "application_status",
     )
-    list_filter = (ActiveConferenceFilter, "region", "application_status")
+    list_filter = (ActiveConferenceFilter, "application_status")
     actions = [bulk_waitlist_volunteers, bring_forward_to_active_conference]
     resource_classes = [VolunteerProfileResource]
     # Dual-list ("available"/"chosen") pickers for the many-to-many fields.

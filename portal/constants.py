@@ -15,7 +15,6 @@ CACHE_KEY_SPONSORSHIP_PAID_PERCENT = "sponsorship_paid_percent"
 CACHE_KEY_SPONSORSHIP_TOWARDS_GOAL_PERCENT = "sponsorship_towards_goal_percent"
 CACHE_KEY_SPONSORSHIP_BREAKDOWN = "sponsorship_breakdown"
 
-CACHE_KEY_VOLUNTEER_BREAKDOWN = "volunteer_breakdown"
 
 CACHE_KEY_DONATION_BREAKDOWN = "donation_breakdown"
 CACHE_KEY_DONATIONS_TOTAL_AMOUNT = "donations_total_amount"

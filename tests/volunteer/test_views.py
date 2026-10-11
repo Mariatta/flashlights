@@ -362,7 +362,7 @@ class TestVolunteer:
 
         profile = VolunteerProfile.objects.get(user=portal_user)
         assert profile.language.first() == language
-        assert profile.region == Region.NORTH_AMERICA
+        assert profile.region == ""  # hidden from the form, like the chapter
         assert profile.chapter is None  # hidden from the form
         assert profile.discord_username == data["discord_username"]
         assert profile.github_username == data["github_username"]
@@ -408,7 +408,7 @@ class TestVolunteer:
 
         profile = VolunteerProfile.objects.get(user=portal_user)
         assert profile.language.first() == language
-        assert profile.region == Region.ASIA
+        assert profile.region == Region.NORTH_AMERICA  # the form cannot change it
         assert profile.chapter is None  # hidden from the form
         assert profile.discord_username == data["discord_username"]
         assert profile.github_username == data["github_username"]

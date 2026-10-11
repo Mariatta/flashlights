@@ -12,9 +12,6 @@
                     {% trans "Roles" %}
                 </th>
                 <th>
-                    {% trans "Region" %}
-                </th>
-                <th>
                     {% trans "Discord" %}
                 </th>
                 {% if is_admin %}
@@ -40,9 +37,6 @@
                         {% empty %}
                             <span class="text-secondary">-</span>
                         {% endfor %}
-                    </td>
-                    <td>
-                        {{ member.region|default:"-" }}
                     </td>
                     <td>
                         {{ member.discord_username|default:"-" }}

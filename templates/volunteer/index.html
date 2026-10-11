@@ -30,7 +30,7 @@
                     </p>
                     <ol class="text-secondary">
                         <li>
-                            {% trans "Fill in your profile — region, languages, and how you'd like to help." %}
+                            {% trans "Fill in your profile: languages, affiliations and how you'd like to help." %}
                         </li>
                         <li>
                             {% trans "We review it and match you to a team." %}
@@ -69,13 +69,7 @@
                                 {% endif %}
                             </div>
                             <div class="small text-success-emphasis">
-                                {% if profile.region %}
-                                    {{ profile.region }}
-                                {% endif %}
                                 {% for lang in profile.language.all %}
-                                    {% if forloop.first and profile.region %}
-                                        ·
-                                    {% endif %}
                                     {% if not forloop.first %}
                                         ,
                                     {% endif %}

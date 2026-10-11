@@ -452,7 +452,7 @@ class TestVolunteerModel:
         assert profile.mastodon_url in body
         assert profile.x_username in body
         assert profile.linkedin_url in body
-        assert profile.region in body
+        assert profile.region not in body  # hidden: a PyLadies notion
         assert profile.user.first_name in body
         # The chapter is hidden from the portal, so the email leaves it out.
         assert profile.chapter.chapter_description not in body

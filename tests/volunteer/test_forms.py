@@ -46,7 +46,6 @@ class TestReturningVolunteerPrefill:
 
         assert form.initial["discord_username"] == "priordiscord"
         assert form.initial["github_username"] == "priorgh"
-        assert form.initial["region"] == Region.NORTH_AMERICA
         assert form.initial["availability_hours_per_week"] == 5
         assert list(form.initial["language"]) == [french]
 
@@ -80,7 +79,6 @@ class TestVolunteerProfileForm:
     def set_valid_data(self, language):
         self._base_valid_data = {
             "language": [language.id],
-            "region": Region.NORTH_AMERICA,
             "discord_username": "validuser123",
             "github_username": "validuser123",
             "availability_hours_per_week": 5,
@@ -94,7 +92,6 @@ class TestVolunteerProfileForm:
 
         assert profile.user == portal_user
         assert profile.language.first() == language
-        assert profile.region == Region.NORTH_AMERICA
         assert profile.discord_username == "validuser123"
         assert profile.availability_hours_per_week == 5
         assert profile.application_status == "Pending Review"
@@ -104,30 +101,19 @@ class TestVolunteerProfileForm:
         form = VolunteerProfileForm(user=portal_user, data={})
         assert not form.is_valid()
         assert "language" not in form.errors  # optional
-        assert "region" in form.errors
-        assert "discord_username" in form.errors
-        assert "github_username" in form.errors
-        assert "availability_hours_per_week" in form.errors
-
-        form = VolunteerProfileForm(
-            user=portal_user, data={"region": Region.NORTH_AMERICA}
-        )
-        assert not form.is_valid()
-        assert "language" not in form.errors  # optional
+        assert "region" not in form.errors  # hidden: a PyLadies notion
         assert "discord_username" in form.errors
         assert "github_username" in form.errors
         assert "availability_hours_per_week" in form.errors
 
         form = VolunteerProfileForm(user=portal_user, data={"language": [language.id]})
         assert not form.is_valid()
-        assert "region" in form.errors
         assert "discord_username" in form.errors
         assert "github_username" in form.errors
         assert "availability_hours_per_week" in form.errors
 
         form = VolunteerProfileForm(user=portal_user, data={"discord_username": ["en"]})
         assert not form.is_valid()
-        assert "region" in form.errors
         assert "language" not in form.errors  # optional
         assert "github_username" in form.errors
         assert "availability_hours_per_week" in form.errors
@@ -136,7 +122,6 @@ class TestVolunteerProfileForm:
             user=portal_user, data={"availability_hours_per_week": [40]}
         )
         assert not form.is_valid()
-        assert "region" in form.errors
         assert "language" not in form.errors  # optional
         assert "discord_username" in form.errors
         assert "github_username" in form.errors
@@ -347,7 +332,6 @@ class TestVolunteerProfileForm:
             "discord_username": "newdiscord",
             "github_username": "newuser",
             "availability_hours_per_week": 20,
-            "region": Region.ASIA,
         }
         form = VolunteerProfileForm(
             user=portal_user, data=update_data, instance=profile
@@ -358,7 +342,6 @@ class TestVolunteerProfileForm:
 
         assert updated_profile.pk == profile.pk
         assert updated_profile.github_username == "newuser"
-        assert updated_profile.region == Region.ASIA
         assert language in updated_profile.language.all()
         assert other_language in updated_profile.language.all()
         assert updated_profile.discord_username == "newdiscord"

@@ -13,8 +13,8 @@ them.
 
 1. Sign in and open **Volunteer**.
 2. Choose **Create my volunteer profile**.
-3. Fill in the required fields: your region, the hours you can give, how
-   to reach you, and the teams you are interested in. Add what you are good
+3. Fill in the required fields: the hours you can give, how to reach
+   you, and the teams you are interested in. Add what you are good
    at and where you work or what you build, so we can match you to a team
    that fits.
 

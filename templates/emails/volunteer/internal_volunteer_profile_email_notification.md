@@ -22,7 +22,6 @@ We're writing to let you know that a new volunteer has just signed up for **{{ p
 - **Mastodon URL:** {{ profile.mastodon_url }}
 - **X username:** {{ profile.x_username }}
 - **LinkedIn URL:** {{ profile.linkedin_url }}
-- **Region:** {{ profile.region }}
 - **Affiliations:** {% for affiliation in profile.user.affiliations.all %}{{ affiliation }}{% if not forloop.last %}; {% endif %}{% empty %}none{% endfor %}
 - **Additional Comments:** {{ profile.additional_comments }}
 
