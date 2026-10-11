@@ -25,35 +25,21 @@
         {# ---- Cross-app top line ---- #}
         <div class="row row-cols-2 row-cols-md-4 g-3 mb-4">
             <div class="col">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <div class="text-secondary small mb-1">
-                            <i class="icon-user-check"></i> {% trans "Onboarded" %}
-                        </div>
-                        <div class="fs-3 fw-medium">
-                            {{ onboarded_count }}
-                        </div>
-                        <div class="text-muted small">
-                            {% trans "approved volunteers" %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% if sponsorship_enabled %}
-                <div class="col">
-                    <div class="card h-100">
+                <div class="card h-100" stat-card"> <div class="card-body"> <div class="stat-label"> <i class="icon-user-check"></i> {% trans "Onboarded" %} </div> <div class="stat-value"> {{ onboarded_count }} </div> <div class="stat-detail"> {% trans "approved volunteers" %} </div> </div> </div> </div>
+                {% if sponsorship_enabled %}
+                    <div class="col"> <div class="card h-100" stat-card">
                         <div class="card-body">
-                            <div class="text-secondary small mb-1">
+                            <div class="stat-label">
                                 <i class="icon-hand-coins"></i> {% trans "Sponsorship" %}
                             </div>
-                            <div class="fs-3 fw-medium">
+                            <div class="stat-value">
                                 {{ sponsorship_goal_percent }}%
                             </div>
                             <div class="text-muted small">
                                 {{ sponsorship_committed|as_currency }} {% trans "of" %} {{ sponsorship_goal|as_currency }}
                             </div>
                             {# djlint:off #}
-                        <div class="progress mt-2" role="progressbar" style="height: 5px;">
+                        <div class="progress mt-2" role="progressbar">
                             <div class="progress-bar" style="width: {{ sponsorship_bar_width }}%"></div>
                         </div>
                             {# djlint:on #}
@@ -61,37 +47,18 @@
                     </div>
                 </div>
                 <div class="col">
-                    <div class="card h-100">
+                    <div class="card h-100" stat-card"> <div class="card-body"> <div class="stat-label"> <i class="icon-heart"></i> {% trans "Donations" %} </div> <div class="stat-value"> {{ donation_goal_percent }}% </div> <div class="text-muted small"> {{ donations_total|as_currency }} {% trans "of" %} {{ donation_goal|as_currency }} </div> {# djlint:off #} <div class="progress mt-2" role="progressbar"> <div class="progress-bar" style="width: {{ donation_bar_width }}%"></div> </div> {# djlint:on #} </div> </div> </div>
+                {% endif %}
+                {% if pretix_configured %}
+                    <div class="col"> <div class="card h-100" stat-card">
                         <div class="card-body">
-                            <div class="text-secondary small mb-1">
-                                <i class="icon-heart"></i> {% trans "Donations" %}
-                            </div>
-                            <div class="fs-3 fw-medium">
-                                {{ donation_goal_percent }}%
-                            </div>
-                            <div class="text-muted small">
-                                {{ donations_total|as_currency }} {% trans "of" %} {{ donation_goal|as_currency }}
-                            </div>
-                            {# djlint:off #}
-                        <div class="progress mt-2" role="progressbar" style="height: 5px;">
-                            <div class="progress-bar" style="width: {{ donation_bar_width }}%"></div>
-                        </div>
-                            {# djlint:on #}
-                        </div>
-                    </div>
-                </div>
-            {% endif %}
-            {% if pretix_configured %}
-                <div class="col">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <div class="text-secondary small mb-1">
+                            <div class="stat-label">
                                 <i class="icon-ticket"></i> {% trans "Attendees" %}
                             </div>
-                            <div class="fs-3 fw-medium">
+                            <div class="stat-value">
                                 {{ attendee_count }}
                             </div>
-                            <div class="text-muted small">
+                            <div class="stat-detail">
                                 {% blocktranslate count counter=attendee_first_time_count %}{{ counter }} first-time{% plural %}{{ counter }} first-time{% endblocktranslate %}
                             </div>
                         </div>
@@ -101,7 +68,7 @@
         </div>
         {# ---- Speaker-portal tasks across the edition ---- #}
         {% if task_stats %}
-            <h2 class="h6 text-body-emphasis mb-2">
+            <h2 class="eyebrow mb-2">
                 {% trans "Event tasks" %}
             </h2>
             {% url 'speakers:checklist_board' as board_url %}
@@ -114,59 +81,58 @@
             {% endif %}
         {% endif %}
         {# ---- Needs attention ---- #}
-        <h2 class="h6 text-body-emphasis mb-2">
+        <h2 class="eyebrow mb-2">
             {% trans "Needs attention" %}
         </h2>
         {% if not conference or pending_reviews or unled_teams or awaiting_invoice %}
-            <div class="list-group mb-4">
+            <div class="attention-list mb-4">
                 {% if not conference %}
                     {# Only a superuser can activate one; staff just get the notice. #}
                     {% if can_manage_conferences %}
                         <a href="{% url 'conference_list' %}"
-                           class="list-group-item list-group-item-action list-group-item-danger d-flex align-items-center">
-                            <i class="icon-calendar-x icon-fw me-3"></i>
+                           class="attention-item attention-stop">
+                            <span class="attention-tile" aria-hidden="true"><i class="icon-calendar-x"></i></span>
                             <span class="flex-grow-1"><strong>{% trans "No active event." %}</strong> {% trans "Activate an event so the portal reports on the current year." %}</span>
-                            <i class="icon-chevron-right"></i>
+                            <i class="icon-chevron-right attention-chevron" aria-hidden="true"></i>
                         </a>
                     {% else %}
-                        <div class="list-group-item list-group-item-danger d-flex align-items-center">
-                            <i class="icon-calendar-x icon-fw me-3"></i>
+                        <div class="attention-item attention-stop">
+                            <span class="attention-tile" aria-hidden="true"><i class="icon-calendar-x"></i></span>
                             <span class="flex-grow-1"><strong>{% trans "No active event." %}</strong> {% trans "Ask a superuser to activate one so the portal reports on the current year." %}</span>
                         </div>
                     {% endif %}
                 {% endif %}
                 {% if pending_reviews and volunteering_enabled %}
                     <a href="{% url 'volunteer:volunteers_list' %}?application_status={{ pending_status|urlencode }}"
-                       class="list-group-item list-group-item-action list-group-item-warning d-flex align-items-center">
-                        <i class="icon-clipboard-list icon-fw me-3"></i>
+                       class="attention-item attention-warn">
+                        <span class="attention-tile" aria-hidden="true"><i class="icon-clipboard-list"></i></span>
                         <span class="flex-grow-1">{% blocktranslate count counter=pending_reviews %}<strong>{{ counter }} volunteer application</strong> pending review.{% plural %}<strong>{{ counter }} volunteer applications</strong> pending review.{% endblocktranslate %}</span>
-                        <i class="icon-chevron-right"></i>
+                        <i class="icon-chevron-right attention-chevron" aria-hidden="true"></i>
                     </a>
                 {% endif %}
                 {% if unled_teams and volunteering_enabled %}
-                    <a href="{% url 'teams' %}"
-                       class="list-group-item list-group-item-action list-group-item-warning d-flex align-items-center">
-                        <i class="icon-user-x icon-fw me-3"></i>
+                    <a href="{% url 'teams' %}" class="attention-item attention-warn">
+                        <span class="attention-tile" aria-hidden="true"><i class="icon-user-x"></i></span>
                         <span class="flex-grow-1">{% blocktranslate count counter=unled_teams %}<strong>{{ counter }} team</strong> has no lead assigned.{% plural %}<strong>{{ counter }} teams</strong> have no lead assigned.{% endblocktranslate %}</span>
-                        <i class="icon-chevron-right"></i>
+                        <i class="icon-chevron-right attention-chevron" aria-hidden="true"></i>
                     </a>
                 {% endif %}
                 {% if awaiting_invoice and sponsorship_enabled %}
                     <a href="{% url 'sponsorship:sponsorship_list' %}"
-                       class="list-group-item list-group-item-action list-group-item-warning d-flex align-items-center">
-                        <i class="icon-receipt icon-fw me-3"></i>
+                       class="attention-item attention-warn">
+                        <span class="attention-tile" aria-hidden="true"><i class="icon-receipt"></i></span>
                         <span class="flex-grow-1">{% blocktranslate count counter=awaiting_invoice %}<strong>{{ counter }} sponsor</strong> committed but not yet invoiced.{% plural %}<strong>{{ counter }} sponsors</strong> committed but not yet invoiced.{% endblocktranslate %}</span>
-                        <i class="icon-chevron-right"></i>
+                        <i class="icon-chevron-right attention-chevron" aria-hidden="true"></i>
                     </a>
                 {% endif %}
             </div>
         {% else %}
-            <div class="alert alert-light border mb-4">
-                <i class="icon-circle-check text-success"></i> {% trans "Nothing needs your attention right now." %}
+            <div class="alert alert-success mb-4" role="status">
+                {% trans "Nothing needs your attention right now." %}
             </div>
         {% endif %}
         {# ---- Quick actions ---- #}
-        <h2 class="h6 text-body-emphasis mb-2">
+        <h2 class="eyebrow mb-2">
             {% trans "Quick actions" %}
         </h2>
         <div class="row row-cols-2 row-cols-md-3 g-3">
