@@ -24,7 +24,6 @@ from common.mixins import (
 )
 from common.tasks import enqueue
 from portal.common import (
-    get_volunteer_languages_stat_cache,
     get_volunteer_onboarded_stat_cache,
     get_volunteer_teams_stat_cache,
 )
@@ -406,11 +405,9 @@ class TeamList(VolunteerAdminRequiredMixin, ListView):
         if conference:
             context["onboarded_count"] = get_volunteer_onboarded_stat_cache(conference)
             context["teams_count"] = get_volunteer_teams_stat_cache(conference)
-            context["languages_count"] = get_volunteer_languages_stat_cache(conference)
         else:
             context["onboarded_count"] = 0
             context["teams_count"] = 0
-            context["languages_count"] = 0
 
         # Cross-team aggregates the bare list never surfaced.
         context["pending_total"] = sum(t.pending_members.count() for t in teams)

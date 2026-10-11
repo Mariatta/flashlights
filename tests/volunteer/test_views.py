@@ -1400,7 +1400,6 @@ class TestTeamList:
         assert response.context["selected_conference"] is None
         assert response.context["onboarded_count"] == 0
         assert response.context["teams_count"] == 0
-        assert response.context["languages_count"] == 0
 
 
 @pytest.mark.django_db

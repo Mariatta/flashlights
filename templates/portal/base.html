@@ -9,7 +9,11 @@
         <meta charset="UTF-8" />
         <title>
             {% block head_title %}
+                {{ brand.title }}
             {% endblock head_title %}
+            {% block head_title_suffix %}
+                | {{ brand.short_name }}
+            {% endblock head_title_suffix %}
         </title>
         {% if brand.favicon %}
             <link rel="icon" href="{{ brand.favicon }}" />

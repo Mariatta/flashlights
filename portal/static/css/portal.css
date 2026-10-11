@@ -1077,43 +1077,6 @@ body > .container:has(> .landing-hero:last-child) {
     --s: 22px;
 }
 
-.landing-stats {
-    background: var(--surface-card);
-    border-bottom: 1px solid var(--border-subtle);
-    margin: 0 calc(50% - 50vw);
-    width: 100vw;
-}
-
-.landing-stats-inner {
-    max-width: var(--content-max);
-    margin: 0 auto;
-    padding: 28px 24px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 32px;
-    align-items: end;
-}
-
-.landing-stat-value {
-    font: var(--weight-black) var(--text-3xl) / 1 var(--font-display);
-    letter-spacing: var(--tracking-display);
-    color: var(--text-strong);
-    font-variant-numeric: tabular-nums;
-}
-
-.landing-stat-label,
-.landing-stat-note {
-    font: var(--type-eyebrow);
-    letter-spacing: var(--tracking-eyebrow);
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-top: 8px;
-}
-
-.landing-stat-note {
-    margin-left: auto;
-}
-
 @media (max-width: 767.98px) {
     .landing-hero-inner {
         grid-template-columns: 1fr;

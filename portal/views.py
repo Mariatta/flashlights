@@ -11,7 +11,6 @@ from django.views.generic.edit import DeleteView, FormView, UpdateView
 from common.mixins import AdminRequiredMixin, SuperuserRequiredMixin
 from portal.common import (
     SPONSOR_AWAITING_INVOICE_STATUS,
-    get_alltime_landing_stats,
     get_historical_comparison_data,
     get_stats_cached_values,
 )
@@ -79,13 +78,7 @@ def index(request):
         if settings.VOLUNTEERING_ENABLED:
             return redirect("volunteer:index")
 
-    context = {
-        # Public landing band: cumulative numbers across all editions, plus this
-        # year's signup momentum.
-        "landing_stats": get_alltime_landing_stats(),
-        "stats": get_stats_cached_values(),
-    }
-    return render(request, "portal/index.html", context)
+    return render(request, "portal/index.html")
 
 
 def _stats_conference(request):

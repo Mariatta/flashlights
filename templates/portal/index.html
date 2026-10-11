@@ -1,4 +1,6 @@
 {% extends "portal/base.html" %}
+{% block head_title_suffix %}
+{% endblock head_title_suffix %}
 {% load i18n %}
 {% block body %}
 {% endblock body %}
@@ -47,33 +49,6 @@
             {# djlint:on #}
         </div>
     </section>
-    {% if volunteering_enabled and active_conference.volunteer_application_open %}
-        {# Stats band: cumulative across all editions, from view context. #}
-        {% trans "Across all editions" as band_label %}
-        <section class="landing-stats" aria-label="{{ band_label }}">
-            <div class="landing-stats-inner">
-                <div class="landing-stat">
-                    <div class="landing-stat-value">
-                        {{ landing_stats.volunteers }}
-                    </div>
-                    <div class="landing-stat-label">
-                        {% trans "Volunteers" %}
-                    </div>
-                </div>
-                <div class="landing-stat">
-                    <div class="landing-stat-value">
-                        {{ landing_stats.editions }}
-                    </div>
-                    <div class="landing-stat-label">
-                        {% trans "Editions" %}
-                    </div>
-                </div>
-                <div class="landing-stat landing-stat-note">
-                    {% trans "Across all editions" %}
-                </div>
-            </div>
-        </section>
-    {% endif %}
     {# Only with something to offer: with every way in closed, the hero meets the footer. #}
     {% if volunteering_enabled and active_conference.volunteer_application_open or speaker_proposals_open or sponsorship_enabled and active_conference.sponsors_url %}
         <div class="container py-5 landing-sections">
@@ -125,12 +100,6 @@
                            class="btn btn-primary btn-lg">
                             <i class="icon-user-plus" aria-hidden="true"></i> {% trans "Sign up to volunteer" %}
                         </a>
-                        {# This year's momentum: only once someone has signed up. #}
-                        {% if stats.volunteer_signups_count %}
-                            <p class="text-muted mb-0">
-                                {% blocktranslate count counter=stats.volunteer_signups_count with year=active_conference.year short_name=brand.short_name %}Join {{ counter }} volunteer who has already signed up for {{ short_name }} {{ year }}.{% plural %}Join {{ counter }} volunteers who have already signed up for {{ short_name }} {{ year }}.{% endblocktranslate %}
-                            </p>
-                        {% endif %}
                         {% if brand.docs_url %}
                             <a href="{{ brand.docs_url }}" class="icon-link">
                                 {% trans "Read the team descriptions" %} <i class="icon-external-link" aria-hidden="true"></i>

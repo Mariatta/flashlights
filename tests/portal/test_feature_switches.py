@@ -89,12 +89,12 @@ class TestStatsSectionsFollowTheFeatures:
             PRETIX_CONFIGURED=False,
         ):
             content = client.get(reverse("portal_stats")).content.decode()
-        assert "About our Volunteers" not in content
+        assert "Volunteers Signed Up" not in content
         assert "Attendee Demographic" not in content
         assert "sponsorship_breakdown" not in content and "Sponsorship" not in content
         with override_settings(PRETIX_CONFIGURED=True):
             content = client.get(reverse("portal_stats")).content.decode()
-        assert "About our Volunteers" in content
+        assert "Volunteers Signed Up" in content
         assert "Attendee Demographic" in content
 
     def test_snapshot_cards_follow_the_features(self, client, conference):

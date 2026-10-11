@@ -1,3 +1,5 @@
+import re
+
 import pytest
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -6,7 +8,6 @@ from django.urls import reverse
 from pytest_django.asserts import assertRedirects
 
 from portal import branding
-from portal.common import get_alltime_landing_stats
 from portal.models import Conference
 from portal_account.models import PortalProfile
 from sponsorship.models import (
@@ -15,7 +16,13 @@ from sponsorship.models import (
     SponsorshipTier,
 )
 from volunteer.constants import ApplicationStatus
-from volunteer.models import PyladiesChapter, Team, VolunteerProfile
+from volunteer.models import Team, VolunteerProfile
+
+
+def title_of(html):
+    """The page's <title>, whitespace collapsed."""
+    match = re.search(r"<title>(.*?)</title>", html, re.S)
+    return " ".join(match.group(1).split())
 
 
 @pytest.mark.django_db
@@ -53,9 +60,9 @@ class TestPortalIndex:
             "Read the team descriptions"
             not in client.get(reverse("index")).content.decode()
         )
-        assert "Across all editions" in content  # band is cumulative
-        # The band is bound to cumulative aggregates, not literals.
-        assert response.context["landing_stats"]["editions"] == 1
+        # No running totals on the landing: the band was a PyLadiesCon artifact.
+        assert "Across all editions" not in content
+        assert "landing-stats" not in content
 
     def test_landing_footer_shows_grouped_resources(self, client, conference):
         conference.coc_url = "https://example.org/coc/"
@@ -76,17 +83,21 @@ class TestPortalIndex:
         content = client.get(reverse("portal_stats")).content.decode()
         assert "footer-heading" not in content
 
-    def test_hero_shows_this_year_signups_with_year(
-        self, client, portal_user, conference
-    ):
+    def test_landing_never_counts_signups(self, client, portal_user, conference):
+        # The "join N volunteers who signed up" line was a PyLadiesCon
+        # artifact: the landing does not advertise a running total.
         VolunteerProfile.objects.create(user=portal_user, conference=conference)
-        content = client.get(reverse("index")).content.decode()  # anonymous
-        assert "already signed up for Flashlights" in content
-        assert str(conference.year) in content
-
-    def test_hero_hides_signups_when_no_profiles_this_year(self, client, conference):
         content = client.get(reverse("index")).content.decode()
         assert "already signed up" not in content
+        assert "Sign up to volunteer" in content
+
+    def test_landing_title_is_the_instance_name(self, client, conference):
+        content = client.get(reverse("index")).content.decode()
+        assert title_of(content) == settings.BRAND.title
+
+    def test_inner_page_title_carries_the_short_name(self, client):
+        content = client.get(reverse("account_login")).content.decode()
+        assert title_of(content) == f"Sign in | {settings.BRAND.short_name}"
 
     def test_navbar_shows_active_conference_year(self, client, conference):
         response = client.get(reverse("index"))
@@ -720,34 +731,6 @@ class TestBranding:
         assert f'{reverse("brand_theme_css")}?v={version}' in content
         assert f'{reverse("brand_favicon")}?v={version}' in content
         assert settings.BRAND.short_name in content
-
-
-@pytest.mark.django_db
-class TestAlltimeLandingStats:
-    def test_keys_and_caching(self, conference):
-        first = get_alltime_landing_stats()
-        second = get_alltime_landing_stats()  # served from cache
-        assert first == second
-        assert set(first) == {"volunteers", "languages", "chapters", "editions"}
-        assert first["editions"] == 1
-
-    def test_counts_distinct(self, conference, django_user_model):
-        chapter = PyladiesChapter.objects.create(
-            chapter_name="vancouver", chapter_description="Vancouver"
-        )
-        VolunteerProfile.objects.create(
-            user=django_user_model.objects.create_user("v1"),
-            conference=conference,
-            chapter=chapter,
-        )
-        VolunteerProfile.objects.create(
-            user=django_user_model.objects.create_user("v2"),
-            conference=conference,
-            chapter=chapter,
-        )
-        stats = get_alltime_landing_stats()
-        assert stats["volunteers"] == 2
-        assert stats["chapters"] == 1  # both in the same chapter -> distinct = 1
 
 
 @pytest.mark.django_db

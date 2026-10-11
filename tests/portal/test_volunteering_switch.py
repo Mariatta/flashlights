@@ -26,7 +26,6 @@ class TestVolunteeringOff:
         with override_settings(VOLUNTEERING_ENABLED=False):
             content = client.get(reverse("index")).content.decode()
         assert "Sign up to volunteer" not in content
-        assert "Across all editions" not in content
         assert settings.BRAND.title in content
         content = client.get(reverse("index")).content.decode()
         assert "Sign up to volunteer" in content
@@ -68,7 +67,6 @@ class TestApplicationsClosedForTheEdition:
         conference.save()
         content = client.get(reverse("index")).content.decode()
         assert "Sign up to volunteer" not in content
-        assert "Across all editions" not in content
         assert "Create an account" in content and "Sign in" in content
         # With every way in closed there is no empty band under the hero.
         assert "landing-sections" not in content

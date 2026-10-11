@@ -30,9 +30,7 @@ from portal.constants import (
     CACHE_KEY_TOTAL_FUNDS_RAISED,
     CACHE_KEY_TOTAL_SPONSORSHIPS,
     CACHE_KEY_VOLUNTEER_BREAKDOWN,
-    CACHE_KEY_VOLUNTEER_LANGUAGES,
     CACHE_KEY_VOLUNTEER_ONBOARDED_COUNT,
-    CACHE_KEY_VOLUNTEER_PYLADIES_CHAPTERS,
     CACHE_KEY_VOLUNTEER_SIGNUPS_COUNT,
     DONATIONS_GOAL,
     SPONSORSHIP_GOAL,
@@ -84,12 +82,6 @@ def get_volunteer_stats_dict(conference):
         get_volunteer_onboarded_stat_cache(conference)
     )
     stats_dict[CACHE_KEY_TEAMS_COUNT] = get_volunteer_teams_stat_cache(conference)
-    stats_dict[CACHE_KEY_VOLUNTEER_LANGUAGES] = get_volunteer_languages_stat_cache(
-        conference
-    )
-    stats_dict[CACHE_KEY_VOLUNTEER_PYLADIES_CHAPTERS] = (
-        get_volunteer_pyladies_chapters_stat_cache(conference)
-    )
     stats_dict[CACHE_KEY_VOLUNTEER_BREAKDOWN] = get_volunteer_breakdown(conference)
     return stats_dict
 
@@ -176,44 +168,6 @@ def get_volunteer_teams_stat_cache(conference):
             STATS_CACHE_TIMEOUT,
         )
     return volunteer_teams_count
-
-
-def get_volunteer_languages_stat_cache(conference):
-    """Returns the cached count of volunteer languages."""
-    cache_key = f"{CACHE_KEY_VOLUNTEER_LANGUAGES}_{conference.year}"
-    volunteer_languages_count = cache.get(cache_key)
-    if not volunteer_languages_count:
-        volunteer_languages_qs = (
-            VolunteerProfile.objects.filter(
-                language__isnull=False, conference=conference
-            )
-            .distinct()
-            .select_related("language")
-        )
-        volunteer_languages_count = volunteer_languages_qs.values_list(
-            "language__id"
-        ).count()
-        cache.set(
-            cache_key,
-            volunteer_languages_count,
-            STATS_CACHE_TIMEOUT,
-        )
-    return volunteer_languages_count
-
-
-def get_volunteer_pyladies_chapters_stat_cache(conference):
-    cache_key = f"{CACHE_KEY_VOLUNTEER_PYLADIES_CHAPTERS}_{conference.year}"
-    volunteer_pyladies_chapters_count = cache.get(cache_key)
-    if not volunteer_pyladies_chapters_count:
-        volunteer_pyladies_chapters_count = VolunteerProfile.objects.filter(
-            chapter__isnull=False, conference=conference
-        ).count()
-        cache.set(
-            cache_key,
-            volunteer_pyladies_chapters_count,
-            STATS_CACHE_TIMEOUT,
-        )
-    return volunteer_pyladies_chapters_count
 
 
 SPONSOR_COMMITTED_STATUS = [
@@ -514,27 +468,7 @@ def get_volunteer_breakdown(conference):
     if not volunteer_breakdown:
         volunteer_breakdown = []
 
-        # Breakdown by chapter
-        volunteers = VolunteerProfile.objects.filter(
-            conference=conference
-        ).select_related("chapter", "region", "language")
-        volunteers_by_chapter = (
-            volunteers.filter(chapter__isnull=False)
-            .values("chapter__chapter_description")
-            .annotate(count=Count("id"))
-        )
-        result = [
-            [data["chapter__chapter_description"], data["count"]]
-            for data in volunteers_by_chapter
-        ]
-        volunteer_breakdown.append(
-            {
-                "title": "Volunteers By Chapter",
-                "columns": ["Chapter", "Volunteers"],
-                "data": result,
-                "chart_id": "volunteer_by_chapter",
-            }
-        )
+        volunteers = VolunteerProfile.objects.filter(conference=conference)
 
         # Breakdown by region
         volunteers_by_region = (
@@ -549,24 +483,6 @@ def get_volunteer_breakdown(conference):
                 "columns": ["Region", "Volunteers"],
                 "data": result,
                 "chart_id": "volunteers_by_region",
-            }
-        )
-
-        # Breakdown by languages
-        volunteers_by_languages = (
-            volunteers.filter(language__isnull=False)
-            .values("language__name")
-            .annotate(count=Count("id"))
-        )
-        result = [
-            [data["language__name"], data["count"]] for data in volunteers_by_languages
-        ]
-        volunteer_breakdown.append(
-            {
-                "title": "Volunteers By Languages",
-                "columns": ["Language", "Volunteers"],
-                "data": result,
-                "chart_id": "volunteers_by_languages",
             }
         )
 
@@ -871,33 +787,3 @@ def get_historical_comparison_data():
         )
 
     return historical_comparison
-
-
-def get_alltime_landing_stats():
-    """Cumulative numbers across every edition, for the public landing band.
-
-    Cached like the per-conference stats. Counts are distinct (people,
-    languages, chapters) so a returning volunteer is not counted twice.
-    """
-    cache_key = "alltime_landing_stats"
-    stats = cache.get(cache_key)
-    if stats is None:
-        stats = {
-            "volunteers": VolunteerProfile.objects.values("user").distinct().count(),
-            "languages": (
-                VolunteerProfile.objects.filter(language__isnull=False)
-                .values("language")
-                .distinct()
-                .count()
-            ),
-            # Distinct chapters that volunteers belong to.
-            "chapters": (
-                VolunteerProfile.objects.filter(chapter__isnull=False)
-                .values("chapter")
-                .distinct()
-                .count()
-            ),
-            "editions": Conference.objects.count(),
-        }
-        cache.set(cache_key, stats, STATS_CACHE_TIMEOUT)
-    return stats

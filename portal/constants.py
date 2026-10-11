@@ -1,8 +1,6 @@
 CACHE_KEY_VOLUNTEER_SIGNUPS_COUNT = "volunteer_signups_count"
 CACHE_KEY_VOLUNTEER_ONBOARDED_COUNT = "volunteer_onboarded_count"
 CACHE_KEY_TEAMS_COUNT = "volunteer_teams_count"
-CACHE_KEY_VOLUNTEER_LANGUAGES = "volunteer_languages_count"
-CACHE_KEY_VOLUNTEER_PYLADIES_CHAPTERS = "volunteer_pyladies_chapters_count"
 
 STATS_CACHE_TIMEOUT = 5 * 60  # 5 minutes
 
