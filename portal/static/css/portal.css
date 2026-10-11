@@ -628,6 +628,194 @@ a.card:hover {
 
 /* ---- The portal's own components ---------------------------------------- */
 
+/* Eyebrow: the mono, uppercase, letter-spaced label above a title. */
+.eyebrow {
+    font: var(--type-eyebrow);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+/* The one important card on a page (Card spec, strong). */
+.card.card-strong {
+    --bs-card-border-width: 2px;
+    --bs-card-border-color: var(--border-strong);
+}
+
+.card-step .card-title i {
+    color: var(--accent-ink);
+}
+
+/* Landing page (Landing screen spec). The hero is a full-bleed Night
+   section with the beam glow and the tiny lights; base.html's container
+   gives it its margins, so the hero pulls itself out of them. */
+.landing-hero {
+    background: var(--beam-glow), var(--surface-night);
+    color: var(--paper);
+    margin: -3rem calc(50% - 50vw) 0;
+    width: 100vw;
+}
+
+.landing-hero-inner {
+    max-width: var(--content-max);
+    margin: 0 auto;
+    padding: 64px 24px 72px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    gap: 48px;
+    align-items: center;
+}
+
+.landing-hero-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 22px;
+}
+
+.landing-title {
+    font: var(--type-display);
+    letter-spacing: var(--tracking-display);
+    text-wrap: balance;
+    color: var(--paper);
+    margin: 0;
+}
+
+.landing-lead {
+    font: var(--weight-regular) var(--text-lg) / 1.5 var(--font-body);
+    color: var(--night-200);
+    max-width: 540px;
+    margin: 0;
+}
+
+.landing-lights {
+    position: relative;
+    height: 320px;
+}
+
+.landing-lights span {
+    position: absolute;
+    width: var(--s);
+    height: var(--s);
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 calc(var(--s) * 2) calc(var(--s) / 2) rgba(var(--accent-rgb), 0.45);
+    opacity: 0.8;
+}
+
+.landing-lights span:nth-child(3n + 1) {
+    opacity: 1;
+}
+
+/* Where the ten lights sit, and how big each is. */
+.landing-lights span:nth-child(1) {
+    left: 18%;
+    top: 30%;
+    --s: 14px;
+}
+
+.landing-lights span:nth-child(2) {
+    left: 62%;
+    top: 12%;
+    --s: 8px;
+}
+
+.landing-lights span:nth-child(3) {
+    left: 80%;
+    top: 44%;
+    --s: 18px;
+}
+
+.landing-lights span:nth-child(4) {
+    left: 40%;
+    top: 58%;
+    --s: 10px;
+}
+
+.landing-lights span:nth-child(5) {
+    left: 12%;
+    top: 76%;
+    --s: 7px;
+}
+
+.landing-lights span:nth-child(6) {
+    left: 70%;
+    top: 82%;
+    --s: 12px;
+}
+
+.landing-lights span:nth-child(7) {
+    left: 50%;
+    top: 30%;
+    --s: 6px;
+}
+
+.landing-lights span:nth-child(8) {
+    left: 88%;
+    top: 18%;
+    --s: 5px;
+}
+
+.landing-lights span:nth-child(9) {
+    left: 28%;
+    top: 46%;
+    --s: 5px;
+}
+
+.landing-lights span:nth-child(10) {
+    left: 58%;
+    top: 64%;
+    --s: 22px;
+}
+
+.landing-stats {
+    background: var(--surface-card);
+    border-bottom: 1px solid var(--border-subtle);
+    margin: 0 calc(50% - 50vw);
+    width: 100vw;
+}
+
+.landing-stats-inner {
+    max-width: var(--content-max);
+    margin: 0 auto;
+    padding: 28px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    align-items: end;
+}
+
+.landing-stat-value {
+    font: var(--weight-black) var(--text-3xl) / 1 var(--font-display);
+    letter-spacing: var(--tracking-display);
+    color: var(--text-strong);
+    font-variant-numeric: tabular-nums;
+}
+
+.landing-stat-label,
+.landing-stat-note {
+    font: var(--type-eyebrow);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 8px;
+}
+
+.landing-stat-note {
+    margin-left: auto;
+}
+
+@media (max-width: 767.98px) {
+    .landing-hero-inner {
+        grid-template-columns: 1fr;
+        padding: 40px 16px 48px;
+    }
+
+    .landing-lights {
+        height: 120px;
+    }
+}
+
 .btn-primary {
     /* The ink on a filled accent is chosen by contrast (Night on Beam,
        white on teal), never assumed white. */
