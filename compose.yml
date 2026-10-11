@@ -74,8 +74,9 @@ services:
         GROUP_ID: ${GROUP_ID:-1000}
         WHISPER_MODEL: ${WHISPER_MODEL:-}
     image: flashlights-celery:docker-compose
-    # One worker for both queues in development (production has worker-media).
-    command: celery -A portal worker -Q celery,media --loglevel=info
+    # The minimum formation, as in production: one worker for both queues
+    # with beat embedded (bin/worker).
+    command: sh bin/worker
     working_dir: /code
     volumes:
       - .:/code
@@ -96,32 +97,6 @@ services:
         condition: service_healthy
       maildev:
         condition: service_started
-    restart: unless-stopped
-
-  # Scheduler only: reads the django-celery-beat periodic tasks from the
-  # database and hands them to the worker. Mirrors the Procfile's `worker-beat`.
-  beat:
-    build:
-      target: dev
-      args:
-        USER_ID: ${USER_ID:-1000}
-        GROUP_ID: ${GROUP_ID:-1000}
-        WHISPER_MODEL: ${WHISPER_MODEL:-}
-    image: flashlights-beat:docker-compose
-    command: celery -A portal beat --loglevel=info
-    working_dir: /code
-    volumes:
-      - .:/code
-    environment:
-      CELERY_BROKER_URL: redis://redis:6379/0
-      DATABASE_URL: postgresql://flashlights:flashlights@postgres:5432/flashlights
-      SECRET_KEY: verysecure
-      DEBUG: True
-    depends_on:
-      redis:
-        condition: service_healthy
-      postgres:
-        condition: service_healthy
     restart: unless-stopped
 
   maildev:

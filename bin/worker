@@ -1,0 +1,16 @@
+#!/bin/sh
+# The worker process (decision 0008). The minimum formation is web plus this
+# one process: it serves every queue and runs beat embedded, so a small
+# instance needs no scheduler process. Scaling out:
+#   - more workers:        CELERY_EMBED_BEAT=0 on all of them and run the
+#                          worker-beat process once (two beats would
+#                          schedule everything twice)
+#   - a media worker:      CELERY_WORKER_QUEUES=celery here and run the
+#                          worker-media process for the media queue
+set -e
+queues="${CELERY_WORKER_QUEUES:-celery,media}"
+case "${CELERY_EMBED_BEAT:-1}" in
+    0|false|no|off) beat="" ;;
+    *) beat="-B" ;;
+esac
+exec celery -A portal worker -Q "$queues" $beat --loglevel="${CELERY_LOG_LEVEL:-info}"

@@ -32,6 +32,39 @@ nothing but `SECRET_KEY` is checked: email prints to the console and files
 stay on disk. `BOOT_CHECK=0` turns the check off for a one-off shell on a
 half-configured environment.
 
+### Processes and formation
+
+The `Procfile` names the processes; every host runs the same image.
+
+| Process | What it does | When |
+|---|---|---|
+| `release` | Creates the cache table and runs migrations | Before each new version serves |
+| `web` | gunicorn on `$PORT` | Always |
+| `worker` | `bin/worker`: serves every queue and runs beat embedded | Always; the minimum formation is web plus one worker |
+| `worker-media` | Serves the media queue alone (probes, transcription), one job at a time | Optional: when media jobs should not hold up emails and reminders |
+| `worker-beat` | The scheduler on its own | Optional: when there is more than one worker, with `CELERY_EMBED_BEAT=0` on every worker so beat runs once |
+
+`bin/worker` reads two variables: `CELERY_WORKER_QUEUES` (default
+`celery,media`; set `celery` when a media worker exists) and
+`CELERY_EMBED_BEAT` (default on). `compose.yml` runs the minimum formation.
+
+### The lite profile
+
+Three switches turn off what a community does not run (decision 0007).
+Off, a feature's pages answer 404 and its navigation, dashboard, landing
+and stats entries disappear.
+
+| Variable | Default | Off means |
+|---|---|---|
+| `VOLUNTEERING_ENABLED` | `true` | No Volunteer hub, applications or teams |
+| `SPONSORSHIP_ENABLED` | `true` | No sponsors, tiers, donations or their stats |
+| `STATS_PUBLIC` | `true` | No public stats, comparison, JSON feed or gallery pages |
+
+The speaker portal is switched per edition, on the edition form. A
+community that runs none of volunteering, sponsorship and the speaker
+portal still gets accounts, editions, the schedule by hand and the public
+site export; its formation is web plus one worker and the slim image.
+
 ## Web app deployment
 
 The web app is deployed to [cabotage](https://cabotage.us-east-2.psfhosted.computer/)
