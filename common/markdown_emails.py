@@ -12,7 +12,7 @@ import markdown
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.mail import EmailMultiAlternatives
-from django.template.loader import get_template
+from django.template.loader import get_template, render_to_string
 
 
 class MarkdownEmailRenderer:
@@ -176,8 +176,16 @@ def deliver_markdown_email(
         recipient_list,
         reply_to=reply_to or [settings.DEFAULT_FROM_EMAIL],
     )
-    msg.attach_alternative(html_content, "text/html")
+    msg.attach_alternative(wrap_html(html_content), "text/html")
     msg.send()
+
+
+def wrap_html(html_content: str) -> str:
+    """The HTML part inside the instance's chrome: a header in the accent
+    with the short name, the body, a rule (templates/emails/_html_wrapper.html)."""
+    return render_to_string(
+        "emails/_html_wrapper.html", {"body": html_content, "brand": settings.BRAND}
+    )
 
 
 def send_markdown_email(

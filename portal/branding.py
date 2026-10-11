@@ -21,6 +21,7 @@ There is no custom CSS and the fonts are fixed.
 
 import hashlib
 import io
+import math
 import os
 from dataclasses import dataclass
 
@@ -254,10 +255,34 @@ class Brand:
             max_width=1080,
             ink=ink,
         )
+        # The small Flashlights mark with its name, bottom centre.
+        _draw_mark(draw, width / 2 - 78, height - 56, 56, ink)
         _draw_centered(
-            draw, "Flashlights", width / 2, height - 56, 28, opacity=170, ink=ink
+            draw, "Flashlights", width / 2 + 16, height - 56, 28, opacity=170, ink=ink
         )
         return _png_bytes(image)
+
+
+def _draw_mark(draw, cx, cy, size, ink):
+    """The torch mark (Wordmark spec, simplified) centred on (cx, cy):
+    handle and lens in ``ink``, beam and one light in Beam yellow, the whole
+    rotated 32 degrees up like the SVG."""
+    beam = (255, 212, 59)
+    angle = math.radians(-32)
+    cos, sin = math.cos(angle), math.sin(angle)
+
+    def at(x, y):
+        # Design coordinates are 0..100 around (50, 50); scale to ``size``.
+        dx, dy = (x - 50) / 100 * size, (y - 50) / 100 * size
+        return (cx + dx * cos - dy * sin, cy + dx * sin + dy * cos)
+
+    draw.polygon([at(52, 40), at(100, 18), at(100, 82), at(52, 60)], fill=beam + (60,))
+    draw.polygon([at(0, 40), at(34, 40), at(34, 60), at(0, 60)], fill=parse_hex(ink))
+    draw.polygon([at(32, 40), at(48, 34), at(48, 66), at(32, 60)], fill=parse_hex(ink))
+    draw.polygon([at(48, 34), at(52, 34), at(52, 66), at(48, 66)], fill=beam)
+    lx, ly = at(80, 44)
+    r = size * 0.05
+    draw.ellipse((lx - r, ly - r, lx + r, ly + r), fill=beam)
 
 
 def _font(size):

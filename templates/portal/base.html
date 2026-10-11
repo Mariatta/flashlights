@@ -243,9 +243,9 @@
             {% block footer_resources %}
             {% endblock footer_resources %}
             <div class="container py-3 d-flex align-items-center justify-content-between">
-                <span>
-                    Runs on <a href="https://github.com/mariatta/flashlights">Flashlights</a>.
-                    Problems with this site? File an issue there, or open a pull request.
+                <span class="d-inline-flex align-items-center flex-wrap gap-2">
+                    {% include "portal/_flashlights_mark.html" with href="https://github.com/mariatta/flashlights" %}
+                    <span>{% trans "Problems with this site? File an issue in the repository, or open a pull request." %}</span>
                 </span>
                 {% block footer_text %}
                 {% endblock footer_text %}

@@ -1,0 +1,27 @@
+{% comment %}
+Flashlights' short lockup on a Night ground: the torch mark inline (so it
+needs no request and inherits nothing) and the name in the display face.
+Include with `href` for the link target.
+{% endcomment %}
+<a class="flashlights-lockup" href="{{ href }}">
+    <svg class="flashlights-mark" viewBox="0 0 100 100" aria-hidden="true">
+        <defs>
+        <linearGradient id="fl-beam" x1="0" x2="1" y1="0" y2="0">
+        <stop offset="0" stop-color="#ffd43b" stop-opacity="0.95" />
+        <stop offset="0.55" stop-color="#ffd43b" stop-opacity="0.45" />
+        <stop offset="1" stop-color="#ffd43b" stop-opacity="0" />
+        </linearGradient>
+        </defs>
+        <g transform="rotate(-32 50 50)">
+        <path d="M50 41 L100 20 L100 80 L50 59 Z" fill="url(#fl-beam)" opacity="0.55" />
+        <circle cx="64" cy="46" r="3" fill="#ffd43b" />
+        <circle cx="75" cy="56" r="4.2" fill="#ffd43b" />
+        <circle cx="89" cy="40" r="5.5" fill="#ffd43b" />
+        <circle cx="93" cy="64" r="3" fill="#ffd43b" opacity="0.7" />
+        <rect x="2" y="43" width="30" height="14" rx="4" fill="currentColor" />
+        <path d="M31 43 L46 38 L46 62 L31 57 Z" fill="currentColor" />
+        <rect x="46" y="38" width="3" height="24" rx="1" fill="#ffd43b" />
+        </g>
+    </svg>
+    <span class="flashlights-name">Flashlights</span>
+</a>

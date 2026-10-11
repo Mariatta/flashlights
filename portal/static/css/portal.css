@@ -628,6 +628,38 @@ a.card:hover {
 
 /* ---- The portal's own components ---------------------------------------- */
 
+/* Flashlights' own short lockup (Wordmark spec): the torch mark with the
+   name in the display face; on Night the handle is Paper. */
+.flashlights-lockup {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--paper);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.flashlights-lockup:hover {
+    color: var(--paper);
+    text-decoration: none;
+}
+
+.flashlights-lockup:hover .flashlights-name {
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+}
+
+.flashlights-mark {
+    width: 30px;
+    height: 30px;
+    flex: none;
+}
+
+.flashlights-name {
+    font: var(--weight-black) 18px / 1 var(--font-display);
+    letter-spacing: -0.04em;
+}
+
 /* People in lists (PersonRow spec): a 40px Night avatar with the initials
    in the accent, the name in bold, a muted meta line, and a status chip. */
 .person-cell {
