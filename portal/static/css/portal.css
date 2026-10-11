@@ -628,6 +628,89 @@ a.card:hover {
 
 /* ---- The portal's own components ---------------------------------------- */
 
+/* Session cards on the schedule (SessionCard spec): a mono time column,
+   the track and tags, the title; the session on stage now inverts to
+   Night with the accent live tag. */
+.session-card {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 16px;
+    padding: 16px;
+    background: var(--surface-card);
+    color: var(--text-body);
+    border: 2px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+}
+.session-card-mine {
+    border-color: var(--night-950);
+}
+.session-card-time {
+    font: var(--weight-semibold) var(--text-md) / 1 var(--font-mono);
+    color: var(--text-strong);
+    white-space: nowrap;
+}
+.session-card-duration {
+    font: var(--weight-regular) 12px / 1.4 var(--font-mono);
+    margin-top: 4px;
+    color: var(--text-muted);
+}
+.session-card-track {
+    font: var(--weight-semibold) 12px / 1.3 var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+}
+.session-card-title {
+    font: var(--weight-bold) var(--text-lg) / 1.25 var(--font-display);
+    color: var(--text-strong);
+}
+.session-card-title a {
+    color: inherit;
+}
+.session-card-tag {
+    background: var(--accent) !important;
+    color: var(--text-on-accent) !important;
+}
+.session-card-livetag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font: var(--weight-bold) 12px / 1.3 var(--font-body);
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    background: var(--accent);
+    color: var(--text-on-accent);
+}
+.session-card-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--text-on-accent);
+}
+.session-card-live {
+    background: var(--surface-night);
+    color: var(--paper);
+    border-color: var(--night-950);
+}
+.session-card-live .session-card-time {
+    color: var(--accent);
+}
+.session-card-live .session-card-duration,
+.session-card-live .session-card-track {
+    color: var(--night-300);
+}
+.session-card-live .session-card-title,
+.session-card-live .session-card-title a,
+.session-card-live .btn-link {
+    color: var(--paper);
+}
+@media (max-width: 575.98px) {
+    .session-card {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+}
+
 /* Stat cards (StatCard spec): an eyebrow label with its icon, the number in
    the display face with tabular figures, a small detail, and a 6px goal bar. */
 .stat-card .stat-label {
@@ -1395,36 +1478,60 @@ button.checklist-box-done:hover {
 /* At-a-glance strip on the session pages (templates/speakers/session_detail.html,
    speaker_session_detail.html): one tile per thing that needs a person,
    each a link to its section. The left edge carries the state. */
+/* Glance tiles on a session page (GlanceTile spec): a 5px state edge, an
+   eyebrow label, the value with the state's icon, a small detail. */
 .glance-tile {
     color: inherit;
     text-decoration: none;
-    border-left: 4px solid var(--bs-border-color);
+    border-left: 5px solid var(--night-300);
+    border-radius: var(--radius-md);
 }
 .glance-tile:hover {
-    border-color: var(--bs-primary);
+    border-left-color: var(--night-950);
     color: inherit;
 }
 .glance-tile.glance-ok {
-    border-left-color: var(--bs-success);
+    border-left-color: var(--status-ok);
 }
 .glance-tile.glance-warn {
-    border-left-color: var(--bs-warning);
+    border-left-color: var(--status-warn);
 }
 .glance-tile.glance-bad {
-    border-left-color: var(--bs-danger);
+    border-left-color: var(--status-stop);
 }
 .glance-label {
-    font-size: 0.7rem;
-    letter-spacing: 0.06em;
+    font: var(--type-eyebrow);
+    letter-spacing: var(--tracking-eyebrow);
     text-transform: uppercase;
-    color: var(--bs-secondary);
+    color: var(--text-muted);
 }
 .glance-value {
-    font-weight: 600;
+    font: var(--weight-bold) var(--text-md) / 1.3 var(--font-body);
+    color: var(--text-strong);
+    margin-top: 4px;
+}
+.glance-value::before {
+    font-family: "lucide";
+    font-weight: 400;
+    content: "\e4b5";
+    color: var(--night-300);
+    margin-right: 6px;
+}
+.glance-ok .glance-value::before {
+    content: "\e226";
+    color: var(--status-ok);
+}
+.glance-warn .glance-value::before {
+    content: "\e08b";
+    color: var(--status-warn);
+}
+.glance-bad .glance-value::before {
+    content: "\e12b";
+    color: var(--status-stop);
 }
 .glance-detail {
-    font-size: 0.8rem;
-    color: var(--bs-secondary);
+    font-size: var(--text-xs);
+    color: var(--text-muted);
 }
 /* A folded card (Activity): the header is the summary. */
 details.card > summary.card-header {
@@ -1557,12 +1664,21 @@ details.card[open] > summary.card-header::before {
     overflow: hidden;
     font-size: 0.8rem;
     line-height: 1.25;
-    /* Calendar blue, not the brand red: a placed session is an event,
-       not an alert (Bootstrap's blue-100/200). */
-    background: #cfe2ff;
-    border: 1px solid #9ec5fe;
-    border-radius: 0.35rem;
+    /* ScheduleCard spec: a placed session is white with a 2px Night border
+       and the hard shadow; a band is flat neutral. */
+    background: var(--surface-card);
+    border: 2px solid var(--night-950);
+    border-radius: var(--radius-md);
+    box-shadow: 0 2px 0 var(--night-950);
     cursor: grab;
+}
+.schedule-card-pencilled {
+    border-style: dashed;
+}
+.schedule-card .schedule-card-meta {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--night-600);
 }
 /* A card is as tall as its slot, so the title may wrap and use that
    height; the card's own overflow clips whatever still does not fit.
@@ -1593,10 +1709,11 @@ details.card[open] > summary.card-header::before {
     display: none;
 }
 .schedule-band {
-    /* Lavender, not grey: a band is the program's own furniture (the
-       opening, a break), and grey read as disabled (purple-100/200). */
-    background: #e2d9f3;
-    border-color: #c5b3e6;
+    /* A band (the opening, a break) is the program's furniture: flat
+       neutral, no shadow. */
+    background: var(--night-100);
+    border-color: var(--night-300);
+    box-shadow: none;
 }
 .schedule-warned {
     border-color: var(--bs-warning-border-subtle, #ffe69c);

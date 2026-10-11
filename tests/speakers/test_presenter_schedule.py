@@ -3,6 +3,7 @@
 from datetime import datetime, timedelta, timezone
 
 import pytest
+from django.utils import timezone as dj_timezone
 from django.contrib.auth.models import User
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
@@ -86,7 +87,7 @@ class TestVisibility:
         assert "Not yet public" in content
         assert "Your session" in content
         assert "Published panel" in content
-        assert "schedule-mine" in content
+        assert "session-card-mine" in content
 
         client.force_login(grace_user)
         content = client.get(SCHEDULE).content.decode()
@@ -144,6 +145,20 @@ class TestPresenterTimezone:
         assert entry["is_mine"] is True
         assert entry["is_draft"] is True
         assert entry["room"].name == "main-stage"
+        assert entry["duration"] == "60 min"
+        assert entry["is_live"] is False  # December 2026 is not now
+
+    def test_the_session_on_stage_now_is_live(self, client, speaker, conference):
+        session = make_session(conference, title="On now", kind="PANEL")
+        add_presenter(session, speaker, confirmed=True)
+        session.confirm()
+        make_slot(session, start_utc=dj_timezone.now() - timedelta(minutes=10))
+        make_published_slot(session)
+        entry = presenter_schedule(conference, speaker)[0]["entries"][0]
+        assert entry["is_live"] is True
+        client.force_login(speaker.user)
+        content = client.get(SCHEDULE).content.decode()
+        assert "session-card-live" in content and "Live now" in content
 
 
 @pytest.mark.django_db

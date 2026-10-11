@@ -32,34 +32,49 @@
         <h2 class="h5 mt-4 mb-2">
             {{ group.day|date:"l j F" }}
         </h2>
-        <div class="list-group mb-2">
+        {# SessionCard spec: time and length in mono on the left, the track and #}
+        {# tags, the title and the room; the session on stage now inverts to Night. #}
+        <div class="d-flex flex-column gap-2 mb-2">
             {% for entry in group.entries %}
-                <div class="list-group-item {% if entry.is_mine %}schedule-mine{% endif %}">
-                    <div class="d-flex flex-wrap align-items-baseline gap-2">
-                        <span class="text-nowrap font-monospace small">{{ entry.start_label }}–{{ entry.end_label }}</span>
-                        {% if entry.is_mine %}
-                            <a class="fw-semibold"
-                               href="{% url 'speakers:my_session_detail' entry.session.slug %}">{{ entry.session.title }}</a>
-                        {% else %}
-                            <span>{{ entry.session.title }}</span>
-                        {% endif %}
-                        <span class="small text-secondary">{{ entry.session.kind.name }}
-                            ·
-                            {% if entry.room %}
-                                {{ entry.room.name }}
-                            {% else %}
-                                {% trans "all rooms" %}
+                <div class="session-card {% if entry.is_live %}session-card-live{% endif %} {% if entry.is_mine %}session-card-mine{% endif %}">
+                    <div class="session-card-when">
+                        <div class="session-card-time">
+                            {{ entry.start_label }}–{{ entry.end_label }}
+                        </div>
+                        <div class="session-card-duration">
+                            {{ entry.duration }}
+                        </div>
+                    </div>
+                    <div class="min-w-0">
+                        <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                            {% if entry.is_live %}
+                                <span class="session-card-livetag"><span class="session-card-dot" aria-hidden="true"></span>{% trans "Live now" %}</span>
                             {% endif %}
-                        </span>
+                            <span class="session-card-track">{{ entry.session.kind.name }}
+                                ·
+                                {% if entry.room %}
+                                    {{ entry.room.name }}
+                                {% else %}
+                                    {% trans "all rooms" %}
+                                {% endif %}
+                            </span>
+                            {% if entry.is_mine %}
+                                <span class="badge session-card-tag">{% trans "Your session" %}</span>
+                            {% endif %}
+                            {% if entry.is_mine and entry.is_draft %}
+                                <span class="badge text-bg-warning">{% trans "Not yet public" %}</span>
+                            {% endif %}
+                        </div>
+                        <div class="session-card-title">
+                            {% if entry.is_mine %}
+                                <a href="{% url 'speakers:my_session_detail' entry.session.slug %}">{{ entry.session.title }}</a>
+                            {% else %}
+                                {{ entry.session.title }}
+                            {% endif %}
+                        </div>
                         {% if entry.is_mine %}
-                            <span class="badge text-bg-primary">{% trans "Your session" %}</span>
-                        {% endif %}
-                        {% if entry.is_mine and entry.is_draft %}
-                            <span class="badge text-bg-warning">{% trans "Not yet public" %}</span>
-                        {% endif %}
-                        {% if entry.is_mine %}
-                            <details class="schedule-card-menu ms-auto">
-                                <summary class="btn btn-link btn-sm text-secondary p-0">
+                            <details class="schedule-card-menu mt-1">
+                                <summary class="btn btn-link btn-sm p-0">
                                     {% trans "Add to calendar" %}
                                 </summary>
                                 {% include "speakers/_subscribe_links.html" with subscribe=entry.subscribe only %}

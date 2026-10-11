@@ -270,16 +270,21 @@ def presenter_schedule(conference, presenter):
         .order_by("start_utc")
     )
     tz = presenter.tzinfo
+    now = dj_timezone.now()
     days = []
     for slot in slots:
         start = slot.start_utc.astimezone(tz)
+        minutes = int((slot.end_utc - slot.start_utc).total_seconds() // 60)
         entry = {
             "session": slot.session,
             "room": slot.room,
             "start_label": start.strftime("%H:%M"),
             "end_label": slot.end_utc.astimezone(tz).strftime("%H:%M"),
+            "duration": f"{minutes} min",
             "is_mine": slot.session_id in mine,
             "is_draft": not slot.session.is_public,
+            # On stage right now: the card inverts to Night with a live tag.
+            "is_live": slot.start_utc <= now < slot.end_utc,
         }
         if days and days[-1]["day"] == start.date():
             days[-1]["entries"].append(entry)
