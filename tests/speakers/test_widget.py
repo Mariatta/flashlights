@@ -63,7 +63,7 @@ def test_the_publishing_page_offers_the_snippet(client, conference):
     client.force_login(organizer)
     content = client.get(reverse("speakers:program_share")).content.decode()
     for view in ("schedule", "speakers", "sessions"):
-        assert f"data-pyladiescon-widget=&quot;{view}&quot;" in content
+        assert f"data-flashlights-widget=&quot;{view}&quot;" in content
     assert content.count("data-conference=&quot;2025&quot;") == 3
     assert "http://testserver/static/widget/v1.js" in content
     for path in ("sessions/", "presenters/", "schedule/", "schedule.ics"):

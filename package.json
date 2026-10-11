@@ -1,5 +1,5 @@
 {
-  "name": "pyladiescon-portal-frontend",
+  "name": "flashlights-frontend",
   "private": true,
   "description": "Build step for the public program widget only; the portal itself needs no Node.",
   "scripts": {

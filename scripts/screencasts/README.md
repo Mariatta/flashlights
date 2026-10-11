@@ -46,7 +46,7 @@ scripts/screencasts/run.sh volunteer  # or one take: organizer, invited, volunte
                                       # upload, replace, team
 ```
 
-`--setup` creates the `pyladiescon_screencasts` database, migrates it, loads the
+`--setup` creates the `flashlights_screencasts` database, migrates it, loads the
 sample data on the screencast edition (2026) and runs `seed.py`, then snapshots
 it. `seed.py` keeps one confirmed PyJam performer from the sample data, Maria
 Performer, who signs in as `maria_performer`, with no video yet; the media
@@ -76,7 +76,7 @@ Settings, all optional environment variables:
 |---|---|---|
 | `PYTHON` | `python` | The interpreter with the portal's requirements. |
 | `PORT` | `8002` | Port for the recording server. |
-| `SCREENCAST_DATABASE_URL` | compose Postgres, `pyladiescon_screencasts` | The throwaway database. The name must end in `_screencasts`, or the scripts refuse to run. |
+| `SCREENCAST_DATABASE_URL` | compose Postgres, `flashlights_screencasts` | The throwaway database. The name must end in `_screencasts`, or the scripts refuse to run. |
 | `MAILDEV_URL` | `http://localhost:1080` | Where the emails arrive. |
 | `PLAYWRIGHT_CHROME` | Playwright's own | Path to a Chrome binary. |
 | `VIEWPORT_WIDTH`, `VIEWPORT_HEIGHT` | `1024`, `640` | See below. |

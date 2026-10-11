@@ -41,9 +41,7 @@ def fresh_cache():
 @pytest.fixture
 def settings_row(conference):
     row = make_settings(conference, program_visibility=ProgramVisibility.PUBLISHED)
-    AllowedOrigin.objects.create(
-        settings=row, url="https://2026.conference.pyladies.com/"
-    )
+    AllowedOrigin.objects.create(settings=row, url="https://2026.example.org/")
     return row
 
 
@@ -156,7 +154,7 @@ class TestSnapshots:
         assert data == {
             "conference": {
                 "slug": "2025",
-                "name": "PyLadiesCon 2025",
+                "name": "Flashlights 2025",
                 "timezone": "UTC",
             },
             "program": "published",
@@ -288,7 +286,7 @@ class TestSnapshots:
         assert data == {
             "conference": {
                 "slug": "2025",
-                "name": "PyLadiesCon 2025",
+                "name": "Flashlights 2025",
                 "timezone": "America/Vancouver",
             },
             "program": "published",
@@ -514,28 +512,22 @@ class TestCache:
 class TestCors:
     def test_a_listed_origin_may_read(self, client, program):
         response = client.get(
-            url("sessions"), headers={"Origin": "https://2026.conference.pyladies.com"}
+            url("sessions"), headers={"Origin": "https://2026.example.org"}
         )
-        assert (
-            response["Access-Control-Allow-Origin"]
-            == "https://2026.conference.pyladies.com"
-        )
+        assert response["Access-Control-Allow-Origin"] == "https://2026.example.org"
         assert "Origin" in response["Vary"]
 
     def test_a_preflight_answers_a_listed_origin(self, client, program):
         response = client.options(
             url("sessions"),
             headers={
-                "Origin": "https://2026.conference.pyladies.com",
+                "Origin": "https://2026.example.org",
                 "Access-Control-Request-Method": "GET",
                 "Access-Control-Request-Headers": "if-none-match",
             },
         )
         assert response.status_code == 200
-        assert (
-            response["Access-Control-Allow-Origin"]
-            == "https://2026.conference.pyladies.com"
-        )
+        assert response["Access-Control-Allow-Origin"] == "https://2026.example.org"
         assert response["Access-Control-Allow-Methods"] == "GET, HEAD, OPTIONS"
         assert (
             response["Access-Control-Allow-Headers"]
@@ -602,4 +594,4 @@ class TestAllowedOrigin:
             reverse("admin:speakers_speakersettings_change", args=[settings_row.pk])
         ).content.decode()
         assert "Websites allowed to show the program" in content
-        assert 'value="https://2026.conference.pyladies.com"' in content
+        assert 'value="https://2026.example.org"' in content

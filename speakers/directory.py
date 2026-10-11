@@ -15,6 +15,8 @@ import tempfile
 import zipfile
 from concurrent.futures import ThreadPoolExecutor
 
+from django.conf import settings
+
 from .spreadsheet import safe_cell
 
 
@@ -66,7 +68,7 @@ def write_presenters_csv(presenters, stream):
     return stream
 
 
-PACKAGE_README = """PyLadiesCon speaker package
+PACKAGE_README = """{title} speaker package
 
 presenters.csv: one row per presenter, the same columns as the Presenters
 page's data view, plus "Photo file", the name of their photo under photos/
@@ -141,7 +143,11 @@ def build_presenters_package(presenters):
                 + [safe_cell(names[presenter.pk])]
             )
         archive.writestr("presenters.csv", rows.getvalue(), zipfile.ZIP_DEFLATED)
-        archive.writestr("README.txt", PACKAGE_README, zipfile.ZIP_DEFLATED)
+        archive.writestr(
+            "README.txt",
+            PACKAGE_README.format(title=settings.BRAND.title),
+            zipfile.ZIP_DEFLATED,
+        )
         with_photos = [p for p in presenters if p.headshot]
         with ThreadPoolExecutor(max_workers=PHOTO_FETCHERS) as pool:
             for presenter, data in zip(with_photos, pool.map(_read_photo, with_photos)):

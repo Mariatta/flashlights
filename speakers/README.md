@@ -195,7 +195,7 @@ emailed through the recorded sender with the link withheld), first, and
 aria2 input file) as the advanced route. The scope form's session
 picker (`static/js/media-export.js`) is an explicit "every session" or
 "only these" choice over a filtered checkbox list grouped by type. Every path
-lays files out as `pyladiescon-<year>/<slug>/<kind>/v<n>[-<lang>][-<variant>]-<name>`
+lays files out as `<brand slug>-<year>/<slug>/<kind>/v<n>[-<lang>][-<variant>]-<name>`
 with `manifest.csv`. Links live `SPEAKER_MEDIA_BULK_URL_TTL` (12 h);
 Maintenance > File exports lists every export, and the nightly "Expire export
 zips" task drops the zip of an export whose links have expired, so zips
@@ -578,7 +578,7 @@ An edition can have several guides (`Handbook.key`: `speaker` by default,
 plus `workshop`, `keynote`, `performer`, ...), each versioned
 (`current(conference, key)`, `draft(conference, key)`) and normally just a
 link to the conference site (`url`, default
-https://conference.pyladies.com/docs/) with an optional note. A checklist
+the instance's `DOCS_URL`) with an optional note. A checklist
 template line with the `handbook_read` rule names the guide it requires
 (`requires_handbook`, blank = `speaker`), so a presenter on a keynote and a
 workshop gets one item per guide. Organizers manage guides at
@@ -1164,7 +1164,7 @@ installed; this app keeps small factory functions in `tests/speakers/factories.p
   `tests/speakers/test_widget.py` fails when the source changed without a
   rebuild, or when the served file passes 15 KB; CI needs no Node. The
   site pastes the snippet the Publishing page shows:
-  `<div data-pyladiescon-widget="schedule" data-conference="<slug>">`
+  `<div data-flashlights-widget="schedule" data-conference="<slug>">`
   plus the script tag (it offers one per whole-program view, and copyable
   links to the JSON and `.ics` endpoints under "Data feeds"). Views:
   `schedule`, `sessions` (every content session as a card, in program
@@ -1190,9 +1190,9 @@ installed; this app keeps small factory functions in `tests/speakers/factories.p
   "Program coming soon" and every endpoint answers 200, so the browser
   logs nothing; if the API cannot be reached it shows a link to
   `data-fallback-url` (default: the portal's `/embed/<slug>/schedule/`,
-  task 6.4). Styling: the `.plc` root and `--plc-*` CSS variables
-  (`--plc-accent`, `--plc-muted`, `--plc-border`, `--plc-band`,
-  `--plc-card`, `--plc-radius`, `--plc-modal-bg`, `--plc-modal-text`);
+  task 6.4). Styling: the `.plc` root and `--fl-*` CSS variables
+  (`--fl-accent`, `--fl-muted`, `--fl-border`, `--fl-band`,
+  `--fl-card`, `--fl-radius`, `--fl-modal-bg`, `--fl-modal-text`);
   text inherits the host page's font. Caching: `/static/widget/v1.js` is
   the stable address (WhiteNoise sends it with a short max-age, so the
   site always gets the current widget; the iframe embed page links the
@@ -1213,7 +1213,7 @@ installed; this app keeps small factory functions in `tests/speakers/factories.p
   for websites that can't add a script tag. It is exempt from
   X-Frame-Options on purpose: public data, nothing to click that changes
   anything. Inside a frame, `static/js/embed-frame.js` posts
-  `{type: "pyladiescon-embed", height}` to the host whenever the page
+  `{type: "flashlights-embed", height}` to the host whenever the page
   height changes, so a host running the listener from the Share tab
   sizes its iframe to fit (without it, the iframe's own height applies
   and it scrolls); it also opens an overlay near the click instead of

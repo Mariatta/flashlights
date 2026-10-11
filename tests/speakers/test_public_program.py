@@ -167,7 +167,7 @@ class TestPreview:
     def test_a_token_from_another_edition_is_rejected(self, conference, settings_row):
         on_schedule(conference)
         other = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024"
+            year=2024, name="Flashlights 2024", slug="2024"
         )
         foreign = preview_token(make_settings(other))
         assert not preview_is_valid(conference, foreign)
@@ -377,7 +377,7 @@ class TestReview466:
         key."""
         on_schedule(conference, publish=True)
         other = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024"
+            year=2024, name="Flashlights 2024", slug="2024"
         )
         quiet = make_settings(other)
         SpeakerSettings.objects.update(preview_key="same-for-all")
@@ -397,7 +397,7 @@ class TestAllowedWebsites:
     def test_an_admin_sees_the_list_and_the_admin_link(
         self, client, conference, settings_row
     ):
-        for url in ("https://2026.conference.pyladies.com/", "https://Example.org"):
+        for url in ("https://2026.example.org/", "https://Example.org"):
             AllowedOrigin.objects.create(settings=settings_row, url=url)
         admin = User.objects.create_superuser(
             username="admin", email="admin@example.com", password=None
@@ -405,7 +405,7 @@ class TestAllowedWebsites:
         client.force_login(admin)
         content = client.get(SHARE).content.decode()
         listed = re.findall(r'<li class="font-monospace">\s*(\S+)\s*</li>', content)
-        assert listed == ["https://2026.conference.pyladies.com", "https://example.org"]
+        assert listed == ["https://2026.example.org", "https://example.org"]
         assert (
             reverse("admin:speakers_speakersettings_change", args=[settings_row.pk])
             in content
@@ -441,7 +441,7 @@ class TestPreviewPage:
         # than re-signing one now, which can land in the next second.
         token = re.search(r'data-preview="([^"]+)"', content).group(1)
         assert preview_is_valid(Conference.objects.get(pk=conference.pk), token)
-        assert 'data-pyladiescon-widget="schedule"' in content
+        assert 'data-flashlights-widget="schedule"' in content
         assert 'data-conference="2025"' in content
         assert "Public now" in content
 
@@ -452,10 +452,10 @@ class TestPreviewPage:
         content = client.get(PREVIEW, {"show": "public", "view": "speakers"}).content
         content = content.decode()
         assert "data-preview=" not in content
-        assert 'data-pyladiescon-widget="speakers"' in content
+        assert 'data-flashlights-widget="speakers"' in content
         assert "coming soon" in content
         odd = client.get(PREVIEW, {"view": "nonsense"}).content.decode()
-        assert 'data-pyladiescon-widget="schedule"' in odd
+        assert 'data-flashlights-widget="schedule"' in odd
 
     def test_once_public_there_is_no_draft(
         self, client, organizer, conference, settings_row

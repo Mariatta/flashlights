@@ -192,7 +192,7 @@ class TestFollowsTheVolunteerProfile:
 
     def test_the_newest_edition_wins(self, conference, speaker, presenter):
         past = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024"
+            year=2024, name="Flashlights 2024", slug="2024"
         )
         volunteer(speaker, past, "ada_2024")
         volunteer(speaker, conference, "ada_now")
@@ -280,7 +280,7 @@ class TestVolunteerForm:
         presenter.discord_username = "ada_spk"
         presenter.save()
         past = Conference.objects.create(
-            year=2024, name="PyLadiesCon 2024", slug="2024"
+            year=2024, name="Flashlights 2024", slug="2024"
         )
         volunteer(speaker, past, "ada_2024")
         assert (

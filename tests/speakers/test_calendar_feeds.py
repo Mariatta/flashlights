@@ -82,14 +82,14 @@ class TestWriter:
     def test_subscribe_links_cover_every_app(self):
         links = subscribe_links(
             "https://portal.example/speakers/feeds/t0k/calendar.ics",
-            "PyLadiesCon: your sessions",
+            "Flashlights: your sessions",
         )
         assert links["webcal"].startswith("webcal://portal.example/")
         assert links["google"].startswith(
             "https://calendar.google.com/calendar/r?cid=webcal%3A%2F%2F"
         )
         assert "addfromweb?url=https%3A%2F%2F" in links["outlook"]
-        assert "name=PyLadiesCon%3A%20your%20sessions" in links["outlook"]
+        assert "name=Flashlights%3A%20your%20sessions" in links["outlook"]
         assert links["office"].startswith("https://outlook.office.com/")
         assert links["url"].startswith("https://")
 

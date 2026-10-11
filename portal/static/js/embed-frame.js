@@ -10,7 +10,7 @@
         var height = Math.ceil(document.documentElement.scrollHeight);
         if (height === sent) return;
         sent = height;
-        window.parent.postMessage({ type: "pyladiescon-embed", height: height }, "*");
+        window.parent.postMessage({ type: "flashlights-embed", height: height }, "*");
     }
     new ResizeObserver(send).observe(document.body);
     window.addEventListener("load", send);

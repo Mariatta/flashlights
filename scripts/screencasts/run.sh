@@ -26,14 +26,14 @@ export SECRET_KEY="${SECRET_KEY:-screencasts}"
 # Deliberately not DATABASE_URL: the compose setup exports that for the development
 # database, and every take drops and recreates the database it points at. Only
 # SCREENCAST_DATABASE_URL, whose name must end in _screencasts, can steer this.
-export DATABASE_URL="${SCREENCAST_DATABASE_URL:-postgresql://pyladiescon:pyladiescon@localhost:5433/pyladiescon_screencasts}"
+export DATABASE_URL="${SCREENCAST_DATABASE_URL:-postgresql://flashlights:flashlights@localhost:5433/flashlights_screencasts}"
 export DJANGO_ALLOWED_HOSTS="${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}"
 export DEBUG=1
 export DJANGO_SETTINGS_MODULE=screencast_settings
 export PYTHONPATH="$HERE${PYTHONPATH:+:$PYTHONPATH}"
 export DJANGO_EMAIL_HOST="${DJANGO_EMAIL_HOST:-localhost}"
 export DJANGO_EMAIL_PORT="${DJANGO_EMAIL_PORT:-1025}"
-export DJANGO_DEFAULT_FROM_EMAIL="${DJANGO_DEFAULT_FROM_EMAIL:-PyLadiesCon <pyladiescon@example.com>}"
+export DJANGO_DEFAULT_FROM_EMAIL="${DJANGO_DEFAULT_FROM_EMAIL:-Flashlights <noreply@example.com>}"
 export BASE_URL="http://127.0.0.1:$PORT"
 export SCREENCAST_DOMAIN="127.0.0.1:$PORT"
 export MAILDEV_URL="${MAILDEV_URL:-http://localhost:1080}"

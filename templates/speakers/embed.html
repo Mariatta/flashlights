@@ -10,7 +10,7 @@
     </head>
     <body>
         {# djlint:off #}
-        <div data-pyladiescon-widget="{{ view }}" data-conference="{{ conference.slug }}"{% if accent %} style="--plc-accent: {{ accent }}"{% endif %}></div>
+        <div data-flashlights-widget="{{ view }}" data-conference="{{ conference.slug }}"{% if accent %} style="--fl-accent: {{ accent }}"{% endif %}></div>
         {# djlint:on #}
         <script src="{% static 'widget/v1.js' %}" defer></script>
         <script src="{% static 'js/embed-frame.js' %}" defer></script>

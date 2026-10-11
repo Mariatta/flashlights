@@ -179,7 +179,7 @@ Once you are on the program, the **Speaking** menu opens your speaker area.
 ### Your checklist
 
 The checklist has two lists, and a third if you are giving a pre-recorded
-session such as a PyJam performance or a PyLadies chapter highlight video.
+session such as a PyJam performance or a community highlight video.
 
 **Your to-dos** are the things we need from you, each with a due date shown in
 your timezone. Typical items are:

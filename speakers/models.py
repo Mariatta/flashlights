@@ -341,15 +341,14 @@ def normalize_origin(url):
 
 class AllowedOrigin(TimestampedModel):
     """A website whose pages may read an edition's public API from the
-    browser (design §11.1): the conference site, its preview builds."""
+    browser (design §11.1): the event site, its preview builds."""
 
     settings = models.ForeignKey(
         SpeakerSettings, on_delete=models.CASCADE, related_name="allowed_origins"
     )
     url = models.URLField(
         "website",
-        help_text="The site's address only, for example "
-        "https://2026.conference.pyladies.com.",
+        help_text="The site's address only, for example " "https://2026.example.org.",
     )
 
     class Meta:
@@ -568,7 +567,7 @@ class Presenter(TimestampedModel):
         default="",
         db_default="",
         validators=[validate_discord_username],
-        help_text="For the speaker role and channel on the conference Discord. "
+        help_text="For the speaker role and channel on the event Discord. "
         "Never shown on the public site.",
     )
     is_public = models.BooleanField(

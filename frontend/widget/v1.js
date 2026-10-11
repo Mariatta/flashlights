@@ -1,4 +1,4 @@
-/* PyLadiesCon program widget, v1 (design §11.2). No dependencies.
+/* Flashlights program widget, v1 (design §11.2). No dependencies.
  *
  * This is the readable source. The portal serves the minified build in
  * portal/static/widget/v1.js; run `npm run build:widget` after any change.
@@ -13,48 +13,48 @@
   var ORIGIN = me ? new URL(me.src, location.href).origin : "";
   var STEP = 5; /* grid rows, in minutes */
   var CSS = [
-    ".plc{--plc-accent:#8a1e5b;--plc-muted:#5f5f6b;--plc-border:#d9d9e0;--plc-band:#f3eef6;--plc-card:Canvas;--plc-radius:8px;--plc-modal-bg:#fff;--plc-modal-text:#1f1f24;font:inherit;color:inherit}",
-    ".plc *{box-sizing:border-box}.plc a{color:var(--plc-accent)}",
-    ".plc-bar{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin:0 0 .75rem}",
+    ".plc{--fl-accent:#8a1e5b;--fl-muted:#5f5f6b;--fl-border:#d9d9e0;--fl-band:#f3eef6;--fl-card:Canvas;--fl-radius:8px;--fl-modal-bg:#fff;--fl-modal-text:#1f1f24;font:inherit;color:inherit}",
+    ".plc *{box-sizing:border-box}.plc a{color:var(--fl-accent)}",
+    ".fl-bar{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin:0 0 .75rem}",
     ".plc select{font:inherit;max-width:100%}",
-    ".plc-tab{font:inherit;border:1px solid var(--plc-border);background:none;color:inherit;border-radius:999px;padding:.25rem .8rem;cursor:pointer}",
-    ".plc-tab[aria-selected=true]{background:var(--plc-accent);border-color:var(--plc-accent);color:#fff}",
-    ".plc-sched{container-type:inline-size}",
+    ".fl-tab{font:inherit;border:1px solid var(--fl-border);background:none;color:inherit;border-radius:999px;padding:.25rem .8rem;cursor:pointer}",
+    ".fl-tab[aria-selected=true]{background:var(--fl-accent);border-color:var(--fl-accent);color:#fff}",
+    ".fl-sched{container-type:inline-size}",
     /* No row gap: a day has hundreds of five-minute rows. A small
      * minimum height keeps an empty stretch visible, and lines every 15
      * minutes (darker on the hour) say where it starts and ends. Items
      * space themselves; cards sit above the lines. */
-    ".plc-grid{display:grid;column-gap:.5rem;grid-auto-rows:minmax(.2rem,auto)}",
-    ".plc-line{border-top:1px dashed var(--plc-border);height:0;margin:0!important;align-self:start;opacity:.6}",
-    ".plc-hour{border-top-style:solid;opacity:1}",
-    ".plc-card,.plc-band{position:relative;z-index:1}",
-    ".plc-grid>*{margin-bottom:.4rem}",
-    ".plc-head{font-weight:600;font-size:.875em;color:var(--plc-muted);padding-bottom:.25rem}",
-    ".plc-time{font-size:.8em;color:var(--plc-muted);white-space:nowrap;line-height:1;transform:translateY(-.4em);margin:0!important}",
-    "@container (max-width:40rem){.plc-grid{display:flex;flex-direction:column}.plc-head,.plc-time,.plc-line{display:none}}",
-    ".plc-card{border:1px solid var(--plc-border);border-radius:var(--plc-radius);padding:.6rem .7rem;background:var(--plc-card);min-width:0}",
-    ".plc-band{background:var(--plc-band);border-radius:var(--plc-radius);padding:.4rem .7rem;color:var(--plc-muted);display:flex;flex-wrap:wrap;gap:.25rem .75rem;align-items:center}",
-    ".plc-meta{color:var(--plc-muted);font-size:.85em}",
-    ".plc-link{font:inherit;font-weight:600;background:none;border:0;padding:0;margin:.15rem 0;color:inherit;text-align:left;cursor:pointer}",
-    ".plc-link:hover,.plc-who:hover span{text-decoration:underline}",
-    ".plc-people{display:flex;flex-wrap:wrap;gap:.35rem .75rem;margin-top:.35rem}",
-    ".plc-who{display:inline-flex;align-items:center;gap:.4rem;font:inherit;font-size:.9em;background:none;border:0;padding:0;color:inherit;text-align:left}",
-    "button.plc-who{cursor:pointer}",
-    ".plc-av{width:1.75rem;height:1.75rem;border-radius:50%;object-fit:cover;flex:none;background:var(--plc-band);display:inline-flex;align-items:center;justify-content:center;font-size:.7em;font-weight:600;color:var(--plc-muted)}",
+    ".fl-grid{display:grid;column-gap:.5rem;grid-auto-rows:minmax(.2rem,auto)}",
+    ".fl-line{border-top:1px dashed var(--fl-border);height:0;margin:0!important;align-self:start;opacity:.6}",
+    ".fl-hour{border-top-style:solid;opacity:1}",
+    ".fl-card,.fl-band{position:relative;z-index:1}",
+    ".fl-grid>*{margin-bottom:.4rem}",
+    ".fl-head{font-weight:600;font-size:.875em;color:var(--fl-muted);padding-bottom:.25rem}",
+    ".fl-time{font-size:.8em;color:var(--fl-muted);white-space:nowrap;line-height:1;transform:translateY(-.4em);margin:0!important}",
+    "@container (max-width:40rem){.fl-grid{display:flex;flex-direction:column}.fl-head,.fl-time,.fl-line{display:none}}",
+    ".fl-card{border:1px solid var(--fl-border);border-radius:var(--fl-radius);padding:.6rem .7rem;background:var(--fl-card);min-width:0}",
+    ".fl-band{background:var(--fl-band);border-radius:var(--fl-radius);padding:.4rem .7rem;color:var(--fl-muted);display:flex;flex-wrap:wrap;gap:.25rem .75rem;align-items:center}",
+    ".fl-meta{color:var(--fl-muted);font-size:.85em}",
+    ".fl-link{font:inherit;font-weight:600;background:none;border:0;padding:0;margin:.15rem 0;color:inherit;text-align:left;cursor:pointer}",
+    ".fl-link:hover,.fl-who:hover span{text-decoration:underline}",
+    ".fl-people{display:flex;flex-wrap:wrap;gap:.35rem .75rem;margin-top:.35rem}",
+    ".fl-who{display:inline-flex;align-items:center;gap:.4rem;font:inherit;font-size:.9em;background:none;border:0;padding:0;color:inherit;text-align:left}",
+    "button.fl-who{cursor:pointer}",
+    ".fl-av{width:1.75rem;height:1.75rem;border-radius:50%;object-fit:cover;flex:none;background:var(--fl-band);display:inline-flex;align-items:center;justify-content:center;font-size:.7em;font-weight:600;color:var(--fl-muted)}",
     /* Initials stand in for a missing photo: a tint of the accent, so
      * they stay visible on a white card and on a band alike. */
-    ".plc-ini{background:#ead6e3;background:color-mix(in srgb,var(--plc-accent) 18%,#fff);color:var(--plc-accent);box-shadow:inset 0 0 0 1px var(--plc-border)}",
-    ".plc-big{width:5rem;height:5rem;font-size:1.4em}",
-    ".plc-row{display:flex;flex-wrap:wrap;gap:.5rem .9rem;align-items:center;margin-top:.6rem;font-size:.9em}",
-    ".plc details>summary{cursor:pointer;color:var(--plc-accent)}",
-    ".plc-list{display:grid;gap:.75rem;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr))}",
-    ".plc-person{display:flex;gap:.75rem;align-items:center}",
-    ".plc-note{padding:1rem;border:1px dashed var(--plc-border);border-radius:var(--plc-radius);text-align:center}",
-    ".plc-modal{border:0;border-radius:var(--plc-radius);padding:1.25rem;width:min(40rem,calc(100% - 2rem));max-height:calc(100% - 2rem);background:var(--plc-modal-bg);color:var(--plc-modal-text)}",
-    ".plc-modal::backdrop{background:rgba(20,20,30,.5)}",
-    ".plc-modal h2{font-size:1.25em;margin:.2rem 2rem .4rem 0}",
-    ".plc-close{position:absolute;top:.6rem;right:.7rem;font:inherit;font-size:1.4em;line-height:1;background:none;border:0;cursor:pointer;color:inherit}",
-    ".plc-sub{font-weight:600;margin:.9rem 0 .2rem}"
+    ".fl-ini{background:#ead6e3;background:color-mix(in srgb,var(--fl-accent) 18%,#fff);color:var(--fl-accent);box-shadow:inset 0 0 0 1px var(--fl-border)}",
+    ".fl-big{width:5rem;height:5rem;font-size:1.4em}",
+    ".fl-row{display:flex;flex-wrap:wrap;gap:.5rem .9rem;align-items:center;margin-top:.6rem;font-size:.9em}",
+    ".plc details>summary{cursor:pointer;color:var(--fl-accent)}",
+    ".fl-list{display:grid;gap:.75rem;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr))}",
+    ".fl-person{display:flex;gap:.75rem;align-items:center}",
+    ".fl-note{padding:1rem;border:1px dashed var(--fl-border);border-radius:var(--fl-radius);text-align:center}",
+    ".fl-modal{border:0;border-radius:var(--fl-radius);padding:1.25rem;width:min(40rem,calc(100% - 2rem));max-height:calc(100% - 2rem);background:var(--fl-modal-bg);color:var(--fl-modal-text)}",
+    ".fl-modal::backdrop{background:rgba(20,20,30,.5)}",
+    ".fl-modal h2{font-size:1.25em;margin:.2rem 2rem .4rem 0}",
+    ".fl-close{position:absolute;top:.6rem;right:.7rem;font:inherit;font-size:1.4em;line-height:1;background:none;border:0;cursor:pointer;color:inherit}",
+    ".fl-sub{font-weight:600;margin:.9rem 0 .2rem}"
   ].join("");
 
   function load(key) {
@@ -113,10 +113,10 @@
   }
 
   function avatar(person, big) {
-    var cls = "plc-av" + (big ? " plc-big" : "");
+    var cls = "fl-av" + (big ? " fl-big" : "");
     if (person.headshot_url) return h("img", { "class": cls, src: person.headshot_url, alt: "", loading: "lazy" });
     var initials = person.name.split(/\s+/).map(function (w) { return w.charAt(0); }).join("").slice(0, 2).toUpperCase();
-    return h("span", { "class": cls + " plc-ini", "aria-hidden": "true", text: initials });
+    return h("span", { "class": cls + " fl-ini", "aria-hidden": "true", text: initials });
   }
 
   /* Subscribe, never download: a subscribed calendar follows a reschedule. */
@@ -125,7 +125,7 @@
     var e = encodeURIComponent;
     return h("details", {}, [
       h("summary", { text: "Add to calendar" }),
-      h("div", { "class": "plc-row" }, [
+      h("div", { "class": "fl-row" }, [
         h("a", { href: webcal, text: "Apple / Outlook desktop" }),
         h("a", { href: "https://calendar.google.com/calendar/r?cid=" + e(webcal), target: "_blank", rel: "noopener", text: "Google" }),
         h("a", { href: "https://outlook.live.com/calendar/0/addfromweb?url=" + e(url) + "&name=" + e(name), target: "_blank", rel: "noopener", text: "Outlook.com" })
@@ -137,7 +137,7 @@
     var d = el.dataset;
     var base = (d.api || ORIGIN).replace(/\/$/, "");
     this.el = el;
-    this.view = d.pyladiesconWidget || "schedule";
+    this.view = d.flashlightsWidget || "schedule";
     this.conf = d.conference || "";
     this.slug = d.session || d.speaker || "";
     this.api = base + "/api/v1/" + encodeURIComponent(this.conf) + "/";
@@ -161,7 +161,7 @@
   };
 
   Widget.prototype.note = function (text, link) {
-    fill(this.el, [h("div", { "class": "plc-note" }, [text, link ? " " : null, link])]);
+    fill(this.el, [h("div", { "class": "fl-note" }, [text, link ? " " : null, link])]);
   };
 
   Widget.prototype.start = function () {
@@ -175,7 +175,7 @@
     this.get(path)
       .then(function (data) { self.data = data; self.render(); })
       .catch(function () {
-        self.note("The program can't load right now.", h("a", { href: self.fallback, text: "See it on the PyLadiesCon portal." }));
+        self.note("The program can't load right now.", h("a", { href: self.fallback, text: "See the full program." }));
       });
   };
 
@@ -216,25 +216,25 @@
       var label = z + (z === self.browserTz ? " (yours)" : z === own ? " (conference)" : "");
       return h("option", { value: z, selected: z === self.tz, text: label });
     }));
-    return h("div", { "class": "plc-bar" }, [h("label", { "class": "plc-meta", text: "Times in" }), select]);
+    return h("div", { "class": "fl-bar" }, [h("label", { "class": "fl-meta", text: "Times in" }), select]);
   };
 
   /* People on a session: photo and name, a button when they have a profile. */
   Widget.prototype.who = function (presenters) {
     var self = this;
     if (!presenters.length) return null;
-    return h("div", { "class": "plc-people" }, presenters.map(function (p) {
+    return h("div", { "class": "fl-people" }, presenters.map(function (p) {
       var kids = [avatar(p), h("span", { text: p.name })];
       return p.slug ? h("button", {
-        type: "button", "class": "plc-who", "aria-label": "About " + p.name,
+        type: "button", "class": "fl-who", "aria-label": "About " + p.name,
         onclick: function () { self.openSpeaker(p.slug); }
-      }, kids) : h("span", { "class": "plc-who" }, kids);
+      }, kids) : h("span", { "class": "fl-who" }, kids);
     }));
   };
 
   Widget.prototype.title = function (s) {
     var self = this;
-    return h("button", { type: "button", "class": "plc-link", text: s.title, onclick: function () { self.openSession(s); } });
+    return h("button", { type: "button", "class": "fl-link", text: s.title, onclick: function () { self.openSession(s); } });
   };
 
   Widget.prototype.renderSchedule = function () {
@@ -252,9 +252,9 @@
     if (rooms.indexOf(this.room) < 0) this.room = "";
     var keys = Object.keys(days).sort();
     if (keys.indexOf(this.day) < 0) this.day = keys[0];
-    var tabs = h("div", { "class": "plc-bar", role: "tablist" }, keys.map(function (key) {
+    var tabs = h("div", { "class": "fl-bar", role: "tablist" }, keys.map(function (key) {
       return h("button", {
-        type: "button", role: "tab", "class": "plc-tab", "aria-selected": String(key === self.day),
+        type: "button", role: "tab", "class": "fl-tab", "aria-selected": String(key === self.day),
         text: dayLabel(key), onclick: function () { self.day = key; self.render(); }
       });
     }));
@@ -279,7 +279,7 @@
     var cells = [];
     if (columns[0]) {
       columns.forEach(function (name, i) {
-        cells.push(h("div", { "class": "plc-head", style: "grid-row:1;grid-column:" + (i + 2), text: name }));
+        cells.push(h("div", { "class": "fl-head", style: "grid-row:1;grid-column:" + (i + 2), text: name }));
       });
     }
     shown.forEach(function (s) {
@@ -287,11 +287,11 @@
       var rows = Math.max(1, Math.round(minutes(s.slot.start, s.slot.end) / STEP));
       var column = s.slot.room ? columns.indexOf(s.slot.room.name) + 2 : 2;
       var place = "grid-row:" + from + " / span " + rows + ";grid-column:" + (s.slot.room ? column : "2 / -1");
-      cells.push(s.is_content ? h("article", { "class": "plc-card", style: place }, [
-        h("div", { "class": "plc-meta" }, [span(s.slot, tz), " · " + s.kind.name, s.slot.room ? " · " + s.slot.room.name : null]),
+      cells.push(s.is_content ? h("article", { "class": "fl-card", style: place }, [
+        h("div", { "class": "fl-meta" }, [span(s.slot, tz), " · " + s.kind.name, s.slot.room ? " · " + s.slot.room.name : null]),
         self.title(s),
         self.who(s.presenters)
-      ]) : h("div", { "class": "plc-band", style: place }, [
+      ]) : h("div", { "class": "fl-band", style: place }, [
         h("span", { text: span(s.slot, tz) }),
         s.summary_html || s.presenters.length ? self.title(s) : h("strong", { text: s.title }),
         self.who(s.presenters)
@@ -303,11 +303,11 @@
       var iso = new Date(at).toISOString();
       var minute = Number(parts(new Date(at), tz).minute);
       var tick = "grid-row:" + row(iso) + ";grid-column:";
-      cells.unshift(h("div", { "class": "plc-line" + (minute ? "" : " plc-hour"), style: tick + "2 / -1" }));
-      if (minute % 30 === 0) cells.unshift(h("div", { "class": "plc-time", style: tick + "1", text: time(iso, tz) }));
+      cells.unshift(h("div", { "class": "fl-line" + (minute ? "" : " fl-hour"), style: tick + "2 / -1" }));
+      if (minute % 30 === 0) cells.unshift(h("div", { "class": "fl-time", style: tick + "1", text: time(iso, tz) }));
     }
     var grid = h("div", {
-      "class": "plc-grid", role: "tabpanel",
+      "class": "fl-grid", role: "tabpanel",
       style: "grid-template-columns:auto repeat(" + columns.length + ",minmax(0,1fr))"
     }, cells);
     var top = this.zones();
@@ -324,7 +324,7 @@
       })));
       top.appendChild(picker);
     }
-    fill(this.el, [top, tabs, h("div", { "class": "plc-sched" }, [grid])]);
+    fill(this.el, [top, tabs, h("div", { "class": "fl-sched" }, [grid])]);
   };
 
   /* Every talk, panel and workshop as a card, in program order; a title
@@ -333,11 +333,11 @@
   Widget.prototype.renderSessions = function () {
     var self = this;
     var tz = this.tz;
-    fill(this.el, [this.zones(), h("div", { "class": "plc-list" }, this.data.sessions.filter(function (s) {
+    fill(this.el, [this.zones(), h("div", { "class": "fl-list" }, this.data.sessions.filter(function (s) {
       return s.is_content;
     }).map(function (s) {
-      return h("article", { "class": "plc-card" }, [
-        h("div", { "class": "plc-meta" }, [span(s.slot, tz, true), " · " + s.kind.name, s.slot.room ? " · " + s.slot.room.name : null]),
+      return h("article", { "class": "fl-card" }, [
+        h("div", { "class": "fl-meta" }, [span(s.slot, tz, true), " · " + s.kind.name, s.slot.room ? " · " + s.slot.room.name : null]),
         self.title(s),
         self.who(s.presenters)
       ]);
@@ -346,17 +346,17 @@
 
   Widget.prototype.renderSpeakers = function () {
     var self = this;
-    fill(this.el, [h("div", { "class": "plc-list" }, this.data.presenters.map(function (p) {
+    fill(this.el, [h("div", { "class": "fl-list" }, this.data.presenters.map(function (p) {
       self.people[p.slug] = p;
-      return h("article", { "class": "plc-card" }, [
+      return h("article", { "class": "fl-card" }, [
         h("button", {
-          type: "button", "class": "plc-who plc-person", "aria-label": "About " + p.name,
+          type: "button", "class": "fl-who fl-person", "aria-label": "About " + p.name,
           onclick: function () { self.openSpeaker(p.slug); }
         }, [avatar(p, true), h("span", {}, [
           h("strong", { text: p.name }),
-          p.pronouns ? h("div", { "class": "plc-meta", text: p.pronouns }) : null
+          p.pronouns ? h("div", { "class": "fl-meta", text: p.pronouns }) : null
         ])]),
-        h("div", { "class": "plc-meta", style: "margin-top:.4rem", text: p.sessions.map(function (s) { return s.title; }).join(" · ") })
+        h("div", { "class": "fl-meta", style: "margin-top:.4rem", text: p.sessions.map(function (s) { return s.title; }).join(" · ") })
       ]);
     }))]);
   };
@@ -366,13 +366,13 @@
     var labels = { outline: "Outline", prerequisites: "Before you come", audience: "Who it is for" };
     var tz = this.tz;
     return [
-      h("div", { "class": "plc-meta" }, [span(s.slot, tz, true), " · " + s.kind.name, s.slot.room ? " · " + s.slot.room.name : null]),
+      h("div", { "class": "fl-meta" }, [span(s.slot, tz, true), " · " + s.kind.name, s.slot.room ? " · " + s.slot.room.name : null]),
       h("h2", { text: s.title }),
       this.who(s.presenters),
       s.summary_html ? h("div", { html: s.summary_html }) : null
     ].concat(["outline", "prerequisites", "audience"].map(function (k) {
-      return s[k + "_html"] ? h("div", {}, [h("div", { "class": "plc-sub", text: labels[k] }), h("div", { html: s[k + "_html"] })]) : null;
-    })).concat([h("div", { "class": "plc-row" }, [
+      return s[k + "_html"] ? h("div", {}, [h("div", { "class": "fl-sub", text: labels[k] }), h("div", { html: s[k + "_html"] })]) : null;
+    })).concat([h("div", { "class": "fl-row" }, [
       s.youtube_url ? h("a", { href: s.youtube_url, target: "_blank", rel: "noopener", text: "Watch" }) : null,
       calendar(s.urls.ics, s.title)
     ])]);
@@ -386,19 +386,19 @@
     var profile = { github: "https://github.com/", bluesky: "https://bsky.app/profile/" };
     var found = Object.keys(links).filter(function (k) { return p.links[k]; });
     return [
-      h("div", { "class": "plc-person" }, [avatar(p, true), h("div", {}, [
+      h("div", { "class": "fl-person" }, [avatar(p, true), h("div", {}, [
         h("h2", { text: p.name, style: "margin:0" }),
-        h("div", { "class": "plc-meta", text: [p.pronouns, p.location].filter(Boolean).join(" · ") })
+        h("div", { "class": "fl-meta", text: [p.pronouns, p.location].filter(Boolean).join(" · ") })
       ])]),
       p.bio_html ? h("div", { html: p.bio_html }) : null,
-      found.length ? h("div", { "class": "plc-row" }, found.map(function (k) {
+      found.length ? h("div", { "class": "fl-row" }, found.map(function (k) {
         return h("a", { href: (profile[k] || "") + p.links[k], target: "_blank", rel: "noopener me", text: links[k] });
       })) : null,
-      p.sessions.length ? h("div", { "class": "plc-sub", text: "Sessions" }) : null
+      p.sessions.length ? h("div", { "class": "fl-sub", text: "Sessions" }) : null
     ].concat(p.sessions.map(function (s) {
       var known = self.bySlug && self.bySlug[s.slug];
       return h("div", {}, [
-        h("span", { "class": "plc-meta", text: span(s, tz, true) + " " }),
+        h("span", { "class": "fl-meta", text: span(s, tz, true) + " " }),
         known ? self.title(known) : h("span", { text: s.title })
       ]);
     }));
@@ -410,13 +410,13 @@
     var self = this;
     if (!this.dialog) {
       this.dialog = h("dialog", {
-        "class": "plc plc-modal",
+        "class": "plc fl-modal",
         onclick: function (event) { if (event.target === self.dialog) self.dialog.close(); }
       });
       document.body.appendChild(this.dialog);
     }
     fill(this.dialog, [h("button", {
-      type: "button", "class": "plc-close", "aria-label": "Close", text: "×",
+      type: "button", "class": "fl-close", "aria-label": "Close", text: "×",
       onclick: function () { self.dialog.close(); }
     })].concat(kids));
     if (!this.dialog.open) this.dialog.showModal();
@@ -443,10 +443,10 @@
   };
 
   function start() {
-    if (!document.getElementById("plc-style")) {
-      document.head.appendChild(h("style", { id: "plc-style", text: CSS }));
+    if (!document.getElementById("fl-style")) {
+      document.head.appendChild(h("style", { id: "fl-style", text: CSS }));
     }
-    document.querySelectorAll("[data-pyladiescon-widget]").forEach(function (el) {
+    document.querySelectorAll("[data-flashlights-widget]").forEach(function (el) {
       if (!el.plcWidget) el.plcWidget = new Widget(el);
     });
   }

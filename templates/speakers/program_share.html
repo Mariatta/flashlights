@@ -40,7 +40,7 @@
                 {% trans "Websites allowed to show the program" %}
             </h3>
             <p class="text-secondary small mb-2">
-                {% trans "Browsers only let the widget read the program on websites listed here, for example https://2026.conference.pyladies.com." %}
+                {% trans "Browsers only let the widget read the program on websites listed here, for example https://2026.example.org." %}
             </p>
             {% if allowed_origins %}
                 <ul class="small mb-2">
@@ -59,7 +59,7 @@
             {% if origins_admin_url %}
                 <a class="btn btn-outline-secondary btn-sm"
                    href="{{ origins_admin_url }}">
-                    <i class="fa-solid fa-pen" aria-hidden="true"></i> {% trans "Edit in admin" %}
+                    <i class="icon-pencil" aria-hidden="true"></i> {% trans "Edit in admin" %}
                 </a>
             {% else %}
                 <p class="text-secondary small mb-0">

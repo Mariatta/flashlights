@@ -233,7 +233,7 @@ class ProgramShareView(PublishingTabView):
                 "view": view,
                 "label": label,
                 "code": (
-                    f'<div data-pyladiescon-widget="{view}" '
+                    f'<div data-flashlights-widget="{view}" '
                     f'data-conference="{self.conference.slug}"></div>\n'
                     f'<script src="{script}" defer></script>'
                 ),
@@ -263,7 +263,7 @@ class ProgramShareView(PublishingTabView):
             "<script>\n"
             'addEventListener("message", function (event) {\n'
             f'  if (event.origin !== "{origin}" || !event.data '
-            '|| event.data.type !== "pyladiescon-embed") return;\n'
+            '|| event.data.type !== "flashlights-embed") return;\n'
             '  document.querySelectorAll("iframe").forEach(function (frame) {\n'
             "    if (frame.contentWindow === event.source) "
             'frame.style.height = event.data.height + "px";\n'

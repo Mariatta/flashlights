@@ -57,7 +57,7 @@ def _slug_field(example, source, who):
 
 
 DISCORD_HELP = (
-    "So we can give you the speaker role on the conference Discord. "
+    "So we can give you the speaker role on the event Discord. "
     "Never shown on the public site."
 )
 

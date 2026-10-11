@@ -206,11 +206,6 @@ class PresenterTable(tables.Table):
     def render_invitation(self, record):
         return invitation_badge(record.latest_invitation)
 
-    def render_account(self, record):
-        if record.user_id is None:
-            return format_html('<span class="text-secondary">not yet</span>')
-        return format_html('<i class="icon-check text-success"></i> linked')
-
     def render_liaison(self, value):
         return value.get_full_name() or value.username
 

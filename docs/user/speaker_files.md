@@ -1,7 +1,7 @@
 # Your video and files
 
 This guide is for speakers whose session is pre-recorded: a PyJam
-performance, a PyLadies chapter highlight video, or any other session we
+performance, a community highlight video, or any other session we
 broadcast from a recording. It covers how to send us your video through the
 portal, what happens to it afterwards, and how to find the files the team
 shares back with you, such as the poster for your session, a transcript, or
@@ -28,8 +28,8 @@ video. A chapter highlight video goes up the same way. Practice data.*
 ### Before you start
 
 - Check the format, and the length for your kind of session, in the
-  [Video guide](https://conference.pyladies.com/docs/speakers/video_guide/)
-  on the conference site; it also has recording tips and equipment advice.
+  video guide on your event's site, if it has one; the session's card in the
+  portal says the length limit either way.
   The portal accepts the usual video formats: MP4 is best, MKV, MOV and WebM
   work too. A slide deck with recorded audio is not a video; export it as one
   first.
@@ -40,9 +40,8 @@ video. A chapter highlight video goes up the same way. Practice data.*
 - Big files are fine. The video goes straight to our storage in pieces, not
   through the portal's web server, so a file of several gigabytes uploads as
   well as a small one. A dropped connection does not lose what was sent.
-- Watch your recording once before you send it. The
-  [checklist in the Video guide](https://conference.pyladies.com/docs/speakers/video_guide/#before-you-submit)
-  is a good last check.
+- Watch your recording once before you send it: sound, framing, the
+  first and last seconds.
 
 ### Steps
 
@@ -133,7 +132,7 @@ without anyone pressing a button.
     with [Whisper](https://github.com/openai/whisper), the open source speech
     recognition model, run through
     [faster-whisper](https://github.com/SYSTRAN/faster-whisper) with the
-    `small` model on PyLadiesCon's own worker. Your recording is not sent to
+    `small` model on the portal's own worker. Your recording is not sent to
     an outside transcription service, and no third-party account is involved.
     The card says so when this applies to your video, and a transcript made
     this way carries a **machine draft** badge until a person has reviewed it.
@@ -214,7 +213,7 @@ has a typo"), by replying to any email from the portal or on Discord.
   get back. If you want your video removed, delete it yourself as above, or
   ask us and we will.
 - Your published video goes out the way the guide for your session says: on
-  the PyLadies YouTube channel, after the conference, with its transcript.
+  the event's channel, after the event, with its transcript.
 
 ## If something does not work
 

@@ -34,7 +34,7 @@ class TestEmbedPage:
         response = client.get(embed(view))
         assert response.status_code == 200
         content = response.content.decode()
-        assert f'data-pyladiescon-widget="{view}"' in content
+        assert f'data-flashlights-widget="{view}"' in content
         assert 'data-conference="2025"' in content
         assert re.search(r"/static/widget/v1(\.\w+)?\.js", content)
         assert re.search(r"/static/js/embed-frame(\.\w+)?\.js", content)
@@ -52,12 +52,12 @@ class TestEmbedPage:
 
     def test_an_accent_colour_and_nothing_else(self, client, settings_row):
         good = client.get(embed(), {"accent": "#c2185b"}).content.decode()
-        assert 'style="--plc-accent: #c2185b"' in good
+        assert 'style="--fl-accent: #c2185b"' in good
         for bad in ("red;background:url(x)", "#abcde", "#abcdefg"):
             content = client.get(embed(), {"accent": bad}).content.decode()
-            assert "--plc-accent" not in content, bad
+            assert "--fl-accent" not in content, bad
         short = client.get(embed(), {"accent": "#c215"}).content.decode()
-        assert 'style="--plc-accent: #c215"' in short
+        assert 'style="--fl-accent: #c215"' in short
 
     def test_unknown_things_are_404(self, client, settings_row, conference):
         assert client.get(embed("calendar")).status_code == 404
@@ -74,7 +74,7 @@ class TestEmbedPage:
         client.force_login(organizer)
         content = client.get(reverse("speakers:program_share")).content.decode()
         assert "http://testserver/embed/2025/schedule/" in content
-        assert "pyladiescon-embed" in content
+        assert "flashlights-embed" in content
         assert "event.origin !== &quot;http://testserver&quot;" in content
 
     def test_the_iframe_title_is_escaped(self, client, settings_row, conference):
