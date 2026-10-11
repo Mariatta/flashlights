@@ -1,17 +1,25 @@
 ---
-title: Acceptable Use Policy
+title: Acceptable use policy (template)
 ---
-# PyLadiesCon Portal Acceptable Use Policy
+# Acceptable use policy
 
-**Short version:** _PyLadiesCon Portal is a critical resource for the PyLadiesCon and the PyLadies community.
+!!! note "This is a template"
+    Flashlights ships no policy of its own: policies are the event's, and the
+    instance links to them (`TERMS_URL`, and the Code of Conduct on the
+    edition). Copy this page to your event's site, replace every bracketed
+    placeholder, `[Organisation]` and `[Portal]`, with your names, and keep
+    the credits. It is adapted from policies published under a Creative
+    Commons licence, so the attribution stays.
+
+**Short version:** _[Portal] is a critical resource for [Organisation] and its community.
 That resource is
 only effective when our users and community members are able to work together as part of a community
-in good faith. While using PyLadiesCon Portal, you must comply with our Acceptable Use
-Policies, which include some restrictions on content and conduct on PyLadiesCon Portal
+in good faith. While using [Portal], you must comply with our Acceptable Use
+Policies, which include some restrictions on content and conduct on [Portal]
 related to user safety, intellectual property, privacy, authenticity, and other
 limitations. In short, be excellent to each other._
 
-We do not allow content or activity on PyLadiesCon Portal that:
+We do not allow content or activity on [Portal] that:
 
 - is unlawful or promotes unlawful activities;
 - is sexually obscene or relates to sexual exploitation or abuse, including of
@@ -35,7 +43,7 @@ We do not allow content or activity on PyLadiesCon Portal that:
   checks for product licensing keys, including extension of a free license beyond
   its trial period;
 - impersonates any person or entity, including any of our employees or
-  representatives, including through false association with PyLadiesCon Portal, or by
+  representatives, including through false association with [Portal], or by
   fraudulently misrepresenting your identity or site's purpose; or
 - violates the privacy of any third party, such as by posting another person's
   personal information without consent.
@@ -43,21 +51,21 @@ We do not allow content or activity on PyLadiesCon Portal that:
   as
     - spamming
     - cryptocurrency mining;
-- bulk distribution of promotions and advertising prohibited by PyLadiesCon Portal terms and
+- bulk distribution of promotions and advertising prohibited by [Portal] terms and
   policies;
 - inauthentic interactions, such as fake accounts and automated inauthentic
   activity;
 - uses obfuscation techniques to hide or mask functionality;
 - creation of or participation in secondary markets for the purpose of the
   proliferation of inauthentic activity;
-- using PyLadiesCon Portal as a platform for propagating abuse on other platforms;
+- using [Portal] as a platform for propagating abuse on other platforms;
 - phishing or attempted phishing; or
 - using our servers for any form of excessive automated bulk activity, to place
   undue burden on our servers through automated means, or to relay any form of
   unsolicited advertising or solicitation through our servers, such as
   get-rich-quick schemes.
 
-You are responsible for using PyLadiesCon Portal in compliance with all applicable laws,
+You are responsible for using [Portal] in compliance with all applicable laws,
 regulations, and all of our Acceptable Use Policies. These policies may be
 updated from time to time and are provided below, as well as in our [Terms of
 Use](terms_of_use.md). You must not engage in activity
@@ -79,7 +87,7 @@ or by encouraging others to take part in the prohibited conduct. This includes:
 - Disingenuously participating in conversation in a way that instigates
   conflict or undermines sincere discussion
 - Creating alternative accounts specifically to evade moderation action taken
-  by PyLadiesCon staff or users
+  by [Organisation] staff or users
 
 Please note, not all unwelcome conduct is necessarily considered harassment.
 For example, disagreeing with another user may not rise to the level of
@@ -108,13 +116,13 @@ the activity, it may rise to the level of bullying and harassment.
 
 Misuse of personal information is prohibited.
 
-Any person, entity, or service collecting data from PyLadiesCon Portal must comply with the
+Any person, entity, or service collecting data from [Portal] must comply with the
 [Python Software Foundation Privacy Policy](https://www.python.org/privacy/),
 particularly in regards to the collection of personal information. If you
-collect any personal information from PyLadiesCon Portal, you agree that you will only use
+collect any personal information from [Portal], you agree that you will only use
 that personal information for the purpose for which that User has authorized
 it. You agree that you will reasonably secure any personal information you have
-gathered from PyLadiesCon Portal, and you will respond promptly to complaints, removal
+gathered from [Portal], and you will respond promptly to complaints, removal
 requests, and "do not contact" requests from us or other users.
 
 Additionally, don't post other people's personal information. This includes:
@@ -133,19 +141,18 @@ distributed without the subject's consent, to be an invasion of privacy,
 especially when such material presents a safety risk to the subject, such as in
 the case of intimidation or harassment.
 
-PyLadiesCon will take context into account as well as whether the reported content is
+[Organisation] will take context into account as well as whether the reported content is
 publicly available elsewhere. Please note, however, that while sharing publicly
 available content may not be a violation of this policy, if the information is
 shared with the intent to harass or incite other abusive behavior, it may
 violate our prohibition against bullying and harassment.
 
-For more information, or to learn how to report a violation, see our [Code of
-Conduct](https://2025.conference.pyladies.com/en/coc/).
+For more information, or to learn how to report a violation, see our [Code of Conduct]([link to your Code of Conduct]).
 
 
 ## Hate Speech and Discrimination
 
-PyLadiesCon does not tolerate speech that attacks or promotes hate toward an
+[Organisation] does not tolerate speech that attacks or promotes hate toward an
 individual or group of people on the basis of who they are, including age, body
 size, ability, ethnicity, gender identity and expression, level of experience,
 nationality, personal appearance, race, religion, sexual identity, or sexual
@@ -162,10 +169,10 @@ orientation. This includes:
 - Dog whistling; or using coded or suggestive language and/or symbols to
   promote abuse or hate
 
-While PyLadiesCon takes all instances of abuse and harassment on the platform
+While [Organisation] takes all instances of abuse and harassment on the platform
 seriously, we are especially committed to fighting hate-based abuse where it
 disproportionately affects communities that have historically been targeted by
-such abuse. We aim to make PyLadiesCon a place where all individuals feel welcome and
+such abuse. We aim to make [Organisation] a place where all individuals feel welcome and
 safe.
 
 
@@ -184,7 +191,7 @@ Impersonation is a form of harassment and violation of this policy may lead to
 loss of access to your account.
 
 Please note, having a username similar to another is not necessarily
-impersonation. PyLadiesCon will take context into account.
+impersonation. [Organisation] will take context into account.
 
 
 ## Misinformation and Disinformation
@@ -206,7 +213,7 @@ free and open society. This may include:
 
 We encourage active participation in the expression of ideas, perspectives, and
 experiences and may not be in a position to dispute personal accounts or
-observations. When reviewing content under this policy, PyLadiesCon will consider the
+observations. When reviewing content under this policy, [Organisation] will consider the
 impact of various factors that may help to orient the viewer, such as whether
 the content has been provided with clear disclaimers, citations to credible
 sources, or includes other details that clarify the accuracy of the information
@@ -237,7 +244,7 @@ to opt in before viewing.
 
 ## Threats of Violence and Gratuitously Violent Content
 
-You may not use PyLadiesCon Portal to organize, promote, encourage, threaten, or incite acts
+You may not use [Portal] to organize, promote, encourage, threaten, or incite acts
 of violence. You may not post content that depicts or glorifies violence or
 physical harm against human beings or animals. This includes:
 
@@ -250,8 +257,8 @@ physical harm against human beings or animals. This includes:
 
 ## Usage Limits
 
-PyLadiesCon Portal generally does not impose resource limitations on any features. If we
-determine your usage of PyLadiesCon Portal to be significantly excessive in relation to other
+[Portal] generally does not impose resource limitations on any features. If we
+determine your usage of [Portal] to be significantly excessive in relation to other
 users of similar features, we reserve the right to suspend your Account,
 throttle your requests, or otherwise limit your activity until you can reduce
 your usage.
@@ -260,36 +267,36 @@ You may not use our servers to disrupt or to attempt to disrupt, or to gain or
 to attempt to gain unauthorized access to, any service, device, data, account
 or network.
 
-You may not use information from PyLadiesCon Portal (whether scraped, collected through our
+You may not use information from [Portal] (whether scraped, collected through our
 API, or obtained otherwise) for spamming purposes, including for the purposes
 of sending unsolicited emails to users or selling personal information, such as
 to recruiters, headhunters, and job boards.
 
-Scraping refers to extracting information from PyLadiesCon Portal via an automated process,
+Scraping refers to extracting information from [Portal] via an automated process,
 such as a bot or webcrawler. Scraping does not refer to the collection of
 information through our API.
 
-Your use of information from PyLadiesCon Portal must comply with the [Python Software
-Foundation Privacy Policy](https://www.python.org/privacy/).
+Your use of information from [Portal] must comply with [Organisation]'s
+privacy policy.
 
 
 ## Violations and Enforcement
 
-PyLadiesCon Portal retains full discretion to take action in response to a violation of these
+[Portal] retains full discretion to take action in response to a violation of these
 policies, including account suspension, account termination, or removal of
 content.
 
-While the majority of interactions between individuals in PyLadies’s community fall
+While the majority of interactions between individuals in [Organisation]'s community fall
 within our Acceptable Use Policies and Community Guidelines, violations of
-those policies do occur at times. When they do, PyLadiesCon staff may need to take
+those policies do occur at times. When they do, [Organisation] staff may need to take
 enforcement action to address the violations. In all cases, these actions are
-permanent and there is no basis to reverse a moderation action taken by PyLadiesCon
-Staff.
+permanent and there is no basis to reverse a moderation action taken by [Organisation]
+staff.
 
 
 ## Credits & License
 
-This policy is based on [PyPI's Acceptable Use Policies](https://policies.python.org/pypi.org/Acceptable-Use-Policy/)
+This template is based on [PyPI's Acceptable Use Policies](https://policies.python.org/pypi.org/Acceptable-Use-Policy/)
 which is a based on [GitHub’s Acceptable Use
 Policies](https://docs.github.com/en/site-policy/acceptable-use-policies/) and
 modified from its original form.

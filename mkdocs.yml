@@ -56,9 +56,9 @@ nav:
     - Speakers: user/speakers.md
     - Inviting Speakers: user/organizer_invite_speakers.md
     - Sponsors: user/sponsor.md
-  - Policies:
-    - Terms of Service: policies/terms_of_use.md
-    - Acceptable Use Policy: policies/acceptable_use_policy.md
+  - Policy templates:
+    - Terms of service: policies/terms_of_use.md
+    - Acceptable use policy: policies/acceptable_use_policy.md
 repo_url: https://github.com/mariatta/flashlights
 repo_name: mariatta/flashlights
 edit_uri: edit/main/docs/
