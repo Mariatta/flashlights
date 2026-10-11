@@ -493,12 +493,7 @@ if "DJANGO_EMAIL_HOST" in os.environ:
     EMAIL_HOST = os.getenv("DJANGO_EMAIL_HOST")
     EMAIL_PORT = os.getenv("DJANGO_EMAIL_PORT")
     EMAIL_HOST_USER = os.getenv("DJANGO_EMAIL_HOST_USER")
-    # The misspelt name is what an existing deployment may have set, so both
-    # are read; the correctly spelt one wins. Remove the fallback once the
-    # deploy environment is updated to the correct name.
-    EMAIL_HOST_PASSWORD = os.getenv("DJANGO_EMAIL_HOST_PASSWORD") or os.getenv(
-        "DJANOG_EMAIL_HOST_PASSWORD"
-    )
+    EMAIL_HOST_PASSWORD = os.getenv("DJANGO_EMAIL_HOST_PASSWORD")
     # Seconds a connection to the mail server may wait. Without one a server
     # that accepts the connection and then says nothing holds the worker's
     # process for ever.

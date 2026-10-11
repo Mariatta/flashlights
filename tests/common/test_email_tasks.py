@@ -210,13 +210,15 @@ class TestSettings:
         env = {**self.SMTP, "DJANGO_EMAIL_TIMEOUT": "10"}
         assert settings_in_a_fresh_interpreter(**env)["EMAIL_TIMEOUT"] == 10
 
-    def test_the_password_is_read_under_either_name(self):
+    def test_the_password_is_read_under_its_correct_name_only(self):
+        """The upstream misspelling (DJANOG_...) is not read here: Flashlights
+        has no deployment that set it, so the typo is simply gone."""
+        env = {**self.SMTP, "DJANGO_EMAIL_HOST_PASSWORD": "new"}
+        assert settings_in_a_fresh_interpreter(**env)["EMAIL_HOST_PASSWORD"] == "new"
         misspelt = {**self.SMTP, "DJANOG_EMAIL_HOST_PASSWORD": "old"}
         assert (
-            settings_in_a_fresh_interpreter(**misspelt)["EMAIL_HOST_PASSWORD"] == "old"
+            settings_in_a_fresh_interpreter(**misspelt)["EMAIL_HOST_PASSWORD"] is None
         )
-        both = {**misspelt, "DJANGO_EMAIL_HOST_PASSWORD": "new"}
-        assert settings_in_a_fresh_interpreter(**both)["EMAIL_HOST_PASSWORD"] == "new"
 
     def test_workers_are_few_by_default_and_hold_one_task_each(self):
         found = settings_in_a_fresh_interpreter()

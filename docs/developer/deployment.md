@@ -359,7 +359,7 @@ none is required.
 | Variable | Default | Meaning |
 |---|---|---|
 | `DJANGO_EMAIL_TIMEOUT` | 30 | Seconds a connection to the mail server may wait. Applies when `DJANGO_EMAIL_HOST` is set. Without a timeout, a server that accepts the connection and then says nothing holds a worker process for ever. |
-| `DJANGO_EMAIL_HOST_PASSWORD` | none | The SMTP password. The old, misspelt name `DJANOG_EMAIL_HOST_PASSWORD` is still read, so an existing deployment keeps working; the correctly spelt one wins when both are set. |
+| `DJANGO_EMAIL_HOST_PASSWORD` | none | The SMTP password. |
 | `CELERY_WORKER_CONCURRENCY` | 2 | Processes per worker. Celery's own default is one per CPU it can see, which in a container is often the node's core count rather than the container's share; a small memory limit then gets a process killed, and the task it held with it. `worker-media` sets its own on the command line. |
 | `PORTAL_LOG_LEVEL` | `INFO` | Level for the apps' own log lines. |
 
