@@ -109,7 +109,7 @@ middle, the due date on the right. Params:
         <div class="flex-shrink-0 text-end">
             {% if item.due_date %}
                 <span class="badge checklist-due checklist-due-{{ item.due_tone }}">
-                    {{ item.due_date|date:"j M" }}
+                    {{ item.due_date|date:"j M"|upper }}
                     {% if item.due_tone == "overdue" %}
                         · {% trans "overdue" %}
                     {% elif item.due_tone == "soon" %}

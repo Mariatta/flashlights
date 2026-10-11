@@ -1110,101 +1110,118 @@ a.attention-item:hover .attention-chevron {
 
 /* Speaker checklists (templates/speakers/_checklist_item.html): items the
    portal ticks by itself are dashed so a speaker knows not to tick them. */
+/* Checklist items (ChecklistItem spec). Five states, each a glyph and a
+   word: open, done, blocked, skipped, waiting; an automatic item ticks
+   itself. The left edge says manual (solid Night), automatic (dashed) or
+   done (ok). */
 .checklist-item-auto {
-    border-left: 3px dashed var(--bs-secondary);
+    border-left: 3px dashed var(--night-400);
 }
 .checklist-item-manual {
-    border-left: 3px solid var(--bs-primary);
+    border-left: 3px solid var(--night-950);
 }
 .checklist-item-done {
-    opacity: 0.75;
+    border-left-color: var(--status-ok);
+    border-left-style: solid;
 }
 /* Ticking an item redirects back to #item-<pk>; keep it clear of the top. */
 .checklist-row {
     scroll-margin-top: 1rem;
+    padding: 14px 16px;
+    background: var(--surface-card);
 }
 /* One box size for every row, whether it is a button, a static status, or
    an automatic item: empty while open, ticked once done. */
 .checklist-box {
     flex: 0 0 auto;
-    width: 1.5rem;
-    height: 1.5rem;
-    margin-top: 0.1rem;
+    width: 26px;
+    height: 26px;
+    margin-top: 1px;
     padding: 0;
-    border: 2px solid var(--bs-secondary);
-    border-radius: 0.3rem;
-    background: var(--bs-body-bg);
-    color: var(--bs-body-bg);
-    font-size: 0.85rem;
+    border: 2px solid var(--night-500);
+    border-radius: var(--radius-sm);
+    background: var(--surface-card);
+    color: var(--surface-card);
+    font-size: 15px;
     line-height: 1;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    transition: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
 }
 button.checklist-box:hover,
 button.checklist-box:focus-visible {
-    border-color: var(--bs-primary);
-    color: var(--bs-primary);
+    border-color: var(--night-950);
+    background: var(--beam-200);
+    color: var(--night-950);
 }
 .checklist-box-static {
     border-style: dashed;
-    color: var(--bs-secondary);
+    border-color: var(--night-400);
+    color: var(--night-500);
 }
 .checklist-box-done,
 button.checklist-box-done:hover {
-    border-color: var(--bs-success);
+    border-color: var(--status-ok);
     border-style: solid;
-    background: var(--bs-success);
-    color: #fff;
+    background: var(--status-ok);
+    color: var(--white);
 }
 .checklist-box-blocked {
-    border-color: var(--bs-danger);
+    border-color: var(--status-stop);
     border-style: solid;
-    color: var(--bs-danger);
+    color: var(--status-stop);
 }
 .checklist-box-skipped {
-    border-color: var(--bs-secondary);
-    color: var(--bs-secondary);
+    border-color: var(--night-400);
+    border-style: solid;
+    color: var(--night-500);
 }
 /* Waiting: nothing to click yet, and the row says why. */
 .checklist-box-waiting {
     border-style: dotted;
-    border-color: var(--bs-secondary);
-    color: var(--bs-secondary);
-    opacity: 0.75;
+    border-color: var(--night-400);
+    color: var(--night-500);
+}
+.checklist-row .link-body-emphasis {
+    font-weight: var(--weight-bold);
+    color: var(--text-strong) !important;
 }
 .checklist-row-waiting .checklist-title-waiting {
-    color: var(--bs-secondary) !important;
+    color: var(--text-muted) !important;
 }
 .checklist-title-done {
     text-decoration: line-through !important;
-    color: var(--bs-secondary) !important;
+    color: var(--text-muted) !important;
 }
-/* Due dates, right-aligned, louder the closer they are. */
+/* Due chips: mono, day-first, louder the closer they are. */
 .checklist-due {
-    /* Bootstrap badges are 0.75em; a deadline deserves body size. */
-    font-size: 0.95rem;
-    font-weight: 600;
-    padding: 0.4em 0.65em;
+    font: var(--weight-semibold) var(--text-sm) / 1 var(--font-mono);
+    padding: 7px 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
     white-space: nowrap;
 }
 .checklist-due-overdue {
-    background: var(--bs-danger);
-    color: #fff;
+    background: var(--status-stop);
+    border-color: var(--status-stop);
+    color: var(--white);
 }
 .checklist-due-soon {
-    background: var(--bs-warning);
-    color: var(--bs-dark);
+    background: var(--status-warn-bg);
+    border-color: var(--status-warn);
+    color: var(--status-warn-ink);
 }
 .checklist-due-later {
-    background: var(--bs-primary-bg-subtle);
-    color: var(--bs-primary-text-emphasis);
+    background: var(--night-100);
+    border-color: var(--night-200);
+    color: var(--night-950);
 }
 .checklist-due-quiet {
     background: transparent;
-    border: 1px solid var(--bs-border-color);
-    color: var(--bs-secondary);
-    font-weight: 400;
+    border-color: var(--border-default);
+    color: var(--text-muted);
+    font-weight: var(--weight-regular);
 }
 
 /* Flash messages as toasts (templates/portal/_toast_messages.html): shown for
