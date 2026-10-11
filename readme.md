@@ -14,6 +14,27 @@ remains the portal built for PyLadiesCon. Improvements flow in both
 directions through ordinary pull requests. The name is a nod to the Darren
 Hayes song.
 
+## What an instance needs
+
+Four services: Postgres, Redis, an S3-compatible bucket (any provider) and
+an SMTP server (any provider). In production the boot fails at once,
+naming every missing variable, when one of these is unset:
+
+| Variable | What it is |
+|---|---|
+| `SECRET_KEY` | Django's secret key (required everywhere) |
+| `DJANGO_ALLOWED_HOSTS` | The hostnames the portal answers on, comma-separated |
+| `DATABASE_URL` | The Postgres connection URL |
+| `CELERY_BROKER_URL` or `REDIS_URL` | The Redis URL the worker and beat share |
+| `FERNET_KEY` or `FERNET_KEYS` | The key for fields encrypted at rest |
+| `DJANGO_EMAIL_HOST` or `EMAIL_URL` | The SMTP server (`EMAIL_URL` is `smtp://user:password@host:port/?tls=true`) |
+| `DJANGO_DEFAULT_FROM_EMAIL` | The address the portal's email comes from |
+| `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_STORAGE_BUCKET_NAME`, `AWS_S3_ENDPOINT_URL` | The bucket, through the S3 API; `USE_OBJECT_STORAGE=true` turns it on (`USE_SPACES` still works) |
+
+With `DEBUG` on, email prints to the console and files stay on disk, so
+only `SECRET_KEY` is required. The full list, with every optional variable,
+is in `docs/developer/deployment.md`.
+
 ## Instance identity
 
 | Variable | What it sets | Default |

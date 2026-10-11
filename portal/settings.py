@@ -22,7 +22,7 @@ import django.db.models.signals
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 
-from portal import branding
+from portal import boot, branding
 from portal.process import process_name
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -37,6 +37,13 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(os.environ.get("DEBUG", default=0))
+
+# The boot contract (portal/boot.py, decision 0008): in production every
+# missing mandatory variable stops the boot here, by name, all at once.
+if not DEBUG and "pytest" not in sys.modules:
+    boot.check(os.environ, debug=False)
+else:
+    boot.check(os.environ, debug=True)
 
 SENTRY_SDK_DSN = os.environ.get("SENTRY_SDK_DSN")
 if SENTRY_SDK_DSN:
@@ -264,7 +271,11 @@ STATIC_ROOT = BASE_DIR / "staticroot"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
 
-USE_SPACES = os.getenv("USE_SPACES")
+# Uploads go to an S3-compatible bucket (any provider, decision 0011) when
+# USE_OBJECT_STORAGE is on; USE_SPACES is the upstream name of the same
+# switch and still works. Off, files stay on local disk (development only).
+USE_OBJECT_STORAGE = boot.switch(os.environ, "USE_OBJECT_STORAGE", "USE_SPACES")
+USE_SPACES = "true" if USE_OBJECT_STORAGE else None
 
 STORAGES = {
     "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
@@ -488,7 +499,15 @@ BOOTSTRAP5 = {
 }
 
 # Email settings
-if "DJANGO_EMAIL_HOST" in os.environ:
+if "EMAIL_URL" in os.environ:
+    # One variable, smtp://user:password@host:port/?tls=true (decision 0011).
+    globals().update(boot.email_url(os.environ["EMAIL_URL"]))
+    EMAIL_TIMEOUT = int(os.getenv("DJANGO_EMAIL_TIMEOUT", "30"))
+    DEFAULT_FROM_EMAIL = (
+        os.getenv("DJANGO_DEFAULT_FROM_EMAIL")
+        or f"{BRAND.short_name} <noreply@localhost>"
+    )
+elif "DJANGO_EMAIL_HOST" in os.environ:
     # If the env vars are set, use them
     EMAIL_HOST = os.getenv("DJANGO_EMAIL_HOST")
     EMAIL_PORT = os.getenv("DJANGO_EMAIL_PORT")
