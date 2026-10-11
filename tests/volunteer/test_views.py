@@ -591,7 +591,8 @@ class TestManageVolunteers:
         assert "btn-primary" in action_button
         # Icon and word: an unlabelled icon was read as anything but Review.
         assert (
-            "icon-clipboard-list" in action_button and "</i> Review</a>" in action_button
+            "icon-clipboard-list" in action_button
+            and "</i> Review</a>" in action_button
         )
         # The word is visible, so no title repeats it.
         assert "title=" not in action_button

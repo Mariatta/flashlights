@@ -703,6 +703,7 @@ class TestConferenceBanner:
         conference.save()
         content = client.get(reverse("portal_stats")).content.decode()
         assert 'id="conference-banner"' in content
+        assert "alert-beam" in content  # the event-wide announcement tone
         assert "Call for proposals is open!" in content
 
     def test_no_banner_when_empty(self, client, conference):

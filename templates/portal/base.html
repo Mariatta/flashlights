@@ -60,7 +60,7 @@
         opened for it.
         {% endcomment %}
         {% block messages %}
-            {% bootstrap_messages %}
+            {% include "portal/_toast_messages.html" %}
         {% endblock messages %}
         {% block body %}
         {% endblock body %}
@@ -200,8 +200,8 @@
         </nav>
         {% if active_conference.banner_text %}
             <div id="conference-banner"
-                 class="alert alert-info alert-dismissible rounded-0 text-center mb-0"
-                 role="alert"
+                 class="alert alert-beam alert-dismissible rounded-0 text-center mb-0"
+                 role="status"
                  data-banner="{{ active_conference.banner_text }}">
                 {{ active_conference.banner_text }}
                 <button type="button"

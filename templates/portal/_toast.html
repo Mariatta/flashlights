@@ -1,0 +1,17 @@
+{# One toast; included by _toast_messages.html with message, tone and icon. #}
+<div class="toast show portal-toast portal-toast-{{ tone }} border-0"
+     role="status"
+     data-tone="{{ tone }}">
+    <div class="d-flex align-items-center gap-2 p-2 ps-3">
+        <i class="{{ icon }} portal-toast-icon" aria-hidden="true"></i>
+        <div class="toast-body flex-grow-1 p-1">
+            {{ message }}
+        </div>
+        <button type="button"
+                class="btn btn-link portal-toast-close"
+                data-bs-dismiss="toast"
+                aria-label="{{ close_label }}">
+            <i class="icon-x" aria-hidden="true"></i>
+        </button>
+    </div>
+</div>

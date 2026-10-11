@@ -359,7 +359,7 @@ class TestToggle:
         item.auto_complete_rule = AutoRule.BIO_AND_HEADSHOT
         item.save()
         content = client.post(toggle(item), HTTP_HX_REQUEST="true").content.decode()
-        assert "text-bg-danger" in content and f'id="item-{item.pk}"' in content
+        assert "portal-toast-stop" in content and f'id="item-{item.pk}"' in content
 
     def test_cannot_tick_organizer_item(self, client, speaker, presenter, conference):
         item = add_adhoc_item(

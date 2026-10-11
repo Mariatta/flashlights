@@ -259,15 +259,91 @@ a.card:hover {
     color: var(--paper) !important;
 }
 
+/* Alerts (Alert spec): a tinted block with a 2px edge in the status colour
+   and the status icon, so colour never stands alone. The beam tone is the
+   event-wide announcement. */
 .alert {
-    --bs-alert-border-radius: var(--radius-lg);
+    --bs-alert-border-radius: var(--radius-md);
+    --bs-alert-color: var(--night-950);
+    border-width: 2px;
+    padding-left: 3rem;
+    position: relative;
+}
+
+.alert::before {
+    font-family: "lucide";
+    font-size: 20px;
+    line-height: 24px;
+    position: absolute;
+    left: 1rem;
+    top: 0.85rem;
 }
 
 .alert-info,
-.alert-light {
-    --bs-alert-color: var(--text-strong);
+.alert-light,
+.alert-secondary {
     --bs-alert-bg: var(--status-info-bg);
-    --bs-alert-border-color: var(--night-300);
+    --bs-alert-border-color: var(--night-950);
+}
+
+.alert-info::before,
+.alert-light::before,
+.alert-secondary::before {
+    content: "\e0fe";
+}
+
+.alert-success {
+    --bs-alert-bg: var(--status-ok-bg);
+    --bs-alert-border-color: var(--status-ok);
+}
+
+.alert-success::before {
+    content: "\e226";
+}
+
+.alert-warning {
+    --bs-alert-bg: var(--status-warn-bg);
+    --bs-alert-border-color: var(--status-warn);
+}
+
+.alert-warning::before {
+    content: "\e193";
+}
+
+.alert-danger {
+    --bs-alert-bg: var(--status-stop-bg);
+    --bs-alert-border-color: var(--status-stop);
+}
+
+.alert-danger::before {
+    content: "\e12b";
+}
+
+.alert-beam {
+    --bs-alert-bg: var(--beam-300);
+    --bs-alert-border-color: var(--night-950);
+}
+
+.alert-beam::before {
+    content: "\e235";
+}
+
+.alert-dismissible .btn-close {
+    filter: none;
+}
+
+/* Progress (Progress spec): an 8px Night 100 track with a Night fill; the
+   Bootstrap tone classes keep their status colours. */
+.progress {
+    --bs-progress-height: 8px;
+    --bs-progress-bg: var(--night-100);
+    --bs-progress-border-radius: 99px;
+    --bs-progress-bar-bg: var(--night-950);
+    --bs-progress-bar-transition: width var(--dur-slow) var(--ease-out);
+}
+
+.progress-bar {
+    border-radius: 99px;
 }
 
 /* Tables, list groups, dropdowns, pagination and pills on the neutrals. */
@@ -743,8 +819,42 @@ button.checklist-box-done:hover {
 
 /* Flash messages as toasts (templates/portal/_toast_messages.html): shown for
    a few seconds, then fade out without JavaScript. */
+/* Toasts (Toast spec): Night, Paper text, a tone-coloured icon, the large
+   shadow, and a fade after seven seconds. */
 .portal-toast {
+    min-width: 280px;
+    max-width: 420px;
+    background: var(--night-950);
+    color: var(--paper);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    font: var(--type-body);
     animation: portal-toast-fade 7s ease-in forwards;
+}
+
+.portal-toast-icon {
+    font-size: 20px;
+    color: var(--accent);
+}
+
+.portal-toast-ok .portal-toast-icon {
+    color: var(--status-ok);
+}
+
+.portal-toast-warn .portal-toast-icon {
+    color: var(--status-warn);
+}
+
+.portal-toast-stop .portal-toast-icon {
+    color: var(--status-stop);
+}
+
+.portal-toast-close {
+    --bs-btn-color: var(--paper);
+    --bs-btn-hover-color: var(--accent);
+    min-height: 0;
+    padding: 0.25rem;
+    font-size: 18px;
 }
 @keyframes portal-toast-fade {
     0%, 80% { opacity: 1; }

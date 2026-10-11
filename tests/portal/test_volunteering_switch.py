@@ -86,7 +86,10 @@ class TestApplicationsClosedForTheEdition:
         assert reverse("volunteer:volunteer_profile_new") not in content
         response = client.get(reverse("volunteer:volunteer_profile_new"), follow=True)
         assert response.redirect_chain[-1][0] == reverse("volunteer:index")
-        assert "not taking new volunteer applications" in response.content.decode()
+        content = response.content.decode()
+        assert "not taking new volunteer applications" in content
+        # Messages reach every page as Night toasts (Toast spec).
+        assert 'id="portal-toasts"' in content and "portal-toast-info" in content
 
     def test_edition_form_carries_the_flag(self, client, admin_user, conference):
         client.force_login(admin_user)
