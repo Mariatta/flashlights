@@ -10,15 +10,11 @@ and **Presenters** under **Speakers** in the **Organize** sidebar, ask the tech
 lead. **Proposals** only appears while the edition is taking proposals, see
 [Speakers who propose](#speakers-who-propose).
 
-<iframe width="100%" height="480" src="https://www.youtube-nocookie.com/embed/sdBJG5t-FcY" title="PyLadiesCon Portal: How Organizers Invite Speakers" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
-*Recording: an organizer creates a workshop, adds a presenter and sends the
-invitation. [Watch it on YouTube](https://youtu.be/sdBJG5t-FcY).*
 
 ## The idea
 
 An invitation ties a **person** (a presenter) to a **session**, or to the
-conference in general. You can do the whole thing from the presenter's page:
+event in general. You can do the whole thing from the presenter's page:
 
 1. Create the session, if it does not exist yet.
 2. Add the presenter, with their email address.
@@ -44,8 +40,8 @@ to chase.
    can fill in the outline, level and language themselves.
 5. Choose **Save**. The session starts as a **Draft**.
 
-If you only want to invite someone to the conference in general and decide on
-the session later, skip this step and choose **The conference in general** in
+If you only want to invite someone to the event in general and decide on
+the session later, skip this step and choose **The event in general** in
 step 3.
 
 ### 2. Add the presenter
@@ -69,7 +65,7 @@ step 3.
 ### 3. Send the invitation
 
 1. On the presenter's page, under **Send invitation**, choose **Invite to**:
-   either a session or **The conference in general**.
+   either a session or **The event in general**.
 2. **Role on a new session** is only needed when you are adding them to a
    session they are not on yet, and you want a role other than the session
    type's default, which is usually Presenter. The list is the roles the
@@ -115,7 +111,7 @@ the email went out and sends them again, one at a time.
 The same page also has **Their to-dos** and **What we're preparing for them**,
 one above the other: the speaker's checklist and the team's checklist for that
 speaker. They are empty until the speaker accepts. After that this is where you
-follow the speaker until the end of the conference. The **Checklists** board in
+follow the speaker until the end of the event. The **Checklists** board in
 the sidebar shows the same thing across every speaker.
 
 ## What the speaker sees

@@ -1,31 +1,35 @@
 # Volunteers
 
-Thank you for your interest in volunteering with PyLadiesCon. Please review prerequisites prior to signing up.
+Thank you for your interest in volunteering. This is what to expect.
 
-## Prerequisites
+## Before you sign up
 
-Ensure you have created an account for PyLadiesCon. Information on how to do that is on the [getting started page](/user/get_started/).
+Create an account first; see [Getting started](get_started.md). Read how
+your event's teams are organised and what each role asks of you; the
+organisers link their team descriptions from the portal when they have
+them.
 
-Communication for PyLadiesCon is done via Discord. Go to [Discord](https://discord.com/register) to register for an account.
+## Signing up
 
-Review available volunteer roles, responsibilities, and required commitment for the roles in our [main conference site](https://conference.pyladies.com/docs/). Keep the teams in mind for your signup.
+1. Sign in and open **Volunteer**.
+2. Choose **Create my volunteer profile**.
+3. Fill in the required fields: your region, the hours you can give, how
+   to reach you, and the teams you are interested in. Add what you are good
+   at and where you work or what you build, so we can match you to a team
+   that fits.
 
-## Signup
+You get an email saying your application was received. When an edition is
+not taking applications, the page says so and the form is closed.
 
-Once you're ready to volunteer, please follow these steps:
+## Review
 
-1. Go to the [portal website](https://portal.pyladies.com) and sign in
-2. Go to Volunteer
-3. Click create your volunteer profile
-4. Fill in required information (hours available, Discord username, language selection, team selection, etc.). Feel free to fill in additional information about what skills you have so we can determine what team best fits your skillset or interests.
+The team leads review applications and assign people to teams and roles.
+Once you are approved you get access to the team's tools, such as the chat
+server, shared drive or calendar, and an onboarding email with the steps.
+We write to the email address you signed up with.
 
-You'll receive an email from `pyladiescon@pyladies.com` stating that your volunteer application was received.
+## Your tasks
 
-## Review 
-
-After you've filled out your volunteer profile, our team leads will review your application and assign you to the appropriate roles and begin the onboarding process.
-
-Accepted applications will be given access to necessary resources, e.g. Discord roles, GDrive permissions etc. All communications will be done via the email that you signed up with.
-
-
-
+Once you are on a team, **My volunteering tasks** lists what the
+organisers have handed to you or your team, with due dates. Tick a task
+when it is done; some tick themselves.

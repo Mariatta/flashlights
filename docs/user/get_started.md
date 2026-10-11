@@ -1,32 +1,54 @@
-# Getting Started with PyLadiesCon
+# Getting started
+
+Flashlights is the back-of-house portal for your event: where volunteers
+sign up, speakers see what we need from them, sponsors are tracked and the
+schedule is built. This guide is written for any event that runs it, from a
+multi-day online conference to a monthly meetup; "we" are the organisers
+of your event, "the portal" is your instance of Flashlights.
 
 ## Who needs an account?
 
-If you're interested in volunteering, speaking or sponsoring the conference, you'll need an account.
-
-If you're part of the PyLadiesCon Core team, you'll also need to create an account. This will allow you to access the Django admin area and other features.
-
-If you're a speaker, you need an account too. It is the same account you would use to volunteer, so if you volunteered with us in a previous year you already have one. You can create it yourself when you propose a session, or, if we invite you, accepting the invitation creates it for you. See the [speaker guide](speakers.md) for both routes.
-
-If you're a conference attendee, you don't need to create an account. (TBD)
+- **Volunteers, speakers and sponsors** need an account.
+- **Organisers** need an account too; an existing organiser then makes it
+  a staff account, which opens the Organize hub and the admin area.
+- **Speakers** use the same account they would use to volunteer, so a
+  returning volunteer already has one. You can create it yourself when
+  you propose a session, or, if we invite you, accepting the invitation
+  creates it for you. See the [speaker guide](speakers.md) for both
+  routes.
+- **Attendees** do not need an account. Tickets are handled by the
+  ticketing system your event uses, not by the portal.
 
 ## Sign up for an account
 
-To volunteer, sponsor or propose a session, you'll first need to create an account. (If we invited you to speak, you can skip this: accepting the invitation creates your account.)
+1. Open the portal and choose **Create an account**.
+2. Choose a username, enter your email address and a password.
+3. We email you a verification code; enter it on the page to finish.
 
-1. Go to the [Sign up page](https://portal.pyladies.com/accounts/signup/)
-2. Choose a username, enter your email address, and your password.
+If we invited you to speak, skip this: accepting the invitation creates
+your account.
 
-## Verify your account
+## Signing in
 
-After signing up, you'll receive an email with a verification code. Enter this code on the sign up page to verify your
-account.
+Sign in with your password, or ask for a one-time code by email: no
+password needed. The code is how speakers usually sign in.
 
-## Changing your email address
+## Your email addresses
 
-You can add more than one email address to your account. We will be sending emails to your primary account.
+You can add more than one email address to your account. We write to your
+primary address, and to a secondary one only when the primary cannot be
+reached. To change your address, add the new one and make it primary.
 
-To change an email address, add a new one to your account, and then set it as the primary email address.
+## What a small event can skip
 
-We will only send email to your secondary email if we've been unable to contact you in your primary email address.
+The portal runs every part of a large conference, and an organiser turns
+off what a smaller event does not use. Each of these is a switch on the
+instance or the edition, and what is off disappears from the pages:
 
+| Part | When to skip it |
+|---|---|
+| Volunteer applications | A meetup run by a fixed crew: keep the Volunteer hub for the team, stop advertising sign-ups on the landing page. |
+| Sponsorship and donations | No sponsors this year: the sponsor pages, goals and stats go. |
+| The speaker portal | An event without a call for proposals: sessions can still be scheduled by hand. |
+| Public stats | Numbers you would rather not publish: the stats pages go. |
+| Attendee numbers | No ticketing system connected: nothing is counted. |

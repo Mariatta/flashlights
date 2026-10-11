@@ -1,8 +1,8 @@
 # Speakers
 
-This guide walks you through the speaker side of the PyLadiesCon portal, from
-sending your first proposal to the day of the conference. There are two ways
-to become a speaker, and each has its own walkthrough with a screen recording:
+This guide walks you through the speaker side of the portal, from sending
+your first proposal to the day of the event. There are two ways to become a
+speaker, and each has its own walkthrough:
 
 - [You send a proposal](#flow-1-you-send-a-proposal), from the public
   "Propose a session" link. If you volunteered with us last year, you already
@@ -12,7 +12,7 @@ to become a speaker, and each has its own walkthrough with a screen recording:
 
 Whichever way you come in, you end up in the same place: your speaker
 dashboard, with a personal checklist that stays with you until the end of the
-conference.
+event.
 
 !!! note "Speaking, volunteering and everything else use one account"
     There is no separate speaker account. The account you use to volunteer,
@@ -33,19 +33,15 @@ spreadsheets. The portal replaces all of that with one place where you can:
 
 Your journey does not end when you submit your title and abstract. The
 checklist keeps going through scheduling, your tech check, promo materials and
-the conference itself, so you and the organizers can both see how far along
+the event itself, so you and the organizers can both see how far along
 things are.
 
 ## Flow 1: you send a proposal
 
 Use this flow if you found the propose link on our website, in a blog post or
 in a message from us. It works the same whether you are brand new or you
-volunteered with PyLadiesCon in a previous year.
+volunteered with us in a previous year.
 
-<iframe width="100%" height="480" src="https://www.youtube-nocookie.com/embed/qAFuOJ81wCY" title="PyLadiesCon Portal: Propose a Workshop or PyJam Performance" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
-*Recording: a volunteer from last year signs in with her existing account and
-sends a proposal. [Watch it on YouTube](https://youtu.be/qAFuOJ81wCY).*
 
 ### Before you start
 
@@ -59,10 +55,8 @@ sends a proposal. [Watch it on YouTube](https://youtu.be/qAFuOJ81wCY).*
 
 ### Steps
 
-1. Go to the [portal](https://portal.pyladies.com) and choose **Propose a
-   session**, or open
-   [portal.pyladies.com/speakers/propose](https://portal.pyladies.com/speakers/propose/)
-   directly.
+1. Open the portal and choose **Propose a session**, or open
+   `/speakers/propose/` on it directly.
 2. If you are not signed in, you land on a page that asks you to sign in.
     - **You volunteered before, or have used the portal for anything else:**
       choose **Sign in to the one I have** and sign in with your username and
@@ -118,15 +112,10 @@ The organizers review proposals and answer each one by email.
 ## Flow 2: we invite you
 
 Use this flow if an organizer invited you. You will get an email whose subject
-contains "You're invited to PyLadiesCon", usually with a personal note from the
+contains "You're invited to" and the event's name, usually with a personal note from the
 organizer who invited you. The subject can start with a bracketed prefix, so
 search for the words rather than the start of the line.
 
-<iframe width="100%" height="480" src="https://www.youtube-nocookie.com/embed/XGQU_o4SrvQ" title="PyLadiesCon Portal: Accept Your Speaker Invitation and Set Up Your Profile" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
-*Recording: an invited speaker accepts the invitation, finishes setting up her
-account, fills in her profile and looks at her checklist.
-[Watch it on YouTube](https://youtu.be/XGQU_o4SrvQ).*
 
 ### Steps
 
@@ -157,7 +146,7 @@ username and how to sign in again.
 
 ### Signing in later
 
-Go to the [portal](https://portal.pyladies.com), choose **Login**, and either
+Open the portal, choose **Sign in**, and either
 use your password or choose **Send me a sign-in code**. We email you a
 one-time code and you are in. There is no separate password to remember unless
 you want one.
@@ -195,10 +184,10 @@ your timezone. Typical items are:
 - check your session title and summary;
 - update your bio and headshot;
 - read the guide for your kind of session;
-- join the PyLadiesCon Discord;
+- join the team chat;
 - confirm your scheduled slot;
 - share a link to your slides;
-- register for the conference (it is free, but you still need a ticket);
+- register for the event, when it has tickets;
 - do a tech check with the team.
 
 **What we're preparing for you** is the team's side: onboarding email, Discord
