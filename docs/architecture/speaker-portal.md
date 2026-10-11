@@ -143,7 +143,8 @@ The website embeds a widget served by the portal. When the team publishes in the
 
 - The schedule shows in the visitor's timezone, with breaks as bands and sessions as cards.
 - Every session has a subscribe link — a calendar feed for that one session, so a reschedule updates the attendee's calendar automatically.
-- Visitors can star sessions and subscribe to just those, with no account.
+- A session title opens its full details in an overlay; a speaker's name or photo opens their bio, links and sessions the same way.
+- Several rooms show as columns on a time axis on wide screens, so staggered sessions line up; on phones the program is one list.
 - Unpublished sessions simply aren't there; no "TBA" rows.
 
 The website already depends on the portal for `stats.json`, so this adds no new dependency. The widget is long-cached behind the CDN and shows a link to the portal's schedule page if the API is unreachable.
@@ -298,6 +299,7 @@ The person, independent of any session. One presenter can run a workshop and sit
 | `display_name`, `pronouns`, `bio_md`, `headshot`, `location`, `timezone` | `timezone` drives reminder timing and the speaker's own schedule view |
 | `email` | invitation and reminder target; unique per conference |
 | `website_url`, `github_username`, `mastodon_url`, `linkedin_url`, `bluesky_username` | the links shown on a public presenter card |
+| `discord_username` | for the speaker role and channel on the conference Discord; organizer-facing, never public. Asked once per person: when the account has a volunteer profile (where it is required) the speaker and organizer forms drop the field and the row follows the volunteer profile; a volunteer form prefills from the presenter row |
 | `is_public` | presenter-controlled: opt out of a public bio page while still being named on the schedule |
 
 ### 8.3 SessionPresenter
@@ -627,10 +629,12 @@ A timezone switcher on the grid shows the whole schedule as a specific presenter
 | Audience | Reads | Changes when |
 |---|---|---|
 | Organizers (the editor) | `ScheduleSlot` — the working grid | every drag |
-| Speakers (their schedule page, checklists, feeds) | **`PublishedSlot`** — the snapshot | an organizer clicks **Publish schedule** |
+| Speakers (their schedule page, checklists, feeds) | **`PublishedSlot`** — the snapshot | an organizer clicks **Confirm schedule** |
 | The public (§11, later) | `PublishedSlot` of public sessions | ditto, behind `program_visibility` |
 
 `PublishedSlot` is one row per session, same shape as the working slot (`room` nullable, `start_utc`, `end_utc`) plus `published_at` and `ics_sequence` — the feeds (§11.3) serve published times, so the `SEQUENCE` counter lives here and bumps when a publish moves a session, never while organizers shuffle. One word, two scopes, said explicitly wherever it matters: the **schedule** is published to speakers; a **session** is published to the world (`PUBLISHED` status, §11). Publishing the schedule exposes nothing to the public side.
+
+> **Naming.** The button is labelled **Confirm schedule** (renamed 7 October 2026) so that "publish" only ever means public (§11.5); this section and the code keep the original publish names (`publish_schedule`, `PublishedSlot`) for the speaker-facing snapshot.
 
 **Publishing** is one action for the whole edition, never per day: a snapshot of half a schedule would show speakers a grid that contradicts itself. It diffs the working grid against the last snapshot — placed, moved, removed — then, in one transaction: upserts `PublishedSlot` rows, advances newly published `CONFIRMED` sessions to `SCHEDULED` (this is where the identity lock and the checklist effects now fire), bumps `ics_sequence` on moved ones, and for sessions taken off the grid since the last publish, deletes the snapshot row and returns the session to `CONFIRMED`, reopening its identity. A public session's slot cannot be removed by a publish (same rule as deleting its slot); a cancelled session's published row is removed on the next publish and its working row already frees the time (§8.5). The editor shows how many unpublished differences exist, marks the affected cards, and the confirm popover lists the counts before the click. `Session.schedule()` therefore comes to mean "has a published slot": the status machine, the rules registry entries `SESSION_SCHEDULED` (both kinds) and the speaker page all re-key from `ScheduleSlot` to `PublishedSlot`; the editor keeps the working grid's overlap rules exactly as they are.
 
@@ -654,7 +658,7 @@ Three view-layer changes, no model impact:
 
 ## 11. Public embeds and export
 
-> **Not built** (M4). None of the URLs below are routed yet; they are the proposal's shape for when they are.
+> **Partly built.** §11.1 (the JSON API), §11.2 (the widget script) and §11.5 (draft vs. published) are built (October 2026), and so are the §11.3 feeds; the iframe embed and the exports (§11.4) are not.
 
 The conference website is static. The portal exposes read-only data and a drop-in widget so the site never needs a rebuild when the program changes.
 
@@ -667,7 +671,7 @@ GET /api/v1/<conference>/schedule/            slots by day, plus rooms
 GET /api/v1/<conference>/sessions/<slug>/     one session
 ```
 
-Only published sessions and public presenters (others appear by name only on their sessions), never emails. Responses are cached for five minutes per conference and invalidated on save. Program-kind sessions carry `is_content: false` so the widget can draw breaks as bands rather than cards.
+Only published sessions and public presenters (others appear by name only on their sessions), never emails or internal notes. Responses are cached for five minutes per conference and invalidated on save; a preview response is never cached. The conference site's origins are listed per edition (`AllowedOrigin`, one website per row in the admin) so its pages may call the API from the browser. Built 7 October 2026 (task 6.2) as plain Django views. Program-kind sessions carry `is_content: false` so the widget can draw breaks as bands rather than cards.
 
 ### 11.2 Embeddable widget
 
@@ -675,6 +679,8 @@ Only published sessions and public presenters (others appear by name only on the
 <div data-flashlights-widget="schedule" data-conference="summit-2026"></div>
 <script src="https://portal.example.org/static/widget/v1.js" defer></script>
 ```
+
+> **Built** (7 October 2026, tasks 6.3 and 6.4): the widget (`portal/static/widget/v1.js`, built from `frontend/widget/v1.js`) and the iframe version at `/embed/<edition>/<view>/`, which reports its height to the host page so its frame can fit; both snippets are on the Publishing page's Share tab.
 
 A small self-contained script (no framework) that renders `schedule`, `speakers`, or a single `session` into the host element, in the visitor's timezone, with minimal CSS the conference site can restyle through CSS variables. An iframe version exists for pages that cannot add scripts.
 
@@ -687,13 +693,13 @@ Attendees can put a single workshop or panel in their calendar and have it stay 
 ```
 GET /api/v1/<conference>/schedule.ics                          everything (subscribable)
 GET /api/v1/<conference>/schedule.ics?sessions=a,b,c           a personal selection (subscribable)
-GET /api/v1/<conference>/schedule.ics?kind=WORKSHOP&room=…  filtered (built 5 October 2026 under /speakers/ with per-session and signed per-presenter feeds, reading published slots; these /api/v1/ aliases arrive with the public API)
+GET /api/v1/<conference>/schedule.ics?kind=WORKSHOP&room=…  filtered (built 5 October 2026 under /speakers/ with per-session and signed per-presenter feeds, reading published slots; the `schedule.ics` and `sessions/<slug>.ics` aliases below are routed under /api/v1/ since the public API, the public per-presenter feed is not built)
 GET /api/v1/<conference>/sessions/<slug>.ics                   one session
 GET /api/v1/<conference>/presenters/<slug>.ics                 everything one presenter is on
 ```
 
 - Every feed is subscribable (`webcal://`), not just downloadable. Subscribing to a session means a reschedule updates the attendee's calendar.
-- The widget lets a visitor star sessions; the stars are kept in the browser and joined into one feed URL. No account needed.
+- The widget once let a visitor star sessions and subscribe to just those; the user removed starring on 7 October 2026 (each session keeps its own subscribe link, and `?sessions=` still works for anyone building such a link).
 - Feeds use stable UIDs per session, bump the sequence on every change, and emit cancelled events rather than dropping them, so subscribed calendars stay correct.
 - Logged-in presenters get their own feed including unpublished sessions, so their calendar is right before the program is public.
 
@@ -709,13 +715,15 @@ The program is internal until the team publishes it, and a presenter's details s
 
 | Level | Switch | Effect |
 |---|---|---|
-| Edition | `program_visibility` = internal / published | Master switch, planned for `SpeakerSettings` and not built yet. While internal, the API returns an empty program and the widget shows "Program coming soon". |
-| Session | scheduled **and** `is_public` | A session appears only once it has a slot and an organizer has published it. Scheduling alone publishes nothing. |
+| Edition | `program_visibility` = internal / published | Master switch on `SpeakerSettings`. While internal, the API returns an empty program and the widget shows "Program coming soon". |
+| Session | scheduled **and** `is_public` | A session appears only once it is on the published schedule (§10.1) and an organizer has published it. Scheduling alone publishes nothing. Program items (breaks, opening, closing) are the exception: they go public with the schedule. |
 | Presenter | `is_public` | Opt-out hides bio, headshot, and links; the name still appears on their sessions. |
 
 A presenter's bio is public only if the program is published, they are on at least one published session, and they have not opted out. A confirmed presenter whose session is not yet scheduled is simply absent from the public API — no "TBA" rows leak names.
 
-**Preview for the website build:** every public endpoint and the widget accept a signed, expiring preview token that bypasses the visibility rules, so the conference site can be developed against the draft program and switched to live by removing the token. Preview responses are never cached.
+> **Built** (7 October 2026, task 6.1): `speakers/public.py` and the organizers' Publishing page. The calendar feeds already read through it; the API, widget and exports will.
+
+**Preview for the website build:** every public endpoint and the widget accept a signed preview token that bypasses the edition and session switches (a presenter's own opt-out still holds). It has no expiry: it works until an organizer makes a new one, which revokes every older link, or until the program goes public, so the conference site can be developed against the draft program and switched to live by removing the token. Preview responses are never cached.
 
 Cancelling a session or a presenter withdrawing un-publishes it, invalidates the cache, and the widget drops it on next load — no site rebuild. The session's files stay (§8.8, "Deleting a file").
 

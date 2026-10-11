@@ -683,9 +683,32 @@ exception: the conference edit form carries the speaker-portal switch,
 which lives on `SpeakerSettings`. `portal/forms.py` reaches it through
 `apps.get_model` behind an `apps.is_installed("speakers")` guard rather
 than importing this app, so the core form still loads without the feature
-module and there is no import cycle waiting to happen. If a second such
-edge ever appears, give it a thin accessor module here rather than
-repeating the registry lookup.
+module and there is no import cycle waiting to happen. The second edge is
+`speakers/shared.py`: the volunteer form asks it for the Discord username
+a presenter row already holds, through the same registry lookup and guard.
+Any further one goes in that module too.
+
+### Discord username, asked once
+
+`Presenter.discord_username` is organizer-facing (the speaker role and
+channel on the conference Discord) and never public. The volunteer profile
+has the same field, required there, and a volunteer who also speaks is
+asked once:
+
+- The speaker profile, proposal and organizer presenter forms drop the
+  field when the account has a volunteer profile with a username, show that
+  value read-only, and write it to the presenter row on save
+  (`_adopt_volunteer_discord`).
+- Accepting an invitation copies it in (`link_presenter_user`), and saving
+  a volunteer profile pushes it to the person's presenter rows
+  (`receivers.follow_volunteer_discord`), so the organizer side never shows
+  a stale one.
+- The volunteer form prefills from the presenter row when there is no prior
+  volunteer profile (`speakers/shared.py`).
+
+The presenter field and the volunteer form validate with
+`portal.validators.validate_discord_username`; `VolunteerProfile.clean()` still
+carries its own copy of the rule.
 
 ### Background jobs
 
@@ -1035,6 +1058,32 @@ installed; this app keeps small factory functions in `tests/speakers/factories.p
   grid. A drag can only reach an hour past the current window; the
   window grows after each change, so stretching further takes a few
   drags, or "Show the whole day".
+- The Presenters page has two views. The default is the basic list:
+  name, email, sessions with roles (one line each), Discord username,
+  the invitation's state, liaison. "Expand", or `?view=data`, is the
+  data view: everything the team looks up about a
+  speaker (pronouns, email, Discord username, timezone, location, the
+  links, whether there is a photo and a public profile, sessions with
+  roles, invitation state, liaison) as one spreadsheet-like table that takes the whole
+  screen like the schedule's wide mode, unpaginated, with the same search
+  and liaison filters; "Download CSV" (`presenters.csv`), offered in both
+  views, gives the data view's rows and columns, filters applied, every cell through
+  `spreadsheet.safe_cell`; "Download package" (`presenters.zip`) is the
+  same CSV plus a "Photo file" column, every headshot under `photos/`
+  named by the presenter's address (a leading dash dropped, `-2` added
+  when two names collide), and a README, for designers who need
+  the photos and handles together. The zip is built in a spooled
+  temporary file (memory up to 32 MB, disk beyond), photos are stored
+  without recompression and fetched from storage a few at a time, and the
+  response streams, so a hundred phone-sized headshots cost disk and
+  seconds, not RAM. Headshots are stored as uploaded (no resize or cap),
+  which is what sets the package's size. `speakers/directory.py` holds the one column
+  list the CSV uses and a test keeps the table's headers equal to it. Both
+  downloads take the filters in the page's URL (search, liaison), and a
+  filtered file has the same name as a full one, `presenters-<edition>`,
+  so a designer with two copies should look inside. Both views are
+  liaison-scoped like the rest of the page; nothing here is public, which
+  is why the downloads are not on the Publishing page.
 - The presenter's schedule page (design §2.4) is `schedule.presenter_schedule`:
   public sessions plus the viewer's own in any on-schedule status, grouped
   by the presenter's LOCAL day with times pre-formatted in Python, because
@@ -1042,11 +1091,142 @@ installed; this app keeps small factory functions in `tests/speakers/factories.p
   timezone in templates. Nobody else's unpublished sessions appear; the
   viewer's own carry a "not yet public" badge. Calendar links are disabled
   placeholders until the feeds (task 4.4).
+- The public program (design §11.5, task 6.1) is `speakers/public.py`:
+  every public surface reads `public_program(conference, preview=None)`
+  and `public_presenters(...)`, so the three switches live in one place.
+  The edition's master switch is `SpeakerSettings.program_visibility`
+  (INTERNAL by default: the public program is empty). A content session
+  is public once it is on the published schedule AND an organizer ticked
+  it (`Session.publish()`, undone by `unpublish()`, back to SCHEDULED);
+  a program item (break, opening) goes public with the schedule itself,
+  by the user's decision. A presenter is public only through a confirmed
+  link to such a session and only if they have not opted out; anyone
+  else is absent, never a "TBA". The organizers' Publishing page
+  (`publishing_views.py`) has three tabs under one header, whose single
+  line is the master switch (its form goes back to the tab it was used
+  on): **Publish** (`schedule/publishing/`, the session ticks, disabled
+  until a session is on the confirmed schedule; it also takes every
+  form POST), **Preview** (`schedule/publishing/preview/`, also the
+  editor's "Preview as public" button: the website's own widget inside
+  the portal, defaulting to the draft while the program is internal,
+  with a "Public now" switch) and **Share**
+  (`schedule/publishing/share/`: widget code per view, the allowed
+  websites, the data feeds, and the preview token for whoever builds
+  the website). The preview token is signed with SECRET_KEY and names
+  `SpeakerSettings.preview_key` (minted when the settings row is created,
+  so showing the token never writes), with NO expiry by the user's decision;
+  "make a new token" changes the key and revokes every older one, and
+  every token stops working once the program goes public. A preview
+  shows every session on the confirmed schedule, published or not, but
+  still honours a presenter's opt-out; preview responses are
+  `no-store`.
+- The public JSON API (design §11.1, task 6.2) is `speakers/api.py`
+  (payloads and cache) and `api_views.py`, mounted at `/api/v1/` by
+  `portal/urls.py`: `<conference>/sessions/`, `sessions/<slug>/`,
+  `presenters/`, `presenters/<slug>/`, `schedule/` (slots grouped by the conference
+  timezone's day, plus the rooms), and the calendar aliases
+  `schedule.ics` and `sessions/<slug>.ics`. `<conference>` is the
+  edition's slug, not the active edition, and an edition without the
+  module is 404. Plain views, no DRF. Everything starts from
+  `speakers.public`, so the visibility rules hold; every payload says
+  which `program` state it shows (`published`, `internal`, `preview`).
+  Markdown comes as the stored `*_md` and sanitized `*_html`: `*_md` is
+  the raw source as typed, so a website must render only `*_html`;
+  emails and `notes_md` never appear (a test walks every key). Absolute
+  URLs in a payload (the `.ics` links, headshots) come from the
+  configured Site through `emails.absolute_url`, never from the caller's
+  host, since a payload is cached and served to everyone. A presenter who opted
+  out is on their sessions by name with `slug: null`. Live responses are
+  cached five minutes per edition under a generation key that
+  `receivers.public_api_changed` bumps after commit on any save or delete
+  of a session, presenter, link, published slot, room, session type,
+  role or the settings; a response for a VALID `?preview=` token is built
+  fresh with `Cache-Control: no-store`, and a junk token is served from
+  the cache like any other request, so nobody can force a rebuild per hit
+  or blank a CDN by appending a parameter. CORS: each edition's `AllowedOrigin` rows
+  (one website per row, edited as a list in the speaker-settings admin;
+  stored as browsers send an origin, lower-case scheme and host with no
+  path, and refused with a path) are read through
+  `SpeakerSettings.api_origins` and echoed back to a listed `Origin`,
+  with `Vary: Origin`; a preflight (`OPTIONS`) answers a listed origin
+  with GET/HEAD and the conditional headers (`If-None-Match`,
+  `If-Modified-Since`), so the site may revalidate its cache. The list is not in the cache
+  invalidation set: the header is computed per request. The Publishing
+  page lists the allowed websites; someone who may change speaker
+  settings in the admin (superusers, or staff granted the permission)
+  gets an "Edit in admin" link, everyone else a note to ask an admin. No
+  public per-presenter `.ics` yet.
+- The website widget (design §11.2, task 6.3) is written readable in
+  `frontend/widget/v1.js` and served minified from
+  `portal/static/widget/v1.js`, built by `npm run build:widget` (terser,
+  the repo's only Node dependency; the portal itself needs no Node). The
+  build stamps the source's sha256 in the served file's header, and
+  `tests/speakers/test_widget.py` fails when the source changed without a
+  rebuild, or when the served file passes 15 KB; CI needs no Node. The
+  site pastes the snippet the Publishing page shows:
+  `<div data-pyladiescon-widget="schedule" data-conference="<slug>">`
+  plus the script tag (it offers one per whole-program view, and copyable
+  links to the JSON and `.ics` endpoints under "Data feeds"). Views:
+  `schedule`, `sessions` (every content session as a card, in program
+  order), `speakers`, `session` with
+  `data-session="<slug>"`, and `speaker` with `data-speaker="<slug>"` (one
+  profile inline, for a site that wants a page per speaker).
+  The schedule: day tabs; times in the visitor's timezone (remembered in
+  localStorage, as is the room picker, which appears once there is more
+  than one room); on a container wider than 40rem a grid with a time
+  column and one column per room in a stable order, rows of five
+  minutes, so staggered sessions line up and program items (bands) span
+  every room; lines every quarter hour (solid on the hour) and labels
+  every half hour, in the visitor's zone, keep empty stretches readable; narrower, a CSS container query turns it into one
+  time-ordered list. Cards show the speakers' photos and names. A
+  session title opens an overlay (a native `<dialog>`: Escape, focus and
+  the backdrop come from the browser) with the full description; a
+  speaker's name or photo opens theirs (`presenters/<slug>/`) with bio,
+  links and sessions. Calendar links are subscribe-only (webcal, Google,
+  Outlook.com). There is no starring: the user removed it.
+  `data-api` points it at another portal (default: the script's own
+  origin); `data-preview`, or `?preview=` on the host page, passes the
+  preview token through. While the program is internal every view shows
+  "Program coming soon" and every endpoint answers 200, so the browser
+  logs nothing; if the API cannot be reached it shows a link to
+  `data-fallback-url` (default: the portal's `/embed/<slug>/schedule/`,
+  task 6.4). Styling: the `.plc` root and `--plc-*` CSS variables
+  (`--plc-accent`, `--plc-muted`, `--plc-border`, `--plc-band`,
+  `--plc-card`, `--plc-radius`, `--plc-modal-bg`, `--plc-modal-text`);
+  text inherits the host page's font. Caching: `/static/widget/v1.js` is
+  the stable address (WhiteNoise sends it with a short max-age, so the
+  site always gets the current widget; the iframe embed page links the
+  hashed name instead, so a deploy updates it at once); the hashed copy WhiteNoise also
+  serves (`widget/v1.<hash>.js`, listed in `staticroot/staticfiles.json`)
+  is cached for a year and suits a CDN that should pin one version; bump
+  to `v2.js` for breaking changes. A visitor's browser keeps an API
+  response up to five minutes, so a change can take that long to reach
+  an open page. Checked by hand in Chrome only (bare pages on another
+  origin, 360 px, coming-soon, preview, error, multi-room and staggered
+  demos), and by the user in Firefox and Safari on 8 October 2026 (grid,
+  overlays, timezone switch, narrow layout). It relies on `<dialog>`, CSS
+  container queries and localStorage.
+- The iframe embed (design §11.2, task 6.4) is `embed_views.py`, mounted
+  at `/embed/` by `portal/urls.py`: `/embed/<edition>/<view>/` with view
+  `schedule`, `sessions` or `speakers` is a bare page (no portal chrome,
+  transparent background, `static/css/embed.css`) holding the widget,
+  for websites that can't add a script tag. It is exempt from
+  X-Frame-Options on purpose: public data, nothing to click that changes
+  anything. Inside a frame, `static/js/embed-frame.js` posts
+  `{type: "pyladiescon-embed", height}` to the host whenever the page
+  height changes, so a host running the listener from the Share tab
+  sizes its iframe to fit (without it, the iframe's own height applies
+  and it scrolls); it also opens an overlay near the click instead of
+  the middle of a tall frame. `?accent=` takes a hex colour only (a host
+  page's CSS can't reach inside an iframe); `?preview=` passes through
+  to the widget and makes the page `no-store`. The page needs no
+  allowed website: the widget inside it calls its own origin. It is
+  also the widget's default fallback link.
 - The calendar feeds (design §11.3) are `speakers/feeds.py` (a hand-
   rolled ICS writer, like the VTT one: escaping with every line ending
   normalised to one escaped newline, 75-octet folding counting the
-  continuation space, CRLF) and `feed_views.py`: `schedule.ics` (public
-  sessions, `?sessions=`, `?kind=`, `?room=` filters; a non-numeric room
+  continuation space, CRLF) and `feed_views.py`: `schedule.ics` (the public
+  program, `?sessions=`, `?kind=`, `?room=` filters; a non-numeric room
   answers 400), a per-session public feed, and a presenter's personal
   feed behind a signed non-expiring token (sessions they have ACCEPTED,
   public or not, cancelled ones carried with STATUS:CANCELLED until the
@@ -1083,7 +1263,9 @@ installed; this app keeps small factory functions in `tests/speakers/factories.p
   CONFIRMED. The editor's grid mutations log `slot.placed`/`slot.moved`/
   `slot.removed` (drafting); the session-level `session.scheduled`/
   `session.rescheduled`/`session.unscheduled` entries are written by the
-  publish. "Email the affected speakers" (default on) sends one recorded
+  publish (the editor's **Confirm schedule** button: it shares the
+  schedule with speakers and makes nothing public; "publish" in the UI
+  means the public program only). "Email the affected speakers" (default on) sends one recorded
   mail per affected presenter via `send_schedule_update_task`; the
   presenter row rides in the email context because the resend guard keys
   on the record's context digest. Organizer pages (sessions list, session

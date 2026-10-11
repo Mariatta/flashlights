@@ -10,6 +10,7 @@ import secrets
 import zoneinfo
 from datetime import timedelta
 from functools import lru_cache
+from urllib.parse import urlsplit
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -24,6 +25,8 @@ from django.utils.text import slugify
 from text_unidecode import unidecode
 
 from portal.constants import BASE_PRETIX_URL
+from portal.validators import validate_discord_username
+from volunteer.models import VolunteerProfile
 
 from .clock import today
 from .constants import (
@@ -50,6 +53,7 @@ from .constants import (
     MediaStatus,
     NoticeKind,
     PremiereLocation,
+    ProgramVisibility,
     ProposalDecision,
     ReadyOverride,
     ReadyRule,
@@ -141,6 +145,11 @@ def _validate_slug(instance, model, noun):
         clash = clash.exclude(pk=instance.pk)
     if clash.exists():
         raise ValidationError({"slug": f"Another {noun} already uses this address."})
+
+
+def new_preview_key():
+    """A fresh generation for an edition's preview tokens."""
+    return secrets.token_urlsafe(16)
 
 
 class SpeakerSettings(TimestampedModel):
@@ -261,10 +270,33 @@ class SpeakerSettings(TimestampedModel):
         db_default=False,
         help_text="Create a pretix voucher per presenter (not implemented yet).",
     )
+    program_visibility = models.CharField(
+        max_length=16,
+        choices=ProgramVisibility.choices,
+        default=ProgramVisibility.INTERNAL,
+        db_default=ProgramVisibility.INTERNAL,
+        help_text="The master switch (design §11.5): while internal, the "
+        "public program is empty and the website shows it as coming soon.",
+    )
+    # Not a secret: preview links are signed with SECRET_KEY, and this only
+    # names the current generation of them, so changing it revokes every
+    # link handed out before.
+    preview_key = models.CharField(
+        max_length=32,
+        blank=True,
+        default=new_preview_key,
+        db_default="",
+        editable=False,
+    )
 
     @property
     def tzinfo(self):
         return zoneinfo.ZoneInfo(self.conference_timezone)
+
+    @property
+    def api_origins(self):
+        """The websites that may read the public API from the browser."""
+        return [origin.url for origin in self.allowed_origins.all()]
 
     @property
     def pretix_event_slug(self):
@@ -298,6 +330,49 @@ class SpeakerSettings(TimestampedModel):
             from .program_types import seed_program_types
 
             seed_program_types(self.conference)
+
+
+def normalize_origin(url):
+    """A website's origin as browsers send it: lower-case scheme and host,
+    no trailing slash."""
+    parts = urlsplit(url.strip())
+    return f"{parts.scheme.lower()}://{parts.netloc.lower()}"
+
+
+class AllowedOrigin(TimestampedModel):
+    """A website whose pages may read an edition's public API from the
+    browser (design §11.1): the conference site, its preview builds."""
+
+    settings = models.ForeignKey(
+        SpeakerSettings, on_delete=models.CASCADE, related_name="allowed_origins"
+    )
+    url = models.URLField(
+        "website",
+        help_text="The site's address only, for example "
+        "https://2026.conference.pyladies.com.",
+    )
+
+    class Meta:
+        ordering = ["url"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["settings", "url"], name="speakers_allowed_origin_once"
+            )
+        ]
+
+    def __str__(self):
+        return self.url
+
+    def clean(self):
+        parts = urlsplit(self.url or "")
+        if parts.path not in ("", "/") or parts.query or parts.fragment:
+            raise ValidationError(
+                {"url": "Just the website's address, without a page path."}
+            )
+
+    def save(self, *args, **kwargs):
+        self.url = normalize_origin(self.url)
+        super().save(*args, **kwargs)
 
 
 def media_for_speakers(conference):
@@ -424,6 +499,26 @@ class Room(TimestampedModel):
         return self.name
 
 
+def volunteer_discord_username(user_id):
+    """The Discord username this person gave as a volunteer, newest edition
+    first, or "" when they never did.
+
+    A volunteer who also speaks is asked once: the volunteer profile is the
+    copy they maintain (it is required there), and their presenter rows
+    follow it (``speakers.receivers.follow_volunteer_discord``).
+    """
+    if user_id is None:
+        return ""
+    return (
+        VolunteerProfile.objects.filter(user=user_id)
+        .exclude(discord_username="")
+        .order_by("-conference__year")
+        .values_list("discord_username", flat=True)
+        .first()
+        or ""
+    )
+
+
 class Presenter(TimestampedModel):
     """A person, independent of any session (design §8.2).
 
@@ -467,6 +562,15 @@ class Presenter(TimestampedModel):
     mastodon_url = models.URLField(blank=True)
     linkedin_url = models.URLField(blank=True)
     bluesky_username = models.CharField(max_length=100, blank=True)
+    discord_username = models.CharField(
+        max_length=32,
+        blank=True,
+        default="",
+        db_default="",
+        validators=[validate_discord_username],
+        help_text="For the speaker role and channel on the conference Discord. "
+        "Never shown on the public site.",
+    )
     is_public = models.BooleanField(
         default=True,
         help_text="Off hides the bio, headshot and links on the public site; "
@@ -526,6 +630,12 @@ class Presenter(TimestampedModel):
 
     def get_absolute_url(self):
         return reverse("speakers:presenter_detail", kwargs={"slug": self.slug})
+
+    @property
+    def volunteer_discord_username(self):
+        """The Discord username from this person's volunteer profile, or ""
+        (see ``volunteer_discord_username``)."""
+        return volunteer_discord_username(self.user_id)
 
     @property
     def identity_locked(self):
@@ -949,11 +1059,11 @@ class Session(TimestampedModel):
 
         Scheduling means the speakers were told (§10.1): the working grid
         is a draft, and the lock, the checklist lines and the reminders
-        all wait for "Publish schedule".
+        all wait for "Confirm schedule".
         """
         self._require_status(SessionStatus.CONFIRMED, SessionStatus.SCHEDULED)
         if not self.has_published_slot:
-            raise TransitionError("Publish the schedule with this session first.")
+            raise TransitionError("Confirm the schedule with this session first.")
         self.status = SessionStatus.SCHEDULED
         if save:
             self.save(update_fields=["status"])
@@ -977,10 +1087,19 @@ class Session(TimestampedModel):
         self._require_status(SessionStatus.SCHEDULED, SessionStatus.PUBLISHED)
         if not self.has_published_slot:
             raise TransitionError(
-                "A session needs a published schedule slot to go public."
+                "A session needs a confirmed schedule slot to go public."
             )
         self.status = SessionStatus.PUBLISHED
         self.is_public = True
+        if save:
+            self.save(update_fields=["status", "is_public"])
+
+    def unpublish(self, save=True):
+        """PUBLISHED -> SCHEDULED: off the public program. The slot and the
+        speakers' published schedule stay as they are."""
+        self._require_status(SessionStatus.PUBLISHED, SessionStatus.SCHEDULED)
+        self.status = SessionStatus.SCHEDULED
+        self.is_public = False
         if save:
             self.save(update_fields=["status", "is_public"])
 
@@ -1326,7 +1445,7 @@ class ScheduleSlot(TimestampedModel):
 class PublishedSlot(TimestampedModel):
     """The schedule as the speakers last saw it (design §10.1).
 
-    A snapshot of the working slot, written only by "Publish schedule":
+    A snapshot of the working slot, written only by "Confirm schedule":
     the working grid (``ScheduleSlot``) is the organizers' draft, and
     nothing a speaker reads — their schedule page, the checklist rules,
     the calendar feeds, later the public program — looks anywhere but

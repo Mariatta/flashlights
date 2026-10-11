@@ -40,3 +40,10 @@ htmlcov/
 !/app.json
 # Azure deployment parameters hold secrets (deploy/azure/README.md)
 deploy/azure/params.json
+# ...except the widget build's own manifest and lockfile.
+!/package.json
+!/package-lock.json
+
+
+# The widget build step (npm run build:widget)
+node_modules/

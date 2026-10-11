@@ -6,13 +6,15 @@ Registered from ``SpeakersConfig.ready()``.
 import logging
 
 from botocore.exceptions import ClientError
-from django.db import transaction
+from django.db import connection, transaction
 from django.db.models import Q
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
 from attendee.models import PretixOrder
+from volunteer.models import VolunteerProfile
 
+from .api import invalidate as invalidate_public_api
 from .checklists import (
     instantiate_general_checklist,
     instantiate_presenter_checklist,
@@ -28,9 +30,13 @@ from .models import (
     MediaAsset,
     MediaUpload,
     Presenter,
+    PresenterRole,
     PublishedSlot,
+    Room,
     Session,
     SessionPresenter,
+    SessionType,
+    SpeakerSettings,
 )
 from .readiness import refresh_readiness
 from .rules import (
@@ -85,6 +91,20 @@ def create_session_checklist(sender, session, **kwargs):
 def _touches(kwargs, *fields):
     update_fields = kwargs.get("update_fields")
     return update_fields is None or not set(fields).isdisjoint(update_fields)
+
+
+@receiver(post_save, sender=VolunteerProfile, dispatch_uid="speakers.discord.follow")
+def follow_volunteer_discord(sender, instance, **kwargs):
+    """The volunteer profile is where a volunteer who also speaks keeps
+    their Discord username (it is required there); their presenter rows
+    follow it, so the organizer side never shows a stale one."""
+    if not instance.discord_username:
+        return
+    for presenter in Presenter.objects.filter(user=instance.user_id).exclude(
+        discord_username=instance.discord_username
+    ):
+        presenter.discord_username = instance.discord_username
+        presenter.save(update_fields=["discord_username", "modified_date"])
 
 
 @receiver(post_save, sender=Presenter, dispatch_uid="speakers.rules.presenter")
@@ -289,3 +309,45 @@ def abort_the_upload(sender, instance, **kwargs):
         return
     pk, key, upload_id = instance.pk, instance.storage_key, instance.upload_id
     transaction.on_commit(lambda: _abort_upload(pk, key, upload_id))
+
+
+def public_api_changed(sender, instance, **kwargs):
+    """Anything a public payload reads changed: the edition's cached API
+    responses go (design §11.1), once, after the transaction commits, so a
+    request racing the save cannot re-cache what was there before it."""
+    conference_id = instance.conference_id
+    # One bump per edition per transaction: a schedule publish saves a row
+    # per moved session, and each must not add cache queries. Callbacks of
+    # a rolled-back transaction or savepoint are dropped by Django, so this
+    # check never skips a bump that is still owed.
+    pending = connection.run_on_commit
+    if any(
+        getattr(entry[1], "public_api_for", None) == conference_id for entry in pending
+    ):
+        return
+
+    def bump():
+        invalidate_public_api(conference_id)
+
+    bump.public_api_for = conference_id
+    transaction.on_commit(bump)
+
+
+# AllowedOrigin is left out on purpose: the CORS header is computed per
+# request, never cached, so a change to the list needs no invalidation.
+for _model in (
+    Session,
+    Presenter,
+    SessionPresenter,
+    PublishedSlot,
+    Room,
+    SessionType,
+    PresenterRole,
+    SpeakerSettings,
+):
+    for _signal in (post_save, post_delete):
+        _signal.connect(
+            public_api_changed,
+            sender=_model,
+            dispatch_uid=f"speakers.public_api.{_model.__name__}.{_signal is post_save}",
+        )

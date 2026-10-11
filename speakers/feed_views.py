@@ -1,7 +1,8 @@
 """The calendar endpoints (task 4.4, design §11.3).
 
-Public feeds carry public sessions only until the §11.5 visibility
-rules arrive; a presenter's own feed rides a signed token, because a
+Public feeds carry the public program (design §11.5, ``speakers.public``),
+and accept the website's ``?preview=`` token, whose responses are never
+cached (a junk token is served like any other request); a presenter's own feed rides a signed token, because a
 calendar app cannot log in. Everything reads the published schedule.
 """
 
@@ -15,9 +16,10 @@ from .feeds import (
     render_calendar,
 )
 from .mixins import SpeakerModuleRequiredMixin
+from .public import preview_is_valid
 
 
-def calendar_response(text, private=False):
+def calendar_response(text, private=False, preview=False):
     """text/calendar with the five-minute cache §11.3 asks for.
 
     Served inline on purpose: every one of these is a subscription
@@ -25,8 +27,12 @@ def calendar_response(text, private=False):
     anything — which is why there is no download variant at all.
     """
     response = HttpResponse(text, content_type="text/calendar; charset=utf-8")
-    # A personal feed must not sit in a shared cache.
-    response["Cache-Control"] = ("private, " if private else "") + "max-age=300"
+    if preview:
+        # A preview shows the draft program; no cache may keep a copy.
+        response["Cache-Control"] = "no-store"
+    else:
+        # A personal feed must not sit in a shared cache.
+        response["Cache-Control"] = ("private, " if private else "") + "max-age=300"
     return response
 
 
@@ -41,14 +47,18 @@ class ScheduleFeedView(SpeakerModuleRequiredMixin, View):
                 room = int(room)
             except ValueError:
                 return HttpResponseBadRequest("Unknown room.")
+        preview = request.GET.get("preview")
+        previewing = preview_is_valid(self.conference, preview)
         rows = public_rows(
             self.conference,
             sessions=sessions or None,
             kind=request.GET.get("kind") or None,
             room=room,
+            preview=preview,
         )
         return calendar_response(
-            render_calendar(f"{self.conference.name} schedule", rows)
+            render_calendar(f"{self.conference.name} schedule", rows),
+            preview=previewing,
         )
 
 
@@ -56,10 +66,14 @@ class SessionFeedView(SpeakerModuleRequiredMixin, View):
     """One public session, for a per-session subscription."""
 
     def get(self, request, slug):
-        rows = list(public_rows(self.conference, sessions=[slug]))
+        preview = request.GET.get("preview")
+        rows = list(public_rows(self.conference, sessions=[slug], preview=preview))
         if not rows:
             raise Http404("Not on the public schedule.")
-        return calendar_response(render_calendar(rows[0].session.title, rows))
+        return calendar_response(
+            render_calendar(rows[0].session.title, rows),
+            preview=preview_is_valid(self.conference, preview),
+        )
 
 
 class PresenterFeedView(SpeakerModuleRequiredMixin, View):
