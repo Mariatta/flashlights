@@ -2,11 +2,11 @@
 {% load i18n %}
 {% load allauth %}
 {% block head_title %}
-    {% trans "Account Connections" %}
+    {% trans "Account connections" %}
 {% endblock head_title %}
 {% block content %}
     {% element h1 %}
-    {% trans "Account Connections" %}
+    {% trans "Account connections" %}
 {% endelement %}
 {% if form.accounts %}
     {% element p %}
@@ -47,7 +47,7 @@
 {% endelement %}
 {% endif %}
 {% element h2 %}
-{% trans "Add a Third-Party Account" %}
+{% trans "Add a third-party account" %}
 {% endelement %}
 {% include "socialaccount/snippets/provider_list.html" with process="connect" %}
 {% include "socialaccount/snippets/login_extra.html" %}

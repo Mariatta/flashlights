@@ -40,7 +40,7 @@ They have been assigned the following role(s):
 
 - **Say hi and welcome them on Discord.**
 
-- **Give a shout out on social media!** Check their [Volunteer Profile](https://{{ current_site.domain }}{% url 'volunteer:volunteer_profile_detail' profile.id %}) for their social media handles.
+- **Give them a shout out on social media.** Check their [Volunteer Profile](https://{{ current_site.domain }}{% url 'volunteer:volunteer_profile_detail' profile.id %}) for their social media handles.
 
 {% if admin_onboarding %}
 ## Core Organizer Access
@@ -61,6 +61,6 @@ Since this is a new core-organizer, you will also need to grant them additional 
 **Please complete the above tasks within 5 days.** If you cannot complete these tasks, please reach out to the other core organizers on Discord.
 {% endif %}
 
-**Thank you!**
+**Thank you.**
 
 {% endblock content %}

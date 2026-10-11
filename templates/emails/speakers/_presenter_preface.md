@@ -1,7 +1,7 @@
 {% load tz %}
 Hi {{ presenter.display_name }},
 
-Thank you for being a {{ role_word }} at {{ conference.name }}! These are some of your action items in preparation for the event.
+Thank you for being a {{ role_word }} at {{ conference.name }}. These are some of your action items in preparation for the event.
 {% if sessions %}
 
 Your session{{ sessions|length|pluralize }}:

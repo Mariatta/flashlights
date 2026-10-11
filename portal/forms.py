@@ -1,3 +1,4 @@
+from allauth.account.forms import LoginForm as AllauthLoginForm
 from allauth.account.forms import SignupForm
 from captcha.conf import settings as captcha_settings
 from captcha.fields import CaptchaField, CaptchaTextInput
@@ -139,6 +140,15 @@ def _speaker_settings_model():
     if not apps.is_installed("speakers"):
         return None
     return apps.get_model("speakers", "SpeakerSettings")
+
+
+class LoginForm(AllauthLoginForm):
+    """allauth's sign-in form with the remember-me label in sentence case."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if "remember" in self.fields:
+            self.fields["remember"].label = "Remember me"
 
 
 class ConferenceForm(forms.ModelForm):

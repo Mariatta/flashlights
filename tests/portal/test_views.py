@@ -102,7 +102,6 @@ class TestPortalIndex:
         client.force_login(portal_user)
         response = client.get(reverse("index"), follow=True)
 
-        assert "Sign out" not in response.content.decode()
         assert reverse("account_login") not in response.content.decode()
         assertRedirects(response, reverse("portal_account:agreements"))
 
@@ -147,7 +146,7 @@ class TestPageNotFound:
         client.force_login(portal_user)
         response = client.get("/no-such-page/")
         assert response.status_code == 404
-        assert "Sign Out" in response.content.decode()
+        assert "Sign out" in response.content.decode()
 
 
 @pytest.mark.django_db

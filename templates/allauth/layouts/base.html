@@ -9,19 +9,19 @@
                 {% url 'account_email' as email_url_ %}
                 {% if email_url_ %}
                     <li>
-                        <a href="{{ email_url_ }}">{% trans "Change Email" %}</a>
+                        <a href="{{ email_url_ }}">{% trans "Change email" %}</a>
                     </li>
                 {% endif %}
                 {% url 'account_change_password' as change_password_url_ %}
                 {% if change_password_url_ %}
                     <li>
-                        <a href="{{ change_password_url_ }}">{% trans "Change Password" %}</a>
+                        <a href="{{ change_password_url_ }}">{% trans "Change password" %}</a>
                     </li>
                 {% endif %}
                 {% url 'socialaccount_connections' as connections_url_ %}
                 {% if connections_url_ %}
                     <li>
-                        <a href="{{ connections_url_ }}">{% trans "Account Connections" %}</a>
+                        <a href="{{ connections_url_ }}">{% trans "Account connections" %}</a>
                     </li>
                 {% endif %}
                 {% url 'mfa_index' as mfa_url_ %}
@@ -39,20 +39,20 @@
                 {% url 'account_logout' as logout_url_ %}
                 {% if logout_url_ %}
                     <li>
-                        <a href="{{ logout_url_ }}">{% trans "Sign Out" %}</a>
+                        <a href="{{ logout_url_ }}">{% trans "Sign out" %}</a>
                     </li>
                 {% endif %}
             {% else %}
                 {% url 'account_login' as login_url_ %}
                 {% if login_url_ %}
                     <li>
-                        <a href="{{ login_url_ }}">{% trans "Sign In" %}</a>
+                        <a href="{{ login_url_ }}">{% trans "Sign in" %}</a>
                     </li>
                 {% endif %}
                 {% url 'account_signup' as signup_url_ %}
                 {% if signup_url_ %}
                     <li>
-                        <a href="{{ signup_url_ }}">{% trans "Sign Up" %}</a>
+                        <a href="{{ signup_url_ }}">{% trans "Sign up" %}</a>
                     </li>
                 {% endif %}
             {% endif %}

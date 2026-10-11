@@ -4,7 +4,7 @@
 {% load allauth %}
 {% block content %}
     {% element h1 %}
-    {% trans "Add Security Key" %}
+    {% trans "Add security key" %}
 {% endelement %}
 {% url "mfa_add_webauthn" as action_url %}
 {% element form form=form method="post" action=action_url %}

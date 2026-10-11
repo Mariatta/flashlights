@@ -1,14 +1,14 @@
 {% extends "account/base_manage_email.html" %}
 {% load static allauth i18n %}
 {% block head_title %}
-    {% trans "Email Addresses" %}
+    {% trans "Email addresses" %}
 {% endblock head_title %}
 {% block content %}
     <p>
         <a href="{% url 'portal_account:index' %}"><i class="icon-arrow-left"></i> {% trans "Account" %}</a>
     </p>
     {% element h1 %}
-    {% trans "Email Addresses" %}
+    {% trans "Email addresses" %}
 {% endelement %}
 {% if emailaddresses %}
     {% element p %}
@@ -44,7 +44,7 @@
 {% endslot %}
 {% slot actions %}
 {% element button type="submit" name="action_primary" %}
-{% trans "Make Primary" %}
+{% trans "Make primary" %}
 {% endelement %}
 {% element button tags="secondary" type="submit" name="action_send" %}
 {% trans "Re-send Verification" %}
@@ -59,7 +59,7 @@
 {% endif %}
 {% if can_add_email %}
     {% element h2 %}
-    {% trans "Add Email Address" %}
+    {% trans "Add email address" %}
 {% endelement %}
 {% url 'account_email' as action_url %}
 {% element form form=form method="post" action=action_url tags="email,add" %}
@@ -70,7 +70,7 @@
 {% endslot %}
 {% slot actions %}
 {% element button name="action_add" type="submit" %}
-{% trans "Add Email" %}
+{% trans "Add email" %}
 {% endelement %}
 {% endslot %}
 {% endelement %}

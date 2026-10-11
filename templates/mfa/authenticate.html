@@ -3,7 +3,7 @@
 {% load allauth %}
 {% load allauth static %}
 {% block head_title %}
-    {% trans "Sign In" %}
+    {% trans "Sign in" %}
 {% endblock head_title %}
 {% block content %}
     {% element h1 %}
@@ -21,7 +21,7 @@
 {% endslot %}
 {% slot actions %}
 {% element button type="submit" tags="primary,mfa,login" %}
-{% trans "Sign In" %}
+{% trans "Sign in" %}
 {% endelement %}
 {% if "webauthn" not in MFA_SUPPORTED_TYPES %}
     {% element button type="submit" form="logout-from-stage" tags="link,mfa,cancel" %}

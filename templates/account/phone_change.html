@@ -2,11 +2,11 @@
 {% load i18n %}
 {% load allauth %}
 {% block head_title %}
-    {% trans "Change Phone" %}
+    {% trans "Change phone" %}
 {% endblock head_title %}
 {% block content %}
     {% element h1 %}
-    {% trans "Change Phone" %}
+    {% trans "Change phone" %}
 {% endelement %}
 {% url 'account_change_phone' as action_url %}
 {% element form method="post" action=action_url %}
@@ -35,7 +35,7 @@
 {% endslot %}
 {% slot actions %}
 {% element button name="action_add" type="submit" %}
-{% trans "Change Phone" %}
+{% trans "Change phone" %}
 {% endelement %}
 {% endslot %}
 {% endelement %}

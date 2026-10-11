@@ -4,7 +4,7 @@
 
 Hi {{ presenter.display_name }},
 
-Thank you for being a {{ role_word }} at {{ conference.name }}! We have added you to a session:
+Thank you for being a {{ role_word }} at {{ conference.name }}. We have added you to a session:
 
 - **{{ session.title }}** ({{ session.kind.name }}, {{ role }}){% if starts %} — scheduled {{ starts|timezone:presenter.timezone|date:"l j F, H:i" }} {{ presenter.timezone }}{% else %} — not scheduled yet{% endif %}
 

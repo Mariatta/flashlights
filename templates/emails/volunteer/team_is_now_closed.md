@@ -14,7 +14,7 @@ We received many volunteer applications, and we're not able to accept everyone. 
 
 We are placing you on a **waitlist** in case the volunteer opportunity opens up in the future.
 
-Thank you for your understanding and for your interest in volunteering with us!
+Thank you for your understanding and for your interest in volunteering with us.
 
 ## Your Information
 

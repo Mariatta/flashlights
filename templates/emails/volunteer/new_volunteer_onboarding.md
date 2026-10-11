@@ -59,6 +59,6 @@ Since you've been added as a core organizing team (as a team lead, a staff, or a
 You should be receiving additional emails and invites to the above items within a few days. Please be sure to follow through and activate your access to the above services and items since they are crucial to our event. If you have not received those after 5 days or if you need them sooner, please reach out to the other core organizers on Discord.
 {% endif %}
 
-**Thank you!**
+**Thank you.**
 
 {% endblock content %}

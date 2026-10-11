@@ -3,11 +3,11 @@
 {% load account %}
 {% load allauth %}
 {% block head_title %}
-    {% trans "Confirm Email Address" %}
+    {% trans "Confirm email address" %}
 {% endblock head_title %}
 {% block content %}
     {% element h1 %}
-    {% trans "Confirm Email Address" %}
+    {% trans "Confirm email address" %}
 {% endelement %}
 {% if confirmation %}
     {% user_display confirmation.email_address.user as user_display %}

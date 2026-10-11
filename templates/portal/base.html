@@ -165,7 +165,7 @@
                                 {% if is_organizer or is_maintainer %}
                                     {% if is_organizer %}
                                         <li>
-                                            <a class="dropdown-item" href="{% url 'admin:index' %}">{% trans "Admin Area" %}</a>
+                                            <a class="dropdown-item" href="{% url 'admin:index' %}">{% trans "Admin area" %}</a>
                                         </li>
                                     {% endif %}
                                     {% if is_maintainer %}
@@ -183,7 +183,7 @@
                                 {% url 'account_logout' as logout_url_ %}
                                 {% if logout_url_ %}
                                     <li>
-                                        <a class="dropdown-item" href="{{ logout_url_ }}">{% trans "Sign Out" %}</a>
+                                        <a class="dropdown-item" href="{{ logout_url_ }}">{% trans "Sign out" %}</a>
                                     </li>
                                 {% endif %}
                             </ul>

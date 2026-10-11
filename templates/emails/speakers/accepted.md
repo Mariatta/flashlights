@@ -4,7 +4,7 @@
 
 Hi {{ presenter.display_name }},
 
-Thank you for accepting! Here is everything you need to get going with **{{ conference.name }}**.
+Thank you for accepting. Here is everything you need to get going with **{{ conference.name }}**.
 
 ## Your account
 
@@ -29,6 +29,6 @@ Your dashboard lists what we need from you before the event, with due dates, and
 
 Please check it now and again; we will also email reminders as dates approach.
 
-See you there!
+See you there.
 
 {% endblock content %}

@@ -4,7 +4,7 @@
 {% if for_organizer %}
 Hi,
 
-Thank you for volunteering with us at {{ conference.name }}! Here are some updates to your todo list.
+Thank you for volunteering with us at {{ conference.name }}. Here are some updates to your todo list.
 {% else %}
 {% include "emails/speakers/_presenter_preface.md" %}
 

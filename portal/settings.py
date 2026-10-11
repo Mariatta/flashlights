@@ -348,7 +348,10 @@ ACCOUNT_LOGIN_BY_CODE_ENABLED = True
 ACCOUNT_LOGOUT_ON_GET = True
 
 # Use custom signup form
-ACCOUNT_FORMS = {"signup": "portal.forms.CustomSignupForm"}
+ACCOUNT_FORMS = {
+    "signup": "portal.forms.CustomSignupForm",
+    "login": "portal.forms.LoginForm",
+}
 ACCOUNT_ADAPTER = "portal.adapter.PortalAccountAdapter"
 
 # Accounts whose email address is never verified are deleted after this many

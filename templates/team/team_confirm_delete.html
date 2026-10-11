@@ -15,7 +15,7 @@
 {% block content %}
     <div class="container px-4 py-3">
         <h1 class="h3 pb-2 mb-3 border-bottom">
-            {% trans "Delete Team" %}
+            {% trans "Delete team" %}
         </h1>
         <p class="fs-5">
             {% blocktrans with name=team.short_name year=team.conference.year %}Are you sure you want to delete the team "{{ name }}" ({{ year }})?{% endblocktrans %}

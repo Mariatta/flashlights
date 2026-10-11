@@ -117,7 +117,7 @@ class TestAccess:
         # The refusal is a portal page, not Django's bare one: the navbar
         # with its sign-out is there, and so is a way home.
         content = response.content.decode()
-        assert "Sign Out" in content and reverse("index") in content
+        assert "Sign out" in content and reverse("index") in content
         assert reverse("account_logout") in content
 
     def test_general_acceptance_opens_the_area(

@@ -2,11 +2,11 @@
 {% load i18n %}
 {% load allauth %}
 {% block head_title %}
-    {% trans "Email Address" %}
+    {% trans "Email address" %}
 {% endblock head_title %}
 {% block content %}
     {% element h1 %}
-    {% trans "Email Address" %}
+    {% trans "Email address" %}
 {% endelement %}
 {% if not emailaddresses %}
     {% include "account/snippets/warn_no_email.html" %}
@@ -38,7 +38,7 @@
 {% endelement %}
 {% if current_emailaddress %}
     {% element button form="pending-email" type="submit" name="action_remove" tags="danger,minor" %}
-    {% trans "Cancel Change" %}
+    {% trans "Cancel change" %}
 {% endelement %}
 {% endif %}
 {% endslot %}
@@ -52,7 +52,7 @@
 {% endslot %}
 {% slot actions %}
 {% element button name="action_add" type="submit" %}
-{% trans "Change Email" %}
+{% trans "Change email" %}
 {% endelement %}
 {% endslot %}
 {% endelement %}

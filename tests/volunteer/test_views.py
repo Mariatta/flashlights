@@ -1319,7 +1319,7 @@ class TestMyConferences:
         assert response.status_code == 200
         profiles = list(response.context["profiles"])
         assert [p.conference.year for p in profiles] == [2025, 2024]
-        assert "Your Events" in response.content.decode()
+        assert "Your events" in response.content.decode()
 
     def test_only_shows_own_profiles(self, client, portal_user, conference):
         from django.contrib.auth.models import User
