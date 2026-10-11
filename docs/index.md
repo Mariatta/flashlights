@@ -1,30 +1,31 @@
-# PyLadiesCon Web Portal Documentation
+# Tiny Little Flashlights
 
-Documentation for PyLadiesCon Web Portal.
+Flashlights is the back-of-house portal for a volunteer-run event or
+meetup: volunteers, speakers and their checklists, sponsors, the schedule,
+and the files that go with them, in one place instead of a dozen
+spreadsheets.
 
-PyLadiesCon online conference management tool.
+It is derived from the [PyLadiesCon portal](https://github.com/pyladies/pyladiescon-portal)
+and keeps pulling improvements from it. One instance serves one community;
+each year's event is an edition inside it. What an instance is called, its
+colour, its links and which features it runs are configuration, so the
+same software serves a three-day online conference and a monthly meetup.
+The name is a nod to a Darren Hayes song.
 
-## About PyLadiesCon
+## Where to start
 
-✨ [PyLadiesCon](https://conference.pyladies.com) is an online conference for the global [PyLadies](https://pyladies.com) community.
-Our conference began in 2023. During our conference, we host 24 hours of online engagement, talks, keynotes, panels, and workshops for our community members.
-We strive of inclusivity and accessibility, providing talks in multiple-languages, and we take extra care in subtitling and translating our talks.
-Our conference is free to attend, and attendees can optionally donate to our conference.
+- **Organisers**: the [User Guide](user/get_started.md) says what each
+  part of the portal does and which parts a small event can skip.
+- **Developers**: the [Setup Guide](developer/setup.md) gets a local
+  instance running with sample data in a few commands; the
+  [Design System](developer/design.md) page explains the look.
+- **Hosting**: [Deployment](developer/deployment.md) is the boot contract:
+  the services an instance needs and the variables that configure it.
 
-## Support PyLadiesCon
+## Contributing
 
-🫶 Support us by contributing to our project, [donating](https://2025.conference.pyladies.com/en/donate/), or by sponsoring the [conference](https://conference.pyladies.com).
+All forms of contribution are welcome: code, testing, documentation,
+reports of what confused you. See [Contributing](developer/contributing.md).
 
-We have many contribution opportunities, including code, testing, and documentations. All forms of contributions are welcome and appreciated.
-
-Check the Local Dev Setup section below to learn how to set this up on your local development environment and get started.
-
-- Repo: <https://github.com/pyladies/pyladiescon-portal>
-- Issues: <https://github.com/pyladies/pyladiescon-portal/issues>
-- Project: <https://github.com/orgs/pyladies/projects/11>
-- Milestone with due dates and goals: <https://github.com/pyladies/pyladiescon-portal/milestones>
-- Discord: <https://discord.com/invite/2fUN4ddVfP>
-
-<a href="https://www.netlify.com">
-  <img src="https://www.netlify.com/assets/badges/netlify-badge-color-bg.svg" alt="Deploys by Netlify" />
-</a>
+- Repository: <https://github.com/mariatta/flashlights>
+- Issues: <https://github.com/mariatta/flashlights/issues>

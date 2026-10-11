@@ -1,6 +1,6 @@
 ---
 title: Deployment
-description: Deployment Information for PyLadiesCon Portal
+description: Deploying a Flashlights instance
 ---
 
 # Deployment
@@ -54,7 +54,7 @@ that might never merge at all. Two things went wrong with that:
   production. Django then skipped the merged version, and production ended
   up with a schema that matched neither the branch nor `main`. This is how
   the `speakers_invitation.sent_to` column went missing and every session
-  page returned a 500 until [#414](https://github.com/pyladies/pyladiescon-portal/pull/414)
+  page returned a 500 until an upstream fix (pull request 414 there)
   added it back.
 - A pull request that is abandoned or rejected still leaves its tables and
   columns behind in production, with nothing in `main` describing them.
@@ -286,7 +286,7 @@ fetches.
 rclone config create do-media s3 provider=DigitalOcean \
     endpoint=nyc3.digitaloceanspaces.com \
     access_key_id=<key> secret_access_key=<secret>
-rclone sync do-media:pyladiescon-media/speaker-media/2026 ./pyladiescon-2026 \
+rclone sync media:flashlights-media/speaker-media/2026 ./flashlights-2026 \
     --progress --transfers 4
 ```
 

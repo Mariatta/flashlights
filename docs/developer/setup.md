@@ -1,6 +1,6 @@
 ---
 title: Local Dev Environment Setup
-description: Setting up the local development environment for PyLadiesCon Portal
+description: Setting up a local Flashlights instance
 ---
 
 # Local Dev setup
@@ -30,13 +30,13 @@ Have these installed first before continuing further.
 === "GitHub CLI"
 
     ```sh
-    gh repo clone <personal-account>/pyladiescon-portal
+    gh repo clone <personal-account>/flashlights
     ```
 
 === "Git"
 
     ```sh
-    git clone <personal-account>/pyladiescon-portal.git
+    git clone <personal-account>/flashlights.git
     ```
 
 3. Start the local environment:
@@ -80,13 +80,13 @@ Have these installed first before continuing further.
 === "GitHub CLI"
 
     ```sh
-    gh repo clone <personal-account>/pyladiescon-portal
+    gh repo clone <personal-account>/flashlights
     ```
 
 === "Git"
 
     ```sh
-    git clone <personal-account>/pyladiescon-portal.git
+    git clone <personal-account>/flashlights.git
     ```
 
 ### Install dependencies
@@ -254,7 +254,7 @@ the image fields use, and keep it **private**: the portal never sets an
 ACL on what it uploads, and reads it back only through presigned links.
 
 1. In the DigitalOcean console create a Space (for example
-   `pyladiescon-media-dev`) in a region such as `nyc3`, and turn *File
+   `flashlights-media-dev`) in a region such as `nyc3`, and turn *File
    Listing* off. Do not enable the CDN on it.
 2. On the Space, add a CORS rule for the browser's direct uploads:
    origin `http://localhost:8000`, methods `PUT` and `GET`, allowed headers
@@ -268,14 +268,14 @@ ACL on what it uploads, and reads it back only through presigned links.
 services:
   web:
     environment:
-      SPEAKER_MEDIA_BUCKET: pyladiescon-media-dev
+      SPEAKER_MEDIA_BUCKET: flashlights-media-dev
       AWS_S3_ENDPOINT_URL: https://nyc3.digitaloceanspaces.com
       AWS_S3_REGION_NAME: nyc3
       AWS_ACCESS_KEY_ID: <your Spaces key>
       AWS_SECRET_ACCESS_KEY: <your Spaces secret>
   celery:
     environment:
-      SPEAKER_MEDIA_BUCKET: pyladiescon-media-dev
+      SPEAKER_MEDIA_BUCKET: flashlights-media-dev
       AWS_S3_ENDPOINT_URL: https://nyc3.digitaloceanspaces.com
       AWS_S3_REGION_NAME: nyc3
       AWS_ACCESS_KEY_ID: <your Spaces key>
@@ -425,7 +425,6 @@ again is safe: existing rows are kept.
 For local development and testing, you can generate sample data to populate your database with realistic test content. This command creates:
 
 - **9 Users**: 1 admin, 1 staff member, 5 volunteers, and 2 sponsor contacts
-- **8 PyLadies Chapters**: Chapters from different regions globally (San Francisco, NYC, London, Berlin, Tokyo, São Paulo, Lagos, Sydney)
 - **7 Volunteer Roles**: Frontend Dev, Backend Dev, Content Writer, Social Media Manager, Designer, Reviewer, Event Coordinator
 - **6 Teams**: Website, Social Media, Content, Design, Program Committee, Sponsorship
 - **5 Volunteer Profiles**: With various application statuses (approved, pending, waitlisted, rejected)

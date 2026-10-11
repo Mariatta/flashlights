@@ -1,13 +1,13 @@
 ---
 title: Contributing
-description: Contributing to PyLadiesCon Portal
+description: Contributing to Flashlights
 ---
 
 # Contributing Guide
 
 ## Where and How to get started
 
-Find an issue in our [repo](https://github.com/pyladies/pyladiescon-portal) to get started. You can also create a new issue or [start a discussion item](https://github.com/pyladies/pyladiescon-portal/discussions) on GitHub.
+Find an issue in our [repo](https://github.com/mariatta/flashlights) to get started. You can also create a new issue or [start a discussion item](https://github.com/mariatta/flashlights/discussions) on GitHub.
 
 ## Setup
 

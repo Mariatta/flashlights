@@ -1,10 +1,10 @@
 # Markdown Email Templates
 
-This document explains how to use the new Markdown-based email template system in PyLadiesCon Portal.
+This document explains how to use the new Markdown-based email template system in Flashlights.
 
 ## Overview
 
-PyLadiesCon Portal now **exclusively uses Markdown email templates** for all email communications. This system:
+Flashlights **exclusively uses Markdown email templates** for all email communications. This system:
 
 - ✅ **Simplifies email development** - Write once in Markdown, get both HTML and text versions  
 - ✅ **Improves maintainability** - Single source of truth for email content
@@ -29,7 +29,7 @@ PyLadiesCon Portal now **exclusively uses Markdown email templates** for all ema
 {% load i18n %}
 {% block content %}
 
-# Welcome to PyLadiesCon, {{ user.first_name }}!
+# Welcome to {{ brand.title }}, {{ user.first_name }}.
 
 Thank you for joining our community. We're excited to have you on board.
 
@@ -45,7 +45,7 @@ Thank you for joining our community. We're excited to have you on board.
 from common.send_emails import send_email
 
 send_email(
-    subject="Welcome to PyLadiesCon!",
+    subject="Welcome to the team",
     recipient_list=["user@example.com"],
     markdown_template="emails/welcome.md",
     context={"user": user_instance},
@@ -97,7 +97,7 @@ send_email(
 ```markdown
 ```python
 def hello_world():
-    print("Hello, PyLadiesCon!")
+    print("Hello, Flashlights.")
 ```
 ```
 
@@ -159,7 +159,7 @@ Your registration date: {{ user.date_joined|date:"F j, Y" }}
 
 ```markdown
 {% load i18n %}
-# {% trans "Welcome to PyLadiesCon" %}
+# {% trans "Welcome" %}
 
 {% blocktrans with name=user.first_name %}
 Hello {{ name }}, thank you for joining us!
@@ -258,10 +258,10 @@ For understanding how the conversion was done:
 {% extends "emails/base_email.html" %}
 {% block content %}
 <h1>Welcome {{ user.first_name }}!</h1>
-<p>Thank you for joining <strong>PyLadiesCon</strong>.</p>
+<p>Thank you for joining <strong>the team</strong>.</p>
 <ul>
     <li>Join our <a href="https://discord.com/invite/example">Discord</a></li>
-    <li>Read the <a href="https://conference.pyladies.com/docs/">docs</a></li>
+    <li>Read the <a href="https://docs.example.org/">docs</a></li>
 </ul>
 {% endblock content %}
 ```
@@ -272,10 +272,10 @@ For understanding how the conversion was done:
 {% block content %}
 # Welcome {{ user.first_name }}!
 
-Thank you for joining **PyLadiesCon**.
+Thank you for joining **the team**.
 
 - Join our [Discord](https://discord.com/invite/example)
-- Read the [docs](https://conference.pyladies.com/docs/)
+- Read the [docs](https://docs.example.org/)
 {% endblock content %}
 ```
 
@@ -378,9 +378,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 {% load i18n %}
 {% block content %}
 
-# Welcome to the PyLadiesCon team, {{ profile.user.first_name }}!
+# Welcome to the team, {{ profile.user.first_name }}.
 
-Thank you for applying to volunteer with PyLadiesCon. We're excited to share that your application has been **approved**.
+Thank you for applying to volunteer with {{ brand.title }}. We're excited to share that your application has been **approved**.
 
 ## 🎉 Team Assignment
 
@@ -395,7 +395,7 @@ You have been assigned to the following team(s):
 **Please complete these steps within 7 days:**
 
 - **Join our [Discord server](https://discord.com/invite/example)** *(Required)*
-- **Read the [Volunteer Guide](https://conference.pyladies.com/docs/)**
+- **Read the [Volunteer Guide](https://docs.example.org/)**
 - **Complete your [profile setup](https://{{ current_site.domain }}{% url 'volunteer:index' %})**
 
 ---

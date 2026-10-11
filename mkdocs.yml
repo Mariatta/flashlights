@@ -1,16 +1,18 @@
 # yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json
-site_name: PyLadiesCon Portal Docs
-site_url: https://pyladiescon-portal-docs.netlify.app
+site_name: Tiny Little Flashlights
+# The docs site is not published yet (phase 2); this is where it will live.
+site_url: https://mariatta.github.io/flashlights/
 theme:
   name: material
-  logo: assets/logo.png
+  logo: assets/logo.svg
   icon:
     repo: fontawesome/brands/github
     edit: material/pencil
     view: material/eye
-  favicon: assets/favicon.ico
+  favicon: assets/favicon.svg
   palette:
-    primary: "pink"
+    primary: "black"
+    accent: "yellow"
   features:
     - navigation.footer
     - navigation.sections
@@ -32,15 +34,13 @@ markdown_extensions:
       alternate_style: true
 nav:
   - Home: index.md
-  - About:
-    - PyLadiesCon Portal: about/index.md
-    - Team: about/team.md
   - Developer Guide:
     - Setup Guide: developer/setup.md
     - Contributing: developer/contributing.md
     - How Tos: developer/howto.md
     - Markdown Emails: developer/markdown-emails.md
     - Deployment: developer/deployment.md
+    - Design System: developer/design.md
   - Architecture:
     - Multi-Year Conferences: architecture/multi-year-conferences.md
     - Multi-Year Progress: architecture/multi-year-progress.md
@@ -59,46 +59,25 @@ nav:
   - Policies:
     - Terms of Service: policies/terms_of_use.md
     - Acceptable Use Policy: policies/acceptable_use_policy.md
-    - Code of Conduct: https://global-conference-2025.netlify.app/en/coc/
-  - Portal: https://portal.pyladies.com/
-repo_url: https://github.com/pyladies/pyladiescon-portal
-repo_name: pyladies/pyladiescon-portal
+repo_url: https://github.com/mariatta/flashlights
+repo_name: mariatta/flashlights
 edit_uri: edit/main/docs/
 extra:
-  homepage: https://conference.pyladies.com
   social:
-    - icon: fontawesome/brands/discord
-      link: https://discord.com/invite/2fUN4ddVfP
-      name: Join our Discord
-    - icon: fontawesome/brands/mastodon
-      link: https://fosstodon.org/@pyladies
-      name: Follow us on Mastodon
-    - icon: fontawesome/brands/bluesky
-      link: https://bsky.app/profile/pyladiescon.bsky.social
-      name: Follow us on BlueSky
-    - icon: fontawesome/brands/linkedin
-      link: https://linkedin.com/company/pyladiescon
-      name: Connect with us on LinkedIn
-    - icon: fontawesome/brands/instagram
-      link: https://instagram.com/pyladiescon
-      name: Follow us on Instagram
-    - icon: fontawesome/brands/youtube
-      link: https://youtube.com/@pyladiesglobal
-      name: Subscribe to our YouTube Channel
-    - icon: material/hand-coin
-      link: https://2025.conference.pyladies.com/en/donate/
-      name: Donate to PyLadiesCon
     - icon: fontawesome/brands/github
-      link: https://github.com/pyladies/pyladiescon-portal
-      name: Contribute to our repository
+      link: https://github.com/mariatta/flashlights
+      name: The repository
 plugins:
   - social
   - tags
   - rss
   - git-revision-date-localized:
       enable_creation_date: true
+  # Asks GitHub for each page's authors; off until the repository is public
+  # (phase 3b). Set MKDOCS_GIT_COMMITTERS=true to turn it on.
   - git-committers:
-      repository: pyladies/pyladiescon-portal
+      enabled: !ENV [MKDOCS_GIT_COMMITTERS, false]
+      repository: mariatta/flashlights
       branch: main
   - mkdocstrings:
       handlers:
