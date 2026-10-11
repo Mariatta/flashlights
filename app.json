@@ -1,0 +1,122 @@
+{
+  "name": "Flashlights",
+  "description": "The back-of-house portal for a volunteer-run event: volunteers, speakers, sponsors, schedule.",
+  "repository": "https://github.com/mariatta/flashlights",
+  "keywords": [
+    "django",
+    "events",
+    "volunteers",
+    "speakers"
+  ],
+  "stack": "container",
+  "addons": [
+    {
+      "plan": "heroku-postgresql:essential-0",
+      "as": "DATABASE"
+    },
+    {
+      "plan": "heroku-redis:mini",
+      "as": "REDIS"
+    }
+  ],
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    },
+    "worker": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "env": {
+    "SECRET_KEY": {
+      "description": "Django's secret key.",
+      "generator": "secret"
+    },
+    "DJANGO_ALLOWED_HOSTS": {
+      "description": "The hostnames the portal answers on, comma-separated (the app's host, then your own domain).",
+      "value": ".herokuapp.com"
+    },
+    "FERNET_KEY": {
+      "description": "Key for fields encrypted at rest. Generate one: python -c \"from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())\"",
+      "required": true
+    },
+    "EMAIL_URL": {
+      "description": "SMTP server, from any provider: smtp://user:password@host:port/?tls=true (decision 0011).",
+      "required": true
+    },
+    "DJANGO_DEFAULT_FROM_EMAIL": {
+      "description": "The address the portal's email comes from, such as: Summit <noreply@example.org>",
+      "required": true
+    },
+    "USE_OBJECT_STORAGE": {
+      "description": "Uploads go to an S3-compatible bucket from any provider.",
+      "value": "true"
+    },
+    "AWS_ACCESS_KEY_ID": {
+      "description": "Object storage access key (S3 API).",
+      "required": true
+    },
+    "AWS_SECRET_ACCESS_KEY": {
+      "description": "Object storage secret key.",
+      "required": true
+    },
+    "AWS_STORAGE_BUCKET_NAME": {
+      "description": "The bucket for uploads.",
+      "required": true
+    },
+    "AWS_S3_ENDPOINT_URL": {
+      "description": "The object storage endpoint, such as https://<region>.digitaloceanspaces.com or https://<account>.r2.cloudflarestorage.com",
+      "required": true
+    },
+    "SITE_TITLE": {
+      "description": "The event or community name; page titles, Open Graph, email subjects.",
+      "value": "Flashlights"
+    },
+    "SITE_SHORT_NAME": {
+      "description": "The navbar wordmark.",
+      "required": false
+    },
+    "SITE_DESCRIPTION": {
+      "description": "One line about the event, for link previews and the landing page.",
+      "required": false
+    },
+    "BRAND_PRESET": {
+      "description": "The accent: beam, teal, copper, indigo or raspberry.",
+      "value": "beam"
+    },
+    "BRAND_PRIMARY": {
+      "description": "A custom #rrggbb accent instead of the preset.",
+      "required": false
+    },
+    "DOCS_URL": {
+      "description": "Your documentation site, linked from the portal.",
+      "required": false
+    },
+    "TERMS_URL": {
+      "description": "Your terms of service page.",
+      "required": false
+    },
+    "VOLUNTEERING_ENABLED": {
+      "description": "false hides the Volunteer hub (the lite profile).",
+      "value": "true"
+    },
+    "SPONSORSHIP_ENABLED": {
+      "description": "false hides sponsors, tiers and donations.",
+      "value": "true"
+    },
+    "STATS_PUBLIC": {
+      "description": "false takes the public stats pages off the site.",
+      "value": "true"
+    }
+  },
+  "environments": {
+    "review": {
+      "addons": [
+        "heroku-postgresql:essential-0",
+        "heroku-redis:mini"
+      ]
+    }
+  }
+}

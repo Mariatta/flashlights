@@ -1,0 +1,13 @@
+# Heroku and compatible hosts build the image from the Dockerfile (slim
+# flavour) and run the processes of the minimum formation (decision 0008).
+build:
+  docker:
+    web: Dockerfile
+    worker: Dockerfile
+release:
+  image: web
+  command:
+    - python manage.py createcachetable && python manage.py migrate
+run:
+  web: gunicorn -c config/gunicorn.conf.py portal.wsgi:application --log-file -
+  worker: sh bin/worker

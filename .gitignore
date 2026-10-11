@@ -36,4 +36,7 @@ htmlcov/
 
 # Root-level JSON (service-account keys, local tooling) — not subdirs
 /*.json
-
+# app.json is the Heroku manifest, not a local data file
+!/app.json
+# Azure deployment parameters hold secrets (deploy/azure/README.md)
+deploy/azure/params.json
