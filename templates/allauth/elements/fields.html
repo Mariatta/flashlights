@@ -1,1 +1,10 @@
-{{ attrs.form.as_p }}
+{% load django_bootstrap5 %}
+{% comment %}
+allauth's fields element: every field through django-bootstrap5, so the
+sign-in, sign-up, code and password pages share the portal's form classes
+(Input and Checkbox specs): block labels, form-controls, form-check pairs,
+help text and errors in place.
+{% endcomment %}
+{% for field in attrs.form %}
+    {% bootstrap_field field %}
+{% endfor %}

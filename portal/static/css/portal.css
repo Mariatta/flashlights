@@ -1198,15 +1198,40 @@ button.checklist-box-done:hover {
 /* Login page (templates/account/login.html): the "or" between the password
    form and the sign-in code. A rule with the word in the middle on narrow
    screens; a vertical rule between the two columns from md up. */
+/* Entrance pages (SignIn screen spec): the ways in sit in one card; the
+   "or" between them is a mono eyebrow on a rule. */
+.entrance-card {
+    max-width: 880px;
+}
+
+.entrance-card .card-body {
+    padding: 28px;
+}
+
+.errorlist {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 6px;
+    font: var(--weight-bold) var(--text-xs) / 1.4 var(--font-body);
+    color: var(--status-stop-ink);
+}
+
+.errorlist li::before {
+    font-family: "lucide";
+    font-weight: 400;
+    content: "\e07b";
+    margin-right: 5px;
+}
+
 .login-or {
     display: flex;
     align-items: center;
     gap: 0.75rem;
     width: 100%;
-    color: var(--bs-secondary);
-    font-size: 0.8rem;
-    letter-spacing: 0.08em;
+    font: var(--type-eyebrow);
+    letter-spacing: var(--tracking-eyebrow);
     text-transform: uppercase;
+    color: var(--text-muted);
 }
 .login-or::before,
 .login-or::after {
