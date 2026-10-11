@@ -85,6 +85,10 @@ def test_bootstrap_is_mapped_onto_the_tokens():
         "--bs-nav-pills-link-active-bg: var(--night-950);",
         '--bs-breadcrumb-divider: "\\203A";',
         "border-bottom: 3px solid transparent;",
+        # Forms (Input, Select, Checkbox, Switch specs).
+        '.invalid-feedback::before {\n    font-family: "lucide";',
+        ".form-switch .form-check-input:checked {",
+        '.form-check-input:checked[type="checkbox"] {',
     ):
         assert mapping in css, mapping
     assert ".navbar-logo {\n    background: #fff;" not in css
