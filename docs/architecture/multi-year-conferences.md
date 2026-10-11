@@ -1,11 +1,11 @@
 # Multi-Year Conferences (Architecture)
 
-This document describes how the portal models multiple PyLadiesCon editions
+This document describes how the portal models multiple editions of an event
 (2023, 2024, 2025, 2026, ...) and why the data is shaped that way. It is the
 reference for any work that touches volunteer profiles, sponsorship profiles,
 teams, stats, or anything else that should reset year-over-year.
 
-The portal was originally written for PyLadiesCon 2025 with no notion of
+The portal was originally written upstream for one 2025 edition with no notion of
 conference year. This document captures the design that introduced
 year-awareness to the data model.
 
@@ -23,7 +23,7 @@ progress.
   CoC/ToS agreement) across years without re-creating accounts.
 - Allow stats to be viewed per year and compared across years.
 - Backfill existing 2025 data under a 2025 Conference row.
-- Preserve historical references to PyLadiesCon 2023 and 2024, even though
+- Preserve historical references to the 2023 and 2024 editions, even though
   those predate the portal.
 
 ## Non-goals
@@ -46,7 +46,7 @@ progress.
 | Entity name | `Conference` (not `Event`) | Matches product identity. "Event" is already used by Pretix and would collide. |
 | App location | `portal/` | Conference is foundational; `portal/` already holds `BaseModel` and shared infrastructure. |
 | Active-conference selection | `is_active` boolean on `Conference`, save-time enforcer for single `True` | Smallest schema, no extra singleton needed. Year-bound config also lives on `Conference`, so a separate `SiteConfig` would be redundant. |
-| One conference per year | `year` is `unique=True`; multiple conferences in the same year are **not** allowed | `year` is the user-facing identity of a conference: the stats switcher keys on `?year=`, cache keys are namespaced by year (`volunteer_signups_count_2025`), and previous-event choices come from `filter(year__lt=...)`. Two rows sharing a year would make all three ambiguous (e.g. cache-key collisions). PyLadiesCon is one event per year, so the constraint matches reality. If a genuine "two events in one year" need ever arises, model it with distinct slugs rather than relaxing this — `slug` is already unique and serves as the canonical identifier, so new code should prefer it where a stable key is needed. |
+| One conference per year | `year` is `unique=True`; multiple conferences in the same year are **not** allowed | `year` is the user-facing identity of a conference: the stats switcher keys on `?year=`, cache keys are namespaced by year (`volunteer_signups_count_2025`), and previous-event choices come from `filter(year__lt=...)`. Two rows sharing a year would make all three ambiguous (e.g. cache-key collisions). An event runs once a year, so the constraint matches reality. If a genuine "two events in one year" need ever arises, model it with distinct slugs rather than relaxing this — `slug` is already unique and serves as the canonical identifier, so new code should prefer it where a stable key is needed. |
 | Year-bound config | `donation_goal`, `sponsorship_goal`, `proposals_count`, `banner_text`, dates, open/closed flags all on `Conference` | These values genuinely differ per year. Avoids module-level constants that require a code deploy to change. |
 | Sponsorship uniqueness | None (no unique constraint) | `SponsorshipProfile` is a CRM pipeline; multiple rows per org per year are legitimate (rejected → re-engaged, multiple deal threads). |
 | CoC/ToS | Stay as global flags on `PortalProfile` | Once accepted, user is done. Re-prompt only via one-off migration if the text changes substantively. |
@@ -112,7 +112,7 @@ class Conference(BaseModel):
 
 - `auth.User` — identity, carries across years.
 - `PortalProfile` — pronouns, picture, CoC/ToS agreements.
-- `Role`, `Language`, `PyladiesChapter` — global vocabularies.
+- `Role`, `Language`, `PyladiesChapter` (an upstream model Flashlights hides) — global vocabularies.
 
 ### Field-level changes
 
@@ -129,7 +129,7 @@ class Conference(BaseModel):
 ### Sign-up
 
 Sign-up creates only the `PortalProfile`. Volunteering is a separate explicit
-action ("Apply to volunteer for PyLadiesCon 2026") that creates a per-year
+action ("Apply to volunteer for Summit 2026") that creates a per-year
 `VolunteerProfile` tied to the active conference. The post-save signal that
 auto-created `VolunteerProfile` is removed.
 
@@ -169,7 +169,7 @@ Backfill in a single data migration:
 
 ```python
 Conference.objects.create(
-    year=2023, name="PyLadiesCon 2023", slug="2023",
+    year=2023, name="Summit 2023", slug="2023",
     historical_snapshot={
         "registrations": 600, "sponsors": 8, "sponsorship_amount": "10500",
         "donors": 58, "donation_amount": "650",
@@ -177,7 +177,7 @@ Conference.objects.create(
     proposals_count=164,
 )
 Conference.objects.create(
-    year=2024, name="PyLadiesCon 2024", slug="2024",
+    year=2024, name="Summit 2024", slug="2024",
     historical_snapshot={
         "registrations": 732, "sponsors": 11, "sponsorship_amount": "10000",
         "donors": 105, "donation_amount": "1520",
@@ -185,12 +185,12 @@ Conference.objects.create(
     proposals_count=192,
 )
 conf_2025 = Conference.objects.create(
-    year=2025, name="PyLadiesCon 2025", slug="2025",
+    year=2025, name="Summit 2025", slug="2025",
     is_active=True, proposals_count=194,
     sponsorship_goal=15000, donation_goal=2500,
 )
 Conference.objects.create(
-    year=2026, name="PyLadiesCon 2026", slug="2026",
+    year=2026, name="Summit 2026", slug="2026",
 )
 
 # All existing rows belong to 2025
@@ -243,7 +243,7 @@ review before merging.
 - **CoC/ToS versioning**: when the text changes substantively, what's the
   re-acceptance trigger? Currently solved by a one-off migration; revisit
   if changes become frequent.
-- **Multi-tenant conferences**: out of scope today. If PyLadies ever wants
+- **Multi-tenant conferences**: out of scope today, and for good in Flashlights (one instance per community, decision 0003). If a community ever wants
   to run other branded events through the portal, `Conference` may need to
   become `Event` or gain an `event_type` field.
 - **Pretix event slug per conference**: assumes one Pretix event per

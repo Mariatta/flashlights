@@ -7,7 +7,7 @@ code deploy. It is the reference for any work that touches
 `common/pretix_wrapper.py`, the Pretix webhook, `fetch_pretix_orders`, or the
 Pretix fields on `Conference`.
 
-The integration was written for PyLadiesCon 2025 with the organizer, event
+The integration was written upstream for one 2025 edition with the organizer, event
 slug and API base URL as module constants. `Conference.pretix_event_slug`
 exists (see `multi-year-conferences.md`) but nothing reads it on the way in:
 the webhook still rejects any event other than the constant, and the
@@ -68,7 +68,7 @@ matches.
 |---|---|---|
 | Where the config lives | On `Conference`, next to the existing `pretix_event_slug` | Attendee stats, the home page and the speaker module all key off `Conference`; a separate settings model would just be a second row to keep in sync. |
 | Shape of the config | Three components: instance URL, organizer slug, event slug | Both the shop URL and the API root derive from them. One pasted URL would need parsing and could not express the API base cleanly. |
-| Defaults | `https://pretix.eu/` and `pyladiescon` as field defaults | Existing rows (and test fixtures) are correct without a data migration. Only the event slug is genuinely per-year. |
+| Defaults | `https://pretix.eu/` and the upstream organizer slug as field defaults | Existing rows (and test fixtures) are correct without a data migration. Only the event slug is genuinely per-year. |
 | Unknown organizer or event in a webhook | Log and return 200 with an "ignored" body | Not an error on our side. Pretix retries non-2xx responses, and an organizer-level webhook legitimately delivers events the portal does not track. |
 | Active-conference fallback when resolving an order | Removed | It was a bridge for the backfill. With per-edition config it would silently file an unknown event's orders under the current year. |
 | Secrets | Stay in the environment | See Non-goals. |
@@ -83,7 +83,7 @@ Two fields added to `Conference` beside `pretix_event_slug`:
 class Conference(BaseModel):
     ...
     pretix_base_url = URLField(blank=True, default="https://pretix.eu/")
-    pretix_organizer = CharField(max_length=100, blank=True, default="pyladiescon")
+    pretix_organizer = CharField(max_length=100, blank=True, default="example-org")
     pretix_event_slug = CharField(max_length=100, blank=True)  # existing
 ```
 
@@ -192,7 +192,7 @@ JSON mapping on `Conference` with these constants as the default. Record the
   the callout omits the ticket button when unconfigured.
 
 The suite runs with `--no-migrations`, so the migration is verified by hand:
-apply, confirm the 2025 row reads `pretix.eu` / `pyladiescon` / `2025`,
+apply, confirm the 2025 row reads `pretix.eu` / the organizer slug / `2025`,
 reverse, re-apply.
 
 ---

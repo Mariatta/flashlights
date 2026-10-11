@@ -5,7 +5,7 @@ companion controls around it.
 
 **Last updated:** 2026-09-11
 
-**Incident issue:** [pyladies/pyladiescon-portal#406](https://github.com/pyladies/pyladiescon-portal/issues/406)
+**Incident:** reported upstream as issue 406 there.
 
 ---
 
@@ -22,7 +22,7 @@ lowercase letters.
 The accounts were not the goal. Each one was registered against a distinct,
 real email address belonging to a stranger. Because the portal sends a
 verification email on every signup, the attacker was using our form to make
-**us** send 2,249 unsolicited emails from a pyladies.com address. This is a
+**us** send 2,249 unsolicited emails from the organisers' own address. This is a
 well-known pattern (a "signup bomb" or "subscription bomb"): any open form that
 emails an arbitrary address on submit is a free spam relay, and lists of such
 forms circulate.
@@ -58,7 +58,7 @@ We considered and rejected, as the *primary* control:
 - **Honeypot field.** Cheap and worth having, but defeated by any bot that
   renders the page or reads the labels, which is now the common case.
 - **Requiring an invite or manual approval.** Would work, and would also mean
-  nobody can volunteer for PyLadiesCon without an organizer in the loop first.
+  nobody can volunteer without an organizer in the loop first.
   The portal exists to reduce that kind of work, not add it.
 - **Deleting unverified accounts.** Removes the litter. Does not stop the
   emails, which is the harm.

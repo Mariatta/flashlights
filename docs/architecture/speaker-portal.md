@@ -3,7 +3,7 @@
 The design of the speaker module (the `speakers` app): how presenters are
 invited, what they and the organizers see, the two-sided checklists, the
 media pipeline, scheduling, and the public embeds. Written as a proposal on
-15 September 2026 for PyLadiesCon 2026 (first weekend of December, online on
+15 September 2026 upstream, for a 2026 edition (first weekend of December, online on
 Discord) and kept here as the reference for the module as it is built.
 
 Where the built module answers a question differently from the proposal,
@@ -19,7 +19,7 @@ disagree.
 
 ## 1. Overview
 
-PyLadiesCon 2026 is a special edition built around workshops, panels, and PyJam performances, with speakers invited directly by the organizing team rather than selected through a call for proposals. The speaker portal is the single place where that program is assembled and run:
+That 2026 edition is built around workshops, panels and performances, with speakers invited directly by the organizing team rather than selected through a call for proposals. The speaker portal is the single place where that program is assembled and run:
 
 - Organizers add sessions and the people presenting them, and send invitations.
 - Speakers accept, fill in their bio and session details, and see exactly what they need to do and by when.
@@ -246,7 +246,7 @@ Ticking checklist items is never a permission: the assignee, an approved member 
 
 ## 8. Data model
 
-Every model belongs to a `portal.Conference` — the portal's existing per-edition tenant — so PyLadiesCon 2027 is a new conference row with the same code.
+Every model belongs to a `portal.Conference` — the portal's existing per-edition tenant — so the 2027 edition is a new conference row with the same code.
 
 ```
 portal.Conference
@@ -407,10 +407,10 @@ The people who edit the videos, design the title cards and cut the final version
 **The export.** An organizer picks a scope on the sessions list or the post-production board (§4.2): the edition (the active one by default), the kinds (raw video by default), an optional language, the sessions currently filtered, and whether to include superseded versions (latest `READY` only by default) or only files newer than their last export. The portal answers with one presigned download link per asset and a local path for each, laid out the same way as the bucket, without the upload id and with the version in the file name so two versions can sit side by side:
 
 ```
-pyladiescon-2026/<session-slug>/raw_video/v2-<original filename>
-pyladiescon-2026/<session-slug>/transcript/v1-en-<original filename>
-pyladiescon-2026/<session-slug>/promo/v1-square-<original filename>
-pyladiescon-2026/manifest.csv
+<brand>-2026/<session-slug>/raw_video/v2-<original filename>
+<brand>-2026/<session-slug>/transcript/v1-en-<original filename>
+<brand>-2026/<session-slug>/promo/v1-square-<original filename>
+<brand>-2026/manifest.csv
 ```
 
 `manifest.csv` carries what the file names cannot: session title, presenters, kind, language, version, duration, size, when it was uploaded and by whom, and the reviewer notes. Editors sort and search that in a spreadsheet; the folders stay predictable for scripts and for the editing software's media bins.
@@ -672,8 +672,8 @@ Only published sessions and public presenters (others appear by name only on the
 ### 11.2 Embeddable widget
 
 ```html
-<div data-pyladiescon-widget="schedule" data-conference="pyladiescon-2026"></div>
-<script src="https://portal.pyladies.com/static/widget/v1.js" defer></script>
+<div data-flashlights-widget="schedule" data-conference="summit-2026"></div>
+<script src="https://portal.example.org/static/widget/v1.js" defer></script>
 ```
 
 A small self-contained script (no framework) that renders `schedule`, `speakers`, or a single `session` into the host element, in the visitor's timezone, with minimal CSS the conference site can restyle through CSS variables. An iframe version exists for pages that cannot add scripts.
@@ -859,7 +859,7 @@ running portal.
 
 ## Appendix A — If a future edition uses pretalx
 
-A future PyLadiesCon may run a call for proposals again. Nothing in this design assumes it never will, and the right way to bring pretalx in is **import, not integration**:
+A future edition may run a call for proposals again. Nothing in this design assumes it never will, and the right way to bring pretalx in is **import, not integration**:
 
 - Pretalx owns the call for proposals, review, and acceptance. The portal owns everything after acceptance — checklists, scheduling, media, publishing — exactly as it does now.
 - When submissions are accepted, an organizer runs an import (a management command or a button on the sessions page) that reads accepted submissions and their speakers from the pretalx API and creates `Session` and `Presenter` rows: title, abstract, description, duration, language, track, and speaker name, bio, and email. Sessions arrive as `CONFIRMED` with the presenter linked, and the invitation step is replaced by a "welcome, your account is ready" email pointing at the sign-in code.
