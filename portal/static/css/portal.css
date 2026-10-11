@@ -942,6 +942,29 @@ a.attention-item:hover .attention-chevron {
     width: 100vw;
 }
 
+/* With no section under it, the hero is the container's last child: it
+   cancels the container's bottom margin and grows to the footer, so Night
+   fills the viewport instead of a Paper band (the body is a min-height
+   column with the footer pushed to the bottom). */
+body > .container:has(> .landing-hero:last-child) {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+.landing-hero:last-child {
+    margin-top: 0;
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+}
+
+.landing-hero:last-child .landing-hero-inner {
+    width: 100%;
+}
+
 .landing-hero-inner {
     max-width: var(--content-max);
     margin: 0 auto;

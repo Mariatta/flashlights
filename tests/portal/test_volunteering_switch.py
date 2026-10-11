@@ -70,6 +70,11 @@ class TestApplicationsClosedForTheEdition:
         assert "Sign up to volunteer" not in content
         assert "Across all editions" not in content
         assert "Create an account" in content and "Sign in" in content
+        # With every way in closed there is no empty band under the hero.
+        assert "landing-sections" not in content
+        conference.sponsors_url = "https://2025.example.org/sponsors/"
+        conference.save()
+        assert "landing-sections" in client.get(reverse("index")).content.decode()
 
     def test_landing_advertises_while_open(self, client, conference):
         content = client.get(reverse("index")).content.decode()
