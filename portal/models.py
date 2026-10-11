@@ -77,6 +77,13 @@ class Conference(BaseModel):
     # once this date has passed. Null for a freshly-created edition.
     conference_date = models.DateField(null=True, blank=True)
     banner_text = models.CharField(max_length=255, blank=True)
+    # Where it happens (decision 0013): printed on the landing page, the
+    # public program and the calendar feeds. Blank for an online edition.
+    venue_name = models.CharField("venue", max_length=200, blank=True)
+    venue_address = models.TextField("address", blank=True)
+    venue_url = models.URLField(
+        "venue link", blank=True, help_text="A map or the venue's own page."
+    )
 
     # Per-edition external links. Organizers set these per year; when blank the
     # templates fall back to a sensible default.

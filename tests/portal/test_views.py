@@ -1,4 +1,5 @@
 import re
+from datetime import date
 
 import pytest
 from django.conf import settings
@@ -10,6 +11,8 @@ from pytest_django.asserts import assertRedirects
 from portal import branding
 from portal.models import Conference
 from portal_account.models import PortalProfile
+from speakers.constants import EventFormat
+from speakers.models import SpeakerSettings
 from sponsorship.models import (
     SponsorshipProfile,
     SponsorshipProgressStatus,
@@ -90,6 +93,29 @@ class TestPortalIndex:
         content = client.get(reverse("index")).content.decode()
         assert "already signed up" not in content
         assert "Sign up to volunteer" in content
+
+    def test_landing_says_when_and_where(self, client, conference):
+        conference.conference_date = None
+        conference.save()
+        content = client.get(reverse("index")).content.decode()
+        assert "landing-where" not in content  # nothing to say yet
+        conference.conference_date = date(2026, 5, 16)
+        conference.venue_name = "Long Beach Convention Center"
+        conference.venue_url = "https://maps.example.org/lbcc"
+        conference.save()
+        content = client.get(reverse("index")).content.decode()
+        assert "16 May 2026" in content
+        assert (
+            '<a href="https://maps.example.org/lbcc">Long Beach Convention Center</a>'
+            in content
+        )
+        # A multi-day edition shows the span; the list page shows the venue.
+        conference.end_date = date(2026, 5, 17)
+        conference.venue_url = ""
+        conference.save()
+        content = client.get(reverse("index")).content.decode()
+        assert "16 May to 17 May 2026" in content
+        assert "Long Beach Convention Center" in content
 
     def test_landing_title_is_the_instance_name(self, client, conference):
         content = client.get(reverse("index")).content.decode()
@@ -501,6 +527,74 @@ class TestConferenceCRUD:
         conference.refresh_from_db()
         assert conference.name == "Renamed Edition"
         assert str(conference.conference_date) == "2025-11-15"
+
+    def test_update_saves_venue_and_format(self, client, admin_user, conference):
+        # Decision 0013: the format is chosen on the edition form and kept on
+        # the speaker settings row, created here when there is none.
+        SpeakerSettings.objects.filter(conference=conference).delete()
+        client.force_login(admin_user)
+        client.post(
+            reverse("conference_edit", kwargs={"pk": conference.pk}),
+            {
+                "year": conference.year,
+                "name": conference.name,
+                "slug": conference.slug,
+                "sponsorship_goal": "0",
+                "donation_goal": "0",
+                "proposals_count": "0",
+                "conference_date": "2026-05-16",
+                "venue_name": "Room 201A, Long Beach Convention Center",
+                "venue_address": "300 E Ocean Blvd\nLong Beach, CA",
+                "venue_url": "https://maps.example.org/lbcc",
+                "event_format": EventFormat.IN_PERSON,
+            },
+            follow=True,
+        )
+        conference.refresh_from_db()
+        assert conference.venue_name == "Room 201A, Long Beach Convention Center"
+        assert conference.venue_url == "https://maps.example.org/lbcc"
+        row = SpeakerSettings.objects.get(conference=conference)
+        assert row.event_format == EventFormat.IN_PERSON
+        assert row.speaker_module_enabled is False
+        # The form shows what is stored, and a second save changes only the
+        # format on the existing row.
+        content = client.get(
+            reverse("conference_edit", kwargs={"pk": conference.pk})
+        ).content.decode()
+        assert 'value="IN_PERSON" selected' in content
+        client.post(
+            reverse("conference_edit", kwargs={"pk": conference.pk}),
+            {
+                "year": conference.year,
+                "name": conference.name,
+                "slug": conference.slug,
+                "sponsorship_goal": "0",
+                "donation_goal": "0",
+                "proposals_count": "0",
+                "event_format": EventFormat.HYBRID,
+            },
+        )
+        row.refresh_from_db()
+        assert row.event_format == EventFormat.HYBRID
+
+    def test_update_without_a_format_makes_no_settings_row(
+        self, client, admin_user, conference
+    ):
+        # The default format and the module off: nothing worth a row.
+        SpeakerSettings.objects.filter(conference=conference).delete()
+        client.force_login(admin_user)
+        client.post(
+            reverse("conference_edit", kwargs={"pk": conference.pk}),
+            {
+                "year": conference.year,
+                "name": conference.name,
+                "slug": conference.slug,
+                "sponsorship_goal": "0",
+                "donation_goal": "0",
+                "proposals_count": "0",
+            },
+        )
+        assert not SpeakerSettings.objects.filter(conference=conference).exists()
 
     def test_delete_empty_conference(self, client, admin_user, conference):
         extra = Conference.objects.create(year=2099, name="Empty", slug="empty")

@@ -83,6 +83,16 @@ class SessionLevel(models.TextChoices):
     ADVANCED = "ADVANCED", "Advanced"
 
 
+class EventFormat(models.TextChoices):
+    """How an edition's sessions happen (decision 0013). Online is what the
+    module was built for; in person drops the online-only parts; hybrid
+    keeps everything, per session."""
+
+    IN_PERSON = "IN_PERSON", "In person"
+    ONLINE = "ONLINE", "Online"
+    HYBRID = "HYBRID", "Hybrid"
+
+
 class ProgramVisibility(models.TextChoices):
     """The edition's master switch for the public program (design §11.5)."""
 

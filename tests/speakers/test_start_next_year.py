@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from portal.models import Conference
+from speakers.constants import EventFormat
 from speakers.models import (
     ChecklistTemplate,
     Handbook,
@@ -26,6 +27,7 @@ def source(conference):
     make_settings(
         conference,
         conference_timezone="Europe/Lisbon",
+        event_format=EventFormat.HYBRID,
         organizers_email="team@example.com",
         translation_languages=["pt-br"],
         pretix_organizer="pyladiescon",
@@ -71,6 +73,7 @@ class TestStartNextYear:
         assert speaker_module_enabled(new) is True
         row = SpeakerSettings.objects.get(conference=new)
         assert row.conference_timezone == "Europe/Lisbon"
+        assert row.event_format == EventFormat.HYBRID  # decision 0013
         assert row.organizers_email == "team@example.com"
         assert row.translation_languages == ["pt-br"]
         assert row.pretix_organizer == "pyladiescon" and row.pretix_api_token == ""

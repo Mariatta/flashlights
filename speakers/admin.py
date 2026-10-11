@@ -77,6 +77,7 @@ class SpeakerSettingsAdmin(admin.ModelAdmin):
     list_display = (
         "conference",
         "speaker_module_enabled",
+        "event_format",
         "proposals_open",
         "media_for_speakers",
         "auto_transcribe",
@@ -92,6 +93,7 @@ class SpeakerSettingsAdmin(admin.ModelAdmin):
                 "fields": (
                     "conference",
                     "speaker_module_enabled",
+                    "event_format",
                     "conference_timezone",
                     "organizers_email",
                 )

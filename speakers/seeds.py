@@ -667,6 +667,7 @@ def clone_readiness_gates(target, source):
 # per edition, and copying an encrypted value this deploy cannot read
 # (see speakers/encryption.py) would raise on save.
 SETTINGS_TO_COPY = [
+    "event_format",
     "default_premiere_location",
     "translation_languages",
     "default_video_length_limit_minutes",

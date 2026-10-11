@@ -997,6 +997,26 @@ body > .container:has(> .landing-hero:last-child) {
     margin: 0;
 }
 
+.landing-where {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    margin: 16px 0 0;
+    font: var(--weight-medium) var(--text-base) / 1.4 var(--font-body);
+    color: var(--night-100);
+}
+
+.landing-where a {
+    color: inherit;
+    text-decoration-color: var(--accent);
+}
+
+.landing-where .icon-calendar,
+.landing-where .icon-map-pin {
+    color: var(--accent);
+    margin-right: 4px;
+}
+
 .landing-lights {
     position: relative;
     height: 320px;

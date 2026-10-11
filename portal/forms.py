@@ -166,6 +166,15 @@ class ConferenceForm(forms.ModelForm):
         help_text="Turn on sessions, presenters, invitations and checklists "
         "for this edition.",
     )
+    # Decision 0013: the format lives on the speaker settings row but is
+    # chosen here, where the edition's dates and venue are.
+    event_format = forms.ChoiceField(
+        required=False,
+        label="Format",
+        help_text="How sessions happen. In person leaves out the online-only "
+        "parts of the speaker portal (pre-recording, premieres, tech checks); "
+        "hybrid keeps everything, chosen per session.",
+    )
 
     class Meta:
         model = Conference
@@ -185,6 +194,9 @@ class ConferenceForm(forms.ModelForm):
             "start_date",
             "end_date",
             "conference_date",
+            "venue_name",
+            "venue_address",
+            "venue_url",
             "banner_text",
             "sponsors_url",
             "coc_url",
@@ -200,7 +212,9 @@ class ConferenceForm(forms.ModelForm):
         help_texts = {
             "volunteer_application_open": "Advertises volunteering on the landing "
             "page and opens volunteer sign-up for this edition. Off, the public "
-            "page says nothing about volunteering and the team keeps its hub."
+            "page says nothing about volunteering and the team keeps its hub.",
+            "venue_name": "Shown with the dates on the landing page and the "
+            "public program. Leave blank for an online edition.",
         }
         widgets = {
             "start_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
@@ -208,6 +222,7 @@ class ConferenceForm(forms.ModelForm):
             "conference_date": forms.DateInput(
                 attrs={"type": "date"}, format="%Y-%m-%d"
             ),
+            "venue_address": forms.Textarea(attrs={"rows": 3}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -215,12 +230,18 @@ class ConferenceForm(forms.ModelForm):
         model = _speaker_settings_model()
         if model is None:
             del self.fields["speaker_module_enabled"]
+            del self.fields["event_format"]
             return
+        format_field = model._meta.get_field("event_format")
+        self.fields["event_format"].choices = format_field.choices
+        self.fields["event_format"].initial = format_field.default
         if self.instance.pk:
             settings_row = model.objects.filter(conference=self.instance).first()
             self.fields["speaker_module_enabled"].initial = bool(
                 settings_row and settings_row.speaker_module_enabled
             )
+            if settings_row:
+                self.fields["event_format"].initial = settings_row.event_format
 
     def save(self, commit=True):
         conference = super().save(commit=commit)
@@ -228,11 +249,26 @@ class ConferenceForm(forms.ModelForm):
         if model is None:
             return conference
         enabled = self.cleaned_data.get("speaker_module_enabled", False)
+        default_format = model._meta.get_field("event_format").default
+        event_format = self.cleaned_data.get("event_format") or default_format
         settings_row = model.objects.filter(conference=conference).first()
         if settings_row is None:
-            if enabled:
-                model.objects.create(conference=conference, speaker_module_enabled=True)
-        elif settings_row.speaker_module_enabled != enabled:
+            # A row only once there is something to keep: the module on, or
+            # a format other than the default.
+            if enabled or event_format != default_format:
+                model.objects.create(
+                    conference=conference,
+                    speaker_module_enabled=enabled,
+                    event_format=event_format,
+                )
+            return conference
+        changed = []
+        if settings_row.speaker_module_enabled != enabled:
             settings_row.speaker_module_enabled = enabled
-            settings_row.save(update_fields=["speaker_module_enabled", "modified_date"])
+            changed.append("speaker_module_enabled")
+        if settings_row.event_format != event_format:
+            settings_row.event_format = event_format
+            changed.append("event_format")
+        if changed:
+            settings_row.save(update_fields=changed + ["modified_date"])
         return conference

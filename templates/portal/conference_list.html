@@ -57,6 +57,11 @@
                         </td>
                         <td>
                             {{ conference.conference_date|default:"" }}
+                            {% if conference.venue_name %}
+                                <div class="small text-secondary">
+                                    {{ conference.venue_name }}
+                                </div>
+                            {% endif %}
                         </td>
                         <td>
                             <a href="{% url 'conference_edit' conference.pk %}"

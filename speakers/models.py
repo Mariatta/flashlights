@@ -47,6 +47,7 @@ from .constants import (
     ChecklistScope,
     Delivery,
     DueAnchor,
+    EventFormat,
     ItemOwner,
     ItemStatus,
     MediaKind,
@@ -169,6 +170,18 @@ class SpeakerSettings(TimestampedModel):
     speaker_module_enabled = models.BooleanField(
         default=False,
         help_text="Turn the speaker portal on for this edition.",
+    )
+    # Decision 0013: in person, online or hybrid. Rows from before the
+    # field read online, which is what they were.
+    event_format = models.CharField(
+        "format",
+        max_length=16,
+        choices=EventFormat.choices,
+        default=EventFormat.ONLINE,
+        db_default=EventFormat.ONLINE,
+        help_text="How sessions happen. In person leaves out the online-only "
+        "parts (pre-recording, premieres, tech checks); hybrid keeps "
+        "everything, chosen per session.",
     )
     default_premiere_location = models.CharField(
         max_length=16,

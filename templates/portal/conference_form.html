@@ -38,7 +38,23 @@
                     {% bootstrap_field form.accepting_donations %}
                 </div>
             </fieldset>
-            {% bootstrap_form form exclude="year,name,slug,is_active,speaker_module_enabled,volunteer_application_open,sponsorship_open,accepting_donations" %}
+            <fieldset class="card mb-4">
+                <legend class="card-header h6 mb-0">
+                    {% trans "Where and when" %}
+                </legend>
+                <div class="card-body">
+                    {% if form.event_format %}
+                        {% bootstrap_field form.event_format %}
+                    {% endif %}
+                    {% bootstrap_field form.conference_date %}
+                    {% bootstrap_field form.start_date %}
+                    {% bootstrap_field form.end_date %}
+                    {% bootstrap_field form.venue_name %}
+                    {% bootstrap_field form.venue_address %}
+                    {% bootstrap_field form.venue_url %}
+                </div>
+            </fieldset>
+            {% bootstrap_form form exclude="year,name,slug,is_active,speaker_module_enabled,volunteer_application_open,sponsorship_open,accepting_donations,event_format,conference_date,start_date,end_date,venue_name,venue_address,venue_url" %}
             <button type="submit" class="btn btn-primary">
                 {% trans "Save" %}
             </button>

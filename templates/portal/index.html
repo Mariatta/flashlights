@@ -24,6 +24,30 @@
                 <p class="landing-lead">
                     {{ brand.description }}
                 </p>
+                {% if active_conference.conference_date or active_conference.venue_name %}
+                    <p class="landing-where">
+                        {% if active_conference.conference_date %}
+                            <span>
+                                <i class="icon-calendar" aria-hidden="true"></i>
+                                {% if active_conference.end_date and active_conference.end_date != active_conference.conference_date %}
+                                    {{ active_conference.conference_date|date:"j M" }} to {{ active_conference.end_date|date:"j M Y" }}
+                                {% else %}
+                                    {{ active_conference.conference_date|date:"j F Y" }}
+                                {% endif %}
+                            </span>
+                        {% endif %}
+                        {% if active_conference.venue_name %}
+                            <span>
+                                <i class="icon-map-pin" aria-hidden="true"></i>
+                                {% if active_conference.venue_url %}
+                                    <a href="{{ active_conference.venue_url }}">{{ active_conference.venue_name }}</a>
+                                {% else %}
+                                    {{ active_conference.venue_name }}
+                                {% endif %}
+                            </span>
+                        {% endif %}
+                    </p>
+                {% endif %}
                 {% if not user.is_authenticated %}
                     <div class="d-flex flex-wrap gap-2">
                         <a href="{% url 'account_login' %}" class="btn btn-primary btn-lg">{% trans "Sign in" %}</a>
