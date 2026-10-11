@@ -1,0 +1,19 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "name": { "value": "summit" },
+    "image": { "value": "ghcr.io/mariatta/flashlights:1.0.0" },
+    "allowedHosts": { "value": "summit-web.example.azurecontainerapps.io,portal.example.org" },
+    "secretKey": { "value": "change-me" },
+    "fernetKey": { "value": "change-me" },
+    "emailUrl": { "value": "smtp://user:password@smtp.example.org:587/?tls=true" },
+    "defaultFromEmail": { "value": "Summit <noreply@example.org>" },
+    "s3EndpointUrl": { "value": "https://<account>.r2.cloudflarestorage.com" },
+    "s3Bucket": { "value": "summit-media" },
+    "s3AccessKeyId": { "value": "change-me" },
+    "s3SecretAccessKey": { "value": "change-me" },
+    "postgresPassword": { "value": "change-me" },
+    "siteTitle": { "value": "Summit 2027" }
+  }
+}

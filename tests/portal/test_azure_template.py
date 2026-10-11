@@ -1,0 +1,25 @@
+"""The Azure template passes the boot contract's variables to every process."""
+
+import re
+from pathlib import Path
+
+from portal import boot
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def test_every_mandatory_variable_reaches_the_containers():
+    bicep = (ROOT / "deploy/azure/main.bicep").read_text()
+    names = set(re.findall(r"\{ name: '([A-Z0-9_]+)'", bicep))
+    for alternatives, reason in boot.PRODUCTION:
+        assert names & set(alternatives), (alternatives, reason)
+    assert "SECRET_KEY" in names
+    assert bicep.count("env: env") == 3  # web, worker, release
+
+
+def test_params_example_names_every_required_parameter():
+    bicep = (ROOT / "deploy/azure/main.bicep").read_text()
+    required = {m.group(1) for m in re.finditer(r"^param (\w+) \w+$", bicep, re.M)}
+    example = (ROOT / "deploy/azure/params.example.json").read_text()
+    for name in required:
+        assert f'"{name}"' in example, name
