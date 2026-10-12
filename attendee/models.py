@@ -3,7 +3,9 @@ from enum import StrEnum
 from django.db import models
 
 from portal.models import BaseModel, ChoiceArrayField
-from ticketing.models import TicketingSettings, ticketing_for
+from ticketing.adapters import REGISTERED, Status
+from ticketing.adapters.pretix import PretixAdapter
+from ticketing.models import ProductKind, TicketingSettings, ticketing_for
 
 
 class PretixOrderstatus(StrEnum):
@@ -89,9 +91,23 @@ class PretixOrder(BaseModel):
     is_anonymous = models.BooleanField(default=True, null=True, blank=True)
     event_slug = models.CharField(max_length=100, null=True)
     raw_data = models.JSONField(null=True, blank=True)
+    # Decision 0012: any provider's registration, normalised. ``status``
+    # keeps the provider's own code (Pretix's ``p``); ``state`` is what the
+    # stats and the speakers' registration check read.
+    provider = models.CharField(max_length=16, default="PRETIX")
+    state = models.CharField(
+        max_length=16, choices=Status.choices, blank=True, default=""
+    )
+    kind = models.CharField(
+        max_length=16, choices=ProductKind.choices, default=ProductKind.TICKET
+    )
 
     def __str__(self):
         return self.order_code
+
+    @property
+    def is_registered(self):
+        return self.state in REGISTERED
 
     @staticmethod
     def resolve_conference(event_slug):
@@ -117,20 +133,31 @@ class PretixOrder(BaseModel):
 
     def from_pretix_data(self, data):
         """Populate the PretixOrder instance from pretix order data."""
-        if self.last_modified != data["last_modified"]:
-            # update only if there are changes
-            self.status = data["status"]
-            self.email = data.get("email", "")
-            self.total = data.get("total", 0.0)
-            self.cancellation_date = data.get("cancellation_date", None)
-            self.url = data.get("url", "")
-            self.datetime = data.get("datetime", None)
-            self.last_modified = data.get("last_modified", None)
-            self.event_slug = data["event"]
-            self.conference = self.resolve_conference(data["event"])
-            self.set_name_from_data(data)
-            self.set_is_anonymous_from_data(data)
-            self.raw_data = data
+        conference = self.resolve_conference(data["event"])
+        row = ticketing_for(conference) or TicketingSettings(conference=conference)
+        self.conference = conference
+        return self.from_registration(PretixAdapter(row).normalise(data))
+
+    def from_registration(self, registration):
+        """Record a normalised registration (decision 0012). Unchanged
+        since the last time (same modification stamp), nothing moves."""
+        if self.last_modified == registration.modified and self.state:
+            return self
+        self.provider = registration.provider
+        self.state = registration.status
+        self.kind = registration.kind
+        self.status = registration.provider_status or None
+        self.email = registration.email
+        self.total = registration.amount
+        self.cancellation_date = registration.cancelled_at
+        self.url = registration.url
+        self.datetime = registration.created
+        self.last_modified = registration.modified
+        self.event_slug = registration.event
+        if registration.name:
+            self.name = registration.name
+        self.set_is_anonymous_from_answers(registration.answers)
+        self.raw_data = registration.raw
         return self
 
     def set_name_from_data(self, data):
@@ -141,18 +168,26 @@ class PretixOrder(BaseModel):
                 return
 
     def set_is_anonymous_from_data(self, data):
-        """Set the is_anonymous field from the answer to the edition's
-        anonymity question; with no such question the order stays anonymous."""
+        """Set the is_anonymous field from pretix order data."""
+        self.set_is_anonymous_from_answers(
+            {
+                "question": answer["question_identifier"],
+                "options": answer.get("option_identifiers") or [],
+            }
+            for pos in data["positions"]
+            for answer in pos["answers"]
+        )
+
+    def set_is_anonymous_from_answers(self, answers):
+        """The answer to the edition's anonymity question decides; with no
+        such question the order stays anonymous."""
         row = ticketing_for(self.conference)
         if row is None or not row.anonymous_question:
             return
-        for pos in data["positions"]:
-            for answer in pos["answers"]:
-                if answer["question_identifier"] == row.anonymous_question:
-                    self.is_anonymous = row.anonymous_answer in answer.get(
-                        "option_identifiers", []
-                    )
-                    return
+        for answer in answers:
+            if answer["question"] == row.anonymous_question:
+                self.is_anonymous = row.anonymous_answer in answer["options"]
+                return
 
 
 class AttendeeProfile(BaseModel):
@@ -251,18 +286,32 @@ class AttendeeProfile(BaseModel):
         """Fill the demographic fields from the order's answers, through the
         edition's question map (decision 0012). A mapped field this order
         does not answer is cleared, so a changed answer never lingers."""
+        raw = [
+            answer
+            for position in pretix_data.get("positions", [])
+            for answer in position.get("answers", [])
+        ]
+        return self.from_answers(
+            [
+                {"question": a.get("question_identifier"), "answer": a.get("answer")}
+                for a in raw
+            ],
+            raw=raw,
+        )
+
+    def from_answers(self, answers, raw=None):
+        """Fill the fields from normalised ``{"question", "answer"}`` answers
+        through the edition's question map; ``raw`` is kept as given."""
         row = ticketing_for(self.order.conference)
         mapping = (row.question_map if row else None) or {}
-        all_answers, answered = [], set()
-        for position in pretix_data.get("positions", []):
-            answers = position.get("answers", [])
-            all_answers.extend(answers)
-            for answer in answers:
-                field_name = mapping.get(answer.get("question_identifier"))
-                if field_name is None:
-                    continue
-                answered.add(field_name)
-                self._set_answer(field_name, answer.get("answer") or "")
+        answered = set()
+        for answer in answers:
+            field_name = mapping.get(answer.get("question"))
+            if field_name is None:
+                continue
+            answered.add(field_name)
+            self._set_answer(field_name, answer.get("answer") or "")
+        all_answers = list(answers) if raw is None else raw
         for field_name in set(mapping.values()) - answered:
             field = AttendeeProfile._meta.get_field(field_name)
             setattr(

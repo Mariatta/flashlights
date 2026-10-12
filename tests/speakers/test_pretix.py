@@ -183,8 +183,8 @@ class TestClient:
             == "https://pretix.example/api/v1/organizers/org/events/ev/orders/"
         )
 
-    @mock.patch("speakers.pretix.time.sleep")
-    @mock.patch("speakers.pretix.requests.get")
+    @mock.patch("ticketing.adapters.pretix.time.sleep")
+    @mock.patch("ticketing.adapters.pretix.requests.get")
     def test_pagination_and_params(self, get, sleep):
         client = self.make_client()
         get.side_effect = [
@@ -205,8 +205,8 @@ class TestClient:
         assert second.args[0] == "https://n/2" and second.kwargs["params"] is None
         sleep.assert_not_called()
 
-    @mock.patch("speakers.pretix.time.sleep")
-    @mock.patch("speakers.pretix.requests.get")
+    @mock.patch("ticketing.adapters.pretix.time.sleep")
+    @mock.patch("ticketing.adapters.pretix.requests.get")
     def test_retries_then_succeeds(self, get, sleep):
         get.side_effect = [
             FakeResponse(status_code=503, text="down"),
@@ -215,16 +215,16 @@ class TestClient:
         assert self.make_client().get_order("A") == {"code": "A"}
         assert sleep.call_count == 1
 
-    @mock.patch("speakers.pretix.time.sleep")
-    @mock.patch("speakers.pretix.requests.get")
+    @mock.patch("ticketing.adapters.pretix.time.sleep")
+    @mock.patch("ticketing.adapters.pretix.requests.get")
     def test_gives_up_after_attempts(self, get, sleep):
         get.side_effect = requests.ConnectionError("boom")
         with pytest.raises(PretixError, match="ConnectionError"):
             self.make_client().get_order("A")
         assert get.call_count == 3 and sleep.call_count == 2
 
-    @mock.patch("speakers.pretix.time.sleep")
-    @mock.patch("speakers.pretix.requests.get")
+    @mock.patch("ticketing.adapters.pretix.time.sleep")
+    @mock.patch("ticketing.adapters.pretix.requests.get")
     def test_no_retry_on_client_error(self, get, sleep):
         get.return_value = FakeResponse(status_code=404, text="nope")
         with pytest.raises(PretixError, match="404"):

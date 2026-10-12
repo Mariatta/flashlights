@@ -5,7 +5,6 @@ from attendee.models import (
     FIRST_EVENT_ANSWER,
     AttendeeProfile,
     PretixOrder,
-    PretixOrderstatus,
 )
 from portal.constants import (
     CACHE_KEY_ATTENDEE_BREAKDOWN,
@@ -42,6 +41,7 @@ from sponsorship.models import (
     SponsorshipProfile,
     SponsorshipProgressStatus,
 )
+from ticketing.adapters import REGISTERED, Status
 from volunteer.constants import ApplicationStatus
 from volunteer.models import Team, VolunteerProfile
 
@@ -472,7 +472,7 @@ def get_total_donations_amount_cache(conference):
         )
         donations_from_pretix = (
             PretixOrder.objects.filter(
-                status=PretixOrderstatus.PAID, conference=conference
+                state=Status.PAID, conference=conference
             ).aggregate(Sum("total"))["total__sum"]
             or 0
         )
@@ -498,7 +498,7 @@ def get_donors_count_cache(conference):
             .count()
         )
         pretix_donors_count = PretixOrder.objects.filter(
-            status=PretixOrderstatus.PAID, total__gt=0, conference=conference
+            state=Status.PAID, total__gt=0, conference=conference
         ).count()
         donors_count = individual_donors_count + pretix_donors_count
         cache.set(
@@ -545,7 +545,7 @@ def get_attendee_count_cache(conference):
     attendee_count = cache.get(cache_key)
     if not attendee_count:
         attendee_count = PretixOrder.objects.filter(
-            status=PretixOrderstatus.PAID, conference=conference
+            state__in=REGISTERED, conference=conference
         ).count()
         cache.set(
             cache_key,
@@ -614,7 +614,7 @@ def get_first_time_attendee_count(conference):
     first_time_attendee_count = cache.get(cache_key)
     if not first_time_attendee_count:
         first_time_attendee_count = AttendeeProfile.objects.filter(
-            order__status=PretixOrderstatus.PAID,
+            order__state__in=REGISTERED,
             participated_in_previous_event__contains=[FIRST_EVENT_ANSWER],
             order__conference=conference,
         ).count()
@@ -655,7 +655,7 @@ def get_attendee_breakdown(conference):
     if not attendee_breakdown:
         attendee_breakdown = []
         attendee_profiles = AttendeeProfile.objects.filter(
-            order__status=PretixOrderstatus.PAID,
+            order__state__in=REGISTERED,
             order__conference=conference,
         )
         attendee_breakdown.append(

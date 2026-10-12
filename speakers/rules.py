@@ -10,7 +10,8 @@ here fails the registry test.
 
 from django.db.models import Q
 
-from attendee.models import PretixOrder, PretixOrderstatus
+from attendee.models import PretixOrder
+from ticketing.adapters import REGISTERED
 
 from .checklists import block_item, complete_item, reopen_item
 from .constants import AutoRule, ItemStatus, MediaKind, MediaStatus
@@ -103,11 +104,11 @@ def pretix_registered(item):
         return False
     if presenter.pretix_order_id is not None:
         # A manual link wins, whatever the email says.
-        return presenter.pretix_order.status == PretixOrderstatus.PAID
+        return presenter.pretix_order.is_registered
     email = presenter.email
     return (
         PretixOrder.objects.filter(
-            conference_id=presenter.conference_id, status=PretixOrderstatus.PAID
+            conference_id=presenter.conference_id, state__in=REGISTERED
         )
         .filter(
             Q(email__iexact=email)

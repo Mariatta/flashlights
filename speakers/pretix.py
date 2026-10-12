@@ -7,102 +7,51 @@ all read the same rows.
 """
 
 import logging
-import time
 
-import requests
 from django.utils import timezone
 
-from attendee.models import AttendeeProfile, PretixOrder, PretixOrderstatus
+from attendee.models import AttendeeProfile, PretixOrder
+from ticketing.adapters.pretix import (  # noqa: F401 - re-exported for callers
+    WEBHOOK_ACTIONS,
+    PretixAdapter,
+    PretixClient,
+    PretixError,
+)
 from ticketing.models import TicketingSettings, ticketing_for
 
 from .models import ActivityLog, SpeakerSettings
 
 logger = logging.getLogger(__name__)
 
-WEBHOOK_ACTIONS = {
-    "pretix.event.order.placed",
-    "pretix.event.order.paid",
-    "pretix.event.order.canceled",
-    "pretix.event.order.expired",
-    "pretix.event.order.changed",
-}
-RETRY_STATUSES = {429, 500, 502, 503, 504}
 
-
-class PretixError(Exception):
-    """The pretix API refused or failed after retries."""
-
-
-class PretixClient:
-    """Thin client over the pretix REST API with pagination and retry."""
-
-    def __init__(self, ticketing, attempts=3, backoff=1.0):
-        """``ticketing`` is the edition's ``TicketingSettings`` row."""
-        self.base_url = ticketing.base_url.rstrip("/") + "/"
-        self.organizer = ticketing.organizer
-        self.event = ticketing.event_id
-        self.headers = {"Authorization": f"Token {ticketing.api_token}"}
-        self.attempts = attempts
-        self.backoff = backoff
-
-    @property
-    def orders_url(self):
-        return f"{self.base_url}organizers/{self.organizer}/events/{self.event}/orders/"
-
-    def _get(self, url, params=None):
-        last_error = None
-        for attempt in range(self.attempts):
-            try:
-                response = requests.get(
-                    url, headers=self.headers, params=params, timeout=30
-                )
-            except requests.RequestException as exc:
-                last_error = f"{exc.__class__.__name__}: {exc}"
-            else:
-                if response.status_code == 200:
-                    return response.json()
-                last_error = f"{response.status_code} {response.text[:200]}"
-                if response.status_code not in RETRY_STATUSES:
-                    break
-            if attempt + 1 < self.attempts:
-                time.sleep(self.backoff * (attempt + 1))
-        raise PretixError(f"GET {url} failed: {last_error}")
-
-    def get_order(self, code):
-        return self._get(f"{self.orders_url}{code}/")
-
-    def iter_orders(self, modified_since=None, email=None):
-        """Yield orders page by page. ``modified_since`` is a datetime."""
-        params = {}
-        if modified_since is not None:
-            params["modified_since"] = modified_since.isoformat()
-        if email:
-            params["email"] = email
-        url = self.orders_url
-        while url:
-            page = self._get(url, params=params)
-            params = None  # the ``next`` link already carries the query
-            yield from page.get("results", [])
-            url = page.get("next")
+def _adapter(conference, client):
+    """The edition's Pretix adapter over ``client``, a REST client (the
+    real one from ``client_for``, or a stand-in in tests)."""
+    row = ticketing_for(conference) or TicketingSettings(conference=conference)
+    return PretixAdapter(row, client=client)
 
 
 def upsert_order(conference, data):
-    """Record one pretix order (and the attendee profile for paid orders).
+    """Record one pretix order, given as pretix's own record."""
+    return upsert_registration(conference, _adapter(conference, None).normalise(data))
 
-    Uses the attendee app's own field mapping so both paths agree.
+
+def upsert_registration(conference, registration):
+    """Record one normalised registration (decision 0012), and the attendee
+    profile for anyone registered (paid or free).
+
+    The edition is the one given: the order's event slug may name another
+    edition, or none, and the caller knows which shop it asked.
     """
     order, created = PretixOrder.objects.get_or_create(
-        order_code=data["code"], defaults={"conference": conference}
+        order_code=registration.code, defaults={"conference": conference}
     )
-    order.from_pretix_data(data)
-    # The attendee mapping re-resolves the edition from the event slug and
-    # falls back to the active edition when nothing matches. This path knows
-    # the edition (its ticketing row names the event), so it wins.
     order.conference = conference
+    order.from_registration(registration)
     order.save()
-    if order.status == PretixOrderstatus.PAID:
+    if order.is_registered:
         profile, _ = AttendeeProfile.objects.get_or_create(order=order)
-        profile.from_pretix_data(data)
+        profile.from_answers(registration.answers)
         profile.save()
     return order, created
 
@@ -118,7 +67,7 @@ def client_for(conference):
 def sync_order_by_code(conference, code, client=None):
     """Re-fetch one order from pretix and upsert it (the webhook path)."""
     client = client or client_for(conference)
-    order, _ = upsert_order(conference, client.get_order(code))
+    order, _ = upsert_registration(conference, _adapter(conference, client).get(code))
     return order
 
 
@@ -133,8 +82,10 @@ def reconcile(conference, client=None):
     client = client or PretixClient(row)
     started = timezone.now()
     seen = 0
-    for data in client.iter_orders(modified_since=row.last_synced_at):
-        upsert_order(conference, data)
+    for registration in _adapter(conference, client).iter_registrations(
+        since=row.last_synced_at
+    ):
+        upsert_registration(conference, registration)
         seen += 1
     row.last_synced_at = started
     row.save(update_fields=["last_synced_at", "modified_date"])
@@ -153,9 +104,10 @@ def lookup_presenter_orders(presenter, actor=None, client=None):
     client = client or client_for(presenter.conference)
     if client is None:
         return None
+    adapter = _adapter(presenter.conference, client)
     orders = [
-        upsert_order(presenter.conference, data)[0]
-        for data in client.iter_orders(email=presenter.email)
+        upsert_registration(presenter.conference, registration)[0]
+        for registration in adapter.iter_registrations(email=presenter.email)
     ]
     ActivityLog.record(
         presenter.conference,

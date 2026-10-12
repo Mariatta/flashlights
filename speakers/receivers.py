@@ -207,7 +207,7 @@ def pretix_order_changed(sender, instance, **kwargs):
     """Only the presenters this order can be about: linked to it by hand, or
     sharing one of its emails. Ticket sales save orders in bursts, inside
     the webhook request; the nightly task does the broad sweep."""
-    if not _touches(kwargs, "status", "email", "raw_data"):
+    if not _touches(kwargs, "status", "state", "email", "raw_data"):
         return
     presenters = Presenter.objects.filter(conference_id=instance.conference_id).filter(
         Q(pretix_order=instance) | Q(email__in=_order_emails(instance))

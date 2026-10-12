@@ -2,7 +2,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 
-from attendee.models import AttendeeProfile, PretixOrder, PretixOrderstatus
+from attendee.models import AttendeeProfile, PretixOrder
 from portal.common import (
     get_historical_comparison_data,
     get_sponsorship_committed_amount_stats_cache,
@@ -34,6 +34,7 @@ from sponsorship.models import (
     SponsorshipProgressStatus,
     SponsorshipTier,
 )
+from ticketing.adapters import Status
 from volunteer.models import VolunteerProfile
 
 
@@ -332,7 +333,7 @@ class TestAttendeeStats:
         # Create paid orders with profiles
         order1 = PretixOrder.objects.create(
             order_code="ORDER1",
-            status=PretixOrderstatus.PAID,
+            state=Status.PAID,
             email="test1@example.com",
             conference=conference,
         )
@@ -353,7 +354,7 @@ class TestAttendeeStats:
 
         order2 = PretixOrder.objects.create(
             order_code="ORDER2",
-            status=PretixOrderstatus.PAID,
+            state=Status.PAID,
             email="test2@example.com",
             conference=conference,
         )
@@ -374,7 +375,7 @@ class TestAttendeeStats:
 
         order3 = PretixOrder.objects.create(
             order_code="ORDER3",
-            status=PretixOrderstatus.PAID,
+            state=Status.PAID,
             email="test3@example.com",
             conference=conference,
         )

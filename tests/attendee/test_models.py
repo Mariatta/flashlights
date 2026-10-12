@@ -1,6 +1,9 @@
+from decimal import Decimal
+
 import pytest
 
 from attendee.models import AttendeeProfile, PretixOrder
+from portal.models import Conference
 from tests.ticketing_ids import (
     AGE_RANGE,
     CHAPTER,
@@ -66,7 +69,8 @@ class TestPretixOrderModel:
         order.from_pretix_data(pretix_order_data)
         assert order.status == pretix_order_data["status"]
         assert order.email == pretix_order_data["email"]
-        assert order.total == pretix_order_data["total"]
+        assert order.total == Decimal(pretix_order_data["total"])
+        assert (order.state, order.kind, order.provider) == ("paid", "ticket", "PRETIX")
         assert order.cancellation_date == pretix_order_data["cancellation_date"]
         assert order.url == pretix_order_data["url"]
         assert order.datetime == pretix_order_data["datetime"]
@@ -288,6 +292,13 @@ class TestQuestionMap:
 
     def test_order_resolves_its_edition_from_the_ticketing_event(self, conference):
         assert PretixOrder.resolve_conference(conference.slug) == conference
+
+    def test_an_event_no_ticketing_names_falls_back(self, conference):
+        older = Conference.objects.create(
+            year=2019, name="Old", slug="2019", pretix_event_slug="legacy"
+        )
+        assert PretixOrder.resolve_conference("legacy") == older
+        assert PretixOrder.resolve_conference("unknown") == conference  # active
 
 
 @pytest.mark.django_db

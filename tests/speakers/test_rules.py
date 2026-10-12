@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from django.utils import timezone as dj_timezone
 
-from attendee.models import PretixOrder, PretixOrderstatus
+from attendee.models import PretixOrder
 from portal.models import Conference
 from speakers.checklists import add_adhoc_item, complete_item, skip_item
 from speakers.constants import (
@@ -27,6 +27,7 @@ from speakers.rules import RULES, evaluate_item, reevaluate_all
 from speakers.seeds import seed_checklists
 from speakers.services import accept_invitation, send_invitation
 from speakers.tasks import reevaluate_checklists_task
+from ticketing.adapters import Status
 
 from .factories import (
     add_presenter,
@@ -199,14 +200,15 @@ class TestSessionScheduled:
 
 @pytest.mark.django_db
 class TestPretixRegistered:
-    def make_order(
-        self, conference, code, email, status=PretixOrderstatus.PAID, positions=None
-    ):
+    def make_order(self, conference, code, email, state=Status.PAID, positions=None):
+        """The normalised state is what counts (decision 0012); the
+        provider's own status code rides along."""
         return PretixOrder.objects.create(
             conference=conference,
             order_code=code,
             email=email,
-            status=status,
+            state=state,
+            status="p" if state == Status.PAID else "c",
             raw_data={"positions": positions or []},
         )
 
@@ -232,9 +234,7 @@ class TestPretixRegistered:
     def test_cancelled_order_does_not_count(self, conference):
         presenter = make_presenter(conference, email="ada@example.com")
         item = auto_item(conference, AutoRule.PRETIX_REGISTERED, presenter=presenter)
-        self.make_order(
-            conference, "C1", "ada@example.com", status=PretixOrderstatus.CANCELLED
-        )
+        self.make_order(conference, "C1", "ada@example.com", state=Status.CANCELLED)
         assert status_of(item) == ItemStatus.TODO
 
     def test_manual_link_wins(self, conference):
@@ -244,7 +244,7 @@ class TestPretixRegistered:
         presenter.pretix_order = order
         presenter.save()
         assert status_of(item) == ItemStatus.DONE
-        order.status = PretixOrderstatus.CANCELLED
+        order.state = Status.CANCELLED
         order.save()
         assert status_of(item) == ItemStatus.TODO
 
@@ -281,7 +281,7 @@ class TestPretixRegistered:
             items["bea@example.com"].pk,
         }
         seen.clear()
-        cy.pretix_order.status = PretixOrderstatus.CANCELLED
+        cy.pretix_order.state = Status.CANCELLED
         cy.pretix_order.save()
         assert [item.pk for item in seen] == [items["cy@example.com"].pk]
 
