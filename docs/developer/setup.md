@@ -452,6 +452,47 @@ All generated users have the password: `password123`.
 
 The command is idempotent, meaning you can run it multiple times without creating duplicate data.
 
+### Demo presets: switch what the instance looks like
+
+To see the portal as different communities would, keep one database per
+**preset** and switch between them without reseeding:
+
+```sh
+make preset-list                   # presets, and which are built
+make preset PRESET=bare            # build it if needed, then serve it on 8002
+make preset-reset PRESET=bare      # rebuild it from scratch
+make preset-stop
+```
+
+`make preset` runs `scripts/preset.py` on the host, not in the container,
+against the compose Postgres. Each preset gets its own database
+(`flashlights_<name>`), and switching restarts the dev server on
+`127.0.0.1:8002` with that preset's database and branding.
+
+A preset is a directory holding:
+
+- `seed.py`, defining `run(stdout)`, which creates the editions, people and
+  data (loaded by `manage.py load_preset <directory>`, DEBUG only; its tasks
+  run inline and its emails stay in memory);
+- `env`, optional `KEY=value` lines for the branding (`SITE_TITLE`,
+  `BRAND_PRESET`, `DOCS_URL`, the feature switches).
+
+`presets/bare` ships here: one empty edition and an `admin` account. A
+preset built from a real community's data (its organizers, speakers and
+program) belongs outside this repository; add its folder with
+`PRESETS_PATH`. Local settings go in two git-ignored files at the root:
+
+```sh
+# .preset-settings
+PRESETS_PATH=~/my-presets
+PRESET_DB=postgresql://flashlights:flashlights@localhost:5433
+DJANGO_EMAIL_HOST=localhost      # anything else is passed to the server
+DJANGO_EMAIL_PORT=1025
+
+# local.mk
+PYTHON = ~/path/to/venv/bin/python
+```
+
 ### Speaker portal sample data
 
 A second command fills the **active edition** with speaker-portal data so

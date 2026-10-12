@@ -149,3 +149,19 @@ class TestCanStartNextYear:
             conference_date=date.today() - timedelta(days=2),
         )
         assert Conference.can_start_next_year() is True
+
+
+@pytest.mark.django_db
+def test_update_fields_gain_modified_date_whatever_their_type():
+    """update_or_create passes update_fields as a set; save used to append
+    to it and crash (found loading a demo preset)."""
+    conference = Conference.objects.create(year=2041, name="Then", slug="2041")
+    before = conference.modified_date
+    Conference.objects.update_or_create(
+        year=conference.year, defaults={"name": "Renamed"}
+    )
+    conference.refresh_from_db()
+    assert conference.name == "Renamed" and conference.modified_date > before
+    fields = ["name"]
+    conference.save(update_fields=fields)
+    assert fields == ["name"]  # the caller's list is left alone

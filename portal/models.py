@@ -27,10 +27,11 @@ class BaseModel(models.Model):
 
     def save(self, *args, **kwargs):
         self.modified_date = now()
-        if (
-            "update_fields" in kwargs and "modified_date" not in kwargs["update_fields"]
-        ):  # pragma: no cover
-            kwargs["update_fields"].append("modified_date")
+        update_fields = kwargs.get("update_fields")
+        if update_fields is not None and "modified_date" not in update_fields:
+            # A list from callers, a set from update_or_create: add to either
+            # without mutating what the caller passed.
+            kwargs["update_fields"] = [*update_fields, "modified_date"]
         super().save(*args, **kwargs)
 
 

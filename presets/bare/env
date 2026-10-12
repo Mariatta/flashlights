@@ -1,0 +1,3 @@
+# The bare preset: Flashlights as it ships, one empty edition.
+# KEY=value lines, read by scripts/preset.py on top of the dev defaults.
+SITE_TITLE=Flashlights

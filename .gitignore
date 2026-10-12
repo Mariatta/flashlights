@@ -47,3 +47,7 @@ deploy/azure/params.json
 
 # The widget build step (npm run build:widget)
 node_modules/
+
+# Demo presets: local settings and make overrides
+/.preset-settings
+/local.mk

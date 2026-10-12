@@ -1,4 +1,8 @@
 
+# Local overrides (git-ignored), such as PYTHON for the preset targets.
+-include local.mk
+PYTHON ?= python
+
 default:
 	@echo "Call a specific subcommand:"
 	@echo
@@ -91,3 +95,21 @@ clean:
 	rm -f .state/db-migrated
 
 .PHONY: default serve shell dbshell manage migrations migrate lint reformat test check create_translations compile_translations clean
+
+# Demo presets: one database each, switched without reseeding. Runs on the
+# host Python (set PYTHON in local.mk), not in the container. See
+# scripts/preset.py and docs/developer/setup.md.
+preset-list:
+	$(PYTHON) scripts/preset.py list
+
+preset:
+	$(PYTHON) scripts/preset.py use $(PRESET)
+
+preset-reset:
+	$(PYTHON) scripts/preset.py reset $(PRESET)
+
+preset-serve:
+	$(PYTHON) scripts/preset.py serve $(PRESET)
+
+preset-stop:
+	$(PYTHON) scripts/preset.py stop
