@@ -175,15 +175,32 @@ class TestSeeds:
         general = conference.checklist_templates.get(scope=ChecklistScope.GENERAL)
         titles = set(general.items.values_list("title", flat=True))
         assert "Do a tech check" not in titles
-        assert "Register for the event" in titles
+        assert "Tell us what you need in the room" in titles
+        register = general.items.get(title="Register for the event")
+        assert "attendee list" in register.description_md
         # Seeding again adds nothing.
         again = seed_checklists(conference)
         assert (again.templates, again.items) == (0, 0)
+
+    def test_hybrid_asks_about_the_room_and_the_tech_check(self, conference):
+        make_settings(conference, event_format=EventFormat.HYBRID)
+        seed_checklists(conference)
+        general = conference.checklist_templates.get(scope=ChecklistScope.GENERAL)
+        titles = list(general.items.values_list("title", flat=True))
+        assert "Tell us what you need in the room" in titles
+        assert "Do a tech check" in titles
+        assert titles.index("Tell us what you need in the room") < titles.index(
+            "Do a tech check"
+        )
 
     def test_online_edition_keeps_everything(self, conference):
         make_settings(conference, event_format=EventFormat.ONLINE)
         result = seed_checklists(conference)
         assert result.skipped == []
+        general = conference.checklist_templates.get(scope=ChecklistScope.GENERAL)
+        titles = set(general.items.values_list("title", flat=True))
+        assert "Tell us what you need in the room" not in titles
+        assert "Do a tech check" in titles
         assert ReadinessGate.objects.filter(conference=conference).count() == 2
         # The team's recording template is not seeded when speakers pre-record.
         assert not conference.checklist_templates.filter(

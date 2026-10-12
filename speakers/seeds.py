@@ -28,6 +28,7 @@ from .constants import (
     ChecklistScope,
     Delivery,
     DueAnchor,
+    EventFormat,
     ItemOwner,
     MediaKind,
     ReadyRule,
@@ -41,6 +42,7 @@ from .models import (
     ReadinessGate,
     SessionType,
     SpeakerSettings,
+    event_format,
     is_in_person,
     recordings,
 )
@@ -159,6 +161,19 @@ DISCORD = _item(
     description_md="Where the team, the other speakers and the attendees are during the event; the link is in the speaker guide.",
 )
 DISCORD_ROLE_TITLE = "Discord channel and speaker role assigned"
+# In the room (decision 0013): what the tech check is for an online
+# speaker, asked of everyone who will stand in front of people.
+ROOM_NEEDS = _item(
+    SPK,
+    "Tell us what you need in the room",
+    CONF,
+    14,
+    description_md="Adapters, a clicker, a microphone you can hold, captions, step-free access to the stage, anything else that makes the session work for you. Tick this once you have told your liaison, even if the answer is nothing.",
+)
+IN_PERSON_REGISTER = dict(
+    REGISTER,
+    description_md="Get your ticket so you are on the attendee list and the room knows you are coming. Ticks itself once your registration matches your email.",
+)
 
 
 def chat_line(conference):
@@ -648,7 +663,6 @@ def _seed_checklists(conference):
     roles = {r.code: r for r in PresenterRole.objects.filter(conference=conference)}
     templates_created = items_created = described = 0
     skipped = []
-    in_person = is_in_person(conference)
     mode = recordings(conference)
     specs = DEFAULT_TEMPLATES + (TEAM_TEMPLATES if mode == Recordings.TEAM else [])
     for scope, name, kind, role, delivery, items in specs:
@@ -671,8 +685,25 @@ def _seed_checklists(conference):
                 if line is not None
                 and (conference.uses_discord or line["title"] != DISCORD_ROLE_TITLE)
             ]
-            if in_person:
-                items = [i for i in items if i is not TECH_CHECK]
+            # In person: the room's needs instead of a tech check, and a
+            # ticket that gets you through the door rather than onto a
+            # platform. Hybrid: both.
+            fmt = event_format(conference)
+            if fmt == EventFormat.IN_PERSON:
+                items = [
+                    (
+                        ROOM_NEEDS
+                        if i is TECH_CHECK
+                        else IN_PERSON_REGISTER if i is REGISTER else i
+                    )
+                    for i in items
+                ]
+            elif fmt == EventFormat.HYBRID:
+                items = [
+                    line
+                    for i in items
+                    for line in ([ROOM_NEEDS, i] if i is TECH_CHECK else [i])
+                ]
         if (
             mode == Recordings.TEAM
             and scope == ChecklistScope.PRESENTER
