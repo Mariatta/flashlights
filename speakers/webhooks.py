@@ -20,9 +20,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from portal.models import Conference
+from ticketing.models import ticketing_for
 
 from .encryption import usable
-from .models import SpeakerSettings
 from .pretix import WEBHOOK_ACTIONS
 from .tasks import sync_order_task
 
@@ -33,10 +33,10 @@ logger = logging.getLogger(__name__)
 @require_POST
 def pretix_webhook(request, conference_slug):
     conference = get_object_or_404(Conference, slug=conference_slug)
-    settings_row = SpeakerSettings.objects.filter(conference=conference).first()
-    if settings_row is None or not settings_row.pretix_configured:
+    row = ticketing_for(conference)
+    if row is None or not row.has_api:
         raise Http404("Pretix is not configured for this edition.")
-    secret = settings_row.pretix_webhook_secret
+    secret = row.webhook_secret
     if not usable(secret) or not constant_time_compare(
         request.GET.get("secret", ""), secret
     ):
@@ -49,12 +49,9 @@ def pretix_webhook(request, conference_slug):
     code = payload.get("code")
     if not code or action not in WEBHOOK_ACTIONS:
         return HttpResponseBadRequest("Unsupported payload")
-    if payload.get("event") and payload["event"] != settings_row.pretix_event_slug:
+    if payload.get("event") and payload["event"] != row.event_id:
         return HttpResponseBadRequest("Wrong event")
-    if (
-        payload.get("organizer")
-        and payload["organizer"] != settings_row.pretix_organizer
-    ):
+    if payload.get("organizer") and payload["organizer"] != row.organizer:
         return HttpResponseBadRequest("Wrong organizer")
     # Validate, queue, answer. The round-trip to pretix (with its retries)
     # runs in the worker, so a slow pretix never ties up a web worker during

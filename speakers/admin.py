@@ -1,4 +1,3 @@
-from django import forms
 from django.contrib import admin
 
 from portal.admin_filters import ActiveConferenceFilter
@@ -29,37 +28,6 @@ from .models import (
 )
 
 
-class SpeakerSettingsAdminForm(forms.ModelForm):
-    """The token and the webhook secret are write-only here: encrypted at
-    rest, never echoed back to the page. Leave a field blank to keep what is
-    stored; a stored value this deploy cannot decrypt is kept as is."""
-
-    pretix_api_token = forms.CharField(
-        required=False,
-        widget=forms.PasswordInput(render_value=False),
-        help_text="Leave blank to keep the current token.",
-    )
-    pretix_webhook_secret = forms.CharField(
-        required=False,
-        widget=forms.PasswordInput(render_value=False),
-        help_text="Leave blank to keep the current secret.",
-    )
-
-    class Meta:
-        model = SpeakerSettings
-        fields = "__all__"
-
-    def _keep_when_blank(self, name):
-        value = self.cleaned_data.get(name)
-        return value if value else getattr(self.instance, name)
-
-    def clean_pretix_api_token(self):
-        return self._keep_when_blank("pretix_api_token")
-
-    def clean_pretix_webhook_secret(self):
-        return self._keep_when_blank("pretix_webhook_secret")
-
-
 class AllowedOriginInline(admin.TabularInline):
     """Websites whose pages may read this edition's public API, one row
     each (the Publishing page lists them and links here)."""
@@ -73,7 +41,6 @@ class AllowedOriginInline(admin.TabularInline):
 
 @admin.register(SpeakerSettings)
 class SpeakerSettingsAdmin(admin.ModelAdmin):
-    form = SpeakerSettingsAdminForm
     inlines = [AllowedOriginInline]
     list_display = (
         "conference",
@@ -85,7 +52,19 @@ class SpeakerSettingsAdmin(admin.ModelAdmin):
         "auto_transcribe",
         "default_premiere_location",
         "translation_languages",
+    )
+    #: Upstream's Pretix columns, unread since ticketing moved to its own
+    #: app (decision 0012), kept off the form so nobody edits a dead value;
+    #: and the voucher switch, off until voucher creation is built. Named
+    #: rather than dropped in silence: the admin tests check that every
+    #: editable field is offered or excluded.
+    exclude = (
+        "pretix_create_vouchers",
+        "pretix_base_url",
         "pretix_organizer",
+        "pretix_event",
+        "pretix_api_token",
+        "pretix_webhook_secret",
         "pretix_last_synced_at",
     )
     #: Decision 0013: settings an in-person edition has no use for.
@@ -162,32 +141,9 @@ class SpeakerSettingsAdmin(admin.ModelAdmin):
                 "fields": ("media_for_speakers", "auto_transcribe"),
             },
         ),
-        (
-            "Pretix",
-            {
-                "description": "Token and webhook secret are encrypted at rest and "
-                "never shown again; leave blank to keep the stored value.",
-                "fields": (
-                    "pretix_base_url",
-                    "pretix_organizer",
-                    "pretix_event",
-                    "pretix_api_token",
-                    "pretix_webhook_secret",
-                    "pretix_last_synced_at",
-                ),
-            },
-        ),
     )
     list_filter = ("speaker_module_enabled", "proposals_open")
     list_select_related = ("conference",)
-    # Written by the nightly reconciliation, which pages from it; a hand
-    # edit would move that window.
-    readonly_fields = ("pretix_last_synced_at",)
-    # Voucher creation is not built (pretix.create_voucher raises while the
-    # switch is on), so the switch stays off the form until it is. Named
-    # here rather than dropped from the fieldsets in silence: the admin
-    # tests check that every editable field is offered or excluded.
-    exclude = ("pretix_create_vouchers",)
 
 
 @admin.register(PresenterRole)

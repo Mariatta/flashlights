@@ -854,8 +854,6 @@ SETTINGS_TO_COPY = [
     "default_video_length_limit_minutes",
     "conference_timezone",
     "organizers_email",
-    "pretix_base_url",
-    "pretix_organizer",
 ]
 
 

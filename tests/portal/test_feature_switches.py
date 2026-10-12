@@ -1,9 +1,12 @@
 """``SPONSORSHIP_ENABLED`` and ``STATS_PUBLIC``, with the stats sections
-following the features (``PRETIX_CONFIGURED`` included)."""
+following the features (and the active edition's ticketing)."""
 
 import pytest
 from django.test import override_settings
 from django.urls import reverse
+
+from attendee.models import PretixOrder
+from tests.ticketing_ids import make_ticketing
 
 STATS_PAGES = (
     "portal_stats",
@@ -72,28 +75,27 @@ class TestSponsorshipEnabled:
                 response = client.get(reverse("portal_stats_comparison"))
             return {c["chart_id"] for c in response.context["historical_comparison"]}
 
-        everything = ids(SPONSORSHIP_ENABLED=True, PRETIX_CONFIGURED=True)
+        # Registrations compare once any edition has some (decision 0012:
+        # ticketing is per edition, not an instance setting).
+        lite = ids(SPONSORSHIP_ENABLED=False)
+        assert lite == {"proposals_comparison"}
+        PretixOrder.objects.create(order_code="R1", conference=conference)
+        everything = ids(SPONSORSHIP_ENABLED=True)
         assert "proposals_comparison" in everything
         assert "sponsors_comparison" in everything
         assert "registrations_comparison" in everything
-        lite = ids(SPONSORSHIP_ENABLED=False, PRETIX_CONFIGURED=False)
-        assert lite == {"proposals_comparison"}
 
 
 @pytest.mark.django_db
 class TestStatsSectionsFollowTheFeatures:
     def test_sections(self, client, conference):
-        with override_settings(
-            VOLUNTEERING_ENABLED=False,
-            SPONSORSHIP_ENABLED=False,
-            PRETIX_CONFIGURED=False,
-        ):
+        with override_settings(VOLUNTEERING_ENABLED=False, SPONSORSHIP_ENABLED=False):
             content = client.get(reverse("portal_stats")).content.decode()
         assert "Volunteers Signed Up" not in content
         assert "Attendee Demographic" not in content
         assert "sponsorship_breakdown" not in content and "Sponsorship" not in content
-        with override_settings(PRETIX_CONFIGURED=True):
-            content = client.get(reverse("portal_stats")).content.decode()
+        make_ticketing(conference)  # the active edition takes registrations
+        content = client.get(reverse("portal_stats")).content.decode()
         assert "Volunteers Signed Up" in content
         assert "Attendee Demographic" in content
 

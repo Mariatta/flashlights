@@ -17,10 +17,9 @@ from pytest_django.asserts import assertRedirects
 from attendee.models import AttendeeProfile, PretixOrder
 from portal.models import Conference
 from speakers import encryption
-from speakers.admin import SpeakerSettingsAdminForm
 from speakers.constants import AutoRule, ItemOwner, ItemStatus
 from speakers.encryption import Undecryptable
-from speakers.models import ActivityLog, ChecklistItem, SpeakerSettings
+from speakers.models import ActivityLog, ChecklistItem
 from speakers.pretix import (
     PretixClient,
     PretixError,
@@ -32,18 +31,19 @@ from speakers.pretix import (
     upsert_order,
 )
 from speakers.tasks import pretix_reconcile_task
+from tests.ticketing_ids import make_ticketing
+from ticketing.admin import TicketingSettingsAdminForm
+from ticketing.models import TicketingSettings
 
 from .factories import make_presenter, make_settings
 
 
 @pytest.fixture
 def pretix_settings(conference):
-    return make_settings(
-        conference,
-        pretix_organizer="pyladiescon",
-        pretix_api_token="tok-secret",
-        pretix_webhook_secret="hook-secret",
-    )
+    """The speaker module on, and the edition's ticketing row (decision
+    0012) with a Pretix API: organizer, event, token and webhook secret."""
+    make_settings(conference)
+    return make_ticketing(conference, organizer="flashlights", event_id="2025")
 
 
 @pytest.fixture
@@ -84,24 +84,24 @@ class TestEncryptedField:
     def test_stored_encrypted_read_decrypted(self, conference, pretix_settings):
         with connection.cursor() as cursor:
             cursor.execute(
-                "SELECT pretix_api_token FROM speakers_speakersettings WHERE id = %s",
+                "SELECT api_token FROM ticketing_ticketingsettings WHERE id = %s",
                 [pretix_settings.pk],
             )
             raw = cursor.fetchone()[0]
         assert raw != "tok-secret" and raw.startswith("gAAAA")
         assert (
-            SpeakerSettings.objects.get(pk=pretix_settings.pk).pretix_api_token
+            TicketingSettings.objects.get(pk=pretix_settings.pk).api_token
             == "tok-secret"
         )
 
     def test_blank_stays_blank(self, conference):
-        row = make_settings(conference)
-        assert SpeakerSettings.objects.get(pk=row.pk).pretix_api_token == ""
+        row = make_ticketing(conference, api_token="")
+        assert TicketingSettings.objects.get(pk=row.pk).api_token == ""
 
     def test_missing_key_refuses_to_save(self, conference):
         with override_settings(FERNET_KEY=None):
             with pytest.raises(ImproperlyConfigured, match="is not set"):
-                make_settings(conference, pretix_api_token="x")
+                make_ticketing(conference, api_token="x")
 
     def test_wrong_key_degrades_to_not_configured(
         self, conference, pretix_settings, caplog
@@ -113,12 +113,12 @@ class TestEncryptedField:
         with override_settings(FERNET_KEY=Fernet.generate_key().decode()):
             encryption._warned = False
             with caplog.at_level("ERROR"):
-                row = SpeakerSettings.objects.get(pk=pretix_settings.pk)
-                again = SpeakerSettings.objects.get(pk=pretix_settings.pk)
-            assert isinstance(row.pretix_api_token, Undecryptable)
-            assert not row.pretix_api_token and str(row.pretix_api_token) == ""
-            assert row.pretix_configured is False
-            assert again.pretix_configured is False
+                row = TicketingSettings.objects.get(pk=pretix_settings.pk)
+                again = TicketingSettings.objects.get(pk=pretix_settings.pk)
+            assert isinstance(row.api_token, Undecryptable)
+            assert not row.api_token and str(row.api_token) == ""
+            assert row.has_api is False
+            assert again.has_api is False
             assert caplog.text.count("Encrypted field cannot be read") == 1
             with pytest.raises(ImproperlyConfigured, match="Refusing to save"):
                 row.save()
@@ -132,10 +132,10 @@ class TestEncryptedField:
         with override_settings(FERNET_KEY=None, FERNET_KEYS=""):
             encryption._warned = False
             with caplog.at_level("ERROR"):
-                row = SpeakerSettings.objects.get(pk=pretix_settings.pk)
-            assert isinstance(row.pretix_api_token, Undecryptable)
-            assert repr(row.pretix_api_token) == "Undecryptable(<token>)"
-            assert row.pretix_configured is False
+                row = TicketingSettings.objects.get(pk=pretix_settings.pk)
+            assert isinstance(row.api_token, Undecryptable)
+            assert repr(row.api_token) == "Undecryptable(<token>)"
+            assert row.has_api is False
             assert "is not set" in caplog.text
         encryption._warned = False
 
@@ -143,37 +143,37 @@ class TestEncryptedField:
         old_key = settings.FERNET_KEY
         new_key = Fernet.generate_key().decode()
         with override_settings(FERNET_KEYS=f"{new_key},{old_key}", FERNET_KEY=None):
-            row = SpeakerSettings.objects.get(pk=pretix_settings.pk)
-            assert row.pretix_api_token == "tok-secret"  # old key still decrypts
+            row = TicketingSettings.objects.get(pk=pretix_settings.pk)
+            assert row.api_token == "tok-secret"  # old key still decrypts
             row.save()  # re-encrypts with the first (new) key
             with connection.cursor() as cursor:
                 cursor.execute(
-                    "SELECT pretix_api_token FROM speakers_speakersettings WHERE id = %s",
+                    "SELECT api_token FROM ticketing_ticketingsettings WHERE id = %s",
                     [row.pk],
                 )
                 raw = cursor.fetchone()[0]
             assert Fernet(new_key).decrypt(raw.encode()).decode() == "tok-secret"
         with override_settings(FERNET_KEYS=new_key, FERNET_KEY=None):
-            assert (
-                SpeakerSettings.objects.get(pk=row.pk).pretix_api_token == "tok-secret"
-            )
+            assert TicketingSettings.objects.get(pk=row.pk).api_token == "tok-secret"
 
     def test_settings_helpers(self, conference, pretix_settings):
-        assert pretix_settings.pretix_event_slug == "2025"
-        assert pretix_settings.pretix_configured is True
-        pretix_settings.pretix_event = "special"
-        assert pretix_settings.pretix_event_slug == "special"
-        pretix_settings.pretix_api_token = ""
-        assert pretix_settings.pretix_configured is False
+        assert pretix_settings.has_api and pretix_settings.is_set_up
+        pretix_settings.event_id = ""
+        assert pretix_settings.has_api is False
+        pretix_settings.event_id = "2025"
+        pretix_settings.api_token = ""
+        assert pretix_settings.has_api is False and not pretix_settings.is_set_up
+        pretix_settings.provider = "CSV"
+        assert pretix_settings.is_set_up and not pretix_settings.has_api
 
 
 class TestClient:
     def make_client(self):
         row = mock.Mock(
-            pretix_base_url="https://pretix.example/api/v1",
-            pretix_organizer="org",
-            pretix_event_slug="ev",
-            pretix_api_token="tok",
+            base_url="https://pretix.example/api/v1",
+            organizer="org",
+            event_id="ev",
+            api_token="tok",
         )
         return PretixClient(row, backoff=0)
 
@@ -259,7 +259,7 @@ class TestWebhook:
     def payload(self, **overrides):
         data = {
             "notification_id": 1,
-            "organizer": "pyladiescon",
+            "organizer": "flashlights",
             "event": "2025",
             "code": "ORDER123",
             "action": "pretix.event.order.paid",
@@ -356,7 +356,7 @@ class TestWebhook:
             ).status_code
             == 404
         )
-        make_settings(conference, pretix_organizer="o", pretix_api_token="t")
+        make_ticketing(conference, organizer="o", webhook_secret="")
         assert (
             client.post(
                 self.url(conference), self.payload(), content_type="application/json"
@@ -386,7 +386,7 @@ class TestReconcile:
         assert reconcile(conference, client=client) == 2
         client.iter_orders.assert_called_once_with(modified_since=None)
         pretix_settings.refresh_from_db()
-        assert pretix_settings.pretix_last_synced_at is not None
+        assert pretix_settings.last_synced_at is not None
         assert PretixOrder.objects.filter(conference=conference).count() == 2
         assert (
             ActivityLog.objects.get(action="pretix.reconciled").message
@@ -396,7 +396,7 @@ class TestReconcile:
         reconcile(conference, client=client)
         assert (
             client.iter_orders.call_args.kwargs["modified_since"]
-            == pretix_settings.pretix_last_synced_at
+            == pretix_settings.last_synced_at
         )
 
     @mock.patch("speakers.tasks.reconcile")
@@ -404,11 +404,11 @@ class TestReconcile:
         self, reconcile_mock, conference, pretix_settings
     ):
         other = Conference.objects.create(year=2024, name="Skipped", slug="2024")
-        make_settings(other)  # not configured: skipped
+        make_ticketing(other, api_token="")  # not configured: skipped
         failing = Conference.objects.create(
             year=2023, name="Older", slug="2023", pretix_event_slug="2023"
         )
-        make_settings(failing, pretix_organizer="o", pretix_api_token="t")
+        make_ticketing(failing)
 
         def fake(conf):
             if conf == failing:
@@ -437,9 +437,7 @@ class TestReconcile:
         differs from its Conference.pretix_event_slug must still file its
         orders under itself."""
         older = Conference.objects.create(year=2023, name="Older", slug="2023")
-        make_settings(
-            older, pretix_organizer="o", pretix_api_token="t", pretix_event="special"
-        )
+        make_ticketing(older, event_id="special")
         data = dict(
             pretix_order_data, code="OLD1", event="2025"
         )  # active edition's slug
@@ -451,20 +449,20 @@ class TestReconcile:
     def test_admin_form_never_renders_secrets_and_keeps_them_when_blank(
         self, conference, pretix_settings
     ):
-        form = SpeakerSettingsAdminForm(instance=pretix_settings)
+        form = TicketingSettingsAdminForm(instance=pretix_settings)
         html = form.as_p()
         assert "tok-secret" not in html and "hook-secret" not in html
         assert 'type="password"' in html
         data = model_to_dict(pretix_settings)
-        data.update({"pretix_api_token": "", "pretix_webhook_secret": "  "})
-        bound = SpeakerSettingsAdminForm(data=data, instance=pretix_settings)
+        data.update({"api_token": "", "webhook_secret": "  "})
+        bound = TicketingSettingsAdminForm(data=data, instance=pretix_settings)
         assert bound.is_valid(), bound.errors
-        assert bound.cleaned_data["pretix_api_token"] == "tok-secret"
-        assert bound.cleaned_data["pretix_webhook_secret"] == "hook-secret"
-        data["pretix_api_token"] = "new-token"
-        bound = SpeakerSettingsAdminForm(data=data, instance=pretix_settings)
+        assert bound.cleaned_data["api_token"] == "tok-secret"
+        assert bound.cleaned_data["webhook_secret"] == "hook-secret"
+        data["api_token"] = "new-token"
+        bound = TicketingSettingsAdminForm(data=data, instance=pretix_settings)
         assert bound.is_valid(), bound.errors
-        assert bound.cleaned_data["pretix_api_token"] == "new-token"
+        assert bound.cleaned_data["api_token"] == "new-token"
 
 
 @pytest.mark.django_db

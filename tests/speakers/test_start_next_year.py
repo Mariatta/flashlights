@@ -11,6 +11,8 @@ from speakers.models import (
     speaker_module_enabled,
 )
 from speakers.seeds import DEFAULT_TEMPLATES, clone_speaker_setup, seed_checklists
+from tests.ticketing_ids import make_ticketing
+from ticketing.models import TicketingSettings
 
 from .factories import make_settings
 
@@ -30,9 +32,8 @@ def source(conference):
         event_format=EventFormat.HYBRID,
         organizers_email="team@example.com",
         translation_languages=["pt-br"],
-        pretix_organizer="pyladiescon",
-        pretix_api_token="secret",
     )
+    make_ticketing(conference, organizer="flashlights")
     seed_checklists(conference)
     Handbook.objects.create(
         conference=conference,
@@ -76,7 +77,12 @@ class TestStartNextYear:
         assert row.event_format == EventFormat.HYBRID  # decision 0013
         assert row.organizers_email == "team@example.com"
         assert row.translation_languages == ["pt-br"]
-        assert row.pretix_organizer == "pyladiescon" and row.pretix_api_token == ""
+        # The ticketing comes along (decision 0012): same shop and maps, the
+        # event slug the form gave.
+        ticketing = TicketingSettings.objects.get(conference=new)
+        assert ticketing.organizer == "flashlights"
+        assert ticketing.api_token == "tok-secret"
+        assert ticketing.question_map and ticketing.event_id == ""
         assert ChecklistTemplate.objects.filter(conference=new).count() == len(
             DEFAULT_TEMPLATES
         )

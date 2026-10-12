@@ -8,6 +8,7 @@ from django.utils import timezone
 from common.send_emails import send_email
 from common.tasks import email_task
 from portal.models import Conference
+from ticketing.models import TicketingSettings
 
 from .constants import ProposalDecision, ZipStatus
 from .emails import (
@@ -274,19 +275,17 @@ def pretix_reconcile_task():
     idempotent and ``pretix_last_synced_at`` advances only on success, so a
     retry redoes only the editions that failed."""
     results, failed = [], None
-    for settings_row in SpeakerSettings.objects.select_related("conference"):
-        if not settings_row.pretix_configured:
+    for row in TicketingSettings.objects.select_related("conference"):
+        if not row.has_api:
             continue
         try:
-            seen = reconcile(settings_row.conference)
+            seen = reconcile(row.conference)
         except PretixError as exc:
-            logger.exception(
-                "Pretix reconciliation failed for %s", settings_row.conference
-            )
-            results.append(f"{settings_row.conference}: failed ({exc})")
+            logger.exception("Pretix reconciliation failed for %s", row.conference)
+            results.append(f"{row.conference}: failed ({exc})")
             failed = exc
         else:
-            results.append(f"{settings_row.conference}: {seen} order(s)")
+            results.append(f"{row.conference}: {seen} order(s)")
     if failed is not None:
         raise failed
     return "; ".join(results) or "No edition has pretix configured"

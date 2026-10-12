@@ -1,21 +1,28 @@
 import pytest
 
-from attendee.models import (
-    PRETIX_ATTENDEE_AGE_RANGE_QUESTION_IDENTIFIER,
-    PRETIX_ATTENDEE_CITY_QUESTION_IDENTIFIER,
-    PRETIX_ATTENDEE_COUNTRY_QUESTION_IDENTIFIER,
-    PRETIX_ATTENDEE_CURRENT_POSITION_QUESTION_IDENTIFIER,
-    PRETIX_ATTENDEE_EXPECTATION_FROM_EVENT_QUESTION_IDENTIFIER,
-    PRETIX_ATTENDEE_EXPERIENCE_LEVEL_QUESTION_IDENTIFIER,
-    PRETIX_ATTENDEE_HEARD_ABOUT_EVENT_QUESTION_IDENTIFIER,
-    PRETIX_ATTENDEE_MAY_SHARE_EMAIL_WITH_SPONSOR_QUESTION_IDENTIFIER,
-    PRETIX_ATTENDEE_ORGANIZATION_NAME_QUESTION_IDENTIFIER,
-    PRETIX_ATTENDEE_PARTICIPATED_IN_PREVIOUS_EVENT_QUESTION_IDENTIFIER,
-    PRETIX_ATTENDEE_PYLADIES_CHAPTER_QUESTION_IDENTIFIER,
-    PRETIX_STAY_ANONYMOUS_ANSWER_IDENTIFIER,
-    AttendeeProfile,
-    PretixOrder,
+from attendee.models import AttendeeProfile, PretixOrder
+from tests.ticketing_ids import (
+    AGE_RANGE,
+    CHAPTER,
+    CITY,
+    COUNTRY,
+    CURRENT_POSITION,
+    EXPECTATION,
+    EXPERIENCE_LEVEL,
+    HEARD_ABOUT,
+    MAY_SHARE_EMAIL,
+    ORGANIZATION,
+    PARTICIPATED_BEFORE,
+    STAY_ANONYMOUS,
+    make_ticketing,
 )
+
+
+@pytest.fixture(autouse=True)
+def mapped(conference):
+    """The edition's questions mapped (decision 0012): the attendee app
+    no longer carries anyone's question ids."""
+    return make_ticketing(conference)
 
 
 @pytest.mark.django_db
@@ -32,15 +39,24 @@ class TestPretixOrderModel:
         order.set_name_from_data(pretix_order_data)
         assert order.name == "Example Attendee"
 
-    def test_anonymous_from_data(self, pretix_order_data):
-        """Test populating PretixOrder name from pretix data."""
-        order = PretixOrder(order_code="ORDER123")
+    def test_anonymous_from_data(self, pretix_order_data, conference):
+        """The edition's anonymity question decides."""
+        order = PretixOrder(order_code="ORDER123", conference=conference)
         order.set_is_anonymous_from_data(pretix_order_data)
         assert order.is_anonymous is False
 
         pretix_order_data["positions"][0]["answers"][1]["option_identifiers"] = [
-            PRETIX_STAY_ANONYMOUS_ANSWER_IDENTIFIER
+            STAY_ANONYMOUS
         ]
+        order.set_is_anonymous_from_data(pretix_order_data)
+        assert order.is_anonymous is True
+
+    def test_without_an_anonymity_question_donors_stay_anonymous(
+        self, pretix_order_data, conference, mapped
+    ):
+        mapped.anonymous_question = ""
+        mapped.save()
+        order = PretixOrder(order_code="ORDER123", conference=conference)
         order.set_is_anonymous_from_data(pretix_order_data)
         assert order.is_anonymous is True
 
@@ -83,47 +99,47 @@ class TestAttendeeProfileModel:
                     "answers": [
                         {
                             "answer": "Vancouver",
-                            "question_identifier": PRETIX_ATTENDEE_CITY_QUESTION_IDENTIFIER,
+                            "question_identifier": CITY,
                         },
                         {
                             "answer": "United States",
-                            "question_identifier": PRETIX_ATTENDEE_COUNTRY_QUESTION_IDENTIFIER,
+                            "question_identifier": COUNTRY,
                         },
                         {
                             "answer": "Networking, Learn new things, Support community activities",
-                            "question_identifier": PRETIX_ATTENDEE_EXPECTATION_FROM_EVENT_QUESTION_IDENTIFIER,
+                            "question_identifier": EXPECTATION,
                         },
                         {
                             "answer": "Social Media, Other",
-                            "question_identifier": PRETIX_ATTENDEE_HEARD_ABOUT_EVENT_QUESTION_IDENTIFIER,
+                            "question_identifier": HEARD_ABOUT,
                         },
                         {
                             "answer": "No, this is my first one",
-                            "question_identifier": PRETIX_ATTENDEE_PARTICIPATED_IN_PREVIOUS_EVENT_QUESTION_IDENTIFIER,
+                            "question_identifier": PARTICIPATED_BEFORE,
                         },
                         {
                             "answer": "San Francisco",
-                            "question_identifier": PRETIX_ATTENDEE_PYLADIES_CHAPTER_QUESTION_IDENTIFIER,
+                            "question_identifier": CHAPTER,
                         },
                         {
                             "answer": "19-25",
-                            "question_identifier": PRETIX_ATTENDEE_AGE_RANGE_QUESTION_IDENTIFIER,
+                            "question_identifier": AGE_RANGE,
                         },
                         {
                             "answer": "Umbrella Corp",
-                            "question_identifier": PRETIX_ATTENDEE_ORGANIZATION_NAME_QUESTION_IDENTIFIER,
+                            "question_identifier": ORGANIZATION,
                         },
                         {
                             "answer": "Student/Intern, Other",
-                            "question_identifier": PRETIX_ATTENDEE_CURRENT_POSITION_QUESTION_IDENTIFIER,
+                            "question_identifier": CURRENT_POSITION,
                         },
                         {
                             "answer": "Junior",
-                            "question_identifier": PRETIX_ATTENDEE_EXPERIENCE_LEVEL_QUESTION_IDENTIFIER,
+                            "question_identifier": EXPERIENCE_LEVEL,
                         },
                         {
                             "answer": "Yes, I'm interested",
-                            "question_identifier": PRETIX_ATTENDEE_MAY_SHARE_EMAIL_WITH_SPONSOR_QUESTION_IDENTIFIER,
+                            "question_identifier": MAY_SHARE_EMAIL,
                         },
                     ],
                 }
@@ -187,47 +203,47 @@ class TestAttendeeProfileModel:
                     "answers": [
                         {
                             "answer": "Vancouver",
-                            "question_identifier": PRETIX_ATTENDEE_CITY_QUESTION_IDENTIFIER,
+                            "question_identifier": CITY,
                         },
                         {
                             "answer": "United States",
-                            "question_identifier": PRETIX_ATTENDEE_COUNTRY_QUESTION_IDENTIFIER,
+                            "question_identifier": COUNTRY,
                         },
                         {
                             "answer": "Networking, Learn new things, Support community activities",
-                            "question_identifier": PRETIX_ATTENDEE_EXPECTATION_FROM_EVENT_QUESTION_IDENTIFIER,
+                            "question_identifier": EXPECTATION,
                         },
                         {
                             "answer": "Social Media, Other",
-                            "question_identifier": PRETIX_ATTENDEE_HEARD_ABOUT_EVENT_QUESTION_IDENTIFIER,
+                            "question_identifier": HEARD_ABOUT,
                         },
                         {
                             "answer": "No, this is my first one",
-                            "question_identifier": PRETIX_ATTENDEE_PARTICIPATED_IN_PREVIOUS_EVENT_QUESTION_IDENTIFIER,
+                            "question_identifier": PARTICIPATED_BEFORE,
                         },
                         {
                             "answer": "None",
-                            "question_identifier": PRETIX_ATTENDEE_PYLADIES_CHAPTER_QUESTION_IDENTIFIER,
+                            "question_identifier": CHAPTER,
                         },
                         {
                             "answer": "19-25",
-                            "question_identifier": PRETIX_ATTENDEE_AGE_RANGE_QUESTION_IDENTIFIER,
+                            "question_identifier": AGE_RANGE,
                         },
                         {
                             "answer": "Umbrella Corp",
-                            "question_identifier": PRETIX_ATTENDEE_ORGANIZATION_NAME_QUESTION_IDENTIFIER,
+                            "question_identifier": ORGANIZATION,
                         },
                         {
                             "answer": "Student/Intern, Other",
-                            "question_identifier": PRETIX_ATTENDEE_CURRENT_POSITION_QUESTION_IDENTIFIER,
+                            "question_identifier": CURRENT_POSITION,
                         },
                         {
                             "answer": "Junior",
-                            "question_identifier": PRETIX_ATTENDEE_EXPERIENCE_LEVEL_QUESTION_IDENTIFIER,
+                            "question_identifier": EXPERIENCE_LEVEL,
                         },
                         {
                             "answer": "Yes, I'm interested",
-                            "question_identifier": PRETIX_ATTENDEE_MAY_SHARE_EMAIL_WITH_SPONSOR_QUESTION_IDENTIFIER,
+                            "question_identifier": MAY_SHARE_EMAIL,
                         },
                     ],
                 }
@@ -252,6 +268,26 @@ class TestAttendeeProfileModel:
         assert profile.organization_name == "Umbrella Corp"
         assert profile.current_position == ["Student/Intern", "Other"]
         assert profile.raw_answers is not None
+
+
+@pytest.mark.django_db
+class TestQuestionMap:
+    def test_an_unmapped_edition_fills_nothing(self, conference, mapped):
+        mapped.question_map = {}
+        mapped.save()
+        order = PretixOrder.objects.create(order_code="ORDER9", conference=conference)
+        profile = AttendeeProfile(order=order).from_pretix_data(
+            {
+                "positions": [
+                    {"answers": [{"question_identifier": CITY, "answer": "Lima"}]}
+                ]
+            }
+        )
+        assert profile.city is None
+        assert profile.raw_answers == [{"question_identifier": CITY, "answer": "Lima"}]
+
+    def test_order_resolves_its_edition_from_the_ticketing_event(self, conference):
+        assert PretixOrder.resolve_conference(conference.slug) == conference
 
 
 @pytest.mark.django_db

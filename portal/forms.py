@@ -194,7 +194,6 @@ class ConferenceForm(forms.ModelForm):
             "volunteer_application_open",
             "sponsorship_open",
             "accepting_donations",
-            "pretix_event_slug",
             "sponsorship_goal",
             "donation_goal",
             "proposals_count",

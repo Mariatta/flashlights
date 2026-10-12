@@ -3,6 +3,7 @@ from enum import StrEnum
 from django.db import models
 
 from portal.models import BaseModel, ChoiceArrayField
+from ticketing.models import TicketingSettings, ticketing_for
 
 
 class PretixOrderstatus(StrEnum):
@@ -55,52 +56,10 @@ PRETIX_ORDER_STATUS_CHOICES = [
     (PretixOrderstatus.PAID, "Paid"),
 ]
 
-# Donations questions
-PRETIX_ANONYMOUS_DONATION_QUESTION_IDENTIFIER = "RU3GSQ7Y"
-PRETIX_STAY_ANONYMOUS_ANSWER_IDENTIFIER = "JPVJMTFG"
-PRETIX_NOT_ANONYMOUS_ANSWER_IDENTIFIER = "YR8TYFQ7"
-
-# Demographic questions
-PRETIX_ATTENDEE_CITY_QUESTION_IDENTIFIER = "PMJY8XDM"
-PRETIX_ATTENDEE_COUNTRY_QUESTION_IDENTIFIER = "LR7T8ARU"
-PRETIX_ATTENDEE_CURRENT_POSITION_QUESTION_IDENTIFIER = "AZRBXNA8"
-PRETIX_ATTENDEE_EXPERIENCE_LEVEL_QUESTION_IDENTIFIER = "RH8Y38TD"
-PRETIX_ATTENDEE_MAY_SHARE_EMAIL_WITH_SPONSOR_QUESTION_IDENTIFIER = "9PTNRCKV"
-PRETIX_ATTENDEE_EXPECTATION_FROM_EVENT_QUESTION_IDENTIFIER = "ZMLKUBDP"
-PRETIX_ATTENDEE_HEARD_ABOUT_EVENT_QUESTION_IDENTIFIER = "MHYVZZWR"
-PRETIX_ATTENDEE_PARTICIPATED_IN_PREVIOUS_EVENT_QUESTION_IDENTIFIER = "BFVYGGR7"
-PRETIX_ATTENDEE_PYLADIES_CHAPTER_QUESTION_IDENTIFIER = "BBW9W7R8"
-PRETIX_ATTENDEE_AGE_RANGE_QUESTION_IDENTIFIER = "7LT7RP37"
-PRETIX_ATTENDEE_ORGANIZATION_NAME_QUESTION_IDENTIFIER = "YFVMKV3Z"
-
-PRETIX_ATTENDEE_QUESTIONS = [
-    PRETIX_ATTENDEE_CITY_QUESTION_IDENTIFIER,
-    PRETIX_ATTENDEE_COUNTRY_QUESTION_IDENTIFIER,
-    PRETIX_ATTENDEE_EXPERIENCE_LEVEL_QUESTION_IDENTIFIER,
-    PRETIX_ATTENDEE_MAY_SHARE_EMAIL_WITH_SPONSOR_QUESTION_IDENTIFIER,
-    PRETIX_ATTENDEE_EXPECTATION_FROM_EVENT_QUESTION_IDENTIFIER,
-    PRETIX_ATTENDEE_HEARD_ABOUT_EVENT_QUESTION_IDENTIFIER,
-    PRETIX_ATTENDEE_PARTICIPATED_IN_PREVIOUS_EVENT_QUESTION_IDENTIFIER,
-    PRETIX_ATTENDEE_PYLADIES_CHAPTER_QUESTION_IDENTIFIER,
-    PRETIX_ATTENDEE_AGE_RANGE_QUESTION_IDENTIFIER,
-    PRETIX_ATTENDEE_ORGANIZATION_NAME_QUESTION_IDENTIFIER,
-    PRETIX_ATTENDEE_CURRENT_POSITION_QUESTION_IDENTIFIER,
-]
-
-# maps the pretix question identifiers to AttendeeProfile model fields
-ATTENDEE_FIELD_MAPPING = {
-    PRETIX_ATTENDEE_ORGANIZATION_NAME_QUESTION_IDENTIFIER: "organization_name",
-    PRETIX_ATTENDEE_AGE_RANGE_QUESTION_IDENTIFIER: "age_range",
-    PRETIX_ATTENDEE_PYLADIES_CHAPTER_QUESTION_IDENTIFIER: "pyladies_chapter",
-    PRETIX_ATTENDEE_PARTICIPATED_IN_PREVIOUS_EVENT_QUESTION_IDENTIFIER: "participated_in_previous_event",
-    PRETIX_ATTENDEE_HEARD_ABOUT_EVENT_QUESTION_IDENTIFIER: "heard_about",
-    PRETIX_ATTENDEE_EXPECTATION_FROM_EVENT_QUESTION_IDENTIFIER: "expectation_from_event",
-    PRETIX_ATTENDEE_MAY_SHARE_EMAIL_WITH_SPONSOR_QUESTION_IDENTIFIER: "may_share_email_with_sponsor",
-    PRETIX_ATTENDEE_EXPERIENCE_LEVEL_QUESTION_IDENTIFIER: "experience_level",
-    PRETIX_ATTENDEE_COUNTRY_QUESTION_IDENTIFIER: "country",
-    PRETIX_ATTENDEE_CITY_QUESTION_IDENTIFIER: "city",
-    PRETIX_ATTENDEE_CURRENT_POSITION_QUESTION_IDENTIFIER: "current_position",
-}
+# The question identifiers that used to sit here were PyLadiesCon's own
+# Pretix shop. Which question fills which field, and which answer means a
+# donor stays anonymous, are per edition now: the ticketing app's settings
+# row (decision 0012).
 
 
 class PretixOrder(BaseModel):
@@ -144,6 +103,13 @@ class PretixOrder(BaseModel):
         """
         from portal.models import Conference
 
+        row = (
+            TicketingSettings.objects.filter(event_id=event_slug)
+            .select_related("conference")
+            .first()
+        )
+        if row is not None:
+            return row.conference
         return (
             Conference.objects.filter(pretix_event_slug=event_slug).first()
             or Conference.get_active()
@@ -175,16 +141,16 @@ class PretixOrder(BaseModel):
                 return
 
     def set_is_anonymous_from_data(self, data):
-        """Set the is_anonymous field from pretix order data."""
+        """Set the is_anonymous field from the answer to the edition's
+        anonymity question; with no such question the order stays anonymous."""
+        row = ticketing_for(self.conference)
+        if row is None or not row.anonymous_question:
+            return
         for pos in data["positions"]:
             for answer in pos["answers"]:
-                if (
-                    answer["question_identifier"]
-                    == PRETIX_ANONYMOUS_DONATION_QUESTION_IDENTIFIER
-                ):
-                    self.is_anonymous = (
-                        PRETIX_STAY_ANONYMOUS_ANSWER_IDENTIFIER
-                        in answer["option_identifiers"]
+                if answer["question_identifier"] == row.anonymous_question:
+                    self.is_anonymous = row.anonymous_answer in answer.get(
+                        "option_identifiers", []
                     )
                     return
 
@@ -282,50 +248,49 @@ class AttendeeProfile(BaseModel):
         return f"Profile for {self.order.order_code}"
 
     def from_pretix_data(self, pretix_data):
-        """
-        Extract attendee demographic data from pretix order data.
-        This method maps pretix question identifiers to model fields.
-        """
-        # Store all answers for reference
-        all_answers = []
-
+        """Fill the demographic fields from the order's answers, through the
+        edition's question map (decision 0012). A mapped field this order
+        does not answer is cleared, so a changed answer never lingers."""
+        row = ticketing_for(self.order.conference)
+        mapping = (row.question_map if row else None) or {}
+        all_answers, answered = [], set()
         for position in pretix_data.get("positions", []):
             answers = position.get("answers", [])
             all_answers.extend(answers)
-
-            # Map pretix question identifiers to our fields
-            has_pyladies_chapter = False
             for answer in answers:
-                question_id = answer.get("question_identifier")
-                answer_value = answer.get("answer")
-
-                if question_id in ATTENDEE_FIELD_MAPPING:
-                    field_name = ATTENDEE_FIELD_MAPPING[question_id]
-                    field = AttendeeProfile._meta.get_field(field_name)
-                    field_type = field.get_internal_type()
-                    match field_type:
-                        case "BooleanField":
-                            setattr(self, field_name, "yes" in answer_value.lower())
-                        case "ChoiceArrayField":
-                            # remove extra comma in the specific case of participated_in_previous_event
-                            answer_value = answer_value.replace(
-                                "No, this is my first one", "No this is my first one"
-                            )
-                            answers = [
-                                answer.strip() for answer in answer_value.split(",")
-                            ]
-                            setattr(self, field_name, answers)
-
-                        case _:
-                            # treat as CharField/Freetext field by default
-                            if answer_value.lower() == "none":
-                                setattr(self, field_name, None)
-                            else:
-                                setattr(self, field_name, answer_value)
-
-                    if field_name == "pyladies_chapter":
-                        has_pyladies_chapter = True
-            if not has_pyladies_chapter:
-                setattr(self, "pyladies_chapter", None)
+                field_name = mapping.get(answer.get("question_identifier"))
+                if field_name is None:
+                    continue
+                answered.add(field_name)
+                self._set_answer(field_name, answer.get("answer") or "")
+        for field_name in set(mapping.values()) - answered:
+            field = AttendeeProfile._meta.get_field(field_name)
+            setattr(
+                self,
+                field_name,
+                [] if field.get_internal_type() == "ChoiceArrayField" else None,
+            )
         self.raw_answers = all_answers
         return self
+
+    def _set_answer(self, field_name, answer_value):
+        field = AttendeeProfile._meta.get_field(field_name)
+        match field.get_internal_type():
+            case "BooleanField":
+                setattr(self, field_name, "yes" in answer_value.lower())
+            case "ChoiceArrayField":
+                # The one answer with a comma of its own in the old survey.
+                answer_value = answer_value.replace(
+                    "No, this is my first one", FIRST_EVENT_ANSWER
+                )
+                setattr(
+                    self,
+                    field_name,
+                    [part.strip() for part in answer_value.split(",")],
+                )
+            case _:
+                setattr(
+                    self,
+                    field_name,
+                    None if answer_value.lower() == "none" else answer_value,
+                )

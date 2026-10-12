@@ -18,6 +18,8 @@ from sponsorship.models import (
     SponsorshipProgressStatus,
     SponsorshipTier,
 )
+from tests.ticketing_ids import make_ticketing
+from ticketing.models import TicketingSettings
 from volunteer.constants import ApplicationStatus
 from volunteer.models import Team, VolunteerProfile
 
@@ -382,7 +384,7 @@ class TestStartNewYear:
             reverse("start_new_year"),
             {
                 "year": 2028,
-                "name": "PyLadiesCon 2028",
+                "name": "Flashlights 2028",
                 "slug": "2028",
                 "start_date": "2028-12-01",
                 "end_date": "2028-12-03",
@@ -395,7 +397,26 @@ class TestStartNewYear:
         assert str(new.start_date) == "2028-12-01"
         assert str(new.end_date) == "2028-12-03"
         assert str(new.conference_date) == "2028-12-02"
-        assert new.pretix_event_slug == "2028"
+        # The event slug lands on the edition's ticketing row (decision 0012).
+        assert new.ticketing.event_id == "2028"
+
+    def test_carries_the_ticketing_forward(self, client, admin_user, conference):
+        make_ticketing(conference, product_map={"7": "donation"})
+        client.force_login(admin_user)
+        client.post(
+            reverse("start_new_year"),
+            {"year": 2029, "name": "Next", "slug": "2029", "pretix_event_slug": "2029"},
+        )
+        row = Conference.objects.get(year=2029).ticketing
+        assert row.event_id == "2029" and row.organizer == "flashlights"
+        assert row.product_map == {"7": "donation"}
+
+    def test_new_year_without_ticketing_has_none(self, client, admin_user, conference):
+        client.force_login(admin_user)
+        client.post(
+            reverse("start_new_year"), {"year": 2030, "name": "N", "slug": "2030"}
+        )
+        assert not TicketingSettings.objects.filter(conference__year=2030).exists()
 
     def test_duplicate_year_rejected(self, client, admin_user, conference):
         client.force_login(admin_user)

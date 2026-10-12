@@ -49,7 +49,6 @@ is in `docs/developer/deployment.md`.
 | `VOLUNTEERING_ENABLED` | `false` hides the Volunteer hub, its nav and organizer entries and the landing section; its pages answer 404 | `true` |
 | `SPONSORSHIP_ENABLED` | `false` hides sponsors, tiers, donations, their stats and dashboard tiles; its pages answer 404 | `true` |
 | `STATS_PUBLIC` | `false` takes the public stats pages (stats, year comparison, JSON, gallery) off the site | `true` |
-| `PRETIX_ORGANIZER` | The Pretix organizer slug whose webhooks and orders this instance accepts | unset |
 | `SPONSORSHIP_EMAIL`, `ACCOUNTING_EMAIL` | Who receives a sponsorship contract request; skipped when both are unset | unset |
 
 The Code of Conduct, sponsorship prospectus, donation and schedule links come
@@ -58,7 +57,8 @@ edition's "Taking volunteer applications" flag decides whether the landing
 page advertises volunteering at all; off, the team keeps its hub and the
 public page only offers sign in. Stats sections follow the features:
 volunteer stats with volunteering, sponsorship and donation stats with
-sponsorship, attendee stats only when `PRETIX_API_TOKEN` is set.
+sponsorship, attendee stats once the active edition has ticketing set up on
+its Tickets page (a Pretix shop or CSV imports) or has registrations.
 
 ## Local Dev setup
 

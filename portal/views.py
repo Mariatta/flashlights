@@ -8,6 +8,7 @@ from django.urls import reverse_lazy
 from django.views.generic import ListView, TemplateView
 from django.views.generic.edit import DeleteView, FormView, UpdateView
 
+from attendee.models import PretixOrder
 from common.mixins import AdminRequiredMixin, SuperuserRequiredMixin
 from portal.common import (
     SPONSOR_AWAITING_INVOICE_STATUS,
@@ -35,6 +36,7 @@ from speakers.models import Presenter, SpeakerSettings, speaker_module_enabled
 from speakers.seeds import clone_speaker_setup
 from speakers.stats import edition_task_stats
 from sponsorship.models import SponsorshipProfile
+from ticketing.models import carry_forward
 from volunteer.constants import ApplicationStatus
 from volunteer.models import Team, VolunteerProfile
 
@@ -124,7 +126,7 @@ def stats_json(request):
 #: Comparison chart -> the setting that makes its numbers meaningful here.
 #: A chart not listed (proposals) is always shown.
 COMPARISON_CHART_SWITCHES = {
-    "registrations_comparison": "PRETIX_CONFIGURED",
+    "registrations_comparison": lambda: PretixOrder.objects.exists(),
     "sponsors_comparison": "SPONSORSHIP_ENABLED",
     "sponsorship_amount_comparison": "SPONSORSHIP_ENABLED",
     "donors_comparison": "SPONSORSHIP_ENABLED",
@@ -134,8 +136,12 @@ COMPARISON_CHART_SWITCHES = {
 
 
 def _chart_is_on(chart):
+    """A setting name, or a callable for what a setting cannot say (any
+    edition has registrations: ticketing is per edition, decision 0012)."""
     setting = COMPARISON_CHART_SWITCHES.get(chart["chart_id"])
-    return setting is None or getattr(settings, setting)
+    if setting is None:
+        return True
+    return setting() if callable(setting) else getattr(settings, setting)
 
 
 def stats_comparison(request):
@@ -267,7 +273,6 @@ class StartNewYearView(SuperuserRequiredMixin, FormView):
         conference.start_date = data.get("start_date")
         conference.end_date = data.get("end_date")
         conference.conference_date = data.get("conference_date")
-        conference.pretix_event_slug = data.get("pretix_event_slug") or ""
         if source and data["copy_goals"]:
             conference.sponsorship_goal = source.sponsorship_goal
             conference.donation_goal = source.donation_goal
@@ -276,6 +281,8 @@ class StartNewYearView(SuperuserRequiredMixin, FormView):
         conference.save()
 
         carried = []
+        if carry_forward(conference, source, data.get("pretix_event_slug") or ""):
+            carried.append("the ticketing settings")
         if source:
             if data["clone_teams"]:
                 carried.append(f"{clone_teams(conference, source)} team(s)")

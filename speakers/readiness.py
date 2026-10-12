@@ -22,6 +22,8 @@ counts and the board can filter in SQL instead of asking every row.
 
 from django.db.models import Q
 
+from ticketing.models import TicketingSettings
+
 from .constants import ItemStatus, MediaKind, MediaStatus, ReadyOverride, ReadyRule
 from .models import (
     ChecklistItem,
@@ -29,7 +31,6 @@ from .models import (
     MediaAsset,
     PublishedSlot,
     ReadinessGate,
-    SpeakerSettings,
 )
 
 READY_RULES = {}
@@ -59,11 +60,10 @@ def guide_published(item):
 
 @ready_rule(ReadyRule.REGISTRATION_OPEN)
 def registration_open(item):
-    """The edition has pretix set up, so there is somewhere to register."""
-    settings_row = SpeakerSettings.objects.filter(
-        conference_id=item.conference_id
-    ).first()
-    return bool(settings_row and settings_row.pretix_configured)
+    """The edition has ticketing set up (an API or CSV imports), so there is
+    somewhere to register."""
+    row = TicketingSettings.objects.filter(conference_id=item.conference_id).first()
+    return bool(row and row.is_set_up)
 
 
 @ready_rule(ReadyRule.FINAL_CUT_READY)

@@ -67,7 +67,7 @@ from .constants import (
     ZipStatus,
     format_owner,
 )
-from .encryption import EncryptedTextField, usable
+from .encryption import EncryptedTextField
 from .querysets import PresenterQuerySet, SessionQuerySet
 from .signals import session_confirmed
 
@@ -264,8 +264,9 @@ class SpeakerSettings(TimestampedModel):
         help_text="Where unassigned organizer reminders go; blank sends them to "
         "every staff account.",
     )
-    # Pretix (design §12.1). The event slug falls back to
-    # Conference.pretix_event_slug; token and secret are encrypted at rest.
+    # Pretix (design §12.1): upstream's columns, kept so upstream merges
+    # apply, but nothing reads them. Ticketing is per edition in the
+    # ticketing app (decision 0012); its migration copied these over.
     pretix_base_url = models.URLField(
         default=BASE_PRETIX_URL,
         db_default=BASE_PRETIX_URL,
@@ -321,21 +322,6 @@ class SpeakerSettings(TimestampedModel):
     def api_origins(self):
         """The websites that may read the public API from the browser."""
         return [origin.url for origin in self.allowed_origins.all()]
-
-    @property
-    def pretix_event_slug(self):
-        return self.pretix_event or self.conference.pretix_event_slug
-
-    @property
-    def pretix_configured(self):
-        """Organizer, event and a token this deploy can actually decrypt: a
-        token loaded as ``Undecryptable`` reads as not configured, so a
-        missing key degrades pretix alone rather than every edition page."""
-        return bool(
-            self.pretix_organizer
-            and self.pretix_event_slug
-            and usable(self.pretix_api_token)
-        )
 
     class Meta:
         verbose_name = "speaker settings"

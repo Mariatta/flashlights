@@ -85,6 +85,7 @@ urlpatterns = [
     path("captcha/", include("captcha.urls")),
     path("sponsorship/", include("sponsorship.urls", namespace="sponsorship")),
     path("webhooks/", include("webhooks.urls", namespace="webhooks")),
+    path("", include("ticketing.urls")),
     path("speakers/", include("speakers.urls", namespace="speakers")),
     path("api/v1/", include("speakers.api_urls", namespace="speakers_api")),
     path("embed/", include("speakers.embed_urls", namespace="speakers_embed")),

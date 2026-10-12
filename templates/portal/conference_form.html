@@ -69,6 +69,8 @@
             <button type="submit" class="btn btn-primary">
                 {% trans "Save" %}
             </button>
+            <a href="{% url 'conference_tickets' object.pk %}"
+               class="btn btn-outline-primary"><i class="icon-ticket" aria-hidden="true"></i> {% trans "Tickets" %}</a>
             <a href="{% url 'conference_list' %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
         </form>
     </div>

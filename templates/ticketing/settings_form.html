@@ -1,0 +1,51 @@
+{% extends "portal/base.html" %}
+{% load i18n django_bootstrap5 %}
+{% block head_title %}
+    {% trans "Tickets" %}
+{% endblock head_title %}
+{% block content %}
+    <div class="container py-4">
+        <h1 class="h3 pb-2 mb-3 border-bottom">
+            {% trans "Tickets" %}: {{ conference.name }}
+        </h1>
+        <p class="text-secondary col-md-8">
+            {% blocktranslate %}Where this edition's registrations come from. They give the attendee numbers and tick the speakers' "Register for the event" line.{% endblocktranslate %}
+        </p>
+        <form method="post" class="col-md-8">
+            {% csrf_token %}
+            {% bootstrap_field form.provider %}
+            <fieldset class="card mb-4">
+                <legend class="card-header h6 mb-0">
+                    {% trans "Pretix" %}
+                </legend>
+                <div class="card-body">
+                    {% bootstrap_field form.base_url %}
+                    {% bootstrap_field form.organizer %}
+                    {% bootstrap_field form.event_id %}
+                    {% bootstrap_field form.api_token %}
+                    {% bootstrap_field form.webhook_secret %}
+                    <p class="small text-secondary mb-0">
+                        {% trans "Webhook URL for pretix, with the secret appended as" %} <code>?secret=…</code>:
+                        <code>{{ webhook_url }}</code>
+                    </p>
+                </div>
+            </fieldset>
+            <fieldset class="card mb-4">
+                <legend class="card-header h6 mb-0">
+                    {% trans "Questions and products" %}
+                </legend>
+                <div class="card-body">
+                    {% bootstrap_field form.question_lines %}
+                    {% bootstrap_field form.product_lines %}
+                    {% bootstrap_field form.anonymous_question %}
+                    {% bootstrap_field form.anonymous_answer %}
+                </div>
+            </fieldset>
+            <button type="submit" class="btn btn-primary">
+                {% trans "Save" %}
+            </button>
+            <a href="{% url 'conference_edit' conference.pk %}"
+               class="btn btn-secondary">{% trans "Cancel" %}</a>
+        </form>
+    </div>
+{% endblock content %}

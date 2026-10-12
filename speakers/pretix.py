@@ -13,6 +13,7 @@ import requests
 from django.utils import timezone
 
 from attendee.models import AttendeeProfile, PretixOrder, PretixOrderstatus
+from ticketing.models import TicketingSettings, ticketing_for
 
 from .models import ActivityLog, SpeakerSettings
 
@@ -35,11 +36,12 @@ class PretixError(Exception):
 class PretixClient:
     """Thin client over the pretix REST API with pagination and retry."""
 
-    def __init__(self, settings_row, attempts=3, backoff=1.0):
-        self.base_url = settings_row.pretix_base_url.rstrip("/") + "/"
-        self.organizer = settings_row.pretix_organizer
-        self.event = settings_row.pretix_event_slug
-        self.headers = {"Authorization": f"Token {settings_row.pretix_api_token}"}
+    def __init__(self, ticketing, attempts=3, backoff=1.0):
+        """``ticketing`` is the edition's ``TicketingSettings`` row."""
+        self.base_url = ticketing.base_url.rstrip("/") + "/"
+        self.organizer = ticketing.organizer
+        self.event = ticketing.event_id
+        self.headers = {"Authorization": f"Token {ticketing.api_token}"}
         self.attempts = attempts
         self.backoff = backoff
 
@@ -95,8 +97,7 @@ def upsert_order(conference, data):
     order.from_pretix_data(data)
     # The attendee mapping re-resolves the edition from the event slug and
     # falls back to the active edition when nothing matches. This path knows
-    # the edition (SpeakerSettings.pretix_event may differ from
-    # Conference.pretix_event_slug on purpose), so it wins.
+    # the edition (its ticketing row names the event), so it wins.
     order.conference = conference
     order.save()
     if order.status == PretixOrderstatus.PAID:
@@ -107,11 +108,11 @@ def upsert_order(conference, data):
 
 
 def client_for(conference):
-    """A client for the edition, or None when pretix is not configured."""
-    settings_row = SpeakerSettings.objects.filter(conference=conference).first()
-    if settings_row is None or not settings_row.pretix_configured:
+    """A client for the edition, or None when it has no Pretix API set up."""
+    row = ticketing_for(conference)
+    if row is None or not row.has_api:
         return None
-    return PretixClient(settings_row)
+    return PretixClient(row)
 
 
 def sync_order_by_code(conference, code, client=None):
@@ -124,19 +125,19 @@ def sync_order_by_code(conference, code, client=None):
 def reconcile(conference, client=None):
     """Page through orders modified since the last run and upsert them all.
 
-    Returns the number of orders seen. Advances ``pretix_last_synced_at``
-    to the start of the run so a webhook missed meanwhile is caught next
-    time.
+    Returns the number of orders seen. Advances the ticketing row's
+    ``last_synced_at`` to the start of the run so a webhook missed meanwhile
+    is caught next time.
     """
-    settings_row = SpeakerSettings.objects.get(conference=conference)
-    client = client or PretixClient(settings_row)
+    row = TicketingSettings.objects.get(conference=conference)
+    client = client or PretixClient(row)
     started = timezone.now()
     seen = 0
-    for data in client.iter_orders(modified_since=settings_row.pretix_last_synced_at):
+    for data in client.iter_orders(modified_since=row.last_synced_at):
         upsert_order(conference, data)
         seen += 1
-    settings_row.pretix_last_synced_at = started
-    settings_row.save(update_fields=["pretix_last_synced_at", "modified_date"])
+    row.last_synced_at = started
+    row.save(update_fields=["last_synced_at", "modified_date"])
     ActivityLog.record(
         conference, "pretix.reconciled", message=f"{seen} order(s) refreshed"
     )

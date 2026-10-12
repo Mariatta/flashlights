@@ -1,7 +1,9 @@
 from django.conf import settings
 from django.utils.functional import SimpleLazyObject
 
+from attendee.models import PretixOrder
 from portal_account.permissions import is_maintainer
+from ticketing.models import is_set_up
 from volunteer.models import VolunteerProfile
 
 from .models import Conference
@@ -19,14 +21,22 @@ def features(request):
     * ``volunteering_enabled``: the Volunteer hub exists on this instance
     * ``sponsorship_enabled``: sponsors, tiers and donations do
     * ``stats_public``: the public stats pages are served
-    * ``pretix_configured``: attendee numbers can exist (a Pretix token is set)
+    * ``pretix_configured``: attendee numbers can exist: the active edition
+      has ticketing set up, or registrations already (decision 0012)
     """
     return {
         "volunteering_enabled": settings.VOLUNTEERING_ENABLED,
         "sponsorship_enabled": settings.SPONSORSHIP_ENABLED,
         "stats_public": settings.STATS_PUBLIC,
-        "pretix_configured": settings.PRETIX_CONFIGURED,
+        "pretix_configured": SimpleLazyObject(_attendees_on),
     }
+
+
+def _attendees_on():
+    active = Conference.get_active()
+    return bool(
+        is_set_up(active) or PretixOrder.objects.filter(conference=active).exists()
+    )
 
 
 def user_capabilities(request):

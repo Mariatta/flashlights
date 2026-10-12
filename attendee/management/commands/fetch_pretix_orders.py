@@ -1,48 +1,41 @@
-"""
-Management command to fetch orders from Pretix and collect Attendee data.
-"""
+"""Fetch orders from pretix for every edition with a Pretix API set up (or
+one edition), through its ticketing settings (decision 0012)."""
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
-from attendee.models import AttendeeProfile, PretixOrder
-from common.pretix_wrapper import PRETIX_EVENT_SLUG, PRETIX_ORG, PretixWrapper
+from portal.models import Conference
+from speakers.pretix import reconcile
+from ticketing.models import TicketingSettings
 
 
 class Command(BaseCommand):
-    help = "Fetch Pretix orders and sync attendee demographics"
+    help = "Fetch pretix orders and sync attendee demographics, per edition"
+
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--conference", help="An edition's slug; every edition when left out."
+        )
+        parser.add_argument(
+            "--full",
+            action="store_true",
+            help="Fetch every order, not only those changed since the last run.",
+        )
 
     def handle(self, *args, **options):
-        pretix_wrapper = PretixWrapper(PRETIX_ORG, PRETIX_EVENT_SLUG)
-        orders_synced = 0
-        profiles_synced = 0
-
-        for order in pretix_wrapper.get_orders():
-            order_code = order["code"]
-            pretix_order, created = PretixOrder.objects.get_or_create(
-                order_code=order_code,
-                defaults={"conference": PretixOrder.resolve_conference(order["event"])},
+        rows = TicketingSettings.objects.select_related("conference")
+        if options["conference"]:
+            if not Conference.objects.filter(slug=options["conference"]).exists():
+                raise CommandError(f"No edition {options['conference']!r}.")
+            rows = rows.filter(conference__slug=options["conference"])
+        rows = [row for row in rows if row.has_api]
+        if not rows:
+            self.stdout.write("No edition has a Pretix API set up.")
+            return
+        for row in rows:
+            if options["full"]:
+                row.last_synced_at = None
+                row.save(update_fields=["last_synced_at", "modified_date"])
+            seen = reconcile(row.conference)
+            self.stdout.write(
+                self.style.SUCCESS(f"{row.conference}: {seen} order(s) synced")
             )
-            pretix_order.from_pretix_data(order)
-            pretix_order.save()
-            orders_synced += 1
-
-            # Sync attendee profile for paid orders
-            profile, profile_created = AttendeeProfile.objects.get_or_create(
-                order=pretix_order
-            )
-            profile.from_pretix_data(order)
-            profile.save()
-            profiles_synced += 1
-
-            if profile_created:
-                self.stdout.write(
-                    self.style.SUCCESS(
-                        f"Created attendee profile for order {order_code}"
-                    )
-                )
-
-        self.stdout.write(
-            self.style.SUCCESS(
-                f"Successfully synced {orders_synced} orders and {profiles_synced} attendee profiles"
-            )
-        )

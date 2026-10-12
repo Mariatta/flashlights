@@ -97,6 +97,7 @@ LOGGING = {
             "attendee",
             "speakers",
             "affiliations",
+            "ticketing",
         )
     },
 }
@@ -151,6 +152,7 @@ INSTALLED_APPS = [
     "attendee",
     "speakers",
     "affiliations",
+    "ticketing",
 ]
 DJANGO_TABLES2_TEMPLATE = "portal/base-tables-responsive.html"
 
@@ -542,13 +544,8 @@ CACHES = {
     }
 }
 
-PRETIX_API_TOKEN = os.getenv("PRETIX_API_TOKEN")
-PRETIX_WEBHOOK_SECRET = os.getenv("PRETIX_WEBHOOK_SECRET")
-# Attendee numbers come from Pretix; without a token there are none to show.
-PRETIX_CONFIGURED = bool(PRETIX_API_TOKEN)
-# The Pretix organizer slug this instance's ticket shop lives under; webhooks
-# for any other organizer are ignored.
-PRETIX_ORGANIZER = os.getenv("PRETIX_ORGANIZER", "")
+# Ticketing is per edition (decision 0012): the ticketing app's settings
+# row, edited on the edition's Tickets page, not the environment.
 
 # Who receives a sponsorship contract request besides the sponsor: the
 # organisers' sponsorship contact and whoever issues invoices. Both optional;

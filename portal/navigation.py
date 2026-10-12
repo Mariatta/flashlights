@@ -43,6 +43,7 @@ SECTION_BY_NAME = {
     "conference_list": ORGANIZE,
     "conference_new": ORGANIZE,
     "conference_edit": ORGANIZE,
+    "conference_tickets": ORGANIZE,
     "conference_delete": ORGANIZE,
     "start_new_year": ORGANIZE,
     "teams": ORGANIZE,

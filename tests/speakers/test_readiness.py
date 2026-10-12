@@ -33,6 +33,7 @@ from speakers.readiness import (
 )
 from speakers.reminders import send_checklist_digests
 from speakers.seeds import clone_checklists, seed_checklists, seed_readiness_gates
+from tests.ticketing_ids import make_ticketing
 from volunteer.constants import ApplicationStatus
 from volunteer.models import VolunteerProfile
 
@@ -122,12 +123,9 @@ class TestWaitSources:
         register = item(world["ada"], "Register for the event")
         assert register.is_waiting
         assert register.waiting_reason == "registration is not open yet"
-        settings_row = conference.speaker_settings
-        settings_row.pretix_base_url = "https://pretix.example"
-        settings_row.pretix_organizer = "pyladies"
-        settings_row.pretix_event = "con2026"
-        settings_row.pretix_api_token = "token"
-        settings_row.save()
+        # The edition's ticketing (decision 0012): a CSV import counts as
+        # somewhere to register, just as a Pretix API does.
+        make_ticketing(conference, provider="CSV", api_token="")
         refresh_for_conference(conference)
         assert not item(world["ada"], "Register for the event").is_waiting
 

@@ -4,11 +4,8 @@ from datetime import date, timedelta
 import pytest
 from captcha.models import CaptchaStore
 
-from attendee.models import (
-    PRETIX_ANONYMOUS_DONATION_QUESTION_IDENTIFIER,
-    PRETIX_NOT_ANONYMOUS_ANSWER_IDENTIFIER,
-)
 from portal.models import Conference
+from tests.ticketing_ids import ANONYMOUS_QUESTION, NOT_ANONYMOUS
 from volunteer.models import Language
 
 
@@ -113,8 +110,8 @@ def pretix_order_data():
                 "answers": [
                     {"question_identifier": "QUESTION123", "option_identifiers": []},
                     {
-                        "option_identifiers": [PRETIX_NOT_ANONYMOUS_ANSWER_IDENTIFIER],
-                        "question_identifier": PRETIX_ANONYMOUS_DONATION_QUESTION_IDENTIFIER,
+                        "option_identifiers": [NOT_ANONYMOUS],
+                        "question_identifier": ANONYMOUS_QUESTION,
                     },
                 ],
             }

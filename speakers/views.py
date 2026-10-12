@@ -21,6 +21,7 @@ from django_tables2.views import SingleTableMixin
 from attendee.models import PretixOrder
 from common.tasks import enqueue
 from portal_account import agreements
+from ticketing.models import has_api as ticketing_has_api
 from volunteer.models import Team
 
 from .board import (
@@ -705,12 +706,7 @@ class PresenterDetailView(PresenterScopedMixin, DetailView):
         # Checklists only make sense once the presenter has been invited; ad-hoc
         # items added earlier still show.
         context["show_checklists"] = bool(context["latest_sent"] or items)
-        settings_row = SpeakerSettings.objects.filter(
-            conference=self.conference
-        ).first()
-        context["pretix_configured"] = bool(
-            settings_row and settings_row.pretix_configured
-        )
+        context["pretix_configured"] = ticketing_has_api(self.conference)
         context["matched_orders"] = list(
             PretixOrder.objects.filter(
                 conference=self.conference, email__iexact=self.object.email
