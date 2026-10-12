@@ -8,4 +8,9 @@ urlpatterns = [
         views.TicketingSettingsView.as_view(),
         name="conference_tickets",
     ),
+    path(
+        "conferences/<int:pk>/tickets/import/",
+        views.CsvImportView.as_view(),
+        name="conference_tickets_import",
+    ),
 ]

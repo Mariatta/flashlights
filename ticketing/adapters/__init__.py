@@ -11,11 +11,19 @@ and Eventbrite, Luma or Tito follow the same shape.
 """
 
 from .base import REGISTERED, Adapter, Registration, Status
+from .csv import CsvAdapter
 from .pretix import PretixAdapter
 
-__all__ = ["REGISTERED", "Adapter", "Registration", "Status", "adapter_for"]
+__all__ = [
+    "REGISTERED",
+    "Adapter",
+    "CsvAdapter",
+    "Registration",
+    "Status",
+    "adapter_for",
+]
 
-ADAPTERS = {PretixAdapter.provider: PretixAdapter}
+ADAPTERS = {PretixAdapter.provider: PretixAdapter, CsvAdapter.provider: CsvAdapter}
 
 
 def adapter_for(ticketing, **kwargs):

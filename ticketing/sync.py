@@ -1,10 +1,14 @@
 """Recording registrations, whatever the provider (decision 0012)."""
 
+import csv
+import io
+from dataclasses import dataclass, field
+
 from django.utils import timezone
 
 from attendee.models import AttendeeProfile, PretixOrder
 
-from .adapters import adapter_for
+from .adapters import CsvAdapter, adapter_for
 
 
 def upsert_registration(conference, registration):
@@ -41,3 +45,49 @@ def sync(ticketing, adapter=None):
     ticketing.last_synced_at = started
     ticketing.save(update_fields=["last_synced_at", "modified_date"])
     return seen
+
+
+class CsvImportError(ValueError):
+    """The file cannot be read as this edition's export."""
+
+
+@dataclass
+class ImportResult:
+    imported: int = 0
+    registered: int = 0
+    skipped: list = field(default_factory=list)  # (line, reason)
+
+
+def import_csv(ticketing, content):
+    """Record every row of a CSV export (bytes or text) for the edition.
+
+    Rows are upserted by code (or email): importing a newer export updates
+    people and adds new ones; someone missing from it is left as they were,
+    since an export filtered by date would otherwise cancel everyone else.
+    """
+    if isinstance(content, bytes):
+        try:
+            content = content.decode("utf-8-sig")
+        except UnicodeDecodeError as exc:
+            raise CsvImportError("Save the file as UTF-8 CSV and try again.") from exc
+    columns = ticketing.csv_columns or {}
+    if not columns.get("email"):
+        raise CsvImportError("Map the email column on the Tickets page first.")
+    reader = csv.DictReader(io.StringIO(content))
+    headers = reader.fieldnames or []
+    missing = sorted(header for header in columns.values() if header not in headers)
+    if missing:
+        raise CsvImportError(
+            "The file has no column named " + ", ".join(repr(h) for h in missing) + "."
+        )
+    adapter = CsvAdapter(ticketing)
+    result = ImportResult()
+    for line, row in enumerate(reader, start=2):
+        registration = adapter.normalise(row)
+        if "@" not in registration.email:
+            result.skipped.append((line, "no email address"))
+            continue
+        upsert_registration(ticketing.conference, registration)
+        result.imported += 1
+        result.registered += registration.is_registered
+    return result

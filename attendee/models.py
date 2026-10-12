@@ -140,8 +140,13 @@ class PretixOrder(BaseModel):
 
     def from_registration(self, registration):
         """Record a normalised registration (decision 0012). Unchanged
-        since the last time (same modification stamp), nothing moves."""
-        if self.last_modified == registration.modified and self.state:
+        since the last time (same modification stamp), nothing moves; a
+        provider with no stamp (a CSV row) always updates."""
+        if (
+            registration.modified is not None
+            and self.last_modified == registration.modified
+            and self.state
+        ):
             return self
         self.provider = registration.provider
         self.state = registration.status

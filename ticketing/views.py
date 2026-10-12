@@ -6,8 +6,9 @@ from django.views.generic.edit import FormView
 from common.mixins import SuperuserRequiredMixin
 from portal.models import Conference
 
-from .forms import TicketingSettingsForm
-from .models import POLL_MINUTES, TicketingSettings
+from .forms import CsvImportForm, TicketingSettingsForm
+from .models import POLL_MINUTES, TicketingSettings, ticketing_for
+from .sync import CsvImportError, import_csv
 
 
 class TicketingSettingsView(SuperuserRequiredMixin, FormView):
@@ -41,3 +42,42 @@ class TicketingSettingsView(SuperuserRequiredMixin, FormView):
         form.save()
         messages.success(self.request, f"Saved the tickets for {self.conference}.")
         return redirect("conference_edit", pk=self.conference.pk)
+
+
+class CsvImportView(SuperuserRequiredMixin, FormView):
+    """Upload an export of the edition's registrations (decision 0012)."""
+
+    form_class = CsvImportForm
+    template_name = "ticketing/csv_import.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.conference = get_object_or_404(Conference, pk=kwargs["pk"])
+        self.ticketing = ticketing_for(self.conference)
+        if self.ticketing is None or not self.ticketing.csv_columns.get("email"):
+            messages.info(request, "Map the CSV columns on the Tickets page first.")
+            return redirect("conference_tickets", pk=self.conference.pk)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["conference"] = self.conference
+        context["columns"] = self.ticketing.csv_columns
+        return context
+
+    def form_valid(self, form):
+        try:
+            result = import_csv(self.ticketing, form.cleaned_data["file"].read())
+        except CsvImportError as exc:
+            form.add_error("file", str(exc))
+            return self.form_invalid(form)
+        messages.success(
+            self.request,
+            f"Imported {result.imported} row(s), {result.registered} registered.",
+        )
+        for line, reason in result.skipped[:10]:
+            messages.warning(self.request, f"Line {line} skipped: {reason}.")
+        if len(result.skipped) > 10:
+            messages.warning(
+                self.request, f"{len(result.skipped) - 10} more line(s) skipped."
+            )
+        return redirect("conference_tickets_import", pk=self.conference.pk)

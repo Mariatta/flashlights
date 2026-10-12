@@ -35,6 +35,18 @@
             </fieldset>
             <fieldset class="card mb-4">
                 <legend class="card-header h6 mb-0">
+                    {% trans "CSV export" %}
+                </legend>
+                <div class="card-body">
+                    {% bootstrap_field form.csv_lines %}
+                    {% if form.instance.csv_columns.email %}
+                        <a class="btn btn-outline-primary btn-sm"
+                           href="{% url 'conference_tickets_import' conference.pk %}"><i class="icon-upload" aria-hidden="true"></i> {% trans "Import registrations" %}</a>
+                    {% endif %}
+                </div>
+            </fieldset>
+            <fieldset class="card mb-4">
+                <legend class="card-header h6 mb-0">
                     {% trans "Questions and products" %}
                 </legend>
                 <div class="card-body">

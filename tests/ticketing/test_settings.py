@@ -118,7 +118,13 @@ class TestTicketsPage:
         client.force_login(admin_user)
         client.post(
             tickets_url(conference),
-            form_data(provider="CSV", organizer="", event_id="", api_token=""),
+            form_data(
+                provider="CSV",
+                organizer="",
+                event_id="",
+                api_token="",
+                csv_lines="email = Email",
+            ),
         )
         row = TicketingSettings.objects.get(conference=conference)
         assert row.is_set_up and not row.has_api

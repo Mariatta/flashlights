@@ -1,6 +1,12 @@
 from django import forms
 
-from .models import ATTENDEE_FIELD_NAMES, ProductKind, Provider, TicketingSettings
+from .models import (
+    ATTENDEE_FIELD_NAMES,
+    CSV_FIELD_NAMES,
+    ProductKind,
+    Provider,
+    TicketingSettings,
+)
 
 MAP_HELP = "One per line: the provider's id, an equals sign, then {what}."
 
@@ -18,6 +24,29 @@ def parse_map(text, allowed, what):
             errors.append(f"Line {number}: write it as ID = {what}.")
         elif value not in allowed:
             errors.append(f"Line {number}: {value!r} is not one of {what}.")
+        else:
+            result[key] = value
+    if errors:
+        raise forms.ValidationError(errors)
+    return result
+
+
+def parse_columns(text):
+    """``field = Header`` lines: the field one of ours, the header free."""
+    result, errors = {}, []
+    for number, raw in enumerate((text or "").splitlines(), start=1):
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        key, sep, value = (part.strip() for part in line.partition("="))
+        if not sep or not key or not value:
+            errors.append(f"Line {number}: write it as field = Column header.")
+        elif key not in CSV_FIELD_NAMES:
+            errors.append(
+                f"Line {number}: {key!r} is not one of "
+                + ", ".join(sorted(CSV_FIELD_NAMES))
+                + "."
+            )
         else:
             result[key] = value
     if errors:
@@ -52,6 +81,16 @@ class TicketingSettingsForm(forms.ModelForm):
         + ", ".join(sorted(ATTENDEE_FIELD_NAMES))
         + ". Questions not listed are kept with the registration, unmapped.",
     )
+    csv_lines = forms.CharField(
+        label="CSV columns",
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 4}),
+        help_text="One per line: our field, an equals sign, then the column header "
+        "in the export. Fields: "
+        + ", ".join(sorted(CSV_FIELD_NAMES))
+        + ". Only email is required; with no status column everyone in the file "
+        "counts as registered. For a CSV, the question map's ids are column headers.",
+    )
     product_lines = forms.CharField(
         label="Product map",
         required=False,
@@ -77,6 +116,7 @@ class TicketingSettingsForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["question_lines"].initial = map_text(self.instance.question_map)
         self.fields["product_lines"].initial = map_text(self.instance.product_map)
+        self.fields["csv_lines"].initial = map_text(self.instance.csv_columns)
 
     def _keep_when_blank(self, name):
         value = self.cleaned_data.get(name)
@@ -102,8 +142,15 @@ class TicketingSettingsForm(forms.ModelForm):
             "ticket or donation",
         )
 
+    def clean_csv_lines(self):
+        return parse_columns(self.cleaned_data["csv_lines"])
+
     def clean(self):
         cleaned = super().clean()
+        if cleaned.get("provider") == Provider.CSV and not (
+            cleaned.get("csv_lines") or {}
+        ).get("email"):
+            self.add_error("csv_lines", "Name the email column: email = Email")
         if cleaned.get("provider") == Provider.PRETIX:
             for name in ("organizer", "event_id"):
                 if not cleaned.get(name):
@@ -113,4 +160,13 @@ class TicketingSettingsForm(forms.ModelForm):
     def save(self, commit=True):
         self.instance.question_map = self.cleaned_data["question_lines"]
         self.instance.product_map = self.cleaned_data["product_lines"]
+        self.instance.csv_columns = self.cleaned_data["csv_lines"]
         return super().save(commit=commit)
+
+
+class CsvImportForm(forms.Form):
+    file = forms.FileField(
+        label="CSV export",
+        help_text="Comma-separated, UTF-8, one row per registration, headers on "
+        "the first line.",
+    )

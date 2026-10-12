@@ -46,6 +46,19 @@ ATTENDEE_FIELDS = [
 ]
 ATTENDEE_FIELD_NAMES = {name for name, _ in ATTENDEE_FIELDS}
 
+#: What a CSV export's columns can hold. Only the email is required: a
+#: file of names and emails is a list of people registered.
+CSV_FIELDS = [
+    ("email", "Email"),
+    ("name", "Name"),
+    ("code", "Order or registration code"),
+    ("status", "Status"),
+    ("amount", "Amount paid"),
+    ("created", "Registered at"),
+    ("product", "Ticket type or product"),
+]
+CSV_FIELD_NAMES = {name for name, _ in CSV_FIELDS}
+
 
 class TicketingSettings(models.Model):
     conference = models.OneToOneField(
@@ -83,6 +96,12 @@ class TicketingSettings(models.Model):
         default=dict,
         blank=True,
         help_text="Product id to ticket or donation.",
+    )
+    csv_columns = models.JSONField(
+        "CSV columns",
+        default=dict,
+        blank=True,
+        help_text="Registration field to the CSV column header holding it.",
     )
     anonymous_question = models.CharField(
         max_length=100,
