@@ -15,30 +15,32 @@
                 </div>
             </div>
         </div>
-        <div class="col-sm-4">
-            <div class="card border-0">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        First Time Attendees
-                    </h5>
-                    <p class="display-4 text-success mb-0">
-                        {{ stats.attendee_first_time_count }}
-                    </p>
+        {% if stats.attendee_first_time_on %}
+            <div class="col-sm-4">
+                <div class="card border-0">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            First Time Attendees
+                        </h5>
+                        <p class="display-4 text-success mb-0">
+                            {{ stats.attendee_first_time_count }}
+                        </p>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="col-sm-4">
-            <div class="card border-0 text-bg-success">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        % of First Time Attendees
-                    </h5>
-                    <p class="display-4 text-warning mb-0">
-                        {{ stats.attendee_first_time_percent |floatformat:0 }}%
-                    </p>
+            <div class="col-sm-4">
+                <div class="card border-0 text-bg-success">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            % of First Time Attendees
+                        </h5>
+                        <p class="display-4 text-warning mb-0">
+                            {{ stats.attendee_first_time_percent |floatformat:0 }}%
+                        </p>
+                    </div>
                 </div>
             </div>
-        </div>
+        {% endif %}
     </div>
 </div>
 {% for breakdown in stats.attendee_breakdown %}

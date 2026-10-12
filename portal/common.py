@@ -1,8 +1,9 @@
+from collections import Counter
+
 from django.core.cache import cache
 from django.db.models import Count, Sum
 
 from attendee.models import (
-    FIRST_EVENT_ANSWER,
     AttendeeProfile,
     PretixOrder,
 )
@@ -42,6 +43,7 @@ from sponsorship.models import (
     SponsorshipProgressStatus,
 )
 from ticketing.adapters import REGISTERED, Status
+from ticketing.models import CHARTED_FIELDS, ProductKind, ticketing_for
 from volunteer.constants import ApplicationStatus
 from volunteer.models import Team, VolunteerProfile
 
@@ -472,7 +474,7 @@ def get_total_donations_amount_cache(conference):
         )
         donations_from_pretix = (
             PretixOrder.objects.filter(
-                state=Status.PAID, conference=conference
+                state=Status.PAID, kind=ProductKind.DONATION, conference=conference
             ).aggregate(Sum("total"))["total__sum"]
             or 0
         )
@@ -498,7 +500,10 @@ def get_donors_count_cache(conference):
             .count()
         )
         pretix_donors_count = PretixOrder.objects.filter(
-            state=Status.PAID, total__gt=0, conference=conference
+            state=Status.PAID,
+            kind=ProductKind.DONATION,
+            total__gt=0,
+            conference=conference,
         ).count()
         donors_count = individual_donors_count + pretix_donors_count
         cache.set(
@@ -545,7 +550,7 @@ def get_attendee_count_cache(conference):
     attendee_count = cache.get(cache_key)
     if not attendee_count:
         attendee_count = PretixOrder.objects.filter(
-            state__in=REGISTERED, conference=conference
+            state__in=REGISTERED, kind=ProductKind.TICKET, conference=conference
         ).count()
         cache.set(
             cache_key,
@@ -565,47 +570,20 @@ def get_attendee_stats_dict(conference):
     stats_dict[CACHE_KEY_ATTENDEE_FIRST_TIME_PERCENT] = get_first_time_attendee_percent(
         conference
     )
+    stats_dict["attendee_first_time_on"] = bool(first_time_answer(conference))
 
     return stats_dict
 
 
-def get_attendee_experience_breakdown(attendee_profiles):
-    """Returns the attendee experience level breakdown stats."""
-    experience_breakdown = []
-    attendees_by_experience = (
-        attendee_profiles.filter(experience_level__isnull=False)
-        .values("experience_level")
-        .annotate(count=Count("id"))
-        # Without an explicit order the DB returns ties in arbitrary order,
-        # which made the chart (and its test) nondeterministic.
-        .order_by("experience_level")
-    )
-    for data in attendees_by_experience:
-        experience_breakdown.append([data["experience_level"], data["count"]])
-    return experience_breakdown
-
-
-def get_attendee_current_position_breakdown(attendee_profiles):
-    """Returns the attendee current position breakdown stats."""
-    attendees_by_current_position = (
-        attendee_profiles.filter(current_position__isnull=False)
-        .values("current_position")
-        .annotate(count=Count("id"))
-    )
-    current_positions = {}
-    for data in attendees_by_current_position:
-        for current_position in data["current_position"]:
-            current_position = current_position.strip()
-            if current_positions.get(current_position) is None:
-                current_positions[current_position] = 0
-            current_positions[current_position] = (
-                current_positions[current_position] + data["count"]
-            )
-    current_position_breakdown = [
-        [current_position, count]
-        for current_position, count in sorted(current_positions.items())
-    ]
-    return current_position_breakdown
+def first_time_answer(conference):
+    """The answer that means first time, when the edition maps the "came
+    to a previous edition" question and says which answer that is."""
+    row = ticketing_for(conference)
+    if row is None or "participated_in_previous_event" not in set(
+        row.question_map.values()
+    ):
+        return ""
+    return row.first_time_answer
 
 
 def get_first_time_attendee_count(conference):
@@ -613,11 +591,17 @@ def get_first_time_attendee_count(conference):
     cache_key = f"{CACHE_KEY_ATTENDEE_FIRST_TIME_COUNT}_{conference.year}"
     first_time_attendee_count = cache.get(cache_key)
     if not first_time_attendee_count:
-        first_time_attendee_count = AttendeeProfile.objects.filter(
-            order__state__in=REGISTERED,
-            participated_in_previous_event__contains=[FIRST_EVENT_ANSWER],
-            order__conference=conference,
-        ).count()
+        answer = first_time_answer(conference)
+        first_time_attendee_count = (
+            AttendeeProfile.objects.filter(
+                order__state__in=REGISTERED,
+                order__kind=ProductKind.TICKET,
+                participated_in_previous_event__contains=[answer],
+                order__conference=conference,
+            ).count()
+            if answer
+            else 0
+        )
 
         cache.set(
             cache_key,
@@ -649,34 +633,41 @@ def get_first_time_attendee_percent(conference):
 
 
 def get_attendee_breakdown(conference):
-    """Returns the attendee demographic breakdown stats."""
+    """One chart per attendee field the edition's question map fills
+    (decision 0012): an edition that asks nothing shows no charts."""
     cache_key = f"{CACHE_KEY_ATTENDEE_BREAKDOWN}_{conference.year}"
     attendee_breakdown = cache.get(cache_key)
     if not attendee_breakdown:
-        attendee_breakdown = []
-        attendee_profiles = AttendeeProfile.objects.filter(
+        row = ticketing_for(conference)
+        mapped = set((row.question_map if row else {}).values())
+        profiles = AttendeeProfile.objects.filter(
             order__state__in=REGISTERED,
+            order__kind=ProductKind.TICKET,
             order__conference=conference,
         )
-        attendee_breakdown.append(
-            {
-                "title": "Experience Level",
-                "data": get_attendee_experience_breakdown(attendee_profiles),
-            }
-        )
-        attendee_breakdown.append(
-            {
-                "title": "Current Position",
-                "data": get_attendee_current_position_breakdown(attendee_profiles),
-            }
-        )
-
-        cache.set(
-            cache_key,
-            attendee_breakdown,
-            STATS_CACHE_TIMEOUT,
-        )
+        attendee_breakdown = [
+            {"title": label, "data": get_attendee_field_breakdown(profiles, name)}
+            for name, label in CHARTED_FIELDS
+            if name in mapped
+        ]
+        cache.set(cache_key, attendee_breakdown, STATS_CACHE_TIMEOUT)
     return attendee_breakdown
+
+
+def get_attendee_field_breakdown(attendee_profiles, field_name):
+    """``[value, count]`` rows for one attendee field, sorted by value. A
+    multiple-choice answer counts once per choice; a yes/no as Yes or No."""
+    kind = AttendeeProfile._meta.get_field(field_name).get_internal_type()
+    counts = Counter()
+    for value in attendee_profiles.values_list(field_name, flat=True):
+        if kind == "ChoiceArrayField":
+            counts.update(part.strip() for part in value or [] if part and part.strip())
+        elif kind == "BooleanField":
+            if value is not None:
+                counts["Yes" if value else "No"] += 1
+        elif value:
+            counts[value.strip()] += 1
+    return [[value, count] for value, count in sorted(counts.items())]
 
 
 def _conference_comparison_metrics(conference):

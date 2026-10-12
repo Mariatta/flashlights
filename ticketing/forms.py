@@ -110,6 +110,7 @@ class TicketingSettingsForm(forms.ModelForm):
             "webhook_secret",
             "anonymous_question",
             "anonymous_answer",
+            "first_time_answer",
         ]
 
     def __init__(self, *args, **kwargs):

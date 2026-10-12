@@ -46,6 +46,14 @@ ATTENDEE_FIELDS = [
 ]
 ATTENDEE_FIELD_NAMES = {name for name, _ in ATTENDEE_FIELDS}
 
+#: The fields the stats chart, in this order. The sponsor-email consent
+#: is not a demographic, and "came before" has its own first-time cards.
+CHARTED_FIELDS = [
+    (name, label)
+    for name, label in ATTENDEE_FIELDS
+    if name not in ("may_share_email_with_sponsor", "participated_in_previous_event")
+]
+
 #: What a CSV export's columns can hold. Only the email is required: a
 #: file of names and emails is a list of people registered.
 CSV_FIELDS = [
@@ -112,6 +120,13 @@ class TicketingSettings(models.Model):
         max_length=100,
         blank=True,
         help_text="The answer to that question that means anonymous.",
+    )
+    first_time_answer = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text='The answer to the question mapped to "came to a previous '
+        'edition" that means this is their first time, exactly as written. '
+        "The first-time numbers show once it is set.",
     )
     last_synced_at = models.DateTimeField(null=True, blank=True)
     modified_date = models.DateTimeField(auto_now=True)

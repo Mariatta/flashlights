@@ -34,6 +34,7 @@ from sponsorship.models import (
     SponsorshipProgressStatus,
     SponsorshipTier,
 )
+from tests.ticketing_ids import make_ticketing
 from ticketing.adapters import Status
 from volunteer.models import VolunteerProfile
 
@@ -394,28 +395,96 @@ class TestAttendeeStats:
             current_position=["Manager"],
         )
 
-        breakdown = get_attendee_breakdown(conference)
-        for b in breakdown:
-            if b["title"] == "Current Position":
-                assert b["data"] == [
-                    ["Director", 1],
-                    ["Intern", 1],
-                    ["Manager", 1],
-                ]
-            elif b["title"] == "Experience Level":
-                assert b["data"] == [
-                    ["Expert", 1],
-                    ["Intermediate", 1],
-                    ["Junior", 1],
-                ]
+        # Nothing mapped, nothing charted (decision 0012).
+        assert get_attendee_breakdown(conference) == []
+        cache.clear()
+        make_ticketing(
+            conference,
+            question_map={
+                "Q1": "current_position",
+                "Q2": "experience_level",
+                "Q3": "may_share_email_with_sponsor",
+                "Q4": "city",
+            },
+        )
+        breakdown = {b["title"]: b["data"] for b in get_attendee_breakdown(conference)}
+        # In the map's field order; the consent is not charted.
+        assert list(breakdown) == ["City", "Current position", "Experience level"]
+        assert breakdown["Current position"] == [
+            ["Director", 1],
+            ["Intern", 1],
+            ["Manager", 1],
+        ]
+        assert breakdown["Experience level"] == [
+            ["Expert", 1],
+            ["Intermediate", 1],
+            ["Junior", 1],
+        ]
+        assert ["Raccoon City", 1] in breakdown["City"]
+
+    def test_field_breakdown_shapes(self, conference):
+        from portal.common import get_attendee_field_breakdown
+
+        order = PretixOrder.objects.create(
+            order_code="B1", state=Status.PAID, conference=conference
+        )
+        AttendeeProfile.objects.create(
+            order=order,
+            may_share_email_with_sponsor=True,
+            heard_about=["Meetup", " ", ""],
+            city="",
+        )
+        profiles = AttendeeProfile.objects.all()
+        assert get_attendee_field_breakdown(
+            profiles, "may_share_email_with_sponsor"
+        ) == [["Yes", 1]]
+        assert get_attendee_field_breakdown(profiles, "heard_about") == [["Meetup", 1]]
+        assert get_attendee_field_breakdown(profiles, "city") == []
+        AttendeeProfile.objects.update(may_share_email_with_sponsor=None)
+        assert (
+            get_attendee_field_breakdown(profiles, "may_share_email_with_sponsor") == []
+        )
+
+    def test_first_time_needs_the_question_and_its_answer(self, conference):
+        from portal.common import get_attendee_stats_dict
+
+        order = PretixOrder.objects.create(
+            order_code="F1", state=Status.FREE, conference=conference
+        )
+        AttendeeProfile.objects.create(
+            order=order, participated_in_previous_event=["First time, yes"]
+        )
+        donation = PretixOrder.objects.create(
+            order_code="D1",
+            state=Status.PAID,
+            kind="donation",
+            total=50,
+            conference=conference,
+        )
+        AttendeeProfile.objects.create(
+            order=donation, participated_in_previous_event=["First time, yes"]
+        )
+        stats = get_attendee_stats_dict(conference)
+        assert stats["attendee_first_time_on"] is False
+        assert stats["attendee_count"] == 1  # the donation is not an attendee
+        cache.clear()
+        make_ticketing(
+            conference,
+            question_map={"Q": "participated_in_previous_event"},
+            first_time_answer="First time, yes",
+        )
+        stats = get_attendee_stats_dict(conference)
+        assert stats["attendee_first_time_on"] is True
+        assert stats["attendee_first_time_count"] == 1
 
     def test_attendee_breakdown_with_no_profiles(self, conference):
         """Test attendee breakdown returns empty when no profiles exist."""
         from portal.common import get_attendee_breakdown
 
-        breakdown = get_attendee_breakdown(conference)
-        for b in breakdown:
-            assert b["data"] == []
+        make_ticketing(conference, question_map={"Q1": "experience_level"})
+        assert get_attendee_breakdown(conference) == [
+            {"title": "Experience level", "data": []}
+        ]
 
 
 @pytest.mark.django_db

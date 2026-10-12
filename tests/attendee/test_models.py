@@ -162,7 +162,8 @@ class TestAttendeeProfileModel:
             "Support community activities",
         ]
         assert profile.heard_about == ["Social Media", "Other"]
-        assert profile.participated_in_previous_event == ["No this is my first one"]
+        # Kept whole: the first-time answer is matched exactly (decision 0012).
+        assert profile.participated_in_previous_event == ["No, this is my first one"]
         assert profile.pyladies_chapter == "San Francisco"
         assert profile.age_range == "19-25"
         assert profile.organization_name == "Umbrella Corp"
@@ -266,7 +267,8 @@ class TestAttendeeProfileModel:
             "Support community activities",
         ]
         assert profile.heard_about == ["Social Media", "Other"]
-        assert profile.participated_in_previous_event == ["No this is my first one"]
+        # Kept whole: the first-time answer is matched exactly (decision 0012).
+        assert profile.participated_in_previous_event == ["No, this is my first one"]
         assert profile.pyladies_chapter is None
         assert profile.age_range == "19-25"
         assert profile.organization_name == "Umbrella Corp"

@@ -332,11 +332,11 @@ class AttendeeProfile(BaseModel):
         match field.get_internal_type():
             case "BooleanField":
                 setattr(self, field_name, "yes" in answer_value.lower())
+            case "ChoiceArrayField" if field_name == "participated_in_previous_event":
+                # One answer, kept whole: the first-time answer is matched
+                # exactly and may well have a comma of its own.
+                setattr(self, field_name, [answer_value.strip()])
             case "ChoiceArrayField":
-                # The one answer with a comma of its own in the old survey.
-                answer_value = answer_value.replace(
-                    "No, this is my first one", FIRST_EVENT_ANSWER
-                )
                 setattr(
                     self,
                     field_name,
