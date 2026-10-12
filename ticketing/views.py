@@ -7,7 +7,7 @@ from common.mixins import SuperuserRequiredMixin
 from portal.models import Conference
 
 from .forms import TicketingSettingsForm
-from .models import TicketingSettings
+from .models import POLL_MINUTES, TicketingSettings
 
 
 class TicketingSettingsView(SuperuserRequiredMixin, FormView):
@@ -31,6 +31,7 @@ class TicketingSettingsView(SuperuserRequiredMixin, FormView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["conference"] = self.conference
+        context["poll_minutes"] = POLL_MINUTES
         context["webhook_url"] = self.request.build_absolute_uri(
             reverse("speakers:pretix_webhook", args=[self.conference.slug])
         )

@@ -8,9 +8,7 @@ all read the same rows.
 
 import logging
 
-from django.utils import timezone
-
-from attendee.models import AttendeeProfile, PretixOrder
+from attendee.models import PretixOrder
 from ticketing.adapters.pretix import (  # noqa: F401 - re-exported for callers
     WEBHOOK_ACTIONS,
     PretixAdapter,
@@ -18,6 +16,7 @@ from ticketing.adapters.pretix import (  # noqa: F401 - re-exported for callers
     PretixError,
 )
 from ticketing.models import TicketingSettings, ticketing_for
+from ticketing.sync import sync, upsert_registration  # noqa: F401 - re-exported
 
 from .models import ActivityLog, SpeakerSettings
 
@@ -34,26 +33,6 @@ def _adapter(conference, client):
 def upsert_order(conference, data):
     """Record one pretix order, given as pretix's own record."""
     return upsert_registration(conference, _adapter(conference, None).normalise(data))
-
-
-def upsert_registration(conference, registration):
-    """Record one normalised registration (decision 0012), and the attendee
-    profile for anyone registered (paid or free).
-
-    The edition is the one given: the order's event slug may name another
-    edition, or none, and the caller knows which shop it asked.
-    """
-    order, created = PretixOrder.objects.get_or_create(
-        order_code=registration.code, defaults={"conference": conference}
-    )
-    order.conference = conference
-    order.from_registration(registration)
-    order.save()
-    if order.is_registered:
-        profile, _ = AttendeeProfile.objects.get_or_create(order=order)
-        profile.from_answers(registration.answers)
-        profile.save()
-    return order, created
 
 
 def client_for(conference):
@@ -79,16 +58,7 @@ def reconcile(conference, client=None):
     is caught next time.
     """
     row = TicketingSettings.objects.get(conference=conference)
-    client = client or PretixClient(row)
-    started = timezone.now()
-    seen = 0
-    for registration in _adapter(conference, client).iter_registrations(
-        since=row.last_synced_at
-    ):
-        upsert_registration(conference, registration)
-        seen += 1
-    row.last_synced_at = started
-    row.save(update_fields=["last_synced_at", "modified_date"])
+    seen = sync(row, _adapter(conference, client or PretixClient(row)))
     ActivityLog.record(
         conference, "pretix.reconciled", message=f"{seen} order(s) refreshed"
     )

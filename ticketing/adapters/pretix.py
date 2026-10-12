@@ -88,6 +88,7 @@ class PretixClient:
 
 class PretixAdapter(Adapter):
     provider = Provider.PRETIX
+    supports_webhooks = True
 
     def __init__(self, ticketing, client=None):
         """``client`` stands in for the REST client (tests, or a caller

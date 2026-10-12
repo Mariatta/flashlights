@@ -24,6 +24,9 @@
                     {% bootstrap_field form.event_id %}
                     {% bootstrap_field form.api_token %}
                     {% bootstrap_field form.webhook_secret %}
+                    <p class="small text-secondary">
+                        {% blocktranslate %}Orders are fetched every {{ poll_minutes }} minutes. The webhook is optional: it makes a new order show at once.{% endblocktranslate %}
+                    </p>
                     <p class="small text-secondary mb-0">
                         {% trans "Webhook URL for pretix, with the secret appended as" %} <code>?secret=…</code>:
                         <code>{{ webhook_url }}</code>

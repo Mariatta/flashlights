@@ -14,6 +14,10 @@ from django.db import models
 from portal.constants import BASE_PRETIX_URL
 from speakers.encryption import EncryptedTextField, usable
 
+#: How often the polling task runs (its schedule is seeded by migration
+#: and editable under "Periodic tasks").
+POLL_MINUTES = 15
+
 
 class Provider(models.TextChoices):
     PRETIX = "PRETIX", "Pretix"

@@ -2,11 +2,14 @@
 
 import importlib
 from decimal import Decimal
+from unittest import mock
 
 import pytest
 from django.apps import apps
+from django_celery_beat.models import PeriodicTask
 
 from attendee.models import PretixOrder
+from portal.models import Conference
 from tests.ticketing_ids import CITY, NOT_ANONYMOUS, make_ticketing
 from ticketing.adapters import (
     REGISTERED,
@@ -17,6 +20,8 @@ from ticketing.adapters import (
 )
 from ticketing.adapters.pretix import PretixAdapter, PretixClient
 from ticketing.models import TicketingSettings
+from ticketing.sync import sync
+from ticketing.tasks import PollFailed, poll_registrations_task
 
 fill_state = importlib.import_module(
     "attendee.migrations.0007_flashlights_registrations"
@@ -177,3 +182,59 @@ class TestOrders:
             "N1": "pending",
             "X1": "",
         }
+
+
+@pytest.mark.django_db
+class TestPolling:
+    def test_polls_every_edition_with_an_api(self, conference):
+        assert poll_registrations_task() == "No edition has a ticketing API set up"
+        make_ticketing(conference)
+        older = Conference.objects.create(year=2023, name="Older", slug="2023")
+        make_ticketing(older)
+        quiet = Conference.objects.create(year=2022, name="Quiet", slug="2022")
+        make_ticketing(quiet, provider="CSV", api_token="")  # no API: skipped
+
+        def fake(row, adapter):
+            if row.conference == older:
+                raise RuntimeError("down")
+            return 2
+
+        with mock.patch("ticketing.tasks.sync", side_effect=fake) as sync:
+            with pytest.raises(PollFailed, match="Older"):
+                poll_registrations_task()
+            assert sync.call_count == 2
+            sync.side_effect = lambda row, adapter: 2
+            result = poll_registrations_task()
+        assert "Flashlights 2025: 2 registration(s)" in result
+        assert "Quiet" not in result
+
+    def test_sync_records_and_advances(self, conference, pretix_order_data):
+        row = make_ticketing(conference)
+
+        class Fake(Adapter):
+            def iter_registrations(self, since=None, email=None):
+                self.since = since
+                return iter(
+                    [PretixAdapter(row, client=object()).normalise(pretix_order_data)]
+                )
+
+        adapter = Fake(row)
+        assert sync(row, adapter) == 1 and adapter.since is None
+        row.refresh_from_db()
+        assert row.last_synced_at is not None
+        assert PretixOrder.objects.get(order_code="ORDER123").is_registered
+
+    def test_schedule_is_seeded_and_the_old_one_retired(self):
+        poll = importlib.import_module("ticketing.migrations.0002_poll_schedule")
+        PeriodicTask.objects.filter(name=poll.TASK_NAME).delete()
+        old = PeriodicTask.objects.filter(name=poll.OLD_TASK_NAME)
+        old.update(enabled=True)
+        poll.seed(apps, None)
+        task = PeriodicTask.objects.get(name=poll.TASK_NAME)
+        assert task.task == poll.TASK_PATH and task.interval.every == 15
+        assert not old.filter(enabled=True).exists()
+        poll.unseed(apps, None)
+        assert not PeriodicTask.objects.filter(name=poll.TASK_NAME).exists()
+
+    def test_only_pretix_takes_webhooks(self, conference):
+        assert PretixAdapter.supports_webhooks and not Adapter.supports_webhooks

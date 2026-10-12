@@ -54,6 +54,9 @@ class Adapter:
     edition's ``TicketingSettings`` row."""
 
     provider = None
+    #: Whether the provider can call us when an order changes. Polling is
+    #: the baseline either way; a webhook only makes it instant.
+    supports_webhooks = False
 
     def __init__(self, ticketing):
         self.ticketing = ticketing
