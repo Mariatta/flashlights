@@ -59,12 +59,21 @@ DATA_COLUMNS = [
 ]
 
 
-def write_presenters_csv(presenters, stream):
+def data_columns(conference=None):
+    """The columns for one edition: Discord only where the edition uses it
+    (decision 0013); every column with no edition given."""
+    if conference is None or conference.uses_discord:
+        return DATA_COLUMNS
+    return [column for column in DATA_COLUMNS if column[0] != "Discord"]
+
+
+def write_presenters_csv(presenters, stream, conference=None):
     """The data view as CSV: the same columns, one row per presenter."""
+    columns = data_columns(conference)
     writer = csv.writer(stream)
-    writer.writerow([safe_cell(header) for header, _ in DATA_COLUMNS])
+    writer.writerow([safe_cell(header) for header, _ in columns])
     for presenter in presenters:
-        writer.writerow([safe_cell(value(presenter)) for _, value in DATA_COLUMNS])
+        writer.writerow([safe_cell(value(presenter)) for _, value in columns])
     return stream
 
 
@@ -123,7 +132,7 @@ def photo_names(presenters):
     return names
 
 
-def build_presenters_package(presenters):
+def build_presenters_package(presenters, conference=None):
     """The data view as a zip: the CSV with a "Photo file" column, the
     photos under photos/, and a README. Returns a file object positioned at
     the start, for a streaming response: the zip lives in a spooled
@@ -136,10 +145,11 @@ def build_presenters_package(presenters):
     with zipfile.ZipFile(spool, "w") as archive:
         rows = io.StringIO()
         writer = csv.writer(rows)
-        writer.writerow([safe_cell(h) for h, _ in DATA_COLUMNS] + ["Photo file"])
+        columns = data_columns(conference)
+        writer.writerow([safe_cell(h) for h, _ in columns] + ["Photo file"])
         for presenter in presenters:
             writer.writerow(
-                [safe_cell(value(presenter)) for _, value in DATA_COLUMNS]
+                [safe_cell(value(presenter)) for _, value in columns]
                 + [safe_cell(names[presenter.pk])]
             )
         archive.writestr("presenters.csv", rows.getvalue(), zipfile.ZIP_DEFLATED)

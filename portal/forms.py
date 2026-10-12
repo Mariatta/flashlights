@@ -204,6 +204,9 @@ class ConferenceForm(forms.ModelForm):
             "venue_name",
             "venue_address",
             "venue_url",
+            "chat_platform",
+            "chat_name",
+            "chat_url",
             "banner_text",
             "sponsors_url",
             "coc_url",
@@ -222,6 +225,8 @@ class ConferenceForm(forms.ModelForm):
             "page says nothing about volunteering and the team keeps its hub.",
             "venue_name": "Shown with the dates on the landing page and the "
             "public program. Leave blank for an online edition.",
+            "chat_url": "The invite link speakers and volunteers are pointed "
+            "to. Leave blank to point them at the guide instead.",
         }
         widgets = {
             "start_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
@@ -260,6 +265,8 @@ class ConferenceForm(forms.ModelForm):
             return cleaned
         formats = model._meta.get_field("event_format")
         modes = model._meta.get_field("recordings")
+        if cleaned.get("chat_platform") == "OTHER" and not cleaned.get("chat_name"):
+            self.add_error("chat_name", "Name the platform (Slack, Zulip, Matrix...).")
         in_person = (cleaned.get("event_format") or formats.default) == "IN_PERSON"
         if in_person and (cleaned.get("recordings") or modes.default) == "SPEAKERS":
             self.add_error(

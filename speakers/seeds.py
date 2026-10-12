@@ -158,6 +158,37 @@ DISCORD = _item(
     14,
     description_md="Where the team, the other speakers and the attendees are during the event; the link is in the speaker guide.",
 )
+DISCORD_ROLE_TITLE = "Discord channel and speaker role assigned"
+
+
+def chat_line(conference):
+    """The "join the chat" line for this edition (decision 0013): the
+    Discord line, one naming another platform, or None with no chat."""
+    if conference.uses_discord:
+        line = dict(DISCORD)
+        if conference.chat_url:
+            line["description_md"] = (
+                "Where the team, the other speakers and the attendees are "
+                f"during the event: {conference.chat_url}"
+            )
+        return line
+    if not conference.has_chat:
+        return None
+    where = conference.chat_label
+    invite = (
+        f": {conference.chat_url}"
+        if conference.chat_url
+        else "; the link is in the speaker guide"
+    )
+    return _item(
+        SPK,
+        f"Join the event chat on {where}",
+        ACCEPTED,
+        14,
+        description_md=f"Where the team, the other speakers and the attendees are during the event{invite}.",
+    )
+
+
 CONFIRM_SLOT = _item(
     SPK,
     "Confirm your scheduled slot",
@@ -239,7 +270,7 @@ ORGANIZER_ITEMS_ALL = [
         14,
         assignee_default=AssigneeDefault.LIAISON,
     ),
-    _item(ORG, "Discord channel and speaker role assigned", ACCEPTED, 14),
+    _item(ORG, DISCORD_ROLE_TITLE, ACCEPTED, 14),
     _item(
         ORG,
         "Day-of reminder sent",
@@ -629,8 +660,19 @@ def _seed_checklists(conference):
         ):
             skipped.append((name, "speakers do not pre-record in this edition"))
             continue
-        if in_person and scope == ChecklistScope.GENERAL:
-            items = [i for i in items if i is not TECH_CHECK]
+        if scope == ChecklistScope.GENERAL:
+            # The edition's chat (decision 0013): the Discord line becomes
+            # the platform's own, or goes, with the organizer's role line.
+            chat = chat_line(conference)
+            items = [
+                line
+                for spec in items
+                for line in ([chat] if spec is DISCORD else [spec])
+                if line is not None
+                and (conference.uses_discord or line["title"] != DISCORD_ROLE_TITLE)
+            ]
+            if in_person:
+                items = [i for i in items if i is not TECH_CHECK]
         if (
             mode == Recordings.TEAM
             and scope == ChecklistScope.PRESENTER

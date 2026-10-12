@@ -2,12 +2,15 @@
 parts of the module (pre-recorded delivery, premieres, the tech check and
 the upload gate); online and hybrid editions keep everything."""
 
+import io
+
 import pytest
 from django.contrib.admin.sites import AdminSite
 from django.core.exceptions import ValidationError
 from django.test import RequestFactory
 from django.urls import reverse
 
+from portal.models import ChatPlatform
 from speakers.admin import SpeakerSettingsAdmin
 from speakers.board import build_post_production_board
 from speakers.checklists import instantiate_session_checklist
@@ -18,7 +21,15 @@ from speakers.constants import (
     MediaKind,
     Recordings,
 )
-from speakers.forms import ChecklistTemplateForm, SessionForm, SessionTypeForm
+from speakers.directory import data_columns, write_presenters_csv
+from speakers.forms import (
+    ChecklistTemplateForm,
+    PresenterForm,
+    ProposalProfileForm,
+    SessionForm,
+    SessionTypeForm,
+    SpeakerProfileForm,
+)
 from speakers.media import can_upload
 from speakers.models import (
     ChecklistTemplate,
@@ -39,10 +50,12 @@ from speakers.program_types import (
 )
 from speakers.seeds import (
     DEFAULT_TEMPLATES,
+    DISCORD_ROLE_TITLE,
     PERFORMER_NAME,
     RECORDED_SESSION_NAME,
     seed_checklists,
 )
+from volunteer.forms import VolunteerProfileForm
 
 from .factories import add_presenter, make_presenter, make_session, make_settings
 
@@ -339,3 +352,123 @@ class TestRecordings:
         request = RequestFactory().get("/")
         titles = [title for title, _ in model_admin.get_fieldsets(request, row)]
         assert "Media" not in titles
+
+
+@pytest.mark.django_db
+class TestCommunityChat:
+    def _general_titles(self, conference):
+        seed_checklists(conference)
+        general = conference.checklist_templates.get(scope=ChecklistScope.GENERAL)
+        return list(general.items.values_list("title", flat=True))
+
+    def test_discord_edition_asks_and_seeds_as_before(self, conference):
+        assert conference.uses_discord and conference.chat_label == "Discord"
+        titles = self._general_titles(conference)
+        assert "Join the event Discord" in titles and DISCORD_ROLE_TITLE in titles
+        assert "discord_username" in PresenterForm(conference=conference).fields
+        assert "Discord" in [h for h, _ in data_columns(conference)]
+
+    def test_another_platform_gets_its_own_line_and_no_discord(self, conference):
+        conference.chat_platform = ChatPlatform.OTHER
+        conference.chat_name = "Zulip"
+        conference.chat_url = "https://chat.example.org/join"
+        conference.save()
+        assert conference.chat_label == "Zulip"
+        titles = self._general_titles(conference)
+        assert "Join the event chat on Zulip" in titles
+        assert "Join the event Discord" not in titles
+        assert DISCORD_ROLE_TITLE not in titles
+        general = conference.checklist_templates.get(scope=ChecklistScope.GENERAL)
+        line = general.items.get(title="Join the event chat on Zulip")
+        assert "https://chat.example.org/join" in line.description_md
+        for form in (
+            PresenterForm(conference=conference),
+            ProposalProfileForm(conference=conference),
+            SpeakerProfileForm(instance=make_presenter(conference)),
+        ):
+            assert "discord_username" not in form.fields
+            assert form.shared_discord_username == ""
+        assert "Discord" not in [h for h, _ in data_columns(conference)]
+        out = write_presenters_csv([], io.StringIO(), conference).getvalue()
+        assert "Discord" not in out
+
+    def test_no_chat_seeds_no_line(self, conference):
+        conference.chat_platform = ChatPlatform.NONE
+        conference.save()
+        assert conference.has_chat is False
+        titles = self._general_titles(conference)
+        assert not [t for t in titles if "chat" in t.lower() or "Discord" in t]
+
+    def test_discord_line_carries_the_invite_link(self, conference):
+        conference.chat_url = "https://discord.gg/example"
+        conference.save()
+        seed_checklists(conference)
+        general = conference.checklist_templates.get(scope=ChecklistScope.GENERAL)
+        line = general.items.get(title="Join the event Discord")
+        assert "https://discord.gg/example" in line.description_md
+
+    def test_presenter_pages_hide_discord_off_discord(
+        self, client, admin_user, conference
+    ):
+        make_settings(conference)
+        presenter = make_presenter(conference, discord_username="ada_l")
+        client.force_login(admin_user)
+        content = client.get(presenter.get_absolute_url()).content.decode()
+        assert "Discord:" in content
+        listing = client.get(reverse("speakers:presenter_list")).content.decode()
+        assert "Discord" in listing
+        conference.chat_platform = ChatPlatform.NONE
+        conference.save()
+        content = client.get(presenter.get_absolute_url()).content.decode()
+        assert "Discord:" not in content
+        listing = client.get(reverse("speakers:presenter_list")).content.decode()
+        assert "Discord" not in listing
+        csv = client.get(reverse("speakers:presenter_data_csv")).content.decode()
+        assert "Discord" not in csv
+
+    def test_volunteer_form_asks_for_discord_only_on_discord(
+        self, conference, portal_user
+    ):
+        assert (
+            VolunteerProfileForm(user=portal_user).fields["discord_username"].required
+        )
+        conference.chat_platform = ChatPlatform.OTHER
+        conference.chat_name = "Slack"
+        conference.save()
+        assert "discord_username" not in VolunteerProfileForm(user=portal_user).fields
+
+    def test_edition_form_wants_a_name_for_another_platform(
+        self, client, admin_user, conference
+    ):
+        client.force_login(admin_user)
+        response = client.post(
+            reverse("conference_edit", kwargs={"pk": conference.pk}),
+            {
+                "year": conference.year,
+                "name": conference.name,
+                "slug": conference.slug,
+                "sponsorship_goal": "0",
+                "donation_goal": "0",
+                "proposals_count": "0",
+                "chat_platform": ChatPlatform.OTHER,
+                "chat_url": "https://chat.example.org/",
+            },
+        )
+        assert "Name the platform" in response.content.decode()
+        client.post(
+            reverse("conference_edit", kwargs={"pk": conference.pk}),
+            {
+                "year": conference.year,
+                "name": conference.name,
+                "slug": conference.slug,
+                "sponsorship_goal": "0",
+                "donation_goal": "0",
+                "proposals_count": "0",
+                "chat_platform": ChatPlatform.OTHER,
+                "chat_name": "Zulip",
+                "chat_url": "https://chat.example.org/",
+            },
+        )
+        conference.refresh_from_db()
+        assert conference.chat_label == "Zulip"
+        assert conference.chat_url == "https://chat.example.org/"

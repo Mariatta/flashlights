@@ -193,7 +193,13 @@ class VolunteerProfileForm(ModelForm):
             (lang.id, lang.name) for lang in Language.objects.all().order_by("name")
         ]
 
-        self.fields["discord_username"].required = True
+        # Decision 0013: the active edition says whether there is a Discord
+        # to ask about; another platform or none asks nothing.
+        active = Conference.get_active()
+        if active is not None and not active.uses_discord:
+            del self.fields["discord_username"]
+        else:
+            self.fields["discord_username"].required = True
         self.fields["language"].widget = SelectMultipleWidget(
             choices=languages,
             attrs={

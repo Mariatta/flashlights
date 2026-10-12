@@ -116,6 +116,7 @@ class PremiereLocation(models.TextChoices):
 
 
 class RoomKind(models.TextChoices):
+    ROOM = "ROOM", "Room (in person)"
     STAGE = "STAGE", "Stage"
     VOICE = "VOICE", "Voice"
     TEXT = "TEXT", "Text"

@@ -111,6 +111,7 @@ class TestFlagOnConferenceForm:
             "sponsorship_goal": "15000",
             "donation_goal": "2500",
             "proposals_count": "0",
+            "chat_platform": "DISCORD",
             "accepting_donations": "on",
             "conference_date": conference.conference_date.isoformat(),
         }
@@ -185,6 +186,7 @@ class TestFormWithoutTheSpeakersApp:
                 "sponsorship_goal": "0",
                 "donation_goal": "0",
                 "proposals_count": "0",
+                "chat_platform": "DISCORD",
             },
             instance=conference,
         )

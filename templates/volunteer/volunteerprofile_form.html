@@ -74,13 +74,18 @@
                 {% blocktrans with conference=active_conference %}You are applying to volunteer for {{ conference }}.{% endblocktrans %}
                 {% trans "Fill in the profile below." %}
             {% endif %}
-            <div class="alert alert-info" role="alert">
-                <h4 class="alert-heading">
-                    Be sure to join our Discord server!
-                </h4>
-                Volunteers are required to <a href="https://discord.com/invite/2fUN4ddVfP">join the server</a> to collaborate
-                and communicate with the rest of the team.
-            </div>
+            {% if active_conference.has_chat %}
+                <div class="alert alert-info" role="alert">
+                    <h4 class="alert-heading">
+                        {% blocktranslate with chat=active_conference.chat_label %}Be sure to join us on {{ chat }}{% endblocktranslate %}
+                    </h4>
+                    {% if active_conference.chat_url %}
+                        {% blocktranslate with url=active_conference.chat_url %}Volunteers are asked to <a href="{{ url }}">join</a> to collaborate and communicate with the rest of the team.{% endblocktranslate %}
+                    {% else %}
+                        {% trans "Volunteers are asked to join to collaborate and communicate with the rest of the team; the invite comes with onboarding." %}
+                    {% endif %}
+                </div>
+            {% endif %}
         </p>
         <div class="row g-5">
             {% bootstrap_form_errors form %}
@@ -203,29 +208,31 @@
                                         </div>
                                     {% endfor %}
                                 </div>
-                                <!-- Discord -->
-                                <div class="mb-3">
-                                    <label class="form-label" for="{{ form.discord_username.id_for_label }}">
-                                        {{ form.discord_username.label }} <span class="text-danger">*</span>
-                                    </label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">@</span>
-                                        <input type="text"
-                                               class="form-control {% if form.discord_username.errors %}is-invalid{% endif %}"
-                                               name="{{ form.discord_username.name }}"
-                                               id="{{ form.discord_username.id_for_label }}"
-                                               value="{{ form.discord_username.value|default:'' }}"
-                                               required>
-                                    </div>
-                                    <div class="form-text">
-                                        {{ form.discord_username.help_text }}
-                                    </div>
-                                    {% for error in form.discord_username.errors %}
-                                        <div class="invalid-feedback d-block">
-                                            {{ error }}
+                                {% if form.discord_username %}
+                                    <!-- Discord -->
+                                    <div class="mb-3">
+                                        <label class="form-label" for="{{ form.discord_username.id_for_label }}">
+                                            {{ form.discord_username.label }} <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">@</span>
+                                            <input type="text"
+                                                   class="form-control {% if form.discord_username.errors %}is-invalid{% endif %}"
+                                                   name="{{ form.discord_username.name }}"
+                                                   id="{{ form.discord_username.id_for_label }}"
+                                                   value="{{ form.discord_username.value|default:'' }}"
+                                                   required>
                                         </div>
-                                    {% endfor %}
-                                </div>
+                                        <div class="form-text">
+                                            {{ form.discord_username.help_text }}
+                                        </div>
+                                        {% for error in form.discord_username.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ error }}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
                                 <!-- Instagram -->
                                 <div class="mb-3">
                                     <label class="form-label" for="{{ form.instagram_username.id_for_label }}">

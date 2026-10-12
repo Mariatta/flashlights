@@ -66,13 +66,18 @@ DISCORD_HELP = (
 )
 
 
-def _adopt_volunteer_discord(form, user_id):
+def _adopt_volunteer_discord(form, user_id, conference=None):
     """A volunteer who also speaks is asked for their Discord username once.
 
     When their volunteer profile has one, the field leaves the form, the
     instance takes that value (so saving the form keeps the presenter row
     in step) and the value is returned for the template to show read-only.
+    An edition that is not on Discord asks nobody (decision 0013): the
+    field leaves the form and nothing is shown.
     """
+    if conference is not None and not conference.uses_discord:
+        form.fields.pop("discord_username", None)
+        return ""
     shared = volunteer_discord_username(user_id)
     if shared:
         form.fields.pop("discord_username")
@@ -271,7 +276,7 @@ class PresenterForm(forms.ModelForm):
         self.fields["liaison"].queryset = liaison_candidates(conference)
         self.fields["liaison"].label_from_instance = picker_label
         self.shared_discord_username = _adopt_volunteer_discord(
-            self, self.instance.user_id
+            self, self.instance.user_id, conference
         )
 
     def clean_slug(self):
@@ -402,7 +407,7 @@ class SpeakerProfileForm(IdentityLockMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.shared_discord_username = _adopt_volunteer_discord(
-            self, self.instance.user_id
+            self, self.instance.user_id, self.instance.conference
         )
 
     def clean_slug(self):
@@ -1133,10 +1138,10 @@ class ProposalProfileForm(forms.ModelForm):
             "discord_username": DISCORD_HELP,
         }
 
-    def __init__(self, *args, user=None, **kwargs):
+    def __init__(self, *args, user=None, conference=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["display_name"].required = True
         self.fields["bio_md"].required = True
         self.shared_discord_username = _adopt_volunteer_discord(
-            self, user.pk if user is not None else None
+            self, user.pk if user is not None else None, conference
         )

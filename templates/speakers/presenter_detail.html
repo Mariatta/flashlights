@@ -402,14 +402,16 @@
                             —
                         {% endif %}
                     </div>
-                    <div>
-                        <strong>Discord:</strong>
-                        {% if presenter.discord_username %}
-                            {{ presenter.discord_username }}
-                        {% else %}
-                            —
-                        {% endif %}
-                    </div>
+                    {% if conference.uses_discord %}
+                        <div>
+                            <strong>Discord:</strong>
+                            {% if presenter.discord_username %}
+                                {{ presenter.discord_username }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </div>
+                    {% endif %}
                 </div>
             </div>
             <div class="card">

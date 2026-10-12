@@ -55,7 +55,17 @@
                     {% bootstrap_field form.venue_url %}
                 </div>
             </fieldset>
-            {% bootstrap_form form exclude="year,name,slug,is_active,speaker_module_enabled,volunteer_application_open,sponsorship_open,accepting_donations,event_format,recordings,conference_date,start_date,end_date,venue_name,venue_address,venue_url" %}
+            <fieldset class="card mb-4">
+                <legend class="card-header h6 mb-0">
+                    {% trans "Community chat" %}
+                </legend>
+                <div class="card-body">
+                    {% bootstrap_field form.chat_platform %}
+                    {% bootstrap_field form.chat_name %}
+                    {% bootstrap_field form.chat_url %}
+                </div>
+            </fieldset>
+            {% bootstrap_form form exclude="year,name,slug,is_active,speaker_module_enabled,volunteer_application_open,sponsorship_open,accepting_donations,event_format,recordings,conference_date,start_date,end_date,venue_name,venue_address,venue_url,chat_platform,chat_name,chat_url" %}
             <button type="submit" class="btn btn-primary">
                 {% trans "Save" %}
             </button>

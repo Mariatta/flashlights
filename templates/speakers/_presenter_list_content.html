@@ -3,7 +3,7 @@
 {% load render_table from django_tables2 %}
 {% comment %}
 The Presenters page in one of its two views: basic (the default: name,
-email, sessions, Discord, invitation, liaison) and data (?view=data:
+email, sessions, chat handle, invitation, liaison) and data (?view=data:
 everything the team looks up about a speaker, full width, with the
 downloads). Params: view, data_view, filter_query.
 {% endcomment %}
@@ -14,7 +14,7 @@ downloads). Params: view, data_view, filter_query.
         </h1>
         <p class="text-secondary mb-0">
             {% if data_view %}
-                {% trans "Everything the team looks up about a speaker: links, Discord, timezone, photo. Email and Discord are never public." %}
+                {% trans "Everything the team looks up about a speaker: links, timezone, photo, how to reach them. Email and chat handles are never public." %}
             {% else %}
                 {% trans "Speakers, panelists, moderators, hosts and performers: how to reach them and what they are on." %}
             {% endif %}

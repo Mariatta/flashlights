@@ -587,6 +587,12 @@ class PresenterListView(
     def get_table_class(self):
         return self.VIEWS[self.view]
 
+    def get_table_kwargs(self):
+        kwargs = super().get_table_kwargs()
+        if not self.conference.uses_discord:  # decision 0013
+            kwargs["exclude"] = (*kwargs.get("exclude", ()), "discord_username")
+        return kwargs
+
     def get_table_pagination(self, table):
         if self.data_view:
             return False  # a spreadsheet shows every row
@@ -631,7 +637,7 @@ class PresenterDataExportView(PresenterListView):
         response["Content-Disposition"] = (
             f'attachment; filename="presenters-{self.conference.slug}.csv"'
         )
-        write_presenters_csv(self.rows(), response)
+        write_presenters_csv(self.rows(), response, self.conference)
         return response
 
 
@@ -641,7 +647,7 @@ class PresenterPackageExportView(PresenterDataExportView):
 
     def get(self, request, *args, **kwargs):
         return FileResponse(
-            build_presenters_package(self.rows()),
+            build_presenters_package(self.rows(), self.conference),
             as_attachment=True,
             filename=f"presenters-{self.conference.slug}.zip",
             content_type="application/zip",
@@ -2863,6 +2869,7 @@ class ProposeSessionView(ProposalsOpenMixin, TemplateView):
                 files,
                 prefix="you",
                 user=user if user.is_authenticated else None,
+                conference=self.conference,
             )
         )
         return profile, ProposalSessionForm(

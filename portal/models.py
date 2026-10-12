@@ -34,6 +34,16 @@ class BaseModel(models.Model):
         super().save(*args, **kwargs)
 
 
+class ChatPlatform(models.TextChoices):
+    """Where an edition's team, speakers and attendees talk (decision 0013).
+    Discord is what the portal was built around (channel ids, roles);
+    another platform gets a name and an invite link; none gets nothing."""
+
+    NONE = "NONE", "No community chat"
+    DISCORD = "DISCORD", "Discord"
+    OTHER = "OTHER", "Another platform"
+
+
 class Conference(BaseModel):
     """A single edition of the event (2023, 2024, 2025, ...).
 
@@ -84,6 +94,24 @@ class Conference(BaseModel):
     venue_url = models.URLField(
         "venue link", blank=True, help_text="A map or the venue's own page."
     )
+    # Community chat (decision 0013). Editions from before read Discord,
+    # which is what the portal assumed.
+    chat_platform = models.CharField(
+        max_length=16,
+        choices=ChatPlatform.choices,
+        default=ChatPlatform.DISCORD,
+        db_default=ChatPlatform.DISCORD,
+        help_text="Discord: speakers and volunteers are asked for their "
+        "username, rooms may be channels. Another platform: a name and an "
+        "invite link, nothing else. None: no chat is mentioned.",
+    )
+    chat_name = models.CharField(
+        "chat platform name",
+        max_length=60,
+        blank=True,
+        help_text="For another platform: Slack, Zulip, Matrix...",
+    )
+    chat_url = models.URLField("chat invite link", blank=True)
 
     # Per-edition external links. Organizers set these per year; when blank the
     # templates fall back to a sensible default.
@@ -114,6 +142,22 @@ class Conference(BaseModel):
     def get_active(cls):
         """Return the active conference, or ``None`` if none is set."""
         return cls.objects.filter(is_active=True).first()
+
+    @property
+    def uses_discord(self):
+        return self.chat_platform == ChatPlatform.DISCORD
+
+    @property
+    def has_chat(self):
+        return self.chat_platform != ChatPlatform.NONE
+
+    @property
+    def chat_label(self):
+        """What to call the chat in a sentence: "Discord", the platform's
+        name, or "the event chat" when another platform has no name."""
+        if self.uses_discord:
+            return "Discord"
+        return self.chat_name or "the event chat"
 
     @classmethod
     def can_start_next_year(cls):
