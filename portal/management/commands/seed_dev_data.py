@@ -7,12 +7,17 @@ logins. Idempotent: run it again after a reset or to top up. DEBUG only,
 like the generators it calls.
 """
 
+from datetime import date
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 
 from affiliations.models import Affiliation, AffiliationKind
+from portal.models import ChatPlatform, Conference
+from speakers.constants import EventFormat, Recordings
+from speakers.models import SpeakerSettings
 
 PASSWORD = "password123"
 
@@ -59,6 +64,7 @@ class Command(BaseCommand):
         call_command("generate_speaker_sample_data", stdout=self.stdout)
         self._speaker_login()
         self._affiliations()
+        self._in_person_edition()
         self.stdout.write(self.style.SUCCESS("\nSign in with (password: password123)"))
         for username, role in LOGINS:
             self.stdout.write(f"  {username:18} {role}")
@@ -83,3 +89,35 @@ class Command(BaseCommand):
                 )
                 created += was_created
         self.stdout.write(self.style.SUCCESS(f"Created {created} affiliations"))
+
+    def _in_person_edition(self):
+        """A past edition held in a room (decision 0013): a venue, the team
+        recording the talks, the chat on another platform. The active
+        edition stays online, so both shapes of every form can be seen."""
+        edition, created = Conference.objects.get_or_create(
+            year=2024,
+            defaults={
+                "name": "Flashlights 2024",
+                "slug": "2024",
+                "conference_date": date(2024, 11, 16),
+                "start_date": date(2024, 11, 16),
+                "end_date": date(2024, 11, 16),
+                "venue_name": "Vancouver Public Library, Alice MacKay Room",
+                "venue_address": "350 W Georgia St\nVancouver, BC V6B 6B1",
+                "venue_url": "https://www.vpl.ca/",
+                "chat_platform": ChatPlatform.OTHER,
+                "chat_name": "Zulip",
+                "chat_url": "https://chat.example.org/join/flashlights",
+            },
+        )
+        SpeakerSettings.objects.get_or_create(
+            conference=edition,
+            defaults={
+                "speaker_module_enabled": True,
+                "event_format": EventFormat.IN_PERSON,
+                "recordings": Recordings.TEAM,
+                "conference_timezone": "America/Vancouver",
+            },
+        )
+        if created:
+            self.stdout.write(self.style.SUCCESS("Created the in-person 2024 edition"))

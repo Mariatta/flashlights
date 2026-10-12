@@ -186,3 +186,11 @@ class TestSeedDevData:
         assert Affiliation.objects.filter(user__username="volunteer1").count() == 3
         assert Affiliation.objects.filter(user__username="ada").count() == 2
         assert "ada" in out.getvalue() and "Speaker" in out.getvalue()
+        # A past in-person edition next to the online one (decision 0013).
+        from portal.models import Conference
+
+        past = Conference.objects.get(year=2024)
+        assert past.venue_name.startswith("Vancouver") and not past.uses_discord
+        assert past.speaker_settings.event_format == "IN_PERSON"
+        assert past.speaker_settings.recordings == "TEAM"
+        assert Conference.get_active().year != 2024

@@ -28,3 +28,30 @@ links (Code of Conduct, sponsors, donations, schedule), the goals, and the
 switches for what is on this year: taking volunteer applications, taking
 sponsors, taking donations, the speaker portal. Starting the next edition
 copies the structure forward and leaves the people to re-apply.
+
+### Where and how it happens
+
+Three choices on the edition form shape the speaker portal and what people
+are asked for. Each is per edition, so a community that meets in a room one
+year and online the next changes nothing but the form.
+
+- **Format**: in person, online or hybrid. In person, sessions are live and
+  the portal leaves out what only an online event needs: pre-recorded
+  delivery, premieres, the tech check and its booking gate, the speaker's
+  upload before the event. Hybrid keeps everything and each session says
+  whether it is live or pre-recorded. The **venue** (name, address, link)
+  goes with it and is printed on the landing page, the public program, the
+  calendar feeds and the schedule emails.
+- **Recordings**: none, the team records, or speakers pre-record. With the
+  team recording, the team uploads each session's recording after the event
+  and the post-production board follows it through transcript, translation
+  and publishing; speakers get a line to review their recording. With none,
+  there are no files, no video fields and no post-production. Speakers
+  pre-recording is the online pipeline, and is not offered in person.
+- **Community chat**: Discord, another platform (with a name and an invite
+  link), or none. Only a Discord edition asks speakers and volunteers for a
+  Discord username and seeds the Discord checklist lines; another platform
+  gets a "join the chat" line with its link; none asks nothing.
+
+The default checklist templates are seeded to match, so a new edition
+starts with the right lines rather than a list to prune.

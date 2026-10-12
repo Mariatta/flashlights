@@ -32,9 +32,13 @@ spreadsheets. The portal replaces all of that with one place where you can:
 - get reminders before things are due, from one system, instead of several.
 
 Your journey does not end when you submit your title and abstract. The
-checklist keeps going through scheduling, your tech check, promo materials and
-the event itself, so you and the organizers can both see how far along
-things are.
+checklist keeps going through scheduling, promo materials and the event
+itself, so you and the organizers can both see how far along things are.
+
+What the portal asks of you depends on how the event is held. An in-person
+event asks what you need in the room; an online one asks for a tech check and,
+for some sessions, a video recorded in advance. The lists below cover both;
+you will only see what applies to your event.
 
 ## Flow 1: you send a proposal
 
@@ -75,8 +79,8 @@ volunteered with us in a previous year.
       optional.
 4. Fill in the **Your session** part:
     - **What kind of session** (required): only the kinds we are currently
-      accepting are listed, each with its length and whether it is live or
-      pre-recorded.
+      accepting are listed, each with its length and, for an online event,
+      whether it is live or pre-recorded.
     - **Title** and **Summary** (required). The summary is what attendees would
       see on the schedule.
     - **Outline**, **Prerequisites** and **Audience** are optional but help us
@@ -167,9 +171,11 @@ Once you are on the program, the **Speaking** menu opens your speaker area.
   summary and other details. Once your session is scheduled, the title, its web
   address and your display name are locked, because they are on the schedule
   by then. Ask your liaison if one needs to change. A session page has three
-  tabs: **Overview**, **Checklist** and **Files**. If your session is
-  pre-recorded, Files is where you upload your video and find what the team
-  shares with you; see [Your video and files](speaker_files.md).
+  tabs: **Overview**, **Checklist** and, when the event records sessions,
+  **Files**. If your session is pre-recorded, Files is where you upload your
+  video; if the team records the event, it is where their recording of your
+  session and what they share with you appear; see
+  [Your video and files](speaker_files.md).
 - **My proposals:** proposals you sent and where they stand.
 - **Speaker guide:** the guide for your kind of session. Open it, then tick the
   "I have read" box at the end when you have. If you have more than one kind of
@@ -178,8 +184,9 @@ Once you are on the program, the **Speaking** menu opens your speaker area.
 
 ### Your checklist
 
-The checklist has two lists, and a third if you are giving a pre-recorded
-session such as a PyJam performance or a community highlight video.
+The checklist has two lists, and a third when there is a recording of your
+session to follow: one you pre-recorded, or the team's recording of your
+session at an in-person event.
 
 **Your to-dos** are the things we need from you, each with a due date shown in
 your timezone. Typical items are:
@@ -191,16 +198,19 @@ your timezone. Typical items are:
 - confirm your scheduled slot;
 - share a link to your slides;
 - register for the event, when it has tickets;
-- do a tech check with the team.
+- in person: tell us what you need in the room (adapters, a microphone,
+  captions, step-free access);
+- online: do a tech check with the team;
+- when the team records the event: review your recording before it goes out.
 
-**What we're preparing for you** is the team's side: onboarding email, Discord
-channel and role, promo materials, scheduling, the schedule confirmation, and
-day-of reminders. You see who is on each item and when it is due, so you can
-tell what is waiting on us.
+**What we're preparing for you** is the team's side: onboarding email, the
+chat channel and role when the event has one, promo materials, scheduling,
+the schedule confirmation, and day-of reminders. You see who is on each item
+and when it is due, so you can tell what is waiting on us.
 
-**What we're preparing for your video** is the third list, for pre-recorded
-sessions. It follows the team's work on your recording once you have sent it.
-How to send it, and what each item means, is in
+**What we're preparing for your video** is the third list, for sessions with
+a recording. It follows the team's work on the recording, whether you sent it
+or they filmed it. How to send yours, and what each item means, is in
 [Your video and files](speaker_files.md).
 
 A few labels you will see:
@@ -227,10 +237,10 @@ you do not have to keep the checklist open.
   read it yet, so for now it only records your choice.
 - The portal does not use advertising or analytics trackers, and we do not
   share your details with third-party analytics services.
-- Videos for pre-recorded sessions, such as PyJam performances and chapter
-  highlight videos, and the files the team shares with you, live in private storage that only you and
-  the team can reach. [Your video and files](speaker_files.md) says who can
-  see what.
+- Videos, whether you pre-recorded them or the team filmed your session, and
+  the files the team shares with you, live in private storage that only you
+  and the team can reach. [Your video and files](speaker_files.md) says who
+  can see what.
 
 ## Getting help
 

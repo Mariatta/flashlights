@@ -1,8 +1,10 @@
 # Your video and files
 
-This guide is for speakers whose session is pre-recorded: a PyJam
-performance, a community highlight video, or any other session we
-broadcast from a recording. It covers how to send us your video through the
+This guide is for speakers whose session has a recording: one you
+pre-recorded for an online event (a PyJam performance, a community highlight
+video, any session we broadcast from a recording), or the team's recording of
+your session at an in-person event, which the team uploads after the day and
+you only review. It covers how to send us your video through the
 portal, what happens to it afterwards, and how to find the files the team
 shares back with you, such as the poster for your session, a transcript, or
 the final cut of your video.

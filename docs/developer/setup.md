@@ -394,7 +394,9 @@ continue from the parts that already landed.
 
 The quickest way to a usable local instance. It runs both generators
 below, gives the accounts you will sign in as the password `password123`,
-adds a few affiliations, and prints the logins:
+adds a few affiliations, adds a past in-person edition (2024: a venue, the
+team recording the talks, the chat on Zulip) next to the online active one so
+every form can be seen both ways, and prints the logins:
 
 === "With Docker"
 
