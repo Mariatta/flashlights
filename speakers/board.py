@@ -7,9 +7,18 @@ Built from two queries (presenters, items) regardless of size.
 import csv
 from collections import defaultdict
 
+from django.db.models import Q
+
 from .clock import today as current_date
-from .constants import UNACCEPTED_STATUSES, Delivery, ItemStatus, MediaKind, MediaStatus
-from .models import ChecklistItem, MediaAsset, Presenter, Session
+from .constants import (
+    UNACCEPTED_STATUSES,
+    Delivery,
+    ItemStatus,
+    MediaKind,
+    MediaStatus,
+    Recordings,
+)
+from .models import ChecklistItem, MediaAsset, Presenter, Session, recordings
 from .spreadsheet import safe_cell
 
 POST_PRODUCTION_TAB = "POST_PRODUCTION"
@@ -105,10 +114,20 @@ def build_post_production_board(conference, user, sort="overdue"):
     (the newest READY asset of each kind, or None).
     """
     today = current_date()
+    # Which sessions have a recording to shepherd (decision 0013): the
+    # pre-recorded ones when speakers pre-record, every content session
+    # when the team records, none otherwise.
+    mode = recordings(conference)
+    if mode == Recordings.SPEAKERS:
+        recorded = Q(delivery=Delivery.PRE_RECORDED)
+    elif mode == Recordings.TEAM:
+        recorded = Q(kind__is_content=True)
+    else:
+        recorded = Q(pk__in=[])
     sessions = list(
         Session.objects.for_conference(conference)
         .visible_to(user)
-        .filter(delivery=Delivery.PRE_RECORDED)
+        .filter(recorded)
         .exclude(status__in=[*UNACCEPTED_STATUSES, "CANCELLED"])
         .with_listing_data()
         .order_by("title")

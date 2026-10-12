@@ -58,6 +58,7 @@ from .constants import (
     ProposalDecision,
     ReadyOverride,
     ReadyRule,
+    Recordings,
     RoomKind,
     SessionLevel,
     SessionStatus,
@@ -182,6 +183,16 @@ class SpeakerSettings(TimestampedModel):
         help_text="How sessions happen. In person leaves out the online-only "
         "parts (pre-recording, premieres, tech checks); hybrid keeps "
         "everything, chosen per session.",
+    )
+    recordings = models.CharField(
+        max_length=16,
+        choices=Recordings.choices,
+        default=Recordings.SPEAKERS,
+        db_default=Recordings.SPEAKERS,
+        help_text="None: no files, no post-production. The team records: the "
+        "team uploads each session's recording after the event and the "
+        "pipeline runs from there. Speakers pre-record: they upload before "
+        "the event (not for an in-person edition).",
     )
     default_premiere_location = models.CharField(
         max_length=16,
@@ -398,6 +409,32 @@ def event_format(conference):
         .first()
     )
     return stored or EventFormat.ONLINE
+
+
+def recordings(conference):
+    """How the edition records sessions (decision 0013): speakers pre-record
+    with no edition or no row, which is what every edition did."""
+    if conference is None:
+        return Recordings.SPEAKERS
+    stored = (
+        SpeakerSettings.objects.filter(conference=conference)
+        .values_list("recordings", flat=True)
+        .first()
+    )
+    return stored or Recordings.SPEAKERS
+
+
+def records_sessions(conference):
+    """Whether there is a media pipeline at all for this edition."""
+    return recordings(conference) != Recordings.NONE
+
+
+def team_records(conference):
+    return recordings(conference) == Recordings.TEAM
+
+
+def speakers_pre_record(conference):
+    return recordings(conference) == Recordings.SPEAKERS
 
 
 def is_in_person(conference):
@@ -1708,7 +1745,7 @@ class ChecklistTemplate(TimestampedModel):
                     {"kind": "The general template has no kind, role or delivery."}
                 )
             return
-        if not self.kind_id:
+        if self.scope == ChecklistScope.PRESENTER and not self.kind_id:
             raise ValidationError({"kind": "Pick the session kind."})
         if self.scope == ChecklistScope.PRESENTER and not self.role_id:
             raise ValidationError({"role": "Presenter templates need a role."})
@@ -1751,14 +1788,18 @@ class ChecklistTemplate(TimestampedModel):
 
     @classmethod
     def for_session(cls, session):
-        """The active session-scope template for this session's type and delivery."""
-        return cls.objects.filter(
+        """The active session-scope template for this session's type and
+        delivery; one that names no kind applies to every kind (the team's
+        recording pipeline, decision 0013) and comes second."""
+        active = cls.objects.filter(
             conference_id=session.conference_id,
             scope=ChecklistScope.SESSION,
-            kind=session.kind,
             delivery=session.delivery,
             is_active=True,
-        ).first()
+        )
+        return (
+            active.filter(kind=session.kind).first() or active.filter(kind=None).first()
+        )
 
 
 class ReadinessGate(TimestampedModel):

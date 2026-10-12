@@ -4,31 +4,59 @@ the upload gate); online and hybrid editions keep everything."""
 
 import pytest
 from django.contrib.admin.sites import AdminSite
+from django.core.exceptions import ValidationError
 from django.test import RequestFactory
+from django.urls import reverse
 
 from speakers.admin import SpeakerSettingsAdmin
-from speakers.constants import ChecklistScope, Delivery, EventFormat
+from speakers.board import build_post_production_board
+from speakers.checklists import instantiate_session_checklist
+from speakers.constants import (
+    ChecklistScope,
+    Delivery,
+    EventFormat,
+    MediaKind,
+    Recordings,
+)
 from speakers.forms import ChecklistTemplateForm, SessionForm, SessionTypeForm
+from speakers.media import can_upload
 from speakers.models import (
+    ChecklistTemplate,
     ReadinessGate,
     SessionType,
     SpeakerSettings,
     event_format,
     is_in_person,
+    recordings,
+    records_sessions,
+    speakers_pre_record,
+    team_records,
 )
 from speakers.program_types import (
     DEFAULT_SESSION_TYPES,
     seed_program_types,
     session_type,
 )
-from speakers.seeds import DEFAULT_TEMPLATES, PERFORMER_NAME, seed_checklists
+from speakers.seeds import (
+    DEFAULT_TEMPLATES,
+    PERFORMER_NAME,
+    RECORDED_SESSION_NAME,
+    seed_checklists,
+)
 
-from .factories import make_settings
+from .factories import add_presenter, make_presenter, make_session, make_settings
 
 
 @pytest.fixture
 def in_person(conference):
-    return make_settings(conference, event_format=EventFormat.IN_PERSON)
+    return make_settings(
+        conference, event_format=EventFormat.IN_PERSON, recordings=Recordings.TEAM
+    )
+
+
+#: The defaults carry the pre-recording pipeline: its performer and
+#: post-production templates and the upload gate.
+PRE_RECORD_TEMPLATES = 2
 
 
 @pytest.mark.django_db
@@ -124,10 +152,13 @@ class TestSeeds:
     def test_no_gates_no_tech_check_no_video_templates(self, conference, in_person):
         result = seed_checklists(conference)
         assert ReadinessGate.objects.filter(conference=conference).count() == 0
-        assert [reason for _, reason in result.skipped] == ["online editions only"] * 2
+        reasons = {reason for _, reason in result.skipped}
+        assert reasons == {"speakers do not pre-record in this edition"}
         skipped = {name for name, _ in result.skipped}
         assert PERFORMER_NAME in skipped
-        assert result.templates == len(DEFAULT_TEMPLATES) - 2
+        # Minus the two pre-record templates, plus the recorded-session
+        # template, since the team records.
+        assert result.templates == len(DEFAULT_TEMPLATES) - PRE_RECORD_TEMPLATES + 1
         general = conference.checklist_templates.get(scope=ChecklistScope.GENERAL)
         titles = set(general.items.values_list("title", flat=True))
         assert "Do a tech check" not in titles
@@ -141,6 +172,10 @@ class TestSeeds:
         result = seed_checklists(conference)
         assert result.skipped == []
         assert ReadinessGate.objects.filter(conference=conference).count() == 2
+        # The team's recording template is not seeded when speakers pre-record.
+        assert not conference.checklist_templates.filter(
+            name=RECORDED_SESSION_NAME
+        ).exists()
 
 
 @pytest.mark.django_db
@@ -164,3 +199,143 @@ class TestAdmin:
         row = make_settings(conference, event_format=EventFormat.HYBRID)
         assert "default_premiere_location" in self._fields(row)
         assert "default_premiere_location" in self._fields(None)
+
+
+@pytest.mark.django_db
+class TestRecordings:
+    def test_helpers_default_to_speakers_pre_recording(self, conference):
+        assert recordings(None) == Recordings.SPEAKERS
+        assert recordings(conference) == Recordings.SPEAKERS
+        assert speakers_pre_record(conference) and records_sessions(conference)
+        assert team_records(conference) is False
+        make_settings(conference, recordings=Recordings.NONE)
+        assert records_sessions(conference) is False
+
+    def test_session_form_without_recordings_has_no_video_fields(self, conference):
+        make_settings(conference, recordings=Recordings.NONE)
+        form = SessionForm(conference=conference)
+        for field in (
+            "youtube_url",
+            "youtube_publish_at",
+            "video_length_limit_minutes",
+        ):
+            assert field not in form.fields
+
+    def test_team_recording_lets_a_live_session_carry_its_video_link(
+        self, conference, in_person
+    ):
+        form = SessionForm(
+            conference=conference,
+            data={
+                "kind": session_type(conference, "TALK").pk,
+                "title": "Talk",
+                "youtube_url": "https://youtube.com/watch?v=x",
+                "youtube_publish_at": "2026-06-01T10:00",
+                "video_length_limit_minutes": 10,
+            },
+        )
+        assert form.is_valid() is False
+        # The limit is about a pre-recorded upload; the link is not.
+        assert set(form.errors) == {"video_length_limit_minutes"}
+
+    def test_seeds_for_the_team_recording(self, conference, in_person):
+        seed_checklists(conference)
+        template = conference.checklist_templates.get(name=RECORDED_SESSION_NAME)
+        assert template.scope == ChecklistScope.SESSION
+        assert template.kind is None and template.delivery == Delivery.LIVE
+        titles = list(template.items.values_list("title", flat=True))
+        assert titles[0] == "Upload the recording"
+        assert titles[-1] == "Publish the recording with its transcript"
+        # Content presenters get a review line; hosts do not.
+        talk = conference.checklist_templates.get(name="Talk presenter")
+        assert talk.items.filter(title="Review your recording").exists()
+        host = conference.checklist_templates.get(name="Opening host")
+        assert not host.items.filter(title="Review your recording").exists()
+        # No gates at all: no tech check in person, no upload when the team records.
+        assert ReadinessGate.objects.filter(conference=conference).count() == 0
+
+    def test_no_recordings_seeds_no_pipeline(self, conference):
+        make_settings(conference, recordings=Recordings.NONE)
+        result = seed_checklists(conference)
+        names = set(conference.checklist_templates.values_list("name", flat=True))
+        assert RECORDED_SESSION_NAME not in names and PERFORMER_NAME not in names
+        assert not conference.checklist_templates.filter(
+            scope=ChecklistScope.SESSION
+        ).exists()
+        assert len(result.skipped) == PRE_RECORD_TEMPLATES
+        # The tech check is still an online line; the upload gate is not seeded.
+        assert list(
+            ReadinessGate.objects.filter(conference=conference).values_list(
+                "code", flat=True
+            )
+        ) == ["tech-check-open"]
+
+    def test_a_kindless_session_template_applies_to_every_kind(
+        self, conference, in_person
+    ):
+        seed_checklists(conference)
+        generic = conference.checklist_templates.get(name=RECORDED_SESSION_NAME)
+        talk = make_session(conference, kind="TALK")
+        assert ChecklistTemplate.for_session(talk) == generic
+        # A template naming the kind wins over the generic one.
+        specific = ChecklistTemplate.objects.create(
+            conference=conference,
+            scope=ChecklistScope.SESSION,
+            name="Talk, recorded",
+            kind=talk.kind,
+            delivery=Delivery.LIVE,
+        )
+        assert ChecklistTemplate.for_session(talk) == specific
+        # The model accepts a session template with no kind, and still
+        # wants one on a presenter template.
+        generic.full_clean()
+        with pytest.raises(ValidationError):
+            ChecklistTemplate(
+                conference=conference,
+                scope=ChecklistScope.PRESENTER,
+                name="No kind",
+                role=talk.kind.default_role,
+            ).full_clean()
+
+    def test_board_rows_follow_the_recordings_setting(self, conference, admin_user):
+        row = make_settings(conference, recordings=Recordings.TEAM)
+        seed_checklists(conference)
+        talk = make_session(conference, kind="TALK")
+        add_presenter(talk, make_presenter(conference))
+        instantiate_session_checklist(talk)
+        board = build_post_production_board(conference, admin_user)
+        assert [r["session"] for r in board["rows"]] == [talk]
+        row.recordings = Recordings.NONE
+        row.save()
+        assert build_post_production_board(conference, admin_user)["rows"] == []
+        row.recordings = Recordings.SPEAKERS
+        row.save()
+        assert build_post_production_board(conference, admin_user)["rows"] == []
+
+    def test_speakers_upload_only_when_they_pre_record(self, conference, portal_user):
+        row = make_settings(conference, recordings=Recordings.TEAM)
+        talk = make_session(conference, kind="TALK")
+        link = add_presenter(talk, make_presenter(conference, user=portal_user))
+        link.confirm()
+        assert can_upload(portal_user, talk, MediaKind.RAW_VIDEO) is False
+        row.recordings = Recordings.SPEAKERS
+        row.save()
+        assert can_upload(portal_user, talk, MediaKind.RAW_VIDEO) is True
+
+    def test_pages_hide_the_files_tab_without_recordings(
+        self, client, admin_user, conference
+    ):
+        make_settings(conference, recordings=Recordings.NONE)
+        talk = make_session(conference, kind="TALK")
+        client.force_login(admin_user)
+        content = client.get(talk.get_absolute_url()).content.decode()
+        assert 'id="tab-files-link"' not in content
+        content = client.get(reverse("speakers:checklist_board")).content.decode()
+        assert "tab=post_production" not in content
+
+    def test_admin_hides_media_without_recordings(self, conference):
+        row = make_settings(conference, recordings=Recordings.NONE)
+        model_admin = SpeakerSettingsAdmin(SpeakerSettings, AdminSite())
+        request = RequestFactory().get("/")
+        titles = [title for title, _ in model_admin.get_fieldsets(request, row)]
+        assert "Media" not in titles

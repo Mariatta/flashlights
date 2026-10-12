@@ -19,6 +19,7 @@ from .constants import (
     ChecklistScope,
     Delivery,
     ItemOwner,
+    Recordings,
     SessionLevel,
     SessionStatus,
     format_owner,
@@ -35,6 +36,7 @@ from .models import (
     SessionPresenter,
     SessionType,
     is_in_person,
+    recordings,
     volunteer_discord_username,
 )
 from .people import assignee_candidates, liaison_candidates, picker_label
@@ -96,6 +98,10 @@ class IdentityLockMixin:
             for name, label in self.IDENTITY_FIELDS:
                 self.fields.pop(name)
                 self.locked_fields.append((label, getattr(self.instance, name)))
+
+
+#: What a session says about its video; gone when the edition records nothing.
+VIDEO_FIELDS = ("video_length_limit_minutes", "youtube_url", "youtube_publish_at")
 
 
 class SessionForm(forms.ModelForm):
@@ -162,6 +168,13 @@ class SessionForm(forms.ModelForm):
         if self.in_person:
             del self.fields["delivery"]
             del self.fields["premiere_location"]
+        # With no recordings there is no video to limit, link or schedule;
+        # with the team recording, a live session gets its video link
+        # after the event.
+        self.recordings = recordings(conference)
+        if self.recordings == Recordings.NONE:
+            for field in VIDEO_FIELDS:
+                del self.fields[field]
         self.fields["duration_minutes"].help_text = (
             "Leave blank to use the default for the type: "
             + ", ".join(
@@ -183,12 +196,10 @@ class SessionForm(forms.ModelForm):
         if not delivery and cleaned.get("kind"):
             delivery = cleaned["kind"].default_delivery
         if delivery == Delivery.LIVE:
-            for field in (
-                "video_length_limit_minutes",
-                "youtube_url",
-                "youtube_publish_at",
-                "premiere_location",
-            ):
+            pre_recorded_only = ["video_length_limit_minutes", "premiere_location"]
+            if self.recordings != Recordings.TEAM:
+                pre_recorded_only += ["youtube_url", "youtube_publish_at"]
+            for field in pre_recorded_only:
                 if cleaned.get(field):
                     self.add_error(field, "Only applies to pre-recorded sessions.")
         return cleaned
@@ -665,6 +676,7 @@ class ChecklistTemplateForm(forms.ModelForm):
         model = ChecklistTemplate
         fields = ["scope", "name", "kind", "role", "delivery", "is_active"]
         help_texts = {
+            "kind": "Session templates may leave this blank to apply to every kind.",
             "role": "Presenter templates: which role on the session this applies to.",
             "delivery": "Session templates: live or pre-recorded.",
         }

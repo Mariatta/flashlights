@@ -175,6 +175,13 @@ class ConferenceForm(forms.ModelForm):
         "parts of the speaker portal (pre-recording, premieres, tech checks); "
         "hybrid keeps everything, chosen per session.",
     )
+    recordings = forms.ChoiceField(
+        required=False,
+        label="Recordings",
+        help_text="None: no files and no post-production. The team records: "
+        "the team uploads each session's recording after the event. Speakers "
+        "pre-record: they upload before the event (online and hybrid only).",
+    )
 
     class Meta:
         model = Conference
@@ -231,10 +238,12 @@ class ConferenceForm(forms.ModelForm):
         if model is None:
             del self.fields["speaker_module_enabled"]
             del self.fields["event_format"]
+            del self.fields["recordings"]
             return
-        format_field = model._meta.get_field("event_format")
-        self.fields["event_format"].choices = format_field.choices
-        self.fields["event_format"].initial = format_field.default
+        for name in ("event_format", "recordings"):
+            field = model._meta.get_field(name)
+            self.fields[name].choices = field.choices
+            self.fields[name].initial = field.default
         if self.instance.pk:
             settings_row = model.objects.filter(conference=self.instance).first()
             self.fields["speaker_module_enabled"].initial = bool(
@@ -242,6 +251,23 @@ class ConferenceForm(forms.ModelForm):
             )
             if settings_row:
                 self.fields["event_format"].initial = settings_row.event_format
+                self.fields["recordings"].initial = settings_row.recordings
+
+    def clean(self):
+        cleaned = super().clean()
+        model = _speaker_settings_model()
+        if model is None:
+            return cleaned
+        formats = model._meta.get_field("event_format")
+        modes = model._meta.get_field("recordings")
+        in_person = (cleaned.get("event_format") or formats.default) == "IN_PERSON"
+        if in_person and (cleaned.get("recordings") or modes.default) == "SPEAKERS":
+            self.add_error(
+                "recordings",
+                "Speakers do not pre-record for an in-person edition: pick "
+                '"The team records" or "No recordings".',
+            )
+        return cleaned
 
     def save(self, commit=True):
         conference = super().save(commit=commit)
@@ -249,26 +275,21 @@ class ConferenceForm(forms.ModelForm):
         if model is None:
             return conference
         enabled = self.cleaned_data.get("speaker_module_enabled", False)
-        default_format = model._meta.get_field("event_format").default
-        event_format = self.cleaned_data.get("event_format") or default_format
+        values = {"speaker_module_enabled": enabled}
+        defaults = {}
+        for name in ("event_format", "recordings"):
+            defaults[name] = model._meta.get_field(name).default
+            values[name] = self.cleaned_data.get(name) or defaults[name]
         settings_row = model.objects.filter(conference=conference).first()
         if settings_row is None:
             # A row only once there is something to keep: the module on, or
-            # a format other than the default.
-            if enabled or event_format != default_format:
-                model.objects.create(
-                    conference=conference,
-                    speaker_module_enabled=enabled,
-                    event_format=event_format,
-                )
+            # a choice other than the default.
+            if enabled or any(values[n] != defaults[n] for n in defaults):
+                model.objects.create(conference=conference, **values)
             return conference
-        changed = []
-        if settings_row.speaker_module_enabled != enabled:
-            settings_row.speaker_module_enabled = enabled
-            changed.append("speaker_module_enabled")
-        if settings_row.event_format != event_format:
-            settings_row.event_format = event_format
-            changed.append("event_format")
+        changed = [n for n, v in values.items() if getattr(settings_row, n) != v]
+        for name in changed:
+            setattr(settings_row, name, values[name])
         if changed:
             settings_row.save(update_fields=changed + ["modified_date"])
         return conference

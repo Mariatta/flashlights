@@ -43,6 +43,7 @@ from .models import (
     SpeakerSettings,
     TranscriptionJob,
     media_for_speakers,
+    speakers_pre_record,
 )
 from .permissions import is_speaker_organizer
 from .signals import asset_ready
@@ -236,6 +237,8 @@ def can_upload(user, session, kind):
         return False
     if not media_for_speakers(session.conference):
         return False
+    if not speakers_pre_record(session.conference):
+        return False  # the team records (decision 0013)
     return session.session_presenters.filter(presenter__user=user).exists()
 
 

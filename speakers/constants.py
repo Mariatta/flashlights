@@ -93,6 +93,16 @@ class EventFormat(models.TextChoices):
     HYBRID = "HYBRID", "Hybrid"
 
 
+class Recordings(models.TextChoices):
+    """Whether an edition's sessions are recorded and how (decision 0013).
+    Speakers pre-recording is the pipeline the module was built around; a
+    filmed in-person event has the team upload each recording afterwards."""
+
+    NONE = "NONE", "No recordings"
+    TEAM = "TEAM", "The team records"
+    SPEAKERS = "SPEAKERS", "Speakers pre-record"
+
+
 class ProgramVisibility(models.TextChoices):
     """The edition's master switch for the public program (design §11.5)."""
 

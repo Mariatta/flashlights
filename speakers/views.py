@@ -123,6 +123,8 @@ from .models import (
     SessionType,
     SpeakerSettings,
     TransitionError,
+    records_sessions,
+    team_records,
 )
 from .permissions import (
     approved_teams,
@@ -405,6 +407,8 @@ class SessionDetailView(SessionScopedMixin, DetailView):
         # fail, and the team gathers recordings as before (README).
         media_on = bool(settings.SPEAKER_MEDIA_BUCKET)
         context["media_on"] = media_on
+        # Decision 0013: no recordings, no Files tab and no video card.
+        context["recordings_on"] = records_sessions(self.conference)
         context["line_titles"] = line_titles(self.object, assets)
         context["line_variants"] = line_variants(self.object, assets)
         # "Transcribe this" is offered when the portal has an engine; the
@@ -424,7 +428,7 @@ class SessionDetailView(SessionScopedMixin, DetailView):
         # are, on the right rather than on the page.
         context["video"] = (
             video_panel(self.object, self.request.user, assets)
-            if self.object.is_pre_recorded
+            if (self.object.is_pre_recorded or team_records(self.conference))
             and media_on
             and context["can_download_media"]
             else None
@@ -1470,7 +1474,9 @@ class SpeakerSessionDetailView(SpeakerSessionMixin, TemplateView):
         today_here = today(self.presenter.tzinfo)
         checklist = _speaker_checklist(self.presenter, today_here)
         link = next(row for row in checklist["links"] if row.session_id == session.pk)
-        media_on = media_for_speakers(self.conference)
+        media_on = media_for_speakers(self.conference) and records_sessions(
+            self.conference
+        )
         context.update(
             {
                 "conference": self.conference,
@@ -1818,6 +1824,7 @@ class ChecklistBoardView(LoginRequiredMixin, SpeakerStaffRequiredMixin, Template
                 "tab": tab,
                 "sort": sort,
                 "board": self.build(tab, sort),
+                "recordings_on": records_sessions(self.conference),
             }
         )
         return context

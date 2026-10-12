@@ -45,6 +45,7 @@
                 <div class="card-body">
                     {% if form.event_format %}
                         {% bootstrap_field form.event_format %}
+                        {% bootstrap_field form.recordings %}
                     {% endif %}
                     {% bootstrap_field form.conference_date %}
                     {% bootstrap_field form.start_date %}
@@ -54,7 +55,7 @@
                     {% bootstrap_field form.venue_url %}
                 </div>
             </fieldset>
-            {% bootstrap_form form exclude="year,name,slug,is_active,speaker_module_enabled,volunteer_application_open,sponsorship_open,accepting_donations,event_format,conference_date,start_date,end_date,venue_name,venue_address,venue_url" %}
+            {% bootstrap_form form exclude="year,name,slug,is_active,speaker_module_enabled,volunteer_application_open,sponsorship_open,accepting_donations,event_format,recordings,conference_date,start_date,end_date,venue_name,venue_address,venue_url" %}
             <button type="submit" class="btn btn-primary">
                 {% trans "Save" %}
             </button>

@@ -31,6 +31,7 @@ from .constants import (
     ItemOwner,
     MediaKind,
     ReadyRule,
+    Recordings,
 )
 from .models import (
     ChecklistTemplate,
@@ -41,6 +42,7 @@ from .models import (
     SessionType,
     SpeakerSettings,
     is_in_person,
+    recordings,
 )
 from .program_types import (
     clone_program_types,
@@ -376,9 +378,80 @@ POST_PRODUCTION = [
     ),
 ]
 
+# The team's recording pipeline (decision 0013, "the team records"): the
+# recording lands after the session, so these count days after it.
+REVIEW_RECORDING = _item(
+    SPK,
+    "Review your recording",
+    SESSION,
+    -35,
+    description_md="Watch the edited recording from your session page and tick this when you are happy for it to go out.",
+    ready_rule=ReadyRule.FINAL_CUT_READY,
+    waiting_note="we are still editing your recording",
+)
+TEAM_RECORDING = [
+    _item(
+        ORG,
+        "Upload the recording",
+        SESSION,
+        -3,
+        AutoRule.ASSET_EXISTS,
+        description_md="The room's recording of the session, as it came off the camera or the stream. Ticks itself once a video is in.",
+        requires_asset_kind=MediaKind.RAW_VIDEO,
+    ),
+    _item(ORG, "Review audio and video quality", SESSION, -7),
+    _item(
+        ORG,
+        "Transcribe",
+        SESSION,
+        -14,
+        AutoRule.ASSET_EXISTS,
+        requires_asset_kind=MediaKind.TRANSCRIPT,
+        requires_asset_language=SESSION_LANGUAGE,
+    ),
+    _item(ORG, "Review transcript", SESSION, -21),
+    _item(
+        ORG,
+        "Translate",
+        SESSION,
+        -21,
+        AutoRule.ASSET_EXISTS,
+        requires_asset_kind=MediaKind.TRANSLATION,
+        per_translation_language=True,
+    ),
+    _item(
+        ORG,
+        "Assemble the final video",
+        SESSION,
+        -28,
+        AutoRule.ASSET_EXISTS,
+        requires_asset_kind=MediaKind.PROCESSED_VIDEO,
+    ),
+    _item(
+        ORG,
+        "Publish the recording with its transcript",
+        SESSION,
+        -35,
+        AutoRule.YOUTUBE_PUBLISHED,
+    ),
+]
+
 # (scope, name, type code, role code, delivery, items)
 # The performer's lines are about the video they upload before the event.
 PERFORMER_NAME = "PyJam performer"
+# The team's pipeline for a live session of any kind: seeded only when the
+# edition says the team records (decision 0013), on top of the defaults.
+RECORDED_SESSION_NAME = "Recorded session"
+TEAM_TEMPLATES = [
+    (
+        ChecklistScope.SESSION,
+        RECORDED_SESSION_NAME,
+        "",
+        "",
+        Delivery.LIVE,
+        TEAM_RECORDING,
+    ),
+]
 
 DEFAULT_TEMPLATES = [
     (
@@ -513,9 +586,15 @@ def seed_readiness_gates(conference):
     in-person edition gets none: both defaults guard online-only lines
     (decision 0013)."""
     created = 0
-    if is_in_person(conference):
-        return created
+    in_person = is_in_person(conference)
+    pre_record = recordings(conference) == Recordings.SPEAKERS
     for code, name, waiting_note, description in DEFAULT_GATES:
+        # The tech check is an online call; the upload gate guards the
+        # performer's upload before the event.
+        if (code == "tech-check-open" and in_person) or (
+            code == "upload-open" and not pre_record
+        ):
+            continue
         _, made = ReadinessGate.objects.get_or_create(
             conference=conference,
             code=code,
@@ -539,14 +618,27 @@ def _seed_checklists(conference):
     templates_created = items_created = described = 0
     skipped = []
     in_person = is_in_person(conference)
-    for scope, name, kind, role, delivery, items in DEFAULT_TEMPLATES:
-        # Decision 0013: in person there is no video to upload before the
-        # event and no tech check over a call.
-        if in_person and (delivery == Delivery.PRE_RECORDED or name == PERFORMER_NAME):
-            skipped.append((name, "online editions only"))
+    mode = recordings(conference)
+    specs = DEFAULT_TEMPLATES + (TEAM_TEMPLATES if mode == Recordings.TEAM else [])
+    for scope, name, kind, role, delivery, items in specs:
+        # Decision 0013: the pre-recording pipeline (the performer's upload,
+        # the post-production of a pre-recorded session) only when speakers
+        # pre-record; no tech check over a call in person.
+        if (delivery == Delivery.PRE_RECORDED or name == PERFORMER_NAME) and (
+            mode != Recordings.SPEAKERS
+        ):
+            skipped.append((name, "speakers do not pre-record in this edition"))
             continue
         if in_person and scope == ChecklistScope.GENERAL:
             items = [i for i in items if i is not TECH_CHECK]
+        if (
+            mode == Recordings.TEAM
+            and scope == ChecklistScope.PRESENTER
+            and role != "HOST"
+            and kind in kinds
+            and kinds[kind].is_content
+        ):
+            items = [*items, REVIEW_RECORDING]
         # The every-presenter template names no kind, role or delivery: its
         # lines are about the person, not about a session.
         if kind and kind not in kinds:

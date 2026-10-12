@@ -264,22 +264,24 @@ open the tab their target lives in.
                 {% endif %}
             </button>
         </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link"
-                    id="tab-files-link"
-                    data-bs-toggle="tab"
-                    data-bs-target="#tab-files"
-                    data-anchor="files"
-                    type="button"
-                    role="tab"
-                    aria-controls="tab-files"
-                    aria-selected="false">
-                {% trans "Files" %}
-                {% if media_groups %}
-                    <span class="badge text-bg-light border ms-1">{{ media_groups|length }}</span>
-                {% endif %}
-            </button>
-        </li>
+        {% if recordings_on %}
+            <li class="nav-item" role="presentation">
+                <button class="nav-link"
+                        id="tab-files-link"
+                        data-bs-toggle="tab"
+                        data-bs-target="#tab-files"
+                        data-anchor="files"
+                        type="button"
+                        role="tab"
+                        aria-controls="tab-files"
+                        aria-selected="false">
+                    {% trans "Files" %}
+                    {% if media_groups %}
+                        <span class="badge text-bg-light border ms-1">{{ media_groups|length }}</span>
+                    {% endif %}
+                </button>
+            </li>
+        {% endif %}
         <li class="nav-item" role="presentation">
             <button class="nav-link"
                     id="tab-details-link"
@@ -624,42 +626,44 @@ open the tab their target lives in.
                 </details>
             {% endif %}
         </div>
-        <div class="tab-pane fade"
-             id="tab-files"
-             role="tabpanel"
-             aria-labelledby="tab-files-link"
-             tabindex="0">
-            {% if can_upload_media and media_on %}
-                {# Adding comes first: it is what the tab is opened for most; the list follows under a rule. #}
-                <div class="card mb-4" id="add-file">
-                    <div class="card-header">
-                        <i class="icon-cloud-upload"></i> {% trans "Add a file" %}
+        {% if recordings_on %}
+            <div class="tab-pane fade"
+                 id="tab-files"
+                 role="tabpanel"
+                 aria-labelledby="tab-files-link"
+                 tabindex="0">
+                {% if can_upload_media and media_on %}
+                    {# Adding comes first: it is what the tab is opened for most; the list follows under a rule. #}
+                    <div class="card mb-4" id="add-file">
+                        <div class="card-header">
+                            <i class="icon-cloud-upload"></i> {% trans "Add a file" %}
+                        </div>
+                        <div class="card-body">
+                            {% include "speakers/_upload_panel.html" with session=session kinds=media_kinds with_language=True with_variant=True open_uploads=open_uploads line_titles=line_titles panel_id="files" %}
+                        </div>
                     </div>
-                    <div class="card-body">
-                        {% include "speakers/_upload_panel.html" with session=session kinds=media_kinds with_language=True with_variant=True open_uploads=open_uploads line_titles=line_titles panel_id="files" %}
-                    </div>
-                </div>
-                <hr class="my-4">
-            {% endif %}
-            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-                <h2 class="h5 mb-0" id="files">
-                    {% trans "Uploaded files" %}
-                    {% if media_groups %}
-                        <span class="badge text-bg-light border align-middle">{{ media_groups|length }}</span>
+                    <hr class="my-4">
+                {% endif %}
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                    <h2 class="h5 mb-0" id="files">
+                        {% trans "Uploaded files" %}
+                        {% if media_groups %}
+                            <span class="badge text-bg-light border align-middle">{{ media_groups|length }}</span>
+                        {% endif %}
+                    </h2>
+                    {% if is_organizer and media_groups %}
+                        <a class="btn btn-sm btn-outline-secondary"
+                           href="{% url 'speakers:media_export' %}?sessions_mode=some&sessions={{ session.slug }}&kinds=RAW_VIDEO&kinds=INTRO&kinds=OUTRO&kinds=PROCESSED_VIDEO&kinds=TRANSCRIPT&kinds=TRANSLATION&kinds=TITLE_CARD&kinds=THUMBNAIL&kinds=PROMO&kinds=OTHER">
+                            <i class="icon-download"></i> {% trans "Download all files of this session" %}
+                        </a>
                     {% endif %}
-                </h2>
-                {% if is_organizer and media_groups %}
-                    <a class="btn btn-sm btn-outline-secondary"
-                       href="{% url 'speakers:media_export' %}?sessions_mode=some&sessions={{ session.slug }}&kinds=RAW_VIDEO&kinds=INTRO&kinds=OUTRO&kinds=PROCESSED_VIDEO&kinds=TRANSCRIPT&kinds=TRANSLATION&kinds=TITLE_CARD&kinds=THUMBNAIL&kinds=PROMO&kinds=OTHER">
-                        <i class="icon-download"></i> {% trans "Download all files of this session" %}
-                    </a>
+                </div>
+                {% include "speakers/_media_files.html" with session=session media_groups=media_groups can_edit=can_upload_media %}
+                {% if can_upload_media and media_groups %}
+                    {% include "speakers/_media_delete_modal.html" %}
                 {% endif %}
             </div>
-            {% include "speakers/_media_files.html" with session=session media_groups=media_groups can_edit=can_upload_media %}
-            {% if can_upload_media and media_groups %}
-                {% include "speakers/_media_delete_modal.html" %}
-            {% endif %}
-        </div>
+        {% endif %}
         <div class="tab-pane fade"
              id="tab-details"
              role="tabpanel"

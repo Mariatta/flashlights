@@ -3,7 +3,7 @@ from django.contrib import admin
 
 from portal.admin_filters import ActiveConferenceFilter
 
-from .constants import EventFormat
+from .constants import EventFormat, Recordings
 from .models import (
     ActivityLog,
     AllowedOrigin,
@@ -79,6 +79,7 @@ class SpeakerSettingsAdmin(admin.ModelAdmin):
         "conference",
         "speaker_module_enabled",
         "event_format",
+        "recordings",
         "proposals_open",
         "media_for_speakers",
         "auto_transcribe",
@@ -92,22 +93,29 @@ class SpeakerSettingsAdmin(admin.ModelAdmin):
         "default_premiere_location",
         "default_video_length_limit_minutes",
     )
+    MEDIA_FIELDS = ("media_for_speakers", "auto_transcribe")
 
     def get_fieldsets(self, request, obj=None):
+        """Decision 0013: an in-person row has no use for the premiere and
+        the video length limit; a row with no recordings has no Media."""
         fieldsets = super().get_fieldsets(request, obj)
-        if obj is None or obj.event_format != EventFormat.IN_PERSON:
+        if obj is None:
             return fieldsets
+        drop = set()
+        if obj.event_format == EventFormat.IN_PERSON:
+            drop |= set(self.ONLINE_ONLY_FIELDS)
+        if obj.recordings == Recordings.NONE:
+            drop |= set(self.MEDIA_FIELDS)
         return tuple(
             (
                 title,
                 {
                     **options,
-                    "fields": tuple(
-                        f for f in options["fields"] if f not in self.ONLINE_ONLY_FIELDS
-                    ),
+                    "fields": tuple(f for f in options["fields"] if f not in drop),
                 },
             )
             for title, options in fieldsets
+            if any(f not in drop for f in options["fields"])
         )
 
     fieldsets = (
@@ -118,6 +126,7 @@ class SpeakerSettingsAdmin(admin.ModelAdmin):
                     "conference",
                     "speaker_module_enabled",
                     "event_format",
+                    "recordings",
                     "conference_timezone",
                     "organizers_email",
                 )

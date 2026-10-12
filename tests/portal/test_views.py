@@ -11,7 +11,7 @@ from pytest_django.asserts import assertRedirects
 from portal import branding
 from portal.models import Conference
 from portal_account.models import PortalProfile
-from speakers.constants import EventFormat
+from speakers.constants import EventFormat, Recordings
 from speakers.models import SpeakerSettings
 from sponsorship.models import (
     SponsorshipProfile,
@@ -547,6 +547,7 @@ class TestConferenceCRUD:
                 "venue_address": "300 E Ocean Blvd\nLong Beach, CA",
                 "venue_url": "https://maps.example.org/lbcc",
                 "event_format": EventFormat.IN_PERSON,
+                "recordings": Recordings.TEAM,
             },
             follow=True,
         )
@@ -555,6 +556,7 @@ class TestConferenceCRUD:
         assert conference.venue_url == "https://maps.example.org/lbcc"
         row = SpeakerSettings.objects.get(conference=conference)
         assert row.event_format == EventFormat.IN_PERSON
+        assert row.recordings == Recordings.TEAM
         assert row.speaker_module_enabled is False
         # The form shows what is stored, and a second save changes only the
         # format on the existing row.
@@ -572,10 +574,30 @@ class TestConferenceCRUD:
                 "donation_goal": "0",
                 "proposals_count": "0",
                 "event_format": EventFormat.HYBRID,
+                "recordings": Recordings.SPEAKERS,
             },
         )
         row.refresh_from_db()
         assert row.event_format == EventFormat.HYBRID
+        assert row.recordings == Recordings.SPEAKERS
+
+    def test_in_person_speakers_cannot_pre_record(self, client, admin_user, conference):
+        client.force_login(admin_user)
+        response = client.post(
+            reverse("conference_edit", kwargs={"pk": conference.pk}),
+            {
+                "year": conference.year,
+                "name": conference.name,
+                "slug": conference.slug,
+                "sponsorship_goal": "0",
+                "donation_goal": "0",
+                "proposals_count": "0",
+                "event_format": EventFormat.IN_PERSON,
+                "recordings": Recordings.SPEAKERS,
+            },
+        )
+        assert response.status_code == 200
+        assert "Speakers do not pre-record" in response.content.decode()
 
     def test_update_without_a_format_makes_no_settings_row(
         self, client, admin_user, conference
