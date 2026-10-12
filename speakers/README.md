@@ -1190,7 +1190,7 @@ installed; this app keeps small factory functions in `tests/speakers/factories.p
   "Program coming soon" and every endpoint answers 200, so the browser
   logs nothing; if the API cannot be reached it shows a link to
   `data-fallback-url` (default: the portal's `/embed/<slug>/schedule/`,
-  task 6.4). Styling: the `.plc` root and `--fl-*` CSS variables
+  task 6.4). Styling: the `.fl` root and `--fl-*` CSS variables
   (`--fl-accent`, `--fl-muted`, `--fl-border`, `--fl-band`,
   `--fl-card`, `--fl-radius`, `--fl-modal-bg`, `--fl-modal-text`);
   text inherits the host page's font. Caching: `/static/widget/v1.js` is

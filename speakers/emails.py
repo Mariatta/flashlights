@@ -395,6 +395,8 @@ def send_schedule_update_email(presenter, session_changes, published_at):
         start = row.start_utc.astimezone(presenter.tzinfo)
         end = row.end_utc.astimezone(presenter.tzinfo)
         where = row.room.name if row.room_id else "all rooms"
+        if session.conference.venue_name:  # decision 0013
+            where = f"{where}, {session.conference.venue_name}"
         lines.append(
             {
                 "title": session.title,

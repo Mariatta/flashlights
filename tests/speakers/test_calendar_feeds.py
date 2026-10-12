@@ -122,6 +122,12 @@ class TestPublicFeed:
         assert "LOCATION:main-stage" in text
         assert "SEQUENCE:0" in text
         assert "Hidden draft" not in text
+        # With a venue (decision 0013) the room is followed by it, so a
+        # calendar can map the place; the comma is escaped as iCalendar wants.
+        conference.venue_name = "Long Beach Convention Center, CA"
+        conference.save()
+        text = client.get(FEED).content.decode()
+        assert "LOCATION:main-stage\\, Long Beach Convention Center\\, CA" in text
         assert "UID:session-" in text and "@2025.flashlights" in text
 
     def test_filters(self, client, enabled, conference):

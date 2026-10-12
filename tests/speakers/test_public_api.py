@@ -156,6 +156,7 @@ class TestSnapshots:
                 "slug": "2025",
                 "name": "Flashlights 2025",
                 "timezone": "UTC",
+                "venue": None,
             },
             "program": "published",
             "sessions": [
@@ -288,6 +289,7 @@ class TestSnapshots:
                 "slug": "2025",
                 "name": "Flashlights 2025",
                 "timezone": "America/Vancouver",
+                "venue": None,
             },
             "program": "published",
             "timezone": "America/Vancouver",
@@ -595,3 +597,40 @@ class TestAllowedOrigin:
         ).content.decode()
         assert "Websites allowed to show the program" in content
         assert 'value="https://2026.example.org"' in content
+
+
+@pytest.mark.django_db
+class TestVenue:
+    # Decision 0013: where the edition happens, for the website to print.
+    # One captured save per test: the receiver bumps the cache once per
+    # transaction, and a test is one transaction.
+
+    def test_the_edition_block_carries_the_venue(
+        self, client, program, conference, django_capture_on_commit_callbacks
+    ):
+        conference.venue_name = "Long Beach Convention Center"
+        conference.venue_address = "300 E Ocean Blvd, Long Beach, CA"
+        conference.venue_url = "https://maps.example.org/lbcc"
+        with django_capture_on_commit_callbacks(execute=True):
+            conference.save()
+        _, data = get(client, url("sessions"))
+        assert data["conference"]["venue"] == {
+            "name": "Long Beach Convention Center",
+            "address": "300 E Ocean Blvd, Long Beach, CA",
+            "url": "https://maps.example.org/lbcc",
+        }
+
+    def test_editing_the_edition_busts_the_cache(
+        self, client, program, conference, django_capture_on_commit_callbacks
+    ):
+        _, data = get(client, url("schedule"))
+        assert data["conference"]["venue"] is None
+        conference.venue_name = "Long Beach Convention Center"
+        with django_capture_on_commit_callbacks(execute=True):
+            conference.save()
+        _, data = get(client, url("schedule"))
+        assert data["conference"]["venue"] == {
+            "name": "Long Beach Convention Center",
+            "address": None,
+            "url": None,
+        }

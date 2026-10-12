@@ -47,6 +47,17 @@ def program_state(conference, previewing):
     return "published" if program_is_published(conference) else "internal"
 
 
+def venue_block(conference):
+    """Where the edition happens (decision 0013), or None online."""
+    if not conference.venue_name:
+        return None
+    return {
+        "name": conference.venue_name,
+        "address": conference.venue_address or None,
+        "url": conference.venue_url or None,
+    }
+
+
 def conference_block(conference):
     # speaker_settings is the conference's one-to-one, cached on the
     # instance after the module check: no query of its own.
@@ -54,6 +65,7 @@ def conference_block(conference):
         "slug": conference.slug,
         "name": conference.name,
         "timezone": conference.speaker_settings.conference_timezone,
+        "venue": venue_block(conference),
     }
 
 

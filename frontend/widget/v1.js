@@ -13,10 +13,11 @@
   var ORIGIN = me ? new URL(me.src, location.href).origin : "";
   var STEP = 5; /* grid rows, in minutes */
   var CSS = [
-    ".plc{--fl-accent:#8a1e5b;--fl-muted:#5f5f6b;--fl-border:#d9d9e0;--fl-band:#f3eef6;--fl-card:Canvas;--fl-radius:8px;--fl-modal-bg:#fff;--fl-modal-text:#1f1f24;font:inherit;color:inherit}",
-    ".plc *{box-sizing:border-box}.plc a{color:var(--fl-accent)}",
+    ".fl{--fl-accent:#8a1e5b;--fl-muted:#5f5f6b;--fl-border:#d9d9e0;--fl-band:#f3eef6;--fl-card:Canvas;--fl-radius:8px;--fl-modal-bg:#fff;--fl-modal-text:#1f1f24;font:inherit;color:inherit}",
+    ".fl *{box-sizing:border-box}.fl a{color:var(--fl-accent)}",
     ".fl-bar{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin:0 0 .75rem}",
-    ".plc select{font:inherit;max-width:100%}",
+    ".fl-venue{margin-right:auto;font-weight:600}",
+    ".fl select{font:inherit;max-width:100%}",
     ".fl-tab{font:inherit;border:1px solid var(--fl-border);background:none;color:inherit;border-radius:999px;padding:.25rem .8rem;cursor:pointer}",
     ".fl-tab[aria-selected=true]{background:var(--fl-accent);border-color:var(--fl-accent);color:#fff}",
     ".fl-sched{container-type:inline-size}",
@@ -46,7 +47,7 @@
     ".fl-ini{background:#ead6e3;background:color-mix(in srgb,var(--fl-accent) 18%,#fff);color:var(--fl-accent);box-shadow:inset 0 0 0 1px var(--fl-border)}",
     ".fl-big{width:5rem;height:5rem;font-size:1.4em}",
     ".fl-row{display:flex;flex-wrap:wrap;gap:.5rem .9rem;align-items:center;margin-top:.6rem;font-size:.9em}",
-    ".plc details>summary{cursor:pointer;color:var(--fl-accent)}",
+    ".fl details>summary{cursor:pointer;color:var(--fl-accent)}",
     ".fl-list{display:grid;gap:.75rem;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr))}",
     ".fl-person{display:flex;gap:.75rem;align-items:center}",
     ".fl-note{padding:1rem;border:1px dashed var(--fl-border);border-radius:var(--fl-radius);text-align:center}",
@@ -58,10 +59,10 @@
   ].join("");
 
   function load(key) {
-    try { return JSON.parse(localStorage.getItem("plc:" + key)); } catch (e) { return null; }
+    try { return JSON.parse(localStorage.getItem("fl:" + key)); } catch (e) { return null; }
   }
   function keep(key, value) {
-    try { localStorage.setItem("plc:" + key, JSON.stringify(value)); } catch (e) { /* private mode */ }
+    try { localStorage.setItem("fl:" + key, JSON.stringify(value)); } catch (e) { /* private mode */ }
   }
 
   /* Element builder. Text always goes in as text; "html" is only ever a
@@ -147,7 +148,7 @@
     this.tz = load("tz") || this.browserTz;
     this.room = load("room:" + this.conf) || "";
     this.people = {};
-    el.classList.add("plc");
+    el.classList.add("fl");
     this.note("Loading the program…");
     this.start();
   }
@@ -216,7 +217,11 @@
       var label = z + (z === self.browserTz ? " (yours)" : z === own ? " (conference)" : "");
       return h("option", { value: z, selected: z === self.tz, text: label });
     }));
-    return h("div", { "class": "fl-bar" }, [h("label", { "class": "fl-meta", text: "Times in" }), select]);
+    var venue = this.data.conference.venue;
+    var where = !venue ? null : venue.url
+      ? h("a", { "class": "fl-venue", href: venue.url, target: "_blank", rel: "noopener", text: venue.name })
+      : h("span", { "class": "fl-venue", text: venue.name });
+    return h("div", { "class": "fl-bar" }, [where, h("label", { "class": "fl-meta", text: "Times in" }), select]);
   };
 
   /* People on a session: photo and name, a button when they have a profile. */
@@ -410,7 +415,7 @@
     var self = this;
     if (!this.dialog) {
       this.dialog = h("dialog", {
-        "class": "plc fl-modal",
+        "class": "fl fl-modal",
         onclick: function (event) { if (event.target === self.dialog) self.dialog.close(); }
       });
       document.body.appendChild(this.dialog);
@@ -447,7 +452,7 @@
       document.head.appendChild(h("style", { id: "fl-style", text: CSS }));
     }
     document.querySelectorAll("[data-flashlights-widget]").forEach(function (el) {
-      if (!el.plcWidget) el.plcWidget = new Widget(el);
+      if (!el.flWidget) el.flWidget = new Widget(el);
     });
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);

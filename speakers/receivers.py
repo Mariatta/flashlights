@@ -12,6 +12,7 @@ from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
 from attendee.models import PretixOrder
+from portal.models import Conference
 from volunteer.models import VolunteerProfile
 
 from .api import invalidate as invalidate_public_api
@@ -314,8 +315,11 @@ def abort_the_upload(sender, instance, **kwargs):
 def public_api_changed(sender, instance, **kwargs):
     """Anything a public payload reads changed: the edition's cached API
     responses go (design §11.1), once, after the transaction commits, so a
-    request racing the save cannot re-cache what was there before it."""
-    conference_id = instance.conference_id
+    request racing the save cannot re-cache what was there before it. The
+    edition itself counts: its name and venue are in every payload."""
+    conference_id = (
+        instance.pk if isinstance(instance, Conference) else instance.conference_id
+    )
     # One bump per edition per transaction: a schedule publish saves a row
     # per moved session, and each must not add cache queries. Callbacks of
     # a rolled-back transaction or savepoint are dropped by Django, so this
@@ -336,6 +340,7 @@ def public_api_changed(sender, instance, **kwargs):
 # AllowedOrigin is left out on purpose: the CORS header is computed per
 # request, never cached, so a change to the list needs no invalidation.
 for _model in (
+    Conference,
     Session,
     Presenter,
     SessionPresenter,
