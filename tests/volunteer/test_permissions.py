@@ -234,3 +234,46 @@ class TestOrganizersTeamSeed:
         Conference.objects.update(is_active=False)
         migration.seed_organizers_team(apps, None)
         assert not Team.objects.filter(short_name=ORGANIZERS).exists()
+
+
+@pytest.mark.django_db
+class TestRolesToOrganizers:
+    """The volunteer roles are no longer read: their Admin and Staff
+    holders join their edition's Organizers team instead, last year's too,
+    and a Vendor or Volunteer role maps to nothing."""
+
+    def test_admin_and_staff_holders_join_their_editions_team(self, conference):
+        from volunteer.models import Role
+
+        migration.seed_organizers_team(apps, None)
+        past = Conference.objects.create(year=2024, name="Past", slug="past")
+        admin_role = Role.objects.create(short_name="Admin", description="d")
+        vendor_role = Role.objects.create(short_name="Vendor", description="d")
+        lead = VolunteerProfile.objects.create(
+            user=User.objects.create_user(username="lead"), conference=past
+        )
+        lead.roles.add(admin_role)
+        vendor = VolunteerProfile.objects.create(
+            user=User.objects.create_user(username="vendor"), conference=past
+        )
+        vendor.roles.add(vendor_role)
+
+        migration.roles_to_organizers(apps, None)
+
+        team = Team.objects.get(conference=past, short_name=ORGANIZERS)
+        assert list(team.members.all()) == [lead]
+        # Described like this year's Organizers team.
+        assert {label_of(p) for p in team.permissions.all()} == set(
+            PRESETS[ORGANIZERS].members
+        )
+        assert str(admin_role) == "Admin"
+
+
+@pytest.mark.django_db
+def test_the_grant_helper_can_make_a_lead(conference):
+    from tests.grants import on_team
+
+    user = on_team(User.objects.create_user(username="lee"), lead=True)
+    team = Team.objects.get(short_name=ORGANIZERS)
+    assert [p.user for p in team.team_leads.all()] == [user]
+    assert fresh(user).has_perm("portal.start_next_year")
