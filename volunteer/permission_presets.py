@@ -16,6 +16,90 @@ from django.db.models import Q
 
 ORGANIZERS = "Organizers"
 
+# The catalogue in plain words, grouped for the pickers on the team form and
+# the lists on the team and profile pages. Order is display order.
+CATALOGUE = {
+    "Conferences": {
+        "portal.view_organizer_dashboard": "Open the Organize dashboard",
+        "portal.add_conference": "Add editions",
+        "portal.change_conference": "Edit editions",
+        "portal.delete_conference": "Delete editions",
+        "portal.start_next_year": "Start the next edition",
+    },
+    "Volunteers": {
+        "volunteer.view_volunteerprofile": "See volunteers and their profiles",
+        "volunteer.review_volunteerprofile": "Review volunteer applications",
+        "volunteer.add_team": "Add teams",
+        "volunteer.change_team": "Edit teams",
+        "volunteer.delete_team": "Delete teams",
+        "volunteer.receive_volunteer_notifications": (
+            "Receive the internal volunteer emails"
+        ),
+    },
+    "Sponsorship": {
+        "sponsorship.view_sponsorshipprofile": "See sponsors",
+        "sponsorship.add_sponsorshipprofile": "Add sponsors",
+        "sponsorship.change_sponsorshipprofile": "Edit sponsors",
+        "sponsorship.delete_sponsorshipprofile": "Delete sponsors",
+        "sponsorship.send_invoice": "Send sponsor invoices",
+        "sponsorship.view_unconfirmed_sponsors": "See sponsors not yet confirmed",
+        "sponsorship.add_sponsorshiptier": "Add sponsorship tiers",
+        "sponsorship.change_sponsorshiptier": "Edit sponsorship tiers",
+        "sponsorship.delete_sponsorshiptier": "Delete sponsorship tiers",
+        "sponsorship.receive_sponsorship_notifications": (
+            "Receive the internal sponsorship emails"
+        ),
+    },
+    "Speakers": {
+        "speakers.manage_program": "Manage the program",
+        "speakers.view_program": "See every session and presenter",
+        "speakers.change_checklisttemplate": "Edit the checklist templates",
+        "speakers.change_handbook": "Edit the speaker guides",
+        "speakers.change_speakersettings": (
+            "Change the speaker settings, types, roles and readiness gates"
+        ),
+        "speakers.assign_checklistitem": "Reassign checklist items",
+        "speakers.liaise_presenters": "Be a presenter's liaison",
+    },
+}
+
+
+def grouped_choices():
+    """The catalogue as grouped form choices: ``[(group, [(label, words)])]``."""
+    return [(group, list(labels.items())) for group, labels in CATALOGUE.items()]
+
+
+def plain_label(label):
+    """The words for one ``app.codename``; the codename when it is not
+    in the catalogue (a built-in permission granted by hand)."""
+    for labels in CATALOGUE.values():
+        if label in labels:
+            return labels[label]
+    return label
+
+
+def describe(permissions):
+    """``[(group, [words])]`` for a set of ``Permission`` rows, in catalogue
+    order, with anything outside the catalogue under "Other"."""
+    held = {label_of(p) for p in permissions.select_related("content_type")}
+    groups = []
+    for group, labels in CATALOGUE.items():
+        words = [text for label, text in labels.items() if label in held]
+        if words:
+            groups.append((group, words))
+        held -= set(labels)
+    if held:
+        groups.append(("Other", sorted(held)))
+    return groups
+
+
+def presets_as_json():
+    """The presets for the team form's script: name -> the two label lists."""
+    return {
+        name: {"members": list(preset.members), "leads": list(preset.leads)}
+        for name, preset in PRESETS.items()
+    }
+
 
 @dataclass(frozen=True)
 class Preset:

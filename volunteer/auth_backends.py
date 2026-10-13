@@ -23,10 +23,8 @@ from django.db.models import Q
 
 from portal.models import Conference
 
-from .constants import ApplicationStatus
+from .constants import BASELINE_APPROVED_VOLUNTEER, ApplicationStatus
 from .models import VolunteerProfile
-
-BASELINE_APPROVED_VOLUNTEER = frozenset({"sponsorship.view_sponsorshipprofile"})
 
 # Cached on the user instance for the request, as ModelBackend does with
 # ``_perm_cache``; a different name so the two never read each other's.

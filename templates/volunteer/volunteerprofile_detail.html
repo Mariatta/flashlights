@@ -123,6 +123,31 @@
                     {% endif %}
                 </div>
             </div>
+            {% if permission_sources is not None %}
+                <div class="row mb-3">
+                    <div class="col-md-3 fw-bold">
+                        {% trans "May do:" %}
+                    </div>
+                    <div class="col-md-9">
+                        {% for source, groups in permission_sources %}
+                            <div class="mb-1">
+                                <span class="badge bg-light text-dark border me-1">{{ source }}</span>
+                                {% for group, words in groups %}
+                                    <small><strong>{{ group }}:</strong> {{ words|join:", " }}
+                                        {% if not forloop.last %}
+                                            ;
+                                        {% endif %}
+                                    </small>
+                                {% empty %}
+                                    <small class="text-secondary">{% trans "nothing on its own" %}</small>
+                                {% endfor %}
+                            </div>
+                        {% empty %}
+                            <span class="text-secondary">{% trans "Nothing beyond their own pages. Team grants apply to the active edition only." %}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
             <div class="row mb-3">
                 <div class="col-md-3 fw-bold">
                     Roles:

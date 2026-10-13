@@ -1,0 +1,240 @@
+"""The team permissions UI (design §7.1, task 3.5): pickers and a preset on
+the team form, the grants on the team page, and where each of a person's
+permissions comes from on their profile page."""
+
+import json
+
+import pytest
+from django.contrib.auth.models import Group, User
+from django.urls import reverse
+
+from volunteer.constants import ApplicationStatus
+from volunteer.models import Team, VolunteerProfile
+from volunteer.permission_presets import (
+    CATALOGUE,
+    PRESETS,
+    describe,
+    grouped_choices,
+    label_of,
+    permissions_for,
+    plain_label,
+)
+from volunteer.permissions import permission_sources
+
+INVOICE = "sponsorship.send_invoice"
+
+
+def labels(permissions):
+    return sorted(label_of(p) for p in permissions.all())
+
+
+def payload(conference, **extra):
+    data = {
+        "conference": conference.pk,
+        "short_name": "Sponsorship",
+        "description": "Money",
+        "open_to_new_members": "on",
+    }
+    data.update(extra)
+    return data
+
+
+@pytest.mark.django_db
+class TestCatalogue:
+    def test_every_preset_label_has_plain_words(self):
+        words = {label for group in CATALOGUE.values() for label in group}
+        for name, preset in PRESETS.items():
+            missing = (set(preset.members) | set(preset.leads)) - words
+            assert not missing, (name, missing)
+        assert plain_label(INVOICE) == "Send sponsor invoices"
+        assert plain_label("auth.add_user") == "auth.add_user"
+        assert [group for group, _ in grouped_choices()] == list(CATALOGUE)
+
+    def test_describe_groups_in_catalogue_order_with_other_last(self):
+        rows = permissions_for([INVOICE, "portal.add_conference", "auth.add_user"])
+        assert describe(rows) == [
+            ("Conferences", ["Add editions"]),
+            ("Sponsorship", ["Send sponsor invoices"]),
+            ("Other", ["auth.add_user"]),
+        ]
+
+
+@pytest.mark.django_db
+class TestTeamForm:
+    def test_pickers_and_the_presets_are_on_the_page(
+        self, client, organizer, conference
+    ):
+        client.force_login(organizer)
+        content = client.get(reverse("team_new")).content.decode()
+        assert 'name="permissions"' in content and 'name="lead_permissions"' in content
+        assert (
+            "Start from preset" in content
+            and "Review volunteer applications" in content
+        )
+        assert '<script id="team-presets"' in content
+        for name in PRESETS:
+            assert f'value="{name}"' in content
+
+    def test_preset_fills_the_sets_when_nothing_is_ticked(
+        self, client, organizer, conference
+    ):
+        client.force_login(organizer)
+        response = client.post(
+            reverse("team_new"), payload(conference, preset="Sponsorship")
+        )
+        assert response.status_code == 302
+        team = Team.objects.get(short_name="Sponsorship")
+        assert labels(team.permissions) == sorted(PRESETS["Sponsorship"].members)
+        assert labels(team.lead_permissions) == []
+
+    def test_ticks_win_over_the_preset(self, client, organizer, conference):
+        client.force_login(organizer)
+        client.post(
+            reverse("team_new"),
+            payload(
+                conference,
+                preset="Sponsorship",
+                permissions=[INVOICE],
+                lead_permissions=["sponsorship.view_unconfirmed_sponsors"],
+            ),
+        )
+        team = Team.objects.get(short_name="Sponsorship")
+        assert labels(team.permissions) == [INVOICE]
+        assert labels(team.lead_permissions) == [
+            "sponsorship.view_unconfirmed_sponsors"
+        ]
+
+    def test_edit_shows_and_replaces_the_sets(self, client, organizer, conference):
+        team = Team.objects.create(
+            conference=conference, short_name="S", description="d"
+        )
+        team.permissions.set(permissions_for([INVOICE]))
+        client.force_login(organizer)
+        url = reverse("team_edit", kwargs={"pk": team.pk})
+        form = client.get(url).context["form"]
+        assert form.initial["permissions"] == [INVOICE]
+        response = client.post(
+            url,
+            payload(
+                conference,
+                short_name="S",
+                permissions=["sponsorship.add_sponsorshipprofile"],
+            ),
+        )
+        assert response.status_code == 302
+        assert labels(team.permissions) == ["sponsorship.add_sponsorshipprofile"]
+
+    def test_a_member_holds_what_the_form_granted(self, client, organizer, conference):
+        client.force_login(organizer)
+        client.post(reverse("team_new"), payload(conference, preset="Sponsorship"))
+        team = Team.objects.get(short_name="Sponsorship")
+        sam = User.objects.create_user(username="sam")
+        profile = VolunteerProfile.objects.create(
+            user=sam,
+            conference=conference,
+            application_status=ApplicationStatus.APPROVED,
+        )
+        profile.teams.add(team)
+        assert sam.has_perm(INVOICE)
+
+
+@pytest.mark.django_db
+class TestTeamPage:
+    def test_lists_what_the_team_may_do(self, client, organizer, conference):
+        team = Team.objects.create(
+            conference=conference, short_name="S", description="d"
+        )
+        team.permissions.set(permissions_for(PRESETS["Program"].members))
+        team.lead_permissions.set(permissions_for(PRESETS["Program"].leads))
+        client.force_login(organizer)
+        content = client.get(
+            reverse("team_detail", kwargs={"pk": team.pk})
+        ).content.decode()
+        assert "What this team may do" in content
+        assert "Manage the program" in content and "Leads also:" in content
+        assert "Change the speaker settings" in content
+        empty = Team.objects.create(
+            conference=conference, short_name="Web", description="d"
+        )
+        content = client.get(
+            reverse("team_detail", kwargs={"pk": empty.pk})
+        ).content.decode()
+        assert "Nothing beyond what every approved volunteer may do" in content
+
+
+@pytest.mark.django_db
+class TestProfilePage:
+    def test_where_each_grant_comes_from(
+        self, client, conference, join_team, admin_user
+    ):
+        sam = User.objects.create_user(username="sam", email="sam@x.org")
+        join_team(sam, "Sponsorship")
+        join_team(sam, "Program", lead=True)
+        group = Group.objects.create(name="Infra maintainers")
+        group.permissions.set(permissions_for(["portal.add_conference"]))
+        sam.groups.add(group)
+        profile = VolunteerProfile.objects.get(user=sam)
+        sources = permission_sources(profile)
+        assert [source for source, _ in sources] == [
+            "Group: Infra maintainers",
+            f"Approved volunteer, {conference.year}",
+            "Team: Program",
+            "Lead of Program",
+            "Team: Sponsorship",
+        ]
+        assert sources[1][1] == [("Sponsorship", ["See sponsors"])]
+        assert sources[3][1] == [
+            (
+                "Speakers",
+                ["Change the speaker settings, types, roles and readiness gates"],
+            )
+        ]
+        # The owner sees it on their own page, and so does a reviewer.
+        client.force_login(sam)
+        url = reverse("volunteer:volunteer_profile_detail", kwargs={"pk": profile.pk})
+        content = client.get(url).content.decode()
+        assert "May do:" in content and "Lead of Program" in content
+        client.force_login(admin_user)
+        assert "Lead of Program" in client.get(url).content.decode()
+        # A superuser's own page says so, and a past edition grants nothing.
+        assert (
+            permission_sources(
+                VolunteerProfile.objects.create(user=admin_user, conference=conference)
+            )[0][0]
+            == "Superuser"
+        )
+
+    def test_past_edition_and_pending_grant_nothing(self, conference, join_team):
+        from portal.models import Conference
+
+        sam = User.objects.create_user(username="sam")
+        join_team(sam, "Sponsorship")
+        profile = VolunteerProfile.objects.get(user=sam)
+        Conference.objects.create(year=2027, name="2027", slug="2027", is_active=True)
+        assert permission_sources(profile) == []
+        pen = User.objects.create_user(username="pen")
+        pending = VolunteerProfile.objects.create(user=pen, conference=conference)
+        assert permission_sources(pending) == []
+        Conference.objects.update(is_active=False)
+        assert permission_sources(profile) == []
+
+    def test_hidden_from_other_volunteers(self, client, conference):
+        sam = User.objects.create_user(username="sam")
+        profile = VolunteerProfile.objects.create(
+            user=sam,
+            conference=conference,
+            application_status=ApplicationStatus.APPROVED,
+        )
+        other = User.objects.create_user(username="other")
+        client.force_login(other)
+        url = reverse("volunteer:volunteer_profile_detail", kwargs={"pk": profile.pk})
+        assert client.get(url).status_code == 302
+
+    def test_presets_json_covers_every_preset(self, client, organizer):
+        client.force_login(organizer)
+        content = client.get(reverse("team_new")).content.decode()
+        start = content.index('<script id="team-presets"')
+        begin = content.index(">", start) + 1
+        end = content.index("</script>", start)
+        blob = content[begin:end]
+        assert set(json.loads(blob)) == set(PRESETS)

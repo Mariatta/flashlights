@@ -46,6 +46,31 @@
                 </li>
             {% endfor %}
         </ul>
+        <h3 id="team-grants">
+            {% trans "What this team may do" %}
+        </h3>
+        {% if team_grants %}
+            {% for group, words in team_grants %}
+                <p class="mb-1">
+                    <strong>{{ group }}:</strong> {{ words|join:", " }}
+                </p>
+            {% endfor %}
+        {% else %}
+            <p class="text-secondary">
+                {% trans "Nothing beyond what every approved volunteer may do. Work reaches this team through task assignment." %}
+            </p>
+        {% endif %}
+        {% if lead_grants %}
+            <p class="mb-1 mt-2">
+                <em>{% trans "Leads also:" %}</em>
+                {% for group, words in lead_grants %}
+                    <strong>{{ group }}:</strong> {{ words|join:", " }}
+                    {% if not forloop.last %}
+                        ;
+                    {% endif %}
+                {% endfor %}
+            </p>
+        {% endif %}
         {# Member rosters live on the team dashboard (stats + tables); not #}
         {# duplicated here. #}
         {% if is_organizer %}

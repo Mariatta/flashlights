@@ -13,6 +13,7 @@ from speakers.shared import presenter_discord_username
 
 from .constants import ApplicationStatus
 from .models import Language, Role, Team, VolunteerProfile
+from .permission_presets import PRESETS, grouped_choices, label_of, permissions_for
 from .tasks import (
     send_internal_volunteer_onboarding_email_task,
     send_volunteer_onboarding_email_task,
@@ -318,12 +319,43 @@ class TeamLeadChoiceField(forms.ModelMultipleChoiceField):
 
 
 class TeamForm(ModelForm):
-    """Create/edit a team through the portal (instead of Django admin)."""
+    """Create/edit a team through the portal (instead of Django admin).
+
+    What the team grants is picked here (design §7.1, task 3.5): two
+    checkbox lists grouped by app in plain words, and a preset that fills
+    them, in the browser as it is chosen or on save when nothing was
+    ticked. The sets are written by ``save``; the model's own fields go
+    through ``Meta``.
+    """
 
     team_leads = TeamLeadChoiceField(
         queryset=VolunteerProfile.objects.none(),
         widget=forms.CheckboxSelectMultiple,
         required=False,
+    )
+    preset = forms.ChoiceField(
+        required=False,
+        label="Start from preset",
+        choices=[("", "Pick the permissions yourself")]
+        + [(name, name) for name in PRESETS],
+        help_text=(
+            "Fills the two lists below with the usual set for that team; "
+            "adjust them afterwards."
+        ),
+    )
+    permissions = forms.MultipleChoiceField(
+        required=False,
+        label="Team permissions",
+        choices=grouped_choices,
+        widget=forms.CheckboxSelectMultiple,
+        help_text="What every approved member of the team may do.",
+    )
+    lead_permissions = forms.MultipleChoiceField(
+        required=False,
+        label="Lead permissions",
+        choices=grouped_choices,
+        widget=forms.CheckboxSelectMultiple,
+        help_text="What the team leads may do on top of the team permissions.",
     )
 
     class Meta:
@@ -364,3 +396,38 @@ class TeamForm(ModelForm):
         self.fields["team_leads"].queryset = VolunteerProfile.objects.filter(
             conference=lead_conference
         ).select_related("user")
+
+        if self.instance.pk:
+            self.initial.setdefault(
+                "permissions", [label_of(p) for p in self.instance.permissions.all()]
+            )
+            self.initial.setdefault(
+                "lead_permissions",
+                [label_of(p) for p in self.instance.lead_permissions.all()],
+            )
+
+    def clean(self):
+        cleaned = super().clean()
+        preset = PRESETS.get(cleaned.get("preset") or "")
+        # A preset chosen with nothing ticked is the no-script path of the
+        # form: fill both lists from it.
+        if (
+            preset
+            and not cleaned.get("permissions")
+            and not cleaned.get("lead_permissions")
+        ):
+            cleaned["permissions"] = list(preset.members)
+            cleaned["lead_permissions"] = list(preset.leads)
+        return cleaned
+
+    def save(self, commit=True):
+        team = super().save(commit=commit)
+        if commit:
+            self.save_permissions(team)
+        return team
+
+    def save_permissions(self, team):
+        team.permissions.set(permissions_for(self.cleaned_data["permissions"]))
+        team.lead_permissions.set(
+            permissions_for(self.cleaned_data["lead_permissions"])
+        )

@@ -26,7 +26,8 @@
                 {% trans "New team" %}
             {% endif %}
         </h1>
-        <form method="post" class="col-md-8">
+        {{ presets|json_script:"team-presets" }}
+        <form method="post" class="col-md-8" id="team-form">
             {% csrf_token %}
             {% bootstrap_form form %}
             <button type="submit" class="btn btn-primary">
@@ -40,4 +41,25 @@
             {% endif %}
         </form>
     </div>
+    <script>
+        // "Start from preset" ticks the two permission lists as it is chosen;
+        // the form also fills them on save when nothing was ticked, so the
+        // page works without this.
+        (function () {
+            var presets = JSON.parse(document.getElementById("team-presets").textContent);
+            var select = document.getElementById("id_preset");
+            if (!select) { return; }
+            function tick(name, labels) {
+                document.querySelectorAll('#team-form input[name="' + name + '"]').forEach(function (box) {
+                    box.checked = labels.indexOf(box.value) !== -1;
+                });
+            }
+            select.addEventListener("change", function () {
+                var preset = presets[select.value];
+                if (!preset) { return; }
+                tick("permissions", preset.members);
+                tick("lead_permissions", preset.leads);
+            });
+        })();
+    </script>
 {% endblock content %}

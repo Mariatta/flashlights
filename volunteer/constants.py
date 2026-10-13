@@ -10,6 +10,11 @@ class RoleTypes(StrEnum):
     VOLUNTEER = "Volunteer"
 
 
+# Granted to every approved volunteer of the active edition, tied to no team
+# (design §7.1); read by the team permissions backend and the profile page.
+BASELINE_APPROVED_VOLUNTEER = frozenset({"sponsorship.view_sponsorshipprofile"})
+
+
 class ApplicationStatus(StrEnum):
     """Application status for the volunteer."""
 

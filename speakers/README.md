@@ -976,7 +976,18 @@ installed; this app keeps small factory functions in `tests/speakers/factories.p
   (`people.liaison_candidates`, by team or group); item assignees are
   program readers plus the edition's approved volunteers; the organizer
   inbox fallback is whoever manages the program. The staff flag grants
-  nothing here any more. An organizer item can be handed to any approved
+  nothing here any more.
+- Granting is in the portal, not the Django admin (task 3.5): the team
+  form carries "Team permissions" and "Lead permissions" as grouped
+  checkbox lists in plain words (`volunteer.permission_presets.CATALOGUE`)
+  and a "Start from preset" select that ticks them in the browser, or
+  fills them on save when nothing was ticked. The team page lists what the
+  team may do and what its leads add, and a person's volunteer profile
+  page lists what they hold and where each grant comes from
+  (`volunteer.permissions.permission_sources`: superuser, groups, the
+  approved-volunteer baseline, each team, each lead set), to the owner and
+  to whoever may see volunteers. Start next year clones the two sets with
+  the teams. An organizer item can be handed to any approved
   volunteer (`people.organizer_side_candidates`), so a third predicate,
   `is_speaker_assignee`, admits whoever carries one: `can_work_queue` (the
   `SpeakerQueueRequiredMixin`) gates the queue and the per-item actions, and

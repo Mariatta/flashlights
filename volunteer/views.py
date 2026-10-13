@@ -35,6 +35,7 @@ from .models import (  # Language,
     Team,
     VolunteerProfile,
 )
+from .permission_presets import describe, presets_as_json
 from .permissions import (
     ADD_TEAM,
     CHANGE_TEAM,
@@ -44,6 +45,7 @@ from .permissions import (
     can_review_volunteers,
     can_view_volunteers,
     leads_team,
+    permission_sources,
 )
 from .tasks import (
     send_volunteer_cancelled_emails_task,
@@ -283,6 +285,10 @@ class VolunteerProfileView(DetailView):
         # The personal rail belongs to the profile's owner; staff viewing
         # someone else's profile get the plain layout instead.
         context["is_own_profile"] = self.object.user == self.request.user
+        # What this person may do and where each grant comes from; the
+        # owner's business, and a reviewer's.
+        if context["is_own_profile"] or can_view_volunteers(self.request.user):
+            context["permission_sources"] = permission_sources(self.object)
         return context
 
 
@@ -438,6 +444,13 @@ class TeamView(TeamManagerRequiredMixin, DetailView):
         except Team.DoesNotExist:
             return redirect("teams")
         return super(TeamView, self).get(request, pk)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # What being on this team lets a person do, in plain words.
+        context["team_grants"] = describe(self.object.permissions.all())
+        context["lead_grants"] = describe(self.object.lead_permissions.all())
+        return context
 
 
 class TeamDashboardView(TeamLeadRequiredMixin, DetailView):
@@ -610,7 +623,16 @@ class MyTeamsView(LoginRequiredMixin, ListView):
         return context
 
 
-class TeamCreate(TeamManagerRequiredMixin, CreateView):
+class TeamFormContextMixin:
+    """The presets, for the script that fills the pickers as one is chosen."""
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["presets"] = presets_as_json()
+        return context
+
+
+class TeamCreate(TeamManagerRequiredMixin, TeamFormContextMixin, CreateView):
     permission_required = ADD_TEAM
     model = Team
     form_class = TeamForm
@@ -626,7 +648,7 @@ class TeamCreate(TeamManagerRequiredMixin, CreateView):
         return reverse("team_detail", kwargs={"pk": self.object.pk})
 
 
-class TeamUpdate(TeamManagerRequiredMixin, UpdateView):
+class TeamUpdate(TeamManagerRequiredMixin, TeamFormContextMixin, UpdateView):
     model = Team
     form_class = TeamForm
     template_name = "team/team_form.html"
