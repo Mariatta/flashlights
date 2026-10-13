@@ -69,12 +69,22 @@ from speakers.services import (
 )
 from volunteer.constants import ApplicationStatus
 from volunteer.models import Team, VolunteerProfile
+from volunteer.permission_presets import PRESETS, permissions_for
 
 PASSWORD = "password123"
 
 PEOPLE = [
     # username, first, last, email, staff, superuser, volunteer status, teams
-    ("organizer_lena", "Lena", "Organizer", "lena@example.com", True, False, None, []),
+    (
+        "organizer_lena",
+        "Lena",
+        "Organizer",
+        "lena@example.com",
+        True,
+        False,
+        ApplicationStatus.APPROVED,
+        ["Organizers"],
+    ),
     (
         "vol_maya",
         "Maya",
@@ -410,11 +420,16 @@ class Command(BaseCommand):
                     },
                 )
                 for name in teams:
-                    team, _ = Team.objects.get_or_create(
+                    team, created = Team.objects.get_or_create(
                         conference=self.conference,
                         short_name=name,
                         defaults={"description": f"{name} (sample)"},
                     )
+                    # A team named like a §7.1 preset carries that preset's
+                    # sets, so a sample organizer holds what the team grants.
+                    if created and name in PRESETS:
+                        team.permissions.set(permissions_for(PRESETS[name].members))
+                        team.lead_permissions.set(permissions_for(PRESETS[name].leads))
                     profile.teams.add(team)
             users[username] = user
         return users

@@ -1,6 +1,6 @@
 {% load i18n %}
 {# Expects: members (iterable of VolunteerProfile), review (bool). #}
-{# Inherits can_manage_members and is_admin from the including template's context. #}
+{# Inherits can_manage_members, is_admin and lead_ids from the including template's context. #}
 <div class="table-responsive">
     <table class="table table-hover table-sm align-middle">
         <thead class="table-light">
@@ -9,7 +9,7 @@
                     {% trans "Member" %}
                 </th>
                 <th>
-                    {% trans "Roles" %}
+                    <span class="visually-hidden">{% trans "Lead" %}</span>
                 </th>
                 <th>
                     {% trans "Discord" %}
@@ -32,11 +32,9 @@
                         {% endif %}
                     </td>
                     <td>
-                        {% for role in member.roles.all %}
-                            <span class="badge text-bg-light border">{{ role.short_name }}</span>
-                        {% empty %}
-                            <span class="text-secondary">-</span>
-                        {% endfor %}
+                        {% if member.id in lead_ids %}
+                            <span class="badge text-bg-primary">{% trans "Lead" %}</span>
+                        {% endif %}
                     </td>
                     <td>
                         {{ member.discord_username|default:"-" }}

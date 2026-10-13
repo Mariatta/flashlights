@@ -114,10 +114,13 @@ reverse accessor named after every child model (`basemodel.role`,
   and `common.mixins.MaintainerRequiredMixin` gates the view. Object-level
   access is a data check (`TeamLeadRequiredMixin` looks at `team.team_leads`),
   which is the pattern liaison scoping follows.
-- Volunteers are `volunteer.VolunteerProfile` rows per edition with
-  `Role`s (`volunteer/constants.py`, `RoleTypes`) and `Team`s. Internal
-  notification emails go to admin/staff role holders (`sponsorship/tasks.py`,
-  `send_internal_email_task`).
+- Volunteers are `volunteer.VolunteerProfile` rows per edition on `Team`s.
+  The `Role` model went with task 3.6 (it granted nothing; its Admin and
+  Staff holders were moved onto their edition's Organizers team by the
+  migration); internal notification emails go to whoever holds the
+  notifications permissions, and the onboarding email's organizer variant
+  follows `portal.view_organizer_dashboard`. The whole scheme is written up
+  in `docs/architecture/permissions.md`.
 
 ### Activity log
 

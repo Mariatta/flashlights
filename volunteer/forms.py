@@ -12,7 +12,7 @@ from portal.validators import validate_discord_username, validate_linked_in_patt
 from speakers.shared import presenter_discord_username
 
 from .constants import ApplicationStatus
-from .models import Language, Role, Team, VolunteerProfile
+from .models import Language, Team, VolunteerProfile
 from .permission_presets import PRESETS, grouped_choices, label_of, permissions_for
 from .tasks import (
     send_internal_volunteer_onboarding_email_task,
@@ -66,7 +66,6 @@ class VolunteerProfileForm(ModelForm):
         exclude = [
             "user",
             "application_status",
-            "roles",
             "languages_spoken",
             "conference",
             "chapter",
@@ -270,16 +269,10 @@ class VolunteerProfileReviewForm(ModelForm):
         widget=forms.CheckboxSelectMultiple,
         error_messages={"required": "Please assign at least one team."},
     )
-    roles = forms.ModelMultipleChoiceField(
-        required=True,
-        queryset=Role.objects.all(),
-        widget=forms.CheckboxSelectMultiple,
-        error_messages={"required": "Please assign at least one role."},
-    )
 
     class Meta:
         model = VolunteerProfile
-        fields = ["teams", "roles"]
+        fields = ["teams"]
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)

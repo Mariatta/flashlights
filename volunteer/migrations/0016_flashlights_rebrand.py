@@ -154,6 +154,42 @@ def seed_organizers_team(apps, schema_editor):
             team.team_leads.add(profile)
 
 
+ADMIN_ROLES = ("Admin", "Staff")
+
+
+def roles_to_organizers(apps, schema_editor):
+    """Admin and Staff role holders join their edition's Organizers team.
+
+    The team is found by name, or made and given the sets of an existing
+    Organizers team (the active edition's, from 0016), so a past edition's
+    core team is described the same way as this year's.
+    """
+    Role = apps.get_model("volunteer", "Role")
+    Team = apps.get_model("volunteer", "Team")
+    VolunteerProfile = apps.get_model("volunteer", "VolunteerProfile")
+    holders = VolunteerProfile.objects.filter(
+        roles__in=Role.objects.filter(short_name__in=ADMIN_ROLES)
+    ).distinct()
+    template = (
+        Team.objects.filter(short_name=ORGANIZERS)
+        .order_by("-conference__is_active", "-conference__year")
+        .first()
+    )
+    for profile in holders:
+        team, created = Team.objects.get_or_create(
+            conference_id=profile.conference_id,
+            short_name=ORGANIZERS,
+            defaults={
+                "description": "The core team: runs the edition end to end.",
+                "open_to_new_members": False,
+            },
+        )
+        if created and template is not None:
+            team.permissions.set(template.permissions.all())
+            team.lead_permissions.set(template.lead_permissions.all())
+        profile.teams.add(team)
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -231,4 +267,7 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.RunPython(seed_organizers_team, migrations.RunPython.noop),
+        # Admin and Staff role holders join their edition's Organizers team.
+        # The Role model stays (it is upstream's); nothing reads it any more.
+        migrations.RunPython(roles_to_organizers, migrations.RunPython.noop),
     ]

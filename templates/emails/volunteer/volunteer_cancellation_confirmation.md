@@ -17,13 +17,6 @@ You have been removed from the following teams:
 
 {% endif %}
 
-{% if roles_removed %}
-You have been removed from the following roles:
-
-{% for role in roles_removed %}- {{ role.short_name }} {% endfor %}
-
-{% endif %}
-
 Team leads have been notified of your departure.
 
 Your access to volunteer resources will be revoked within the next 24 hours.

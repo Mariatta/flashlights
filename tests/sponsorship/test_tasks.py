@@ -8,15 +8,12 @@ from sponsorship.tasks import (
     send_internal_sponsor_onboarding_email_task,
     send_internal_sponsor_progress_update_email_task,
 )
-from volunteer.models import Region, Role, RoleTypes, VolunteerProfile
+from volunteer.models import Region, VolunteerProfile
 
 
 @pytest.fixture
 def admin_user_with_role(conference):
     """Create an admin user with proper role."""
-    admin_role = Role.objects.create(
-        short_name=RoleTypes.ADMIN, description="Admin role"
-    )
     admin_user = User.objects.create_superuser(
         username="testadmin",
         email="test-admin@example.com",
@@ -25,7 +22,6 @@ def admin_user_with_role(conference):
     admin_profile = VolunteerProfile(user=admin_user, conference=conference)
     admin_profile.region = Region.NORTH_AMERICA
     admin_profile.save()
-    admin_profile.roles.add(admin_role)
     return admin_user
 
 

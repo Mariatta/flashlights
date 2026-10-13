@@ -21,6 +21,25 @@ connected. Below it, **Needs attention** lists what is waiting on someone:
 applications to review, teams without a lead, sponsors not yet invoiced.
 Quick actions take you to the lists.
 
+## Who can do what
+
+Access in the portal comes from teams, not from being marked as staff.
+Every team carries two sets of permissions, one for its members and one
+its leads hold on top, and a person holds whatever the teams they are on
+grant them for the current edition. When the edition changes, so do the
+grants: last year's team grants nothing this year.
+
+To give someone access, put them on the right team: review their volunteer
+application and assign the team, or add them to it from the team's page.
+To see what a team grants, open the team; to see what a person holds and
+where each grant comes from, open their volunteer profile.
+
+The usual teams start from a preset when they are created (Organizers,
+Volunteer coordination, Sponsorship, Program, Speaker liaisons) and
+their sets can be adjusted afterwards on the team's edit form. Superusers
+bypass all of this, and the Infra maintainers group, which outlives
+editions, is managed in the Django admin.
+
 ## Editions
 
 Each year's event is an edition. The edition form carries the dates, the

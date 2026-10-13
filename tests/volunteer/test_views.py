@@ -11,7 +11,6 @@ from volunteer.constants import Region
 from volunteer.models import (
     ApplicationStatus,
     Language,
-    Role,
     Team,
     VolunteerProfile,
 )
@@ -525,10 +524,6 @@ class TestManageVolunteers:
         another_profile.teams.add(team)
         another_profile.save()
 
-        role = Role(short_name="Test Role", description="Test Role Description")
-        role.save()
-        another_profile.roles.add(role)
-
         portal_user.is_superuser = True
         portal_user.save()
 
@@ -796,14 +791,12 @@ class TestManageVolunteerApplications:
             year=2024, name="Flashlights 2024", slug="2024"
         )
         applicant = django_user_model.objects.create_user(username="returning")
-        role = Role.objects.create(short_name="Developer", description="d")
         prior = VolunteerProfile.objects.create(
             user=applicant,
             conference=past,
             discord_username="d",
             application_status=ApplicationStatus.APPROVED,
         )
-        prior.roles.add(role)
         current = VolunteerProfile.objects.create(
             user=applicant, conference=conference, discord_username="d2"
         )
@@ -817,7 +810,6 @@ class TestManageVolunteerApplications:
         history = list(response.context["volunteer_history"])
         assert prior in history
         assert current not in history
-        assert role.short_name in response.content.decode()
 
     def test_manage_volunteers_view_is_staff(
         self, client, portal_user, grant_organizer, django_user_model, conference
@@ -861,16 +853,12 @@ class TestManageVolunteerApplications:
         team.save()
         team.team_leads.add(profile)
 
-        role = Role(short_name="Test Role", description="Test Role Description")
-        role.save()
-        another_profile.roles.add(role)
-
         client.force_login(portal_user)
         response = client.post(
             reverse(
                 "volunteer:volunteer_profile_manage", kwargs={"pk": another_profile.id}
             ),
-            data={"teams": [team.id], "roles": [role.id]},
+            data={"teams": [team.id]},
         )
 
         assert response.status_code == 302
@@ -879,9 +867,6 @@ class TestManageVolunteerApplications:
 
         assert another_profile.teams.count() == 1
         assert another_profile.teams.first().short_name == team.short_name
-
-        assert another_profile.roles.count() == 1
-        assert another_profile.roles.first().short_name == role.short_name
 
     def test_approve_volunteer_profile_data_not_valid(
         self, client, portal_user, django_user_model, conference
@@ -912,10 +897,9 @@ class TestManageVolunteerApplications:
         assert response.status_code == 200
         another_profile.refresh_from_db()
 
-        # application status remains pending and no teams or roles are assigned
+        # application status remains pending and no teams are assigned
         assert another_profile.application_status == ApplicationStatus.PENDING
         assert another_profile.teams.count() == 0
-        assert another_profile.roles.count() == 0
 
     def test_resend_onboarding_email_if_approved(
         self, client, portal_user, django_user_model, conference

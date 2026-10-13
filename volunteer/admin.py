@@ -8,7 +8,7 @@ from portal.admin_filters import ActiveConferenceFilter
 from portal.models import Conference
 
 from .constants import ApplicationStatus
-from .models import Language, Role, Team, VolunteerProfile
+from .models import Language, Team, VolunteerProfile
 
 
 @admin.action(description="Mark selected Volunteers as waitlisted")
@@ -107,7 +107,7 @@ class VolunteerProfileAdmin(ImportExportModelAdmin):
     actions = [bulk_waitlist_volunteers, bring_forward_to_active_conference]
     resource_classes = [VolunteerProfileResource]
     # Dual-list ("available"/"chosen") pickers for the many-to-many fields.
-    filter_horizontal = ("teams", "roles", "language")
+    filter_horizontal = ("teams", "language")
     # ``languages_spoken`` is deprecated in favour of the ``language`` m2m; hide
     # it from the admin form (the public form already excludes it). The
     # region and the PyLadies chapter are upstream's own notions, kept on the
@@ -122,7 +122,6 @@ class TeamAdmin(admin.ModelAdmin):
     search_fields = ("short_name", "description")
 
 
-admin.site.register(Role)
 admin.site.register(Team, TeamAdmin)
 admin.site.register(VolunteerProfile, VolunteerProfileAdmin)
 admin.site.register(Language)

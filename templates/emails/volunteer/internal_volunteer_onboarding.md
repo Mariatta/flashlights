@@ -17,15 +17,7 @@ They have been assigned to the following team(s):
 {% for team in profile.teams.all %}
 - **{{ team.short_name }}**. Team Lead(s): {% for team_lead in team.team_leads.all %}{{ team_lead.user.first_name }} {{ team_lead.user.last_name }}{% if not forloop.last %}, {% endif %}{% endfor %}
 {% endfor %}
-{% with roles=profile.roles.all %}{% if roles %}
-### Role Assignment
 
-They have been assigned the following role(s):
-
-{% for role in roles %}
-- {{ role.short_name }}
-{% endfor %}
-{% endif %}{% endwith %}
 ## Action Items
 
 **Please complete these tasks to finish the onboarding:**

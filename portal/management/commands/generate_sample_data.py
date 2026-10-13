@@ -3,7 +3,7 @@ Management command to generate sample data for local development.
 
 This command creates sample data for testing and development purposes:
 - Users with various roles (admin, volunteer, staff, superuser)
-- Teams and Roles
+- Teams (the Organizers team grants organizer access)
 - Volunteer Profiles in various states
 - Sponsorship Tiers and Profiles
 - Individual Donations
@@ -32,11 +32,11 @@ from sponsorship.models import (
 from sponsorship.signals import sponsorship_profile_signal
 from volunteer.constants import ApplicationStatus, Region
 from volunteer.models import (
-    Role,
     Team,
     VolunteerProfile,
     volunteer_profile_signal,
 )
+from volunteer.permission_presets import ORGANIZERS, PRESETS, permissions_for
 
 
 class Command(BaseCommand):
@@ -66,8 +66,8 @@ class Command(BaseCommand):
         # Generate data
         self._generate_conference()
         self._generate_users()
-        self._generate_roles()
         self._generate_teams()
+        self._grant_organizers()
         self._generate_volunteer_profiles()
         self._generate_sponsorship_tiers()
         self._generate_sponsorship_profiles()
@@ -95,7 +95,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f"  ✓ {verb} event: {self.conference}\n"))
 
     def _generate_users(self):
-        """Generate sample users with various roles."""
+        """Generate sample users: two organizer accounts and the volunteers."""
         self.stdout.write("Generating users...")
 
         users_data = [
@@ -204,58 +204,39 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(f"Created {created_count} new users\n"))
 
-    def _generate_roles(self):
-        """Generate sample volunteer roles."""
-        self.stdout.write("Generating volunteer roles...")
-
-        roles_data = [
-            {
-                "short_name": "Frontend Developer",
-                "description": "Build and maintain frontend features using modern web technologies",
+    def _grant_organizers(self):
+        """The Organizers team for the edition, from the §7.1 preset, with the
+        admin and staff sample accounts on it: access comes from the team,
+        not from the Django flags (design §7.1)."""
+        self.stdout.write("Granting through the Organizers team...")
+        team, created = Team.objects.get_or_create(
+            conference=self.conference,
+            short_name=ORGANIZERS,
+            defaults={
+                "description": "The core team: runs the edition end to end.",
+                "open_to_new_members": False,
             },
-            {
-                "short_name": "Backend Developer",
-                "description": "Develop and maintain backend services and APIs",
-            },
-            {
-                "short_name": "Content Writer",
-                "description": "Create and edit content for blog posts, documentation, and social media",
-            },
-            {
-                "short_name": "Social Media Manager",
-                "description": "Manage social media accounts and create engaging content",
-            },
-            {
-                "short_name": "Designer",
-                "description": "Create visual assets, graphics, and UI/UX designs",
-            },
-            {
-                "short_name": "Reviewer",
-                "description": "Review proposals, applications, and other submissions",
-            },
-            {
-                "short_name": "Event Coordinator",
-                "description": "Help organize and coordinate event activities",
-            },
-        ]
-
-        created_count = 0
-        for role_data in roles_data:
-            role, created = Role.objects.get_or_create(
-                short_name=role_data["short_name"],
-                defaults={"description": role_data["description"]},
+        )
+        if created:
+            team.permissions.set(permissions_for(PRESETS[ORGANIZERS].members))
+            team.lead_permissions.set(permissions_for(PRESETS[ORGANIZERS].leads))
+        # Both accounts exist by now: _generate_users runs first.
+        for username in ("admin_user", "staff_user"):
+            user = User.objects.get(username=username)
+            profile, _ = VolunteerProfile.objects.get_or_create(
+                user=user,
+                conference=self.conference,
+                defaults={
+                    "application_status": ApplicationStatus.APPROVED,
+                    "discord_username": username,
+                },
             )
-            if created:
-                created_count += 1
-                self.stdout.write(
-                    self.style.SUCCESS(f"  ✓ Created role: {role.short_name}")
-                )
-            else:
-                self.stdout.write(
-                    self.style.WARNING(f"  ~ Role already exists: {role.short_name}")
-                )
-
-        self.stdout.write(self.style.SUCCESS(f"Created {created_count} new roles\n"))
+            profile.teams.add(team)
+            if user.is_superuser:
+                team.team_leads.add(profile)
+        self.stdout.write(
+            self.style.SUCCESS(f"  ✓ Organizers team ready ({team.conference.year})\n")
+        )
 
     def _generate_teams(self):
         """Generate sample volunteer teams."""
@@ -336,10 +317,7 @@ class Command(BaseCommand):
         """Create the actual volunteer profiles."""
         # Get the volunteers (non-staff users)
         volunteers = User.objects.filter(username__startswith="volunteer")
-
-        # Get teams and roles for assignment
         teams = list(Team.objects.all())
-        roles = list(Role.objects.all())
 
         if not volunteers.exists():
             self.stdout.write(
@@ -360,7 +338,6 @@ class Command(BaseCommand):
                 "teams": (
                     teams[:2] if len(teams) >= 2 else teams
                 ),  # Website & Social Media
-                "roles": roles[:2] if len(roles) >= 2 else roles,  # Frontend & Backend
             },
             {
                 "user": volunteers[1],  # volunteer2
@@ -372,7 +349,6 @@ class Command(BaseCommand):
                 "teams": (
                     teams[1:3] if len(teams) >= 3 else teams
                 ),  # Social Media & Content
-                "roles": [roles[3]] if len(roles) >= 4 else [],  # Social Media Manager
             },
             {
                 "user": volunteers[2],  # volunteer3
@@ -382,7 +358,6 @@ class Command(BaseCommand):
                 "region": Region.ASIA,
                 "availability_hours_per_week": 8,
                 "teams": [],  # No team assignment yet (pending)
-                "roles": [roles[2]] if len(roles) >= 3 else [],  # Content Writer
             },
             {
                 "user": volunteers[3],  # volunteer4
@@ -392,7 +367,6 @@ class Command(BaseCommand):
                 "region": Region.SOUTH_AMERICA,
                 "availability_hours_per_week": 3,
                 "teams": [],  # No team assignment (waitlisted)
-                "roles": [roles[4]] if len(roles) >= 5 else [],  # Designer
             },
             {
                 "user": volunteers[4],  # volunteer5
@@ -402,7 +376,6 @@ class Command(BaseCommand):
                 "region": Region.AFRICA,
                 "availability_hours_per_week": 2,
                 "teams": [],  # No team assignment (rejected)
-                "roles": [],  # No roles assigned
             },
         ]
 
@@ -429,8 +402,6 @@ class Command(BaseCommand):
                 # Add many-to-many relationships
                 if profile_data["teams"]:
                     profile.teams.set(profile_data["teams"])
-                if profile_data["roles"]:
-                    profile.roles.set(profile_data["roles"])
 
                 created_count += 1
                 self.stdout.write(

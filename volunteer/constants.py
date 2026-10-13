@@ -1,18 +1,20 @@
 from enum import StrEnum
 
+# Granted to every approved volunteer of the active edition, tied to no team
+# (design §7.1); read by the team permissions backend and the profile page.
+BASELINE_APPROVED_VOLUNTEER = frozenset({"sponsorship.view_sponsorshipprofile"})
+
 
 class RoleTypes(StrEnum):
-    """Role types for the volunteer."""
+    """The volunteer roles as they were. Access comes from team permissions
+    now and nothing reads roles; the Role model stays because it is
+    upstream's, and this enum because ``volunteer/0001_initial`` seeds from
+    it and must stay importable."""
 
     ADMIN = "Admin"
     STAFF = "Staff"
     VENDOR = "Vendor"
     VOLUNTEER = "Volunteer"
-
-
-# Granted to every approved volunteer of the active edition, tied to no team
-# (design §7.1); read by the team permissions backend and the profile page.
-BASELINE_APPROVED_VOLUNTEER = frozenset({"sponsorship.view_sponsorshipprofile"})
 
 
 class ApplicationStatus(StrEnum):

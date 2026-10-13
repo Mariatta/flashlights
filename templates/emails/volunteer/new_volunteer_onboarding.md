@@ -11,15 +11,7 @@ You have been assigned to the following team(s):
 {% for team in profile.teams.all %}
 - **{{ team.short_name }}**. Team Lead(s): {% for team_lead in team.team_leads.all %}{{ team_lead.user.first_name }} {{ team_lead.user.last_name }}{% if not forloop.last %}, {% endif %}{% endfor %}
 {% endfor %}
-{% with roles=profile.roles.all %}{% if roles %}
-## Role Assignment
 
-You have been assigned the following role(s):
-
-{% for role in roles %}
-- {{ role.short_name }}
-{% endfor %}
-{% endif %}{% endwith %}
 ## Your Dashboard
 
 You can review and update your volunteer profile at any time through your [Volunteer Dashboard](https://{{ current_site.domain }}{% url 'volunteer:index' %}).
@@ -37,7 +29,7 @@ If you need any help, have questions, or are no longer able to volunteer, please
 {% if admin_onboarding %}
 ## Core Organizer Access
 
-Since you've been added to the core organizing team (as a team lead, a staff member, or an admin), the other organizers will give you access to the team's shared tools, such as:
+Since you've been added to the core organizing team, the other organizers will give you access to the team's shared tools, such as:
 
 {% if profile.conference.uses_discord %}- The Organizer role on Discord
 {% endif %}{% if GDRIVE_FOLDER_ID %}- The shared drive: <https://drive.google.com/drive/folders/{{ GDRIVE_FOLDER_ID }}>

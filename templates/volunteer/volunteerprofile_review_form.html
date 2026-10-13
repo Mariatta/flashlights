@@ -49,9 +49,6 @@
                                     Status
                                 </th>
                                 <th>
-                                    Roles
-                                </th>
-                                <th>
                                     Teams
                                 </th>
                             </tr>
@@ -64,13 +61,6 @@
                                     </td>
                                     <td>
                                         <span class="badge bg-info text-dark">{{ past.application_status }}</span>
-                                    </td>
-                                    <td>
-                                        {% for role in past.roles.all %}
-                                            <span class="badge bg-secondary">{{ role.short_name }}</span>
-                                        {% empty %}
-                                            —
-                                        {% endfor %}
                                     </td>
                                     <td>
                                         {% for team in past.teams.all %}
@@ -278,29 +268,11 @@
                         {% bootstrap_label "Specify their new team assignments" label_for="id_teams" %}
                         {% bootstrap_field form.teams show_label=False %}
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-md-3 fw-bold">
-                            Current Roles:
-                        </div>
-                        <div class="col-md-9">
-                            {% if object.roles.all %}
-                                {% for role in object.roles.all %}
-                                    <span class="badge bg-secondary me-1">{{ role.short_name }}</span>
-                                {% endfor %}
-                            {% else %}
-                                No roles assigned yet
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        {% bootstrap_label "Specify their new role assignments" label_for="id_roles" %}
-                        {% bootstrap_field form.roles show_label=False %}
-                    </div>
                 </div>
                 <div class="card-footer">
                     {% if object.is_pending %}
                         <div class="alert alert-info" role="alert">
-                            By approving this volunteer and assigning them to teams and roles,
+                            By approving this volunteer and assigning them to teams,
                             you will be sending them an email confirmation inviting them to the team.
                         </div>
                     {% endif %}

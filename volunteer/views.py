@@ -97,7 +97,7 @@ class MyConferencesView(ListView):
         return (
             VolunteerProfile.objects.filter(user=self.request.user)
             .select_related("conference")
-            .prefetch_related("teams", "roles")
+            .prefetch_related("teams")
             .order_by("-conference__year")
         )
 
@@ -152,7 +152,7 @@ class VolunteerProfileFilter(django_filters.FilterSet):
 class VolunteerProfileTable(tables.Table):
     """Compact review queue, like the team and conference lists: who applied,
     where they landed, what state they're in, and the action. Everything else
-    (Discord, roles, dates) lives on the profile detail and review pages."""
+    (Discord, dates) lives on the profile detail and review pages."""
 
     actions = tables.Column(accessor="id", verbose_name="Actions")
     username = tables.Column(accessor="user__username", verbose_name="Username")
@@ -312,12 +312,12 @@ class ManageVolunteerProfile(VolunteerReviewerRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Prior-year applications by the same volunteer, newest first, to inform
-        # the review decision (what years/roles they served before).
+        # the review decision (what years and teams they served before).
         context["volunteer_history"] = (
             VolunteerProfile.objects.filter(user=self.object.user)
             .exclude(pk=self.object.pk)
             .select_related("conference")
-            .prefetch_related("roles", "teams")
+            .prefetch_related("teams")
             .order_by("-conference__year")
         )
         return context
@@ -496,6 +496,8 @@ class TeamDashboardView(TeamLeadRequiredMixin, DetailView):
         context["can_manage_members"] = can_view_volunteers(user) or leads_team(
             user, team
         )
+        # The roster marks leads with a badge; one query for the whole page.
+        context["lead_ids"] = set(team.team_leads.values_list("id", flat=True))
 
         # Applicants who applied to this edition without picking a team. A lead
         # can pull one onto their team; no other roster surfaces them.
@@ -719,20 +721,16 @@ class CancelVolunteeringView(VolunteerOrAdminRequiredMixin, View):
                 )
                 return redirect("volunteer:volunteer_profile_detail", pk=pk)
 
-            # Capture team/role ids before clearing; the task re-fetches them
-            # for the notification emails (the rows persist, only membership
-            # is removed).
+            # Capture team ids before clearing; the task re-fetches them for
+            # the notification emails (the rows persist, only membership is
+            # removed).
             team_ids = list(profile.teams.values_list("id", flat=True))
-            role_ids = list(profile.roles.values_list("id", flat=True))
             # Update the volunteer profile
             profile.application_status = ApplicationStatus.CANCELLED
             profile.teams.clear()  # Remove from all teams
-            profile.roles.clear()  # Remove from all roles
             profile.save()
 
-            enqueue(
-                send_volunteer_cancelled_emails_task, profile.id, team_ids, role_ids
-            )
+            enqueue(send_volunteer_cancelled_emails_task, profile.id, team_ids)
 
             messages.add_message(
                 request,

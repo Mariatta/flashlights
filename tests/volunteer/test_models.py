@@ -6,10 +6,9 @@ from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 from django.urls import reverse
 
-from volunteer.constants import ApplicationStatus, Region, RoleTypes
+from volunteer.constants import ApplicationStatus, Region
 from volunteer.models import (
     PyladiesChapter,
-    Role,
     Team,
     VolunteerProfile,
     send_internal_volunteer_onboarding_email,
@@ -47,12 +46,6 @@ class TestVolunteerModel:
         )
         team.save()
         assert str(team) == f"Test Team ({conference.year})"
-
-    def test_role_str_representation(self):
-        """Test string representation of Role."""
-        role = Role(short_name="Test Role", description="Test Description")
-        role.save()
-        assert str(role) == "Test Role"
 
     def test_language_str_representation(self, language):
         """Test string representation of Language."""
@@ -94,20 +87,6 @@ class TestVolunteerModel:
 
         assert profile in team.team_leads.all()
         assert team in profile.teams.all()
-
-    def test_role_relationships(self, portal_user, language, conference):
-        """Test role relationships with volunteers."""
-        role = Role.objects.create(
-            short_name="Developer", description="Software Developer"
-        )
-        profile = VolunteerProfile.objects.create(
-            user=portal_user, region=Region.NORTH_AMERICA, conference=conference
-        )
-        profile.language.add(language)
-        profile.roles.add(role)
-
-        assert role in profile.roles.all()
-        assert profile in role.roles.all()
 
     def test_volunteer_profile_validation(self, portal_user, conference):
         """Test validation of volunteer profile fields."""
@@ -361,9 +340,6 @@ class TestVolunteerModel:
 
     def test_email_is_sent_after_saved(self, portal_user, conference):
         # set up an admin account to receive internal notification email
-        admin_role = Role.objects.create(
-            short_name=RoleTypes.ADMIN, description="Admin role"
-        )
         admin_user_to_notify = User.objects.create_superuser(
             username="testadmin",
             email="test-admin@example.com",
@@ -381,7 +357,6 @@ class TestVolunteerModel:
             password="supersuper123",
         )
 
-        admin_profile.roles.add(admin_role)
         admin_profile.save()
 
         mail.outbox.clear()
@@ -477,10 +452,6 @@ class TestVolunteerModel:
             conference=conference,
         )
         profile.teams.add(team)
-        role = Role.objects.create(
-            short_name="Obscure Role name", description="Test role desc"
-        )
-        profile.roles.add(role)
 
         profile.application_status = "Approved"
 
@@ -491,15 +462,14 @@ class TestVolunteerModel:
             str(mail.outbox[0].subject)
             == f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}Welcome to the {profile.conference} Volunteer Team"
         )
-        # role name and team name in the body
-        assert role.short_name in str(mail.outbox[0].body)
+        # team name in the body
         assert team.short_name in str(mail.outbox[0].body)
 
         # gdrive info not in the body. It's for admin onboarding only
         assert "super-secret-folder-id" not in str(mail.outbox[0].body)
 
     def test_admin_onboarding_email_contains_info(
-        self, portal_user, conference, settings
+        self, portal_user, conference, settings, preset_team
     ):
         settings.GDRIVE_FOLDER_ID = "super-secret-folder-id"
 
@@ -514,10 +484,9 @@ class TestVolunteerModel:
             conference=conference,
         )
         profile.teams.add(team)
-        admin_role = Role.objects.create(
-            short_name=RoleTypes.ADMIN, description="Test role desc"
-        )
-        profile.roles.add(admin_role)
+        profile.application_status = ApplicationStatus.APPROVED
+        profile.save()
+        profile.teams.add(preset_team("Organizers"))
 
         profile.application_status = ApplicationStatus.APPROVED
 
@@ -528,8 +497,7 @@ class TestVolunteerModel:
             str(mail.outbox[0].subject)
             == f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}Welcome to the {profile.conference} Volunteer Team"
         )
-        # role name and team name in the body
-        assert admin_role.short_name in str(mail.outbox[0].body)
+        # team name in the body
         assert team.short_name in str(mail.outbox[0].body)
 
         # gdrive info is in the body because this is an admin
@@ -558,10 +526,6 @@ class TestVolunteerModel:
             conference=conference,
         )
         profile.teams.add(team)
-        admin_role = Role.objects.create(
-            short_name=RoleTypes.ADMIN, description="Test role desc"
-        )
-        profile.roles.add(admin_role)
 
         profile.application_status = application_status
 
@@ -597,11 +561,6 @@ class TestVolunteerModel:
         )
         profile.teams.add(team)
 
-        role = Role.objects.create(
-            short_name="Obscure Role name", description="Test role desc"
-        )
-        profile.roles.add(role)
-
         profile.application_status = "Approved"
 
         mail.outbox.clear()
@@ -611,15 +570,14 @@ class TestVolunteerModel:
             str(mail.outbox[0].subject)
             == f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}Complete the {profile.conference} Volunteer Onboarding for: {profile.user.first_name} {profile.user.last_name}"
         )
-        # role name and team name in the body
-        assert role.short_name in str(mail.outbox[0].body)
+        # team name in the body
         assert team.short_name in str(mail.outbox[0].body)
 
         # gdrive info not in the body. It's for admin onboarding only
         assert "super-secret-folder-id" not in str(mail.outbox[0].body)
 
     def test_internal_admin_onboarding_email_contains_info(
-        self, portal_user, conference, settings
+        self, portal_user, conference, settings, preset_team
     ):
         settings.GDRIVE_FOLDER_ID = "super-secret-folder-id"
 
@@ -645,26 +603,27 @@ class TestVolunteerModel:
             conference=conference,
         )
         profile.teams.add(team)
-        admin_role = Role.objects.create(
-            short_name=RoleTypes.ADMIN, description="Test role desc"
-        )
-        profile.roles.add(admin_role)
+        profile.application_status = ApplicationStatus.APPROVED
+        profile.save()
+        profile.teams.add(preset_team("Organizers"))
 
         profile.application_status = ApplicationStatus.APPROVED
 
         mail.outbox.clear()
         send_internal_volunteer_onboarding_email(profile)
-        assert len(mail.outbox) == 1
+        # The new organizer holds the notifications permission too now, so
+        # the notice about them reaches them as well as the superuser.
+        assert len(mail.outbox) == 2
+        notice = next(m for m in mail.outbox if m.to == ["test-admin@example.com"])
         assert (
-            str(mail.outbox[0].subject)
+            str(notice.subject)
             == f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}Complete the {profile.conference} Volunteer Onboarding for: {profile.user.first_name} {profile.user.last_name}"
         )
-        # role name and team name in the body
-        assert admin_role.short_name in str(mail.outbox[0].body)
-        assert team.short_name in str(mail.outbox[0].body)
+        # team name in the body
+        assert team.short_name in str(notice.body)
 
         # gdrive info is in the body because this is an admin
-        assert "super-secret-folder-id" in str(mail.outbox[0].body)
+        assert "super-secret-folder-id" in str(notice.body)
 
     @pytest.mark.parametrize(
         "application_status",
@@ -689,10 +648,6 @@ class TestVolunteerModel:
             conference=conference,
         )
         profile.teams.add(team)
-        admin_role = Role.objects.create(
-            short_name=RoleTypes.ADMIN, description="Test role desc"
-        )
-        profile.roles.add(admin_role)
 
         profile.application_status = application_status
 
@@ -775,7 +730,6 @@ class TestBringForwardTo:
         assert new_profile.availability_hours_per_week == 5
         assert list(new_profile.language.all()) == [language]
         assert new_profile.teams.count() == 0  # team assignments not carried
-        assert new_profile.roles.count() == 0
         assert len(mail.outbox) == 0  # no unsolicited "application received" email
 
     def test_returns_none_when_already_in_target(self, portal_user, conference):

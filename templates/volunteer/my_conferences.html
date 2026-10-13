@@ -34,9 +34,6 @@
                             {% trans "Teams" %}
                         </th>
                         <th>
-                            {% trans "Roles" %}
-                        </th>
-                        <th>
                         </th>
                     </tr>
                 </thead>
@@ -52,14 +49,6 @@
                             <td>
                                 {% for team in profile.teams.all %}
                                     {{ team.short_name }}
-                                    {% if not forloop.last %}
-                                        ,
-                                    {% endif %}
-                                {% endfor %}
-                            </td>
-                            <td>
-                                {% for role in profile.roles.all %}
-                                    {{ role.short_name }}
                                     {% if not forloop.last %}
                                         ,
                                     {% endif %}

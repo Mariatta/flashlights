@@ -8,9 +8,8 @@ from sponsorship.models import (
     SponsorshipProgressStatus,
     SponsorshipTier,
 )
-from volunteer.constants import Region, RoleTypes
+from volunteer.constants import Region
 from volunteer.models import (
-    Role,
     VolunteerProfile,
 )
 
@@ -72,9 +71,6 @@ class TestSponsorshipModel:
 
     def test_email_is_sent_after_saved(self, admin_user, conference):
         # set up an admin account to receive internal notification email
-        admin_role = Role.objects.create(
-            short_name=RoleTypes.ADMIN, description="Admin role"
-        )
         admin_user_to_notify = User.objects.create_superuser(
             username="testadmin",
             email="test-admin@example.com",
@@ -92,7 +88,6 @@ class TestSponsorshipModel:
             password="supersuper123",
         )
 
-        admin_profile.roles.add(admin_role)
         admin_profile.save()
 
         mail.outbox.clear()

@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.core import mail
 
 from volunteer.constants import ApplicationStatus, Region
-from volunteer.models import Role, Team, VolunteerProfile
+from volunteer.models import Team, VolunteerProfile
 from volunteer.tasks import (
     send_internal_volunteer_onboarding_email_task,
     send_volunteer_cancelled_emails_task,
@@ -77,15 +77,12 @@ class TestVolunteerEmailTasks:
             user=lead_user, conference=conference, discord_username="l"
         )
         team.team_leads.add(lead_profile)
-        role = Role.objects.create(short_name="Dev", description="d")
 
         mail.outbox.clear()
-        result = send_volunteer_cancelled_emails_task(
-            volunteer_profile.id, [team.id], [role.id]
-        )
+        result = send_volunteer_cancelled_emails_task(volunteer_profile.id, [team.id])
         assert "Sent volunteer cancellation emails" in result
         # confirmation to the volunteer + notification to the team lead
         assert len(mail.outbox) >= 2
 
     def test_cancelled_emails_not_found(self):
-        assert "not found" in send_volunteer_cancelled_emails_task(99999, [], [])
+        assert "not found" in send_volunteer_cancelled_emails_task(99999, [])

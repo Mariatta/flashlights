@@ -105,7 +105,7 @@
     <div class="card mb-4">
         <div class="card-header">
             <h5 class="card-title mb-0">
-                {% trans "Teams & roles" %}
+                {% trans "Teams" %}
             </h5>
         </div>
         <div class="card-body">
@@ -148,20 +148,6 @@
                     </div>
                 </div>
             {% endif %}
-            <div class="row mb-3">
-                <div class="col-md-3 fw-bold">
-                    Roles:
-                </div>
-                <div class="col-md-9">
-                    {% if object.roles.all %}
-                        {% for role in object.roles.all %}
-                            <span class="badge bg-secondary me-1">{{ role.short_name }}</span>
-                        {% endfor %}
-                    {% else %}
-                        {% trans "No roles assigned yet" %}
-                    {% endif %}
-                </div>
-            </div>
         </div>
     </div>
     <div class="card mb-4">
@@ -318,7 +304,7 @@
                                 Set your application status to "Cancelled"
                             </li>
                             <li>
-                                Remove you from all assigned teams and roles
+                                Remove you from all assigned teams
                             </li>
                             <li>
                                 Send a confirmation email to you

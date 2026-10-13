@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.core.management import CommandError, call_command
 
 from sponsorship.models import IndividualDonation, SponsorshipProfile, SponsorshipTier
-from volunteer.models import Role, Team, VolunteerProfile
+from volunteer.models import Team, VolunteerProfile
 
 
 @pytest.mark.django_db
@@ -76,16 +76,20 @@ class TestGenerateSampleDataCommand:
             assert not volunteer.is_staff
             assert not volunteer.is_superuser
 
-    def test_generates_roles(self, settings):
-        """Test that volunteer roles are created."""
+    def test_grants_through_the_organizers_team(self, settings):
+        """The admin and staff sample accounts organize through the team the
+        command builds from the preset, not through their Django flags."""
         settings.DEBUG = True
-        initial_count = Role.objects.count()
-
         call_command("generate_sample_data", stdout=StringIO())
-
-        assert Role.objects.count() > initial_count
-        assert Role.objects.filter(short_name="Frontend Developer").exists()
-        assert Role.objects.filter(short_name="Designer").exists()
+        team = Team.objects.get(short_name="Organizers")
+        assert team.permissions.count() > 0 and team.lead_permissions.count() == 2
+        staff = User.objects.get(username="staff_user")
+        assert staff.has_perm("speakers.manage_program")
+        assert not staff.has_perm("portal.start_next_year")
+        assert User.objects.get(username="admin_user").has_perm(
+            "portal.start_next_year"
+        )
+        assert {p.user.username for p in team.team_leads.all()} == {"admin_user"}
 
     def test_generates_teams(self, settings):
         """Test that teams are created with correct attributes."""
@@ -165,7 +169,6 @@ class TestGenerateSampleDataCommand:
         call_command("generate_sample_data", stdout=StringIO())
         first_run_counts = {
             "users": User.objects.count(),
-            "roles": Role.objects.count(),
             "teams": Team.objects.count(),
             "profiles": VolunteerProfile.objects.count(),
             "tiers": SponsorshipTier.objects.count(),
@@ -176,7 +179,6 @@ class TestGenerateSampleDataCommand:
         call_command("generate_sample_data", stdout=StringIO())
         second_run_counts = {
             "users": User.objects.count(),
-            "roles": Role.objects.count(),
             "teams": Team.objects.count(),
             "profiles": VolunteerProfile.objects.count(),
             "tiers": SponsorshipTier.objects.count(),
@@ -188,18 +190,17 @@ class TestGenerateSampleDataCommand:
         assert first_run_counts == second_run_counts
 
     def test_volunteer_profiles_have_relationships(self, settings):
-        """Test that volunteer profiles are properly associated with teams and roles."""
+        """Test that volunteer profiles are properly associated with teams."""
         settings.DEBUG = True
 
         call_command("generate_sample_data", stdout=StringIO())
 
-        # Check that approved volunteers have teams and roles
+        # Check that approved volunteers have teams
         approved_profile = VolunteerProfile.objects.filter(
             application_status="Approved"
         ).first()
         assert approved_profile is not None
         assert approved_profile.teams.count() > 0
-        assert approved_profile.roles.count() > 0
 
     def test_sponsorship_profiles_have_tiers(self, settings):
         """Test that sponsorship profiles are associated with tiers."""

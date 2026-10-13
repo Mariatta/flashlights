@@ -5,9 +5,9 @@ import pytest
 from django.core import mail
 
 from portal.models import ChatPlatform
-from volunteer.constants import ApplicationStatus, RoleTypes
+from tests.grants import on_team
+from volunteer.constants import ApplicationStatus
 from volunteer.models import (
-    Role,
     Team,
     VolunteerProfile,
     send_internal_volunteer_onboarding_email,
@@ -61,11 +61,10 @@ class TestOnboardingEmails:
             short_name="Program", description="d", conference=conference
         )
         profile.teams.add(team)
-        # An admin, so the core organizers' part is in too.
-        profile.roles.add(
-            Role.objects.create(short_name=RoleTypes.ADMIN, description="d")
-        )
+        # On the Organizers team, so the core organizers' part is in too.
         profile.application_status = ApplicationStatus.APPROVED
+        profile.save(update_fields=["application_status"])
+        on_team(portal_user)
         mail.outbox.clear()
         send_volunteer_onboarding_email(profile)
         send_internal_volunteer_onboarding_email(profile)
@@ -108,10 +107,9 @@ class TestOnboardingWording:
     ):
         settings.GDRIVE_FOLDER_ID = "abc123"
         profile, _ = applicant(conference, portal_user)
-        profile.roles.add(
-            Role.objects.create(short_name=RoleTypes.ADMIN, description="d")
-        )
         profile.application_status = ApplicationStatus.APPROVED
+        profile.save(update_fields=["application_status"])
+        on_team(portal_user)
         mail.outbox.clear()
         send_volunteer_onboarding_email(profile)
         assert "https://drive.google.com/drive/folders/abc123" in mail.outbox[0].body

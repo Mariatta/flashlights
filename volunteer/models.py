@@ -12,9 +12,10 @@ from django.utils.functional import cached_property
 
 from common.send_emails import send_email
 from portal.models import BaseModel, ChoiceArrayField
+from portal.permissions import is_organizer
 from portal.validators import validate_linked_in_pattern
 
-from .constants import ApplicationStatus, Region, RoleTypes
+from .constants import ApplicationStatus, Region
 from .languages import LANGUAGES
 from .permissions import volunteer_notification_recipients
 
@@ -103,6 +104,9 @@ class Team(BaseModel):
 
 
 class Role(BaseModel):
+    # Upstream's volunteer role. Nothing reads it since access moved to team
+    # permissions (decision 0014): kept because the model is upstream's, and
+    # hidden from every form and page.
     short_name = models.CharField("name", max_length=40)
     description = models.CharField("description", max_length=1000)
 
@@ -138,6 +142,7 @@ class VolunteerProfile(BaseModel):
         on_delete=models.PROTECT,
         related_name="volunteer_profiles",
     )
+    # Upstream's, unread: see Role.
     roles = models.ManyToManyField(
         "Role", verbose_name="Roles", related_name="roles", blank=True
     )
@@ -351,7 +356,7 @@ class VolunteerProfile(BaseModel):
     class Meta:
         unique_together = ("user", "conference")
         # Design §7.1. ``receive_volunteer_notifications`` is what the Admin
-        # and Staff roles existed for; the roles go in task 3.6.
+        # and Staff roles existed for; nothing reads roles any more.
         permissions = [
             ("review_volunteerprofile", "Can review volunteer applications"),
             (
@@ -392,6 +397,14 @@ def send_volunteer_notification_email(instance, updated=False):
     )
 
 
+def _onboards_as_organizer(profile):
+    """Whether the onboarding email is the organizer variant: the account
+    now holds the Organize surface, through the teams it was just put on.
+    Read fresh, since the instance may carry a permission cache from before
+    the review form saved."""
+    return is_organizer(User.objects.get(pk=profile.user_id))
+
+
 def send_volunteer_onboarding_email(instance):
     """Send the volunteer onboarding email when their volunteer profile has been updated.
     This should only be sent when the volunteer profile is approved.
@@ -400,9 +413,7 @@ def send_volunteer_onboarding_email(instance):
         context = {"profile": instance, "GDRIVE_FOLDER_ID": settings.GDRIVE_FOLDER_ID}
         subject = f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}Welcome to the {instance.conference} Volunteer Team"
 
-        for role in instance.roles.all():
-            if role.short_name in [RoleTypes.ADMIN, RoleTypes.STAFF]:
-                context["admin_onboarding"] = True
+        context["admin_onboarding"] = _onboards_as_organizer(instance)
         markdown_template = "emails/volunteer/new_volunteer_onboarding.md"
         send_email(
             subject,
@@ -421,9 +432,7 @@ def send_internal_volunteer_onboarding_email(instance):
     if instance.application_status == ApplicationStatus.APPROVED:
         context = {"profile": instance, "GDRIVE_FOLDER_ID": settings.GDRIVE_FOLDER_ID}
         subject = f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}Complete the {instance.conference} Volunteer Onboarding for: {instance.user.first_name} {instance.user.last_name}"
-        for role in instance.roles.all():
-            if role.short_name in [RoleTypes.ADMIN, RoleTypes.STAFF]:
-                context["admin_onboarding"] = True
+        context["admin_onboarding"] = _onboards_as_organizer(instance)
         markdown_template = "emails/volunteer/internal_volunteer_onboarding.md"
         _send_internal_email(
             subject,
@@ -484,7 +493,7 @@ def send_internal_notification_email(instance):
     )
 
 
-def send_volunteer_cancelled_emails(instance, teams_before_cancel, roles_before_cancel):
+def send_volunteer_cancelled_emails(instance, teams_before_cancel):
     """Send email notifications when a volunteer is cancelled.
 
     Send email to the volunteer, and send emails to the team leads.
@@ -492,7 +501,6 @@ def send_volunteer_cancelled_emails(instance, teams_before_cancel, roles_before_
     context = {
         "profile": instance,
         "teams_removed": teams_before_cancel,
-        "roles_removed": roles_before_cancel,
     }
     send_email(
         subject=f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}Volunteer Application Cancelled",
