@@ -92,6 +92,21 @@ CATALOGUE = {
         "presenter",
         "Can be picked as a presenter's liaison",
     ),
+    "speakers.review_proposal": ("proposal", "Can approve and decline proposals"),
+    "speakers.publish_program": ("session", "Can publish the program and share it"),
+    "speakers.publish_session_video": ("session", "Can publish session videos"),
+    "speakers.view_mediaasset": ("mediaasset", "Can view media asset"),
+    "speakers.add_mediaasset": ("mediaasset", "Can add media asset"),
+    "speakers.change_mediaasset": ("mediaasset", "Can change media asset"),
+    "speakers.delete_mediaasset": ("mediaasset", "Can delete media asset"),
+    "ticketing.change_ticketingsettings": (
+        "ticketingsettings",
+        "Can change ticketing settings",
+    ),
+    "ticketing.import_registrations": (
+        "ticketingsettings",
+        "Can import registrations",
+    ),
 }
 ORGANIZER_LEAD_LABELS = ("portal.delete_conference", "portal.start_next_year")
 ORGANIZER_MEMBER_LABELS = tuple(
@@ -196,6 +211,7 @@ class Migration(migrations.Migration):
         ("contenttypes", "0002_remove_content_type_name"),
         ("sponsorship", "0012_flashlights_rebrand"),
         ("speakers", "0022_flashlights"),
+        ("ticketing", "0001_initial"),
         ("auth", "0012_alter_user_first_name_max_length"),
         ("portal", "0008_flashlights_rebrand"),
         ("volunteer", "0015_alter_team_description"),

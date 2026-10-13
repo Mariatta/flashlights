@@ -1,5 +1,5 @@
 """Speakers on has_perm (design §7.1, task 3.4): a Program-team member runs
-the program with no Django flag, a Design-team member reads it and cannot
+the program with no Django flag, a Recordings-team member reads it and cannot
 invite, and liaison scoping is untouched (the existing suites cover it)."""
 
 import pytest
@@ -37,7 +37,7 @@ def programmer(join_team):
 @pytest.fixture
 def designer(join_team):
     return join_team(
-        User.objects.create_user(username="dee", email="dee@x.org"), "Design"
+        User.objects.create_user(username="dee", email="dee@x.org"), "Recordings"
     )
 
 
@@ -104,7 +104,7 @@ class TestSpeakerLiaisonsMember:
 
 
 @pytest.mark.django_db
-class TestDesignTeamMember:
+class TestRecordingsTeamMember:
     def test_reads_but_cannot_invite(self, client, designer, conference, enabled):
         session = make_session(conference, title="Read me")
         client.force_login(designer)

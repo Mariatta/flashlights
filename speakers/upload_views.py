@@ -40,7 +40,7 @@ from .media import (
 )
 from .mixins import SpeakerModuleRequiredMixin
 from .models import MediaAsset, MediaUpload, Session
-from .permissions import is_speaker_organizer
+from .permissions import can_add_media, can_change_media, can_delete_media
 from .transcription import start_job
 
 
@@ -105,7 +105,7 @@ class UploadEndpoint(LoginRequiredMixin, SpeakerModuleRequiredMixin, View):
         loses an upload in flight with it: they can still give it up
         (``to_abort``), which only frees the bucket, but not finish it."""
         upload = get_object_or_404(MediaUpload, pk=self.kwargs["pk"], session=session)
-        if upload.started_by_id != self.request.user.pk and not is_speaker_organizer(
+        if upload.started_by_id != self.request.user.pk and not can_add_media(
             self.request.user
         ):
             raise PermissionDenied("This is not your upload.")
@@ -281,7 +281,7 @@ def _row_or_files(request, session, asset, message):
                 "session": session,
                 # Derived, not asserted: the row offers the same controls
                 # the full page would, whoever the view's gate let in.
-                "can_edit": is_speaker_organizer(request.user),
+                "can_edit": can_change_media(request.user),
                 "transcribe_offered": bool(settings.SPEAKER_TRANSCRIBE_ENGINE),
                 "video_kinds": VIDEO_KINDS,
             },
@@ -300,7 +300,7 @@ class MediaNotesView(LoginRequiredMixin, SpeakerModuleRequiredMixin, View):
         session = get_object_or_404(
             Session, conference=self.conference, slug=self.kwargs["slug"]
         )
-        if not is_speaker_organizer(request.user):
+        if not can_change_media(request.user):
             raise PermissionDenied("Only organizers annotate files.")
         asset = get_object_or_404(MediaAsset, pk=pk, session=session)
         asset.notes_md = request.POST.get("notes_md", "").strip()
@@ -320,7 +320,7 @@ class MediaShareView(LoginRequiredMixin, SpeakerModuleRequiredMixin, View):
         session = get_object_or_404(
             Session, conference=self.conference, slug=self.kwargs["slug"]
         )
-        if not is_speaker_organizer(request.user):
+        if not can_change_media(request.user):
             raise PermissionDenied("Only organizers share files with speakers.")
         asset = get_object_or_404(MediaAsset, pk=pk, session=session)
         asset.shared_with_speaker = request.POST.get("shared") == "1"
@@ -349,7 +349,7 @@ class MediaTitleView(LoginRequiredMixin, SpeakerModuleRequiredMixin, View):
         session = get_object_or_404(
             Session, conference=self.conference, slug=self.kwargs["slug"]
         )
-        if not is_speaker_organizer(request.user):
+        if not can_change_media(request.user):
             raise PermissionDenied("Only organizers title files.")
         asset = get_object_or_404(MediaAsset, pk=pk, session=session)
         set_line_title(asset, request.POST.get("title", ""))
@@ -399,7 +399,7 @@ class MediaTranscribeView(LoginRequiredMixin, SpeakerModuleRequiredMixin, View):
         session = get_object_or_404(
             Session, conference=self.conference, slug=self.kwargs["slug"]
         )
-        if not is_speaker_organizer(request.user):
+        if not can_change_media(request.user):
             raise PermissionDenied("Only organizers start transcriptions.")
         asset = get_object_or_404(MediaAsset, pk=pk, session=session)
         if asset.kind not in VIDEO_KINDS or not asset.is_ready or not asset.storage_key:
@@ -437,7 +437,7 @@ class MediaDeleteView(LoginRequiredMixin, SpeakerModuleRequiredMixin, View):
         asset = get_object_or_404(MediaAsset, pk=pk, session=session)
         if not can_delete(request.user, session, asset):
             raise PermissionDenied("You may not delete this file.")
-        if is_speaker_organizer(request.user):
+        if can_delete_media(request.user):
             back = f"{session.get_absolute_url()}#files"
         else:
             back = reverse("speakers:my_session_detail", args=[session.slug]) + "#video"

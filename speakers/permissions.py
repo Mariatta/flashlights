@@ -15,9 +15,16 @@ from volunteer.constants import ApplicationStatus
 from volunteer.models import Team
 
 from .constants import (
+    ADD_MEDIA,
     ASSIGN_ITEMS,
+    CHANGE_MEDIA,
+    DELETE_MEDIA,
     LIAISE_PRESENTERS,
     MANAGE_PROGRAM,
+    PUBLISH_PROGRAM,
+    PUBLISH_SESSION_VIDEO,
+    REVIEW_PROPOSALS,
+    VIEW_MEDIA,
     VIEW_PROGRAM,
     ItemOwner,
 )
@@ -37,6 +44,47 @@ def can_view_program(user):
         user.is_authenticated
         and (user.has_perm(VIEW_PROGRAM) or user.has_perm(MANAGE_PROGRAM))
     )
+
+
+def can_review_proposals(user):
+    """Whether ``user`` approves and declines proposals: a reviewer
+    (``speakers.review_proposal``), or whoever runs the program."""
+    return bool(
+        user.is_authenticated
+        and (user.has_perm(REVIEW_PROPOSALS) or user.has_perm(MANAGE_PROGRAM))
+    )
+
+
+def can_publish_program(user):
+    """Whether ``user`` decides what the public sees: the program's
+    visibility and each session's tick, the preview link, the websites that
+    may embed it (``speakers.publish_program``)."""
+    return bool(user.is_authenticated and user.has_perm(PUBLISH_PROGRAM))
+
+
+def can_publish_session_video(user):
+    """A session's video fields: the YouTube link, its publish time, the
+    premiere (``speakers.publish_session_video``)."""
+    return bool(user.is_authenticated and user.has_perm(PUBLISH_SESSION_VIDEO))
+
+
+# The media pipeline reads its own permissions, so a Recordings team can
+# run it without running the program. Performers keep their raw video on
+# their own sessions relationally, in speakers.media.
+def can_view_media(user):
+    return bool(user.is_authenticated and user.has_perm(VIEW_MEDIA))
+
+
+def can_add_media(user):
+    return bool(user.is_authenticated and user.has_perm(ADD_MEDIA))
+
+
+def can_change_media(user):
+    return bool(user.is_authenticated and user.has_perm(CHANGE_MEDIA))
+
+
+def can_delete_media(user):
+    return bool(user.is_authenticated and user.has_perm(DELETE_MEDIA))
 
 
 def can_assign_items(user):

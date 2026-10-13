@@ -651,7 +651,7 @@ open the tab their target lives in.
                             <span class="badge text-bg-light border align-middle">{{ media_groups|length }}</span>
                         {% endif %}
                     </h2>
-                    {% if perms.speakers.manage_program and media_groups %}
+                    {% if perms.speakers.view_mediaasset and media_groups %}
                         <a class="btn btn-sm btn-outline-secondary"
                            href="{% url 'speakers:media_export' %}?sessions_mode=some&sessions={{ session.slug }}&kinds=RAW_VIDEO&kinds=INTRO&kinds=OUTRO&kinds=PROCESSED_VIDEO&kinds=TRANSCRIPT&kinds=TRANSLATION&kinds=TITLE_CARD&kinds=THUMBNAIL&kinds=PROMO&kinds=OTHER">
                             <i class="icon-download"></i> {% trans "Download all files of this session" %}

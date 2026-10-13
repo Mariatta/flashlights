@@ -133,6 +133,8 @@ class TicketingSettings(models.Model):
     class Meta:
         verbose_name = "ticketing settings"
         verbose_name_plural = "ticketing settings"
+        # A registration desk imports without changing the settings.
+        permissions = [("import_registrations", "Can import registrations")]
 
     def __str__(self):
         return f"Ticketing for {self.conference}"

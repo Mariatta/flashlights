@@ -266,7 +266,8 @@ class TestProfilePage:
             (
                 "Speakers",
                 ["Change the speaker settings, types, roles and readiness gates"],
-            )
+            ),
+            ("Recordings", ["Delete session files"]),
         ]
         # The owner sees it on their own page, and so does a reviewer.
         client.force_login(sam)

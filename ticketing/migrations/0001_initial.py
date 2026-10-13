@@ -211,4 +211,12 @@ class Migration(migrations.Migration):
         ),
         migrations.RunPython(copy_speakers_pretix, migrations.RunPython.noop),
         migrations.RunPython(seed, unseed),
+        migrations.AlterModelOptions(
+            name="ticketingsettings",
+            options={
+                "permissions": [("import_registrations", "Can import registrations")],
+                "verbose_name": "ticketing settings",
+                "verbose_name_plural": "ticketing settings",
+            },
+        ),
     ]

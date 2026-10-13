@@ -45,7 +45,7 @@ from .models import (
     media_for_speakers,
     speakers_pre_record,
 )
-from .permissions import is_speaker_organizer
+from .permissions import can_add_media, can_delete_media, can_view_media
 from .signals import asset_ready
 
 # S3 limits: at least 5 MiB per part except the last, at most 10,000 parts.
@@ -225,13 +225,13 @@ def content_disposition(filename):
 
 
 def can_upload(user, session, kind):
-    """Who may put a file of ``kind`` on ``session``: organizers any kind,
+    """Who may put a file of ``kind`` on ``session``: the media team any kind,
     a presenter on the session their raw video only (design §8.8), and
     only once the session is theirs: a proposal still waiting for an
     answer, or turned down, has no channel into the bucket."""
     if not user.is_authenticated:
         return False
-    if is_speaker_organizer(user):
+    if can_add_media(user):
         return True
     if kind != MediaKind.RAW_VIDEO or session.is_a_proposal:
         return False
@@ -250,7 +250,7 @@ def can_download(user, session, asset=None):
     ``asset`` given, whether they may fetch anything at all."""
     if not user.is_authenticated:
         return False
-    if is_speaker_organizer(user):
+    if can_view_media(user):
         return True
     if session.session_presenters.filter(presenter__liaison=user).exists():
         return True
@@ -455,7 +455,7 @@ def can_delete(user, session, asset, assets=None):
     when the caller already has the line."""
     if not user.is_authenticated:
         return False
-    if is_speaker_organizer(user):
+    if can_delete_media(user):
         return True
     if asset.kind != MediaKind.RAW_VIDEO or not can_upload(user, session, asset.kind):
         return False
@@ -555,7 +555,7 @@ def uploading_presenter(asset):
     is the team's doing and no news to the team (design §13.2)."""
     if asset.uploaded_by_id is None or asset.generated_by:
         return None
-    if is_speaker_organizer(asset.uploaded_by):
+    if can_add_media(asset.uploaded_by):
         return None
     link = (
         asset.session.session_presenters.filter(presenter__user_id=asset.uploaded_by_id)

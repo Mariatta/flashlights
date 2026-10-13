@@ -60,6 +60,19 @@ CATALOGUE = {
         ),
         "speakers.assign_checklistitem": "Reassign checklist items",
         "speakers.liaise_presenters": "Be a presenter's liaison",
+        "speakers.review_proposal": "Approve and decline proposals",
+        "speakers.publish_program": "Publish the program and share it",
+    },
+    "Recordings": {
+        "speakers.view_mediaasset": "See and download session files",
+        "speakers.add_mediaasset": "Upload session files",
+        "speakers.change_mediaasset": "Edit, share and transcribe session files",
+        "speakers.delete_mediaasset": "Delete session files",
+        "speakers.publish_session_video": "Publish session videos",
+    },
+    "Registrations": {
+        "ticketing.change_ticketingsettings": "Set up ticketing",
+        "ticketing.import_registrations": "Import registrations",
     },
 }
 
@@ -134,6 +147,15 @@ ORGANIZER_MEMBER_PERMISSIONS = (
     "speakers.change_speakersettings",
     "speakers.assign_checklistitem",
     "speakers.liaise_presenters",
+    "speakers.review_proposal",
+    "speakers.publish_program",
+    "speakers.view_mediaasset",
+    "speakers.add_mediaasset",
+    "speakers.change_mediaasset",
+    "speakers.delete_mediaasset",
+    "speakers.publish_session_video",
+    "ticketing.change_ticketingsettings",
+    "ticketing.import_registrations",
 )
 
 PRESETS = {
@@ -172,16 +194,33 @@ PRESETS = {
             "speakers.liaise_presenters",
             "speakers.change_checklisttemplate",
             "speakers.change_handbook",
+            "speakers.review_proposal",
+            "speakers.publish_program",
+            "speakers.view_mediaasset",
+            "speakers.add_mediaasset",
+            "speakers.change_mediaasset",
+            "speakers.publish_session_video",
         ),
-        leads=("speakers.change_speakersettings",),
+        leads=("speakers.change_speakersettings", "speakers.delete_mediaasset"),
+    ),
+    # Reviewers read the program and answer proposals, and nothing more.
+    "Proposal reviewers": Preset(
+        members=("speakers.view_program", "speakers.review_proposal")
     ),
     "Speaker liaisons": Preset(
         members=("speakers.liaise_presenters", "speakers.assign_checklistitem")
     ),
-    # The media-asset permissions join this set with task 3.7, once the
-    # MediaAsset model exists.
-    "Design": Preset(
-        members=("speakers.view_program",), leads=("speakers.assign_checklistitem",)
+    # The team that records, edits and publishes the session videos,
+    # without running the program.
+    "Recordings": Preset(
+        members=(
+            "speakers.view_program",
+            "speakers.view_mediaasset",
+            "speakers.add_mediaasset",
+            "speakers.change_mediaasset",
+            "speakers.publish_session_video",
+        ),
+        leads=("speakers.delete_mediaasset", "speakers.assign_checklistitem"),
     ),
 }
 

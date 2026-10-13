@@ -40,6 +40,7 @@ from .models import (
     volunteer_discord_username,
 )
 from .people import assignee_candidates, liaison_candidates, picker_label
+from .permissions import can_publish_session_video
 from .services import proposable_types
 
 MARKDOWN_HELP = "Markdown supported: headings, lists, links, **bold**, *italics*."
@@ -107,6 +108,8 @@ class IdentityLockMixin:
 
 #: What a session says about its video; gone when the edition records nothing.
 VIDEO_FIELDS = ("video_length_limit_minutes", "youtube_url", "youtube_publish_at")
+#: The video's public side, for whoever may publish session videos.
+VIDEO_PUBLISHING_FIELDS = ("youtube_url", "youtube_publish_at", "premiere_location")
 
 
 class SessionForm(forms.ModelForm):
@@ -157,11 +160,16 @@ class SessionForm(forms.ModelForm):
             "delivery": "Leave blank to use the type's default.",
         }
 
-    def __init__(self, *args, conference, **kwargs):
+    def __init__(self, *args, conference, user=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.conference = conference
         if not self.instance.conference_id:
             self.instance.conference = conference
+        # The video's public side (its link, publish time and premiere) is
+        # the media team's call: offered only with publish_session_video.
+        if user is not None and not can_publish_session_video(user):
+            for name in VIDEO_PUBLISHING_FIELDS:
+                self.fields.pop(name, None)
         types = SessionType.objects.filter(conference=conference).filter(
             Q(is_active=True) | Q(pk=self.instance.kind_id)  # keep a retired type
         )

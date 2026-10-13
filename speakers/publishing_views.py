@@ -19,7 +19,7 @@ from django.urls import reverse
 from django.views.generic import TemplateView
 
 from .constants import ProgramVisibility, SessionStatus
-from .mixins import SpeakerOrganizerRequiredMixin
+from .mixins import PublishingRequiredMixin
 from .models import ActivityLog, Session, SpeakerSettings
 from .public import preview_token, regenerate_preview
 
@@ -33,9 +33,7 @@ TABS = {
 }
 
 
-class PublishingTabView(
-    LoginRequiredMixin, SpeakerOrganizerRequiredMixin, TemplateView
-):
+class PublishingTabView(LoginRequiredMixin, PublishingRequiredMixin, TemplateView):
     """What every tab shares: the header with the master switch."""
 
     tab = None

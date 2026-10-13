@@ -5,7 +5,14 @@ from portal.models import Conference
 
 from .constants import CHANGE_HANDBOOK, CHANGE_SETTINGS, CHANGE_TEMPLATES
 from .models import Presenter, speaker_module_enabled
-from .permissions import can_work_queue, can_work_sessions, is_speaker_organizer
+from .permissions import (
+    can_publish_program,
+    can_review_proposals,
+    can_view_media,
+    can_work_queue,
+    can_work_sessions,
+    is_speaker_organizer,
+)
 
 
 class SpeakerModuleRequiredMixin:
@@ -48,6 +55,38 @@ class SpeakerOrganizerRequiredMixin(SpeakerModuleRequiredMixin, UserPassesTestMi
 
     def test_func(self):
         return is_speaker_organizer(self.request.user)
+
+
+class ProposalReviewRequiredMixin(SpeakerModuleRequiredMixin, UserPassesTestMixin):
+    """The proposal queue: program readers and liaisons read it, and a
+    reviewer (``speakers.review_proposal``) who reads nothing else of the
+    program may open it too."""
+
+    def test_func(self):
+        user = self.request.user
+        return can_work_sessions(user, self.conference) or can_review_proposals(user)
+
+
+class ProposalDecisionRequiredMixin(SpeakerModuleRequiredMixin, UserPassesTestMixin):
+    """Approving and declining: reviewers, and whoever runs the program."""
+
+    def test_func(self):
+        return can_review_proposals(self.request.user)
+
+
+class MediaViewRequiredMixin(SpeakerModuleRequiredMixin, UserPassesTestMixin):
+    """The media team's pages: bulk downloads and exports
+    (``speakers.view_mediaasset``)."""
+
+    def test_func(self):
+        return can_view_media(self.request.user)
+
+
+class PublishingRequiredMixin(SpeakerModuleRequiredMixin, UserPassesTestMixin):
+    """What the public sees: the Publishing tabs (``speakers.publish_program``)."""
+
+    def test_func(self):
+        return can_publish_program(self.request.user)
 
 
 class SpeakerSettingsRequiredMixin(SpeakerModuleRequiredMixin, PermissionRequiredMixin):

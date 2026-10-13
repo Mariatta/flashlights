@@ -1,9 +1,9 @@
 from django.contrib import messages
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic.edit import FormView
 
-from common.mixins import ConferenceAdminRequiredMixin
 from portal.models import Conference
 
 from .forms import CsvImportForm, TicketingSettingsForm
@@ -11,9 +11,12 @@ from .models import POLL_MINUTES, TicketingSettings, ticketing_for
 from .sync import CsvImportError, import_csv
 
 
-class TicketingSettingsView(ConferenceAdminRequiredMixin, FormView):
+class TicketingSettingsView(PermissionRequiredMixin, FormView):
     """The edition's Tickets page: where registrations come
     from, and how its questions and products map."""
+
+    # The settings hold the provider's token: their own permission.
+    permission_required = "ticketing.change_ticketingsettings"
 
     form_class = TicketingSettingsForm
     template_name = "ticketing/settings_form.html"
@@ -44,8 +47,11 @@ class TicketingSettingsView(ConferenceAdminRequiredMixin, FormView):
         return redirect("conference_edit", pk=self.conference.pk)
 
 
-class CsvImportView(ConferenceAdminRequiredMixin, FormView):
+class CsvImportView(PermissionRequiredMixin, FormView):
     """Upload an export of the edition's registrations."""
+
+    # A registration desk imports without seeing or changing the settings.
+    permission_required = "ticketing.import_registrations"
 
     form_class = CsvImportForm
     template_name = "ticketing/csv_import.html"
@@ -53,6 +59,10 @@ class CsvImportView(ConferenceAdminRequiredMixin, FormView):
     def dispatch(self, request, *args, **kwargs):
         self.conference = get_object_or_404(Conference, pk=kwargs["pk"])
         self.ticketing = ticketing_for(self.conference)
+        # Refuse first: someone who may not import learns nothing about
+        # how the edition's ticketing is set up.
+        if not self.has_permission():
+            return self.handle_no_permission()
         if self.ticketing is None or not self.ticketing.csv_columns.get("email"):
             messages.info(request, "Map the CSV columns on the Tickets page first.")
             return redirect("conference_tickets", pk=self.conference.pk)

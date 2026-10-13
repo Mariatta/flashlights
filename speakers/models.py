@@ -1001,6 +1001,11 @@ class Session(TimestampedModel):
         permissions = [
             ("manage_program", "Can manage the program"),
             ("view_program", "Can view every session and presenter"),
+            # What the public sees: the program's visibility, the preview
+            # link and the websites allowed to embed it.
+            ("publish_program", "Can publish the program and share it"),
+            # A session's video: its YouTube link, publish time and premiere.
+            ("publish_session_video", "Can publish session videos"),
         ]
 
     def __str__(self):
@@ -1307,6 +1312,8 @@ class Proposal(TimestampedModel):
 
     class Meta:
         ordering = ["-submitted_at", "-id"]
+        # Reviewers approve and decline without running the whole program.
+        permissions = [("review_proposal", "Can approve and decline proposals")]
 
     def __str__(self):
         return f"{self.presenter.display_name}: {self.session.title}"

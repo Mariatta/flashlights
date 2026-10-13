@@ -103,6 +103,8 @@ from .media import (
 from .mixins import (
     HandbookEditorRequiredMixin,
     PresenterRequiredMixin,
+    ProposalDecisionRequiredMixin,
+    ProposalReviewRequiredMixin,
     SpeakerModuleRequiredMixin,
     SpeakerOrganizerRequiredMixin,
     SpeakerQueueRequiredMixin,
@@ -132,7 +134,9 @@ from .models import (
 )
 from .permissions import (
     approved_teams,
+    can_add_media,
     can_assign_items,
+    can_review_proposals,
     can_work_sessions,
     is_speaker_organizer,
     owned_by,
@@ -420,11 +424,11 @@ class SessionDetailView(SessionScopedMixin, DetailView):
         # edition's switch only governs the automatic run.
         context["transcribe_offered"] = bool(settings.SPEAKER_TRANSCRIBE_ENGINE)
         context["video_kinds"] = VIDEO_KINDS
-        context["can_upload_media"] = context["can_assign"]
+        context["can_upload_media"] = can_add_media(self.request.user)
         context["can_download_media"] = can_download(self.request.user, self.object)
         context["open_uploads"] = (
             open_uploads(self.object, self.request.user)
-            if context["can_assign"] and media_on
+            if context["can_upload_media"] and media_on
             else []
         )
         # The strip under the title: what needs a person, counted from what
@@ -480,6 +484,7 @@ class SessionUpdateView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, Updat
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["conference"] = self.conference
+        kwargs["user"] = self.request.user
         return kwargs
 
     def form_valid(self, form):
@@ -503,6 +508,7 @@ class SessionCreateView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, Creat
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["conference"] = self.conference
+        kwargs["user"] = self.request.user
         return kwargs
 
     def form_valid(self, form):
@@ -3090,7 +3096,7 @@ class ProposalResubmitView(ProposalActionMixin, View):
         return redirect("speakers:my_proposals")
 
 
-class ProposalQueueView(LoginRequiredMixin, SpeakerStaffRequiredMixin, TemplateView):
+class ProposalQueueView(LoginRequiredMixin, ProposalReviewRequiredMixin, TemplateView):
     """The organizers' side: what people have proposed, pending first."""
 
     template_name = "speakers/proposal_queue.html"
@@ -3109,14 +3115,15 @@ class ProposalQueueView(LoginRequiredMixin, SpeakerStaffRequiredMixin, TemplateV
                 "rail_active": "proposals",
                 "pending": [p for p in proposals if p.is_pending],
                 "answered": [p for p in proposals if not p.is_pending],
-                "can_decide": is_speaker_organizer(self.request.user),
+                "can_decide": can_review_proposals(self.request.user),
             }
         )
         return context
 
 
-class ProposalDecisionView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, View):
-    """Yes or no. Organizers only; liaisons and staff may read the queue."""
+class ProposalDecisionView(LoginRequiredMixin, ProposalDecisionRequiredMixin, View):
+    """Yes or no: reviewers and whoever runs the program; liaisons and
+    program readers may read the queue."""
 
     def post(self, request, pk):
         proposal = get_object_or_404(

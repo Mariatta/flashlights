@@ -515,4 +515,25 @@ class Migration(migrations.Migration):
                 ],
             },
         ),
+        migrations.AlterModelOptions(
+            name="proposal",
+            options={
+                "ordering": ["-submitted_at", "-id"],
+                "permissions": [
+                    ("review_proposal", "Can approve and decline proposals")
+                ],
+            },
+        ),
+        migrations.AlterModelOptions(
+            name="session",
+            options={
+                "ordering": ["title"],
+                "permissions": [
+                    ("manage_program", "Can manage the program"),
+                    ("view_program", "Can view every session and presenter"),
+                    ("publish_program", "Can publish the program and share it"),
+                    ("publish_session_video", "Can publish session videos"),
+                ],
+            },
+        ),
     ]

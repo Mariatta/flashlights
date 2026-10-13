@@ -35,7 +35,7 @@ from .exports import (
     zip_url,
 )
 from .media import MediaBucket, MediaStorageNotConfigured
-from .mixins import SpeakerOrganizerRequiredMixin
+from .mixins import MediaViewRequiredMixin
 from .models import MediaExport
 
 FILES = {
@@ -66,7 +66,7 @@ def scope_from_query(query, require_kinds=True):
 OPENING_SCOPE = {"kinds": [MediaKind.RAW_VIDEO]}
 
 
-class MediaExportView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, View):
+class MediaExportView(LoginRequiredMixin, MediaViewRequiredMixin, View):
     """GET: the scope form with a live preview of the count and bytes;
     POST: record the export and go to its page."""
 
@@ -122,7 +122,7 @@ class MediaExportView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, View):
         return redirect(export.get_absolute_url())
 
 
-class ExportScopedMixin(LoginRequiredMixin, SpeakerOrganizerRequiredMixin):
+class ExportScopedMixin(LoginRequiredMixin, MediaViewRequiredMixin):
     def get_export(self):
         return get_object_or_404(
             MediaExport.objects.select_related("conference", "created_by"),
