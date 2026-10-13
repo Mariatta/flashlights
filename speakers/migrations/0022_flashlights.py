@@ -408,4 +408,83 @@ class Migration(migrations.Migration):
                 validators=[speakers.models.validate_timezone],
             ),
         ),
+        migrations.AlterField(
+            model_name="checklistitem",
+            name="auto_complete_rule",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("bio_and_headshot", "Bio and headshot are filled in"),
+                    ("handbook_read", "Speaker guide read (current version)"),
+                    ("invitation_sent", "Invitation sent"),
+                    ("invitation_accepted", "Invitation accepted"),
+                    ("session_scheduled", "Session has a slot"),
+                    ("pretix_registered", "Registered for the event"),
+                    ("asset_exists", "A ready asset of the required kind exists"),
+                    (
+                        "asset_shared",
+                        "A ready asset of the required kind is shared with the speaker",
+                    ),
+                    ("video_length_ok", "Video length within the limit"),
+                    ("youtube_published", "YouTube URL and publish time set"),
+                ],
+                max_length=32,
+            ),
+        ),
+        migrations.AlterField(
+            model_name="checklistitem",
+            name="ready_rule",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("session_scheduled", "The session has a slot"),
+                    ("guide_published", "The guide it points at is published"),
+                    ("registration_open", "Registration is set up"),
+                    ("final_cut_ready", "The final cut is in"),
+                ],
+                db_default="",
+                default="",
+                max_length=32,
+            ),
+        ),
+        migrations.AlterField(
+            model_name="checklisttemplateitem",
+            name="auto_complete_rule",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("bio_and_headshot", "Bio and headshot are filled in"),
+                    ("handbook_read", "Speaker guide read (current version)"),
+                    ("invitation_sent", "Invitation sent"),
+                    ("invitation_accepted", "Invitation accepted"),
+                    ("session_scheduled", "Session has a slot"),
+                    ("pretix_registered", "Registered for the event"),
+                    ("asset_exists", "A ready asset of the required kind exists"),
+                    (
+                        "asset_shared",
+                        "A ready asset of the required kind is shared with the speaker",
+                    ),
+                    ("video_length_ok", "Video length within the limit"),
+                    ("youtube_published", "YouTube URL and publish time set"),
+                ],
+                max_length=32,
+            ),
+        ),
+        migrations.AlterField(
+            model_name="checklisttemplateitem",
+            name="ready_rule",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("session_scheduled", "The session has a slot"),
+                    ("guide_published", "The guide it points at is published"),
+                    ("registration_open", "Registration is set up"),
+                    ("final_cut_ready", "The final cut is in"),
+                ],
+                db_default="",
+                default="",
+                help_text="Wait for something the portal can check.",
+                max_length=32,
+            ),
+        ),
     ]

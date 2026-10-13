@@ -13,6 +13,7 @@ from django.dispatch import receiver
 
 from attendee.models import PretixOrder
 from portal.models import Conference
+from ticketing.models import TicketingSettings
 from volunteer.models import VolunteerProfile
 
 from .api import invalidate as invalidate_public_api
@@ -21,7 +22,7 @@ from .checklists import (
     instantiate_presenter_checklist,
     instantiate_session_checklist,
 )
-from .constants import VIDEO_KINDS, AutoRule
+from .constants import VIDEO_KINDS, AutoRule, ReadyRule
 from .media import MediaBucket, MediaStorageNotConfigured, uploading_presenter
 from .models import (
     ChecklistItem,
@@ -106,6 +107,20 @@ def follow_volunteer_discord(sender, instance, **kwargs):
     ):
         presenter.discord_username = instance.discord_username
         presenter.save(update_fields=["discord_username", "modified_date"])
+
+
+@receiver(
+    post_save, sender=TicketingSettings, dispatch_uid="speakers.readiness.ticketing"
+)
+def ticketing_changed(sender, instance, **kwargs):
+    """Ticketing set up (or taken down) for an edition: the speakers'
+    "register" lines waiting on it move now, not at the nightly refresh."""
+    refresh_readiness(
+        ChecklistItem.objects.filter(
+            conference_id=instance.conference_id,
+            ready_rule=ReadyRule.REGISTRATION_OPEN,
+        )
+    )
 
 
 @receiver(post_save, sender=Presenter, dispatch_uid="speakers.rules.presenter")

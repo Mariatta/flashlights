@@ -198,7 +198,7 @@ class AutoRule(models.TextChoices):
     INVITATION_SENT = "invitation_sent", "Invitation sent"
     INVITATION_ACCEPTED = "invitation_accepted", "Invitation accepted"
     SESSION_SCHEDULED = "session_scheduled", "Session has a slot"
-    PRETIX_REGISTERED = "pretix_registered", "Registered on pretix"
+    PRETIX_REGISTERED = "pretix_registered", "Registered for the event"
     ASSET_EXISTS = "asset_exists", "A ready asset of the required kind exists"
     ASSET_SHARED = (
         "asset_shared",
@@ -219,7 +219,7 @@ class ReadyRule(models.TextChoices):
 
     SESSION_SCHEDULED = "session_scheduled", "The session has a slot"
     GUIDE_PUBLISHED = "guide_published", "The guide it points at is published"
-    REGISTRATION_OPEN = "registration_open", "Registration is set up on pretix"
+    REGISTRATION_OPEN = "registration_open", "Registration is set up"
     FINAL_CUT_READY = "final_cut_ready", "The final cut is in"
 
 
