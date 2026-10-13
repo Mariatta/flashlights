@@ -112,6 +112,19 @@ class TestAdapter:
             == "Dana"
         )
 
+    def test_importing_checks_each_joined_column(self, csv_ticketing):
+        csv_ticketing.csv_columns = {
+            "email": "Email",
+            "name": "First Name + Last Name",
+        }
+        csv_ticketing.save()
+        result = import_csv(
+            csv_ticketing, "First Name,Last Name,Email\nDana,Ruiz,dana@example.org\n"
+        )
+        assert result.imported == 1
+        with pytest.raises(CsvImportError, match="'Last Name'"):
+            import_csv(csv_ticketing, "First Name,Email\nDana,dana@example.org\n")
+
     @pytest.mark.parametrize(
         "word,amount,expected",
         [

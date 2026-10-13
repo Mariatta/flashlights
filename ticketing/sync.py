@@ -9,6 +9,7 @@ from django.utils import timezone
 from attendee.models import AttendeeProfile, PretixOrder
 
 from .adapters import CsvAdapter, adapter_for
+from .adapters.csv import headers as column_headers
 
 
 def upsert_registration(conference, registration):
@@ -74,8 +75,13 @@ def import_csv(ticketing, content):
     if not columns.get("email"):
         raise CsvImportError("Map the email column on the Tickets page first.")
     reader = csv.DictReader(io.StringIO(content))
-    headers = reader.fieldnames or []
-    missing = sorted(header for header in columns.values() if header not in headers)
+    present = reader.fieldnames or []
+    missing = sorted(
+        header
+        for spec in columns.values()
+        for header in column_headers(spec)
+        if header not in present
+    )
     if missing:
         raise CsvImportError(
             "The file has no column named " + ", ".join(repr(h) for h in missing) + "."
