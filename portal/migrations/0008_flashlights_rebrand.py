@@ -111,4 +111,16 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.RunPython(drop_untouched, migrations.RunPython.noop),
+        migrations.AlterModelOptions(
+            name="conference",
+            options={
+                "ordering": ["-year"],
+                "permissions": [
+                    ("view_organizer_dashboard", "Can open the organizer dashboard"),
+                    ("start_next_year", "Can start the next edition"),
+                ],
+                "verbose_name": "event",
+                "verbose_name_plural": "events",
+            },
+        ),
     ]

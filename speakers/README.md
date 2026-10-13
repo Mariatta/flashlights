@@ -54,15 +54,38 @@ reverse accessor named after every child model (`basemodel.role`,
 - `portal_account.PortalProfile` (`portal_account/models.py`) is the one
   per-user profile: pronouns, picture, CoC/ToS flags. It is global, not
   per-edition.
-- "Organizer" means `user.is_superuser or user.is_staff`:
-  `common.mixins.AdminRequiredMixin` (`common/mixins.py`) and the
-  `is_organizer` flag from `portal.context_processors.user_capabilities`
-  (`portal/context_processors.py`), which every template receives.
-- Finer capabilities go through Django permissions, granted by groups and read
-  with `has_perm`: `portal_account/permissions.py` (`is_maintainer`) is the
-  reference shape, and `common.mixins.MaintainerRequiredMixin` gates the view.
-  Object-level access is a data check (`TeamLeadRequiredMixin` looks at
-  `team.team_leads`), which is the pattern liaison scoping follows.
+- "Organizer" still means `user.is_superuser or user.is_staff` on the
+  reading side until tasks 3.2 to 3.4 land: `common.mixins.AdminRequiredMixin`
+  (`common/mixins.py`) and the `is_organizer` flag from
+  `portal.context_processors.user_capabilities`, which every template
+  receives.
+- The catalogue (design §7.1, task 3.1) exists on the granting side. Custom
+  permissions are declared in `Meta.permissions` on the model that owns the
+  feature (`portal.view_organizer_dashboard`, `portal.start_next_year`,
+  `volunteer.review_volunteerprofile`,
+  `volunteer.receive_volunteer_notifications`, `sponsorship.send_invoice`,
+  `sponsorship.view_unconfirmed_sponsors`,
+  `sponsorship.receive_sponsorship_notifications`, `speakers.manage_program`,
+  `speakers.view_program`, `speakers.assign_checklistitem`,
+  `speakers.liaise_presenters`); the built-in add/change/delete/view ones are
+  reused. `Team.permissions` and `Team.lead_permissions` hold what a team
+  grants; `volunteer.auth_backends.TeamPermissionsBackend` derives a user's
+  permissions from approved membership and leadership in the **active**
+  edition's teams (leads get both sets), plus one baseline tied to no team:
+  an approved volunteer may read sponsors. The edition switch revokes by
+  itself. Superusers keep Django's bypass. Presets for the usual teams are
+  `volunteer.permission_presets.PRESETS`; the migration that added the
+  fields built an "Organizers" team for the active edition from the staff
+  accounts, so nobody loses access when the readers switch. Recipient
+  queries go through `common.permissions.users_with_perm`, which asks
+  Django's backend and the team backend together (`User.objects.with_perm`
+  needs `backend=` once more than one backend answers). Start next year
+  clones the two sets with the teams.
+- Finer capabilities that already read `has_perm`:
+  `portal_account/permissions.py` (`is_maintainer`) is the reference shape,
+  and `common.mixins.MaintainerRequiredMixin` gates the view. Object-level
+  access is a data check (`TeamLeadRequiredMixin` looks at `team.team_leads`),
+  which is the pattern liaison scoping follows.
 - Volunteers are `volunteer.VolunteerProfile` rows per edition with
   `Role`s (`volunteer/constants.py`, `RoleTypes`) and `Team`s. Internal
   notification emails go to admin/staff role holders (`sponsorship/tasks.py`,

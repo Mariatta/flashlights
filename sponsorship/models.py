@@ -98,6 +98,19 @@ class SponsorshipProfile(BaseModel):
         help_text="Link to the GitHub issue tracking this sponsorship",
     )
 
+    class Meta:
+        # Design §7.1: sponsor management, invoicing and the unconfirmed
+        # statuses are Sponsorship-team capabilities; reading sponsors is
+        # every approved volunteer's (the backend's baseline grant).
+        permissions = [
+            ("send_invoice", "Can send sponsor invoices"),
+            ("view_unconfirmed_sponsors", "Can see sponsors not yet confirmed"),
+            (
+                "receive_sponsorship_notifications",
+                "Receives internal sponsorship notifications",
+            ),
+        ]
+
     def __str__(self):
         return self.organization_name
 

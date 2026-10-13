@@ -63,6 +63,23 @@ class Team(BaseModel):
         related_name="team_leads",
     )
     open_to_new_members = models.BooleanField(default=True)
+    # What being on this team lets a person do, and what leading it adds
+    # (design §7.1). Read by ``volunteer.auth_backends.TeamPermissionsBackend``
+    # for the active edition only, so last year's team grants nothing today.
+    permissions = models.ManyToManyField(
+        "auth.Permission",
+        verbose_name="team permissions",
+        related_name="teams",
+        blank=True,
+        help_text="Granted to every approved member.",
+    )
+    lead_permissions = models.ManyToManyField(
+        "auth.Permission",
+        verbose_name="lead permissions",
+        related_name="lead_teams",
+        blank=True,
+        help_text="Granted to the team leads on top of the team permissions.",
+    )
 
     def __str__(self):
         # Include the conference year so teams are distinguishable across
@@ -333,6 +350,15 @@ class VolunteerProfile(BaseModel):
 
     class Meta:
         unique_together = ("user", "conference")
+        # Design §7.1. ``receive_volunteer_notifications`` is what the Admin
+        # and Staff roles existed for; the roles go in task 3.6.
+        permissions = [
+            ("review_volunteerprofile", "Can review volunteer applications"),
+            (
+                "receive_volunteer_notifications",
+                "Receives internal volunteer notifications",
+            ),
+        ]
 
     def __str__(self):
         return self.user.username

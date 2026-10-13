@@ -16,6 +16,7 @@ from sponsorship.models import (
 )
 from volunteer.constants import ApplicationStatus
 from volunteer.models import Team, VolunteerProfile
+from volunteer.permission_presets import label_of, permissions_for
 
 
 @pytest.fixture(autouse=True)
@@ -43,6 +44,8 @@ class TestCloneTeams:
             open_to_new_members=False,
         )
         team.team_leads.add(lead)
+        team.permissions.set(permissions_for(["sponsorship.send_invoice"]))
+        team.lead_permissions.set(permissions_for(["portal.start_next_year"]))
 
         created = clone_teams(target, source)
 
@@ -52,6 +55,13 @@ class TestCloneTeams:
         assert cloned.description == "Communications team"
         assert cloned.open_to_new_members is False
         assert cloned.team_leads.count() == 0  # leads are per-edition
+        # The permission sets travel with the team (design §7.1).
+        assert [label_of(p) for p in cloned.permissions.all()] == [
+            "sponsorship.send_invoice"
+        ]
+        assert [label_of(p) for p in cloned.lead_permissions.all()] == [
+            "portal.start_next_year"
+        ]
 
     def test_skips_teams_already_present(self):
         source = Conference.objects.create(

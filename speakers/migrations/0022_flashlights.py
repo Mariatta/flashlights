@@ -487,4 +487,32 @@ class Migration(migrations.Migration):
                 max_length=32,
             ),
         ),
+        migrations.AlterModelOptions(
+            name="checklistitem",
+            options={
+                "ordering": ["order", "id"],
+                "permissions": [
+                    ("assign_checklistitem", "Can reassign checklist items")
+                ],
+            },
+        ),
+        migrations.AlterModelOptions(
+            name="presenter",
+            options={
+                "ordering": ["display_name"],
+                "permissions": [
+                    ("liaise_presenters", "Can be picked as a presenter's liaison")
+                ],
+            },
+        ),
+        migrations.AlterModelOptions(
+            name="session",
+            options={
+                "ordering": ["title"],
+                "permissions": [
+                    ("manage_program", "Can manage the program"),
+                    ("view_program", "Can view every session and presenter"),
+                ],
+            },
+        ),
     ]

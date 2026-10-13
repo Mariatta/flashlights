@@ -139,6 +139,12 @@ class Conference(BaseModel):
         # The class keeps its upstream name; people read "event".
         verbose_name = "event"
         verbose_name_plural = "events"
+        # The organizer surface and the year rollover are capabilities,
+        # not flags. Read through has_perm, granted by teams.
+        permissions = [
+            ("view_organizer_dashboard", "Can open the organizer dashboard"),
+            ("start_next_year", "Can start the next edition"),
+        ]
 
     def __str__(self):
         return self.name

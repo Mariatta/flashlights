@@ -672,6 +672,7 @@ class Presenter(TimestampedModel):
 
     class Meta:
         ordering = ["display_name"]
+        permissions = [("liaise_presenters", "Can be picked as a presenter's liaison")]
         constraints = [
             models.UniqueConstraint(
                 fields=["conference", "email"],
@@ -993,6 +994,13 @@ class Session(TimestampedModel):
             models.UniqueConstraint(
                 fields=["conference", "slug"], name="speakers_session_slug_per_edition"
             )
+        ]
+        # Design §7.1: running the program is a capability of the Program
+        # team, reading it belongs to more people; liaisons stay scoped
+        # through Presenter.liaison.
+        permissions = [
+            ("manage_program", "Can manage the program"),
+            ("view_program", "Can view every session and presenter"),
         ]
 
     def __str__(self):
@@ -2234,6 +2242,7 @@ class ChecklistItem(TimestampedModel):
 
     class Meta:
         ordering = ["order", "id"]
+        permissions = [("assign_checklistitem", "Can reassign checklist items")]
         constraints = [
             # One instance per template line per presenter/session (and per
             # language for the translate items). Ad-hoc items are exempt.

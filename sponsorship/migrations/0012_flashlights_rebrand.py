@@ -42,4 +42,17 @@ class Migration(migrations.Migration):
                 verbose_name="event",
             ),
         ),
+        migrations.AlterModelOptions(
+            name="sponsorshipprofile",
+            options={
+                "permissions": [
+                    ("send_invoice", "Can send sponsor invoices"),
+                    ("view_unconfirmed_sponsors", "Can see sponsors not yet confirmed"),
+                    (
+                        "receive_sponsorship_notifications",
+                        "Receives internal sponsorship notifications",
+                    ),
+                ]
+            },
+        ),
     ]

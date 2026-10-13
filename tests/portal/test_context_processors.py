@@ -101,9 +101,20 @@ class TestUserCapabilities:
             short_name="Comms", description="d", conference=conference
         )
         team.team_leads.add(profile)
+
+        # The team permissions backend also joins team_leads while it
+        # answers is_maintainer; that query names auth_permission, and the
+        # lazy one this test is about does not.
+        def leads_queries(captured):
+            return [
+                q
+                for q in captured.captured_queries
+                if "team_leads" in q["sql"] and "auth_permission" not in q["sql"]
+            ]
+
         with CaptureQueriesContext(connection) as building:
             caps = user_capabilities(_request(portal_user))
-        assert not [q for q in building.captured_queries if "team_leads" in q["sql"]]
+        assert not leads_queries(building)
         with CaptureQueriesContext(connection) as reading:
             assert bool(caps["leads_any_team"]) is True
-        assert [q for q in reading.captured_queries if "team_leads" in q["sql"]]
+        assert leads_queries(reading)

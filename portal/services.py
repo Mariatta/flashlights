@@ -22,22 +22,24 @@ from volunteer.models import Team
 def clone_teams(target, source):
     """Copy ``source``'s team structure into ``target``.
 
-    Copies each team's name, description, and open-to-new-members flag but not
-    its team leads (those are per-edition volunteers). Teams whose name already
-    exists in ``target`` are skipped, so it is safe to run more than once.
-    Returns the number of teams created.
+    Copies each team's name, description, open-to-new-members flag and its
+    two permission sets, but not its team leads (those are per-edition
+    volunteers). Teams whose name already exists in ``target`` are skipped,
+    so it is safe to run more than once. Returns the number of teams created.
     """
     existing = set(target.teams.values_list("short_name", flat=True))
     created = 0
     for team in source.teams.all():
         if team.short_name in existing:
             continue
-        Team.objects.create(
+        clone = Team.objects.create(
             conference=target,
             short_name=team.short_name,
             description=team.description,
             open_to_new_members=team.open_to_new_members,
         )
+        clone.permissions.set(team.permissions.all())
+        clone.lead_permissions.set(team.lead_permissions.all())
         created += 1
     return created
 

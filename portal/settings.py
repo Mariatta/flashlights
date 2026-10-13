@@ -316,6 +316,9 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     # `allauth` specific authentication methods, such as login by email
     "allauth.account.auth_backends.AuthenticationBackend",
+    # Permissions granted by the active edition's teams (design §7.1).
+    # Authenticates nobody; answers has_perm and with_perm.
+    "volunteer.auth_backends.TeamPermissionsBackend",
 ]
 
 SITE_ID = 1
