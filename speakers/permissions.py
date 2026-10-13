@@ -14,7 +14,13 @@ from django.db.models import Q
 from volunteer.constants import ApplicationStatus
 from volunteer.models import Team
 
-from .constants import ASSIGN_ITEMS, MANAGE_PROGRAM, VIEW_PROGRAM, ItemOwner
+from .constants import (
+    ASSIGN_ITEMS,
+    LIAISE_PRESENTERS,
+    MANAGE_PROGRAM,
+    VIEW_PROGRAM,
+    ItemOwner,
+)
 from .models import ChecklistItem, Presenter
 
 
@@ -103,6 +109,13 @@ def is_speaker_assignee(user, conference):
 
 
 def can_work_queue(user, conference):
-    """Who may open the queue and act on an item: organizers, liaisons, and
-    whoever an organizer item was handed to."""
-    return can_work_sessions(user, conference) or is_speaker_assignee(user, conference)
+    """Who may open the queue and act on an item: program readers, liaisons,
+    whoever an organizer item was handed to, and anyone who may be made a
+    liaison (``speakers.liaise_presenters``), so a Speaker liaisons member
+    sees "My volunteering tasks" from the day they join, empty until their
+    first presenter or item."""
+    return (
+        can_work_sessions(user, conference)
+        or is_speaker_assignee(user, conference)
+        or user.has_perm(LIAISE_PRESENTERS)
+    )

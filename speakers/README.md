@@ -74,9 +74,10 @@ reverse accessor named after every child model (`basemodel.role`,
   says to ask one); and the Organize rail offers each entry on the
   permission its page reads, so a Program-team member without the
   Organizers set sees the speaker entries and not the dashboard, the
-  volunteers or the teams, and reaches their pages by URL or from the
-  pages they can open, since the Organize tab itself follows the
-  dashboard permission.
+  volunteers or the teams. The Organize tab itself follows the dashboard
+  permission, so the personal rail carries an "Organizing" group for
+  specialists (Volunteers, Teams, Program, each on its permission) that
+  gets them to their management pages from the hub.
 - Sponsorship reads `sponsorship/permissions.py` (task 3.3): entry to the
   list and a sponsor's page is `view_sponsorshipprofile`, which every
   approved volunteer of the active edition holds through the backend's

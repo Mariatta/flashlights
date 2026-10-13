@@ -139,6 +139,47 @@ class TestTeamForm:
 
 
 @pytest.mark.django_db
+@pytest.mark.django_db
+class TestPersonalRailOffersManagementPages:
+    def test_specialists_reach_their_pages_from_the_hub(
+        self, client, join_team, organizer, conference
+    ):
+        from speakers.models import SpeakerSettings
+
+        SpeakerSettings.objects.create(
+            conference=conference, speaker_module_enabled=True
+        )
+        hub = reverse("volunteer:index")
+        # Whole anchors: "/teams/" is a prefix of My teams' address too.
+        sessions = f'href="{reverse("speakers:session_list")}"'
+        volunteers = f'href="{reverse("volunteer:volunteers_list")}"'
+        teams = f'href="{reverse("teams")}"'
+
+        pat = join_team(User.objects.create_user(username="pat"), "Program")
+        client.force_login(pat)
+        content = client.get(hub).content.decode()
+        assert "Organizing" in content and sessions in content
+        assert volunteers not in content and teams not in content
+
+        val = join_team(
+            User.objects.create_user(username="val"), "Volunteer coordination"
+        )
+        client.force_login(val)
+        content = client.get(hub).content.decode()
+        assert volunteers in content and teams in content and sessions not in content
+
+        sally = join_team(User.objects.create_user(username="sally"), "Sponsorship")
+        client.force_login(sally)
+        content = client.get(hub).content.decode()
+        assert "Organizing" not in content
+        assert reverse("sponsorship:sponsorship_list") in content
+
+        # Organizers have the Organize tab and rail for this; no duplicate group.
+        client.force_login(organizer)
+        assert "Organizing" not in client.get(hub).content.decode()
+
+
+@pytest.mark.django_db
 class TestOrganizeRailFollowsPermissions:
     def test_each_entry_follows_the_permission_its_page_reads(
         self, client, join_team, organizer, conference

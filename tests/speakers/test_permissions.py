@@ -90,6 +90,20 @@ class TestProgramTeamMember:
 
 
 @pytest.mark.django_db
+class TestSpeakerLiaisonsMember:
+    def test_sees_their_tasks_page_before_any_assignment(
+        self, client, join_team, enabled
+    ):
+        lena = join_team(User.objects.create_user(username="lena"), "Speaker liaisons")
+        client.force_login(lena)
+        queue = reverse("speakers:checklist_queue")
+        assert client.get(queue).status_code == 200
+        assert queue in client.get(reverse("volunteer:index")).content.decode()
+        # Reading the program is still not theirs.
+        assert client.get(SESSIONS).status_code == 403
+
+
+@pytest.mark.django_db
 class TestDesignTeamMember:
     def test_reads_but_cannot_invite(self, client, designer, conference, enabled):
         session = make_session(conference, title="Read me")

@@ -77,6 +77,29 @@ and from speakers.context_processors.speaker_module:
         {% include "portal/_sidebar_item.html" with url=my_proposals_url label=_("My proposals") icon="icon-send" only %}
     {% endif %}
 {% endif %}
+{# A specialist team's member (Program, Volunteer coordination...) has no #}
+{# Organize tab, since that opens the dashboard they may not see; their #}
+{# management pages are offered here instead, each on the permission it #}
+{# reads. Organizers reach the same pages from the Organize rail. #}
+{% if not is_organizer %}
+    {% if perms.volunteer.view_volunteerprofile or perms.volunteer.change_team or perms.speakers.view_program or perms.speakers.manage_program %}
+        <div class="text-uppercase text-secondary small fw-semibold mt-3 mb-1 px-2">
+            {% trans "Organizing" %}
+        </div>
+        {% if volunteering_enabled and perms.volunteer.view_volunteerprofile %}
+            {% url 'volunteer:volunteers_list' as volunteers_url %}
+            {% include "portal/_sidebar_item.html" with url=volunteers_url label=_("Volunteers") icon="icon-users" only %}
+        {% endif %}
+        {% if volunteering_enabled and perms.volunteer.change_team %}
+            {% url 'teams' as teams_url %}
+            {% include "portal/_sidebar_item.html" with url=teams_url label=_("Teams") icon="icon-users-round" only %}
+        {% endif %}
+        {% if perms.speakers.view_program or perms.speakers.manage_program %}
+            {% url 'speakers:session_list' as program_url %}
+            {% include "portal/_sidebar_item.html" with url=program_url label=_("Program") icon="icon-presentation" only %}
+        {% endif %}
+    {% endif %}
+{% endif %}
 {% url 'volunteer:my_conferences' as my_conferences_url %}
 {% if active == "conferences" %}
     {% include "portal/_sidebar_item.html" with url=my_conferences_url label=_("My events") icon="icon-calendar-days" active=True only %}
