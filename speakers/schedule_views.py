@@ -449,13 +449,19 @@ class RoomListView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, ListView):
     context_object_name = "rooms"
 
     def get_queryset(self):
-        return Room.objects.filter(conference=self.conference).order_by(
-            "-is_active", "name"
+        return (
+            Room.objects.filter(conference=self.conference)
+            .prefetch_related("event_dates")
+            .order_by("-is_active", "name")
         )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update(conference=self.conference, rail_active="rooms")
+        context.update(
+            conference=self.conference,
+            rail_active="rooms",
+            has_event_dates=self.conference.event_dates.exists(),
+        )
         return context
 
 

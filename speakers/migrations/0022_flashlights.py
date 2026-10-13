@@ -536,4 +536,15 @@ class Migration(migrations.Migration):
                 ],
             },
         ),
+        migrations.AddField(
+            model_name="room",
+            name="event_dates",
+            field=models.ManyToManyField(
+                blank=True,
+                help_text="Leave empty if the room is there on every date.",
+                related_name="rooms",
+                to="portal.eventdate",
+                verbose_name="dates",
+            ),
+        ),
     ]

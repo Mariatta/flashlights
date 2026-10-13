@@ -34,6 +34,11 @@
                         <th>
                             {% trans "Kind" %}
                         </th>
+                        {% if has_event_dates %}
+                            <th>
+                                {% trans "Dates" %}
+                            </th>
+                        {% endif %}
                         <th>
                             {% trans "In use" %}
                         </th>
@@ -48,6 +53,15 @@
                             <td>
                                 {{ room.get_kind_display }}
                             </td>
+                            {% if has_event_dates %}
+                                <td>
+                                    {% for event_date in room.event_dates.all %}
+                                        <span class="text-nowrap me-2">{{ event_date.date|date:"j M Y" }}</span>
+                                    {% empty %}
+                                        <span class="text-secondary">{% trans "Every date" %}</span>
+                                    {% endfor %}
+                                </td>
+                            {% endif %}
                             <td>
                                 {% if room.is_active %}
                                     {% trans "Yes" %}

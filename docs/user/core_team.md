@@ -75,3 +75,17 @@ year and online the next changes nothing but the form.
 
 The default checklist templates are seeded to match, so a new edition
 starts with the right lines rather than a list to prune.
+
+### Event dates
+
+A conference runs on consecutive days, and the schedule editor offers every
+day from the start date to the end date. An event that meets on separate
+days, such as a chapter running a year of meetups as one edition, lists
+those days in **Event dates** on the edition form, one per line with an
+optional label (`2027-02-13 February workshop`). The schedule editor then
+offers only those days, and the landing page shows the next one.
+
+Each date can have several rooms, as a conference day can. A room is there
+on every date unless it is tied to some of them on its edit page: a meetup
+that moves between venues ties each venue's rooms to the nights it hosts,
+so other nights do not show them as empty columns.

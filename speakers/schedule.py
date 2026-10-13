@@ -58,9 +58,10 @@ def event_tz(conference):
 def schedule_days(conference):
     """The dates the editor offers as tabs.
 
-    The conference's own span when it has one, plus any date a slot
-    already sits on, so nothing scheduled can become unreachable. With
-    neither, today, so an empty editor still renders a grid.
+    The edition's listed event dates when it has any (a year of meetup
+    nights), else its own span, plus any date a slot already sits on, so
+    nothing scheduled can become unreachable. With none of these, today,
+    so an empty editor still renders a grid.
     """
     days = {
         moment.date()
@@ -68,7 +69,10 @@ def schedule_days(conference):
             "start_utc", "day", tzinfo=event_tz(conference)
         )
     }
-    if conference.start_date and conference.end_date:
+    listed = set(conference.event_dates.values_list("date", flat=True))
+    if listed:
+        days |= listed
+    elif conference.start_date and conference.end_date:
         day = conference.start_date
         while day <= conference.end_date:
             days.add(day)
@@ -128,7 +132,12 @@ def _window(day_start, day_end, slots, full_day):
 def grid_for_day(conference, day, full_day=False):
     """Everything the grid template needs for one day, in flat queries."""
     day_start, day_end = day_bounds(day, event_tz(conference))
-    rooms = list(Room.objects.filter(conference=conference, is_active=True))
+    # A room tied to some event dates is a lane on those only.
+    rooms = list(
+        Room.objects.filter(conference=conference, is_active=True)
+        .filter(Q(event_dates=None) | Q(event_dates__date=day))
+        .distinct()
+    )
     slots = list(
         ScheduleSlot.objects.filter(
             conference=conference, start_utc__lt=day_end, end_utc__gt=day_start
@@ -138,7 +147,8 @@ def grid_for_day(conference, day, full_day=False):
         .order_by("start_utc")
     )
     # A deactivated room that still holds a slot stays a lane, marked
-    # retired, rather than its card being misdrawn in the all-rooms lane.
+    # retired, rather than its card being misdrawn in the all-rooms lane;
+    # so does a room whose slot sits on a date it is not tied to.
     known = {room.pk for room in rooms}
     for slot in slots:
         if slot.room_id and slot.room_id not in known:

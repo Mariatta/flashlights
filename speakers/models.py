@@ -561,6 +561,15 @@ class Room(TimestampedModel):
         max_length=8, choices=RoomKind.choices, default=RoomKind.STAGE
     )
     is_active = models.BooleanField(default=True)
+    # Blank: the room is there on every date. A meetup that moves between
+    # venues ties each venue's rooms to the nights it hosts.
+    event_dates = models.ManyToManyField(
+        "portal.EventDate",
+        blank=True,
+        related_name="rooms",
+        verbose_name="dates",
+        help_text="Leave empty if the room is there on every date.",
+    )
 
     class Meta:
         ordering = ["name"]

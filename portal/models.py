@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from django.utils import dateformat
 from django.utils.timezone import now
 
 
@@ -196,3 +197,39 @@ class Conference(BaseModel):
         if active.conference_date is None:
             return False
         return active.conference_date < now().date()
+
+    @property
+    def next_event_date(self):
+        """The first listed event date from today on, or None when the
+        edition lists none still to come."""
+        return self.event_dates.filter(date__gte=now().date()).first()
+
+
+class EventDate(models.Model):
+    """A day the edition happens on, for an edition whose days are not a
+    run from its start to its end date: a year of meetup nights.
+
+    Listed, the schedule editor offers these days rather than the span,
+    and a room may be limited to some of them (``speakers.Room``).
+    """
+
+    conference = models.ForeignKey(
+        Conference,
+        verbose_name="event",
+        on_delete=models.CASCADE,
+        related_name="event_dates",
+    )
+    date = models.DateField()
+    label = models.CharField(max_length=100, blank=True)
+
+    class Meta:
+        ordering = ["date"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["conference", "date"], name="portal_event_date_per_edition"
+            )
+        ]
+
+    def __str__(self):
+        when = dateformat.format(self.date, "D j M Y")
+        return f"{when}, {self.label}" if self.label else when

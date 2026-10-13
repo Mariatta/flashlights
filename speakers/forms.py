@@ -1277,8 +1277,9 @@ class RoomForm(forms.ModelForm):
 
     class Meta:
         model = Room
-        fields = ["name", "kind", "url", "discord_id", "is_active"]
+        fields = ["name", "kind", "url", "discord_id", "event_dates", "is_active"]
         labels = {"url": "Link", "is_active": "In use"}
+        widgets = {"event_dates": forms.CheckboxSelectMultiple}
         help_texts = {
             "url": "A map of the venue, or the channel's invite link.",
             "is_active": "Off keeps the room for past slots but leaves it "
@@ -1295,6 +1296,12 @@ class RoomForm(forms.ModelForm):
             self.fields["kind"].initial = RoomKind.ROOM
         if not conference.uses_discord:
             del self.fields["discord_id"]
+        dates = conference.event_dates.all()
+        if dates:
+            self.fields["event_dates"].queryset = dates
+        else:
+            # An edition without listed dates: every room is there every day.
+            del self.fields["event_dates"]
 
     def clean_name(self):
         name = self.cleaned_data["name"].strip()

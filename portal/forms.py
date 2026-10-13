@@ -1,3 +1,5 @@
+from datetime import date
+
 from allauth.account.forms import LoginForm as AllauthLoginForm
 from allauth.account.forms import SignupForm
 from captcha.conf import settings as captcha_settings
@@ -183,6 +185,17 @@ class ConferenceForm(forms.ModelForm):
         "the team uploads each session's recording after the event. Speakers "
         "pre-record: they upload before the event (online and hybrid only).",
     )
+    # The edition's EventDate rows, one per line. Lines rather than a
+    # formset: a meetup year is a dozen dates, pasted from a calendar.
+    event_dates = forms.CharField(
+        required=False,
+        label="Event dates",
+        widget=forms.Textarea(attrs={"rows": 4}),
+        help_text="For an event that meets on separate days, such as a year "
+        "of meetups: one date per line, a label after it if you like "
+        "(2027-02-13 February workshop). The schedule then offers these "
+        "days. Leave empty and it offers every day from start to end.",
+    )
 
     class Meta:
         model = Conference
@@ -244,6 +257,8 @@ class ConferenceForm(forms.ModelForm):
 
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.fields["event_dates"].initial = self._initial_event_dates()
         # Which edition is active decides whose team grants count, so
         # switching it is the year rollover's call (portal.start_next_year,
         # the Organizers leads), not every editor's: one tick by someone
@@ -272,8 +287,44 @@ class ConferenceForm(forms.ModelForm):
                 self.fields["event_format"].initial = settings_row.event_format
                 self.fields["recordings"].initial = settings_row.recordings
 
+    def _initial_event_dates(self):
+        return "\n".join(
+            f"{row.date.isoformat()} {row.label}".strip()
+            for row in self.instance.event_dates.all()
+        )
+
+    def clean_event_dates(self):
+        """The lines as {date: label}, refusing what is not a date and a
+        date listed twice."""
+        dates = {}
+        for line in self.cleaned_data["event_dates"].splitlines():
+            first, _, label = line.strip().partition(" ")
+            if not first:
+                continue
+            try:
+                day = date.fromisoformat(first)
+            except ValueError:
+                raise forms.ValidationError(
+                    f"“{first}” is not a date: write it as YYYY-MM-DD."
+                )
+            if day in dates:
+                raise forms.ValidationError(f"{day.isoformat()} is listed twice.")
+            dates[day] = label.strip()
+        return dates
+
     def clean(self):
         cleaned = super().clean()
+        start, end = cleaned.get("start_date"), cleaned.get("end_date")
+        outside = [
+            day
+            for day in cleaned.get("event_dates") or {}
+            if (start and day < start) or (end and day > end)
+        ]
+        if outside:
+            self.add_error(
+                "event_dates",
+                f"{outside[0].isoformat()} is outside the start and end dates.",
+            )
         model = _speaker_settings_model()
         if model is None:
             return cleaned
@@ -292,6 +343,8 @@ class ConferenceForm(forms.ModelForm):
 
     def save(self, commit=True):
         conference = super().save(commit=commit)
+        if commit:
+            self._save_event_dates(conference)
         model = _speaker_settings_model()
         if model is None:
             return conference
@@ -317,3 +370,11 @@ class ConferenceForm(forms.ModelForm):
             # Its checklists, on the format and recordings just saved.
             import_string("speakers.seeds.seed_new_edition")(conference)
         return conference
+
+    def _save_event_dates(self, conference):
+        """Make the edition's EventDate rows match the lines. A date still
+        listed keeps its row, so the rooms tied to it stay tied."""
+        listed = self.cleaned_data.get("event_dates") or {}
+        conference.event_dates.exclude(date__in=listed).delete()
+        for day, label in listed.items():
+            conference.event_dates.update_or_create(date=day, defaults={"label": label})
