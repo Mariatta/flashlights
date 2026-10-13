@@ -395,32 +395,22 @@ class TestReview466:
 
 
 class TestAllowedWebsites:
-    def test_an_admin_sees_the_list_and_the_admin_link(
-        self, client, conference, settings_row
-    ):
-        for url in ("https://2026.example.org/", "https://Example.org"):
-            AllowedOrigin.objects.create(settings=settings_row, url=url)
-        admin = User.objects.create_superuser(
-            username="admin", email="admin@example.com", password=None
-        )
-        client.force_login(admin)
-        content = client.get(SHARE).content.decode()
-        listed = re.findall(r'<li class="font-monospace">\s*(\S+)\s*</li>', content)
-        assert listed == ["https://2026.example.org", "https://example.org"]
-        assert (
-            reverse("admin:speakers_speakersettings_change", args=[settings_row.pk])
-            in content
-        )
-        assert "ask one to list yours" not in content
-
-    def test_an_organizer_is_told_to_ask_an_admin(
+    def test_the_list_is_shown_as_stored_with_no_admin_link(
         self, client, organizer, conference, settings_row
     ):
+        """Addresses are listed as browsers send them, and edited on this
+        tab (test_settings_pages), not in the Django admin."""
+        for url in ("https://2026.example.org/", "https://Example.org"):
+            AllowedOrigin.objects.create(settings=settings_row, url=url)
         client.force_login(organizer)
         content = client.get(SHARE).content.decode()
-        assert "None yet" in content
-        assert "ask one to list yours" in content
+        listed = re.findall(r'<span class="font-monospace">(\S+)</span>', content)
+        assert listed == ["https://2026.example.org", "https://example.org"]
         assert "/admin/speakers/speakersettings/" not in content
+
+    def test_none_yet(self, client, organizer, conference, settings_row):
+        client.force_login(organizer)
+        assert "None yet" in client.get(SHARE).content.decode()
 
 
 PREVIEW = reverse("speakers:program_preview")
