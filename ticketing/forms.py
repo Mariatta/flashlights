@@ -88,7 +88,8 @@ class TicketingSettingsForm(forms.ModelForm):
         help_text="One per line: our field, an equals sign, then the column header "
         "in the export. Fields: "
         + ", ".join(sorted(CSV_FIELD_NAMES))
-        + ". Only email is required; with no status column everyone in the file "
+        + ". Join columns with a plus sign, for example name = First Name + "
+        "Last Name. Only email is required; with no status column everyone in the file "
         "counts as registered. For a CSV, the question map's ids are column headers.",
     )
     product_lines = forms.CharField(

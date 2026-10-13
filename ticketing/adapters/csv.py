@@ -55,6 +55,11 @@ STATUS_WORDS = {
 WORD_STATUS = {word: status for status, words in STATUS_WORDS.items() for word in words}
 
 
+def headers(spec):
+    """The column headers a mapping names: one, or several joined by " + "."""
+    return [part.strip() for part in (spec or "").split(" + ") if part.strip()]
+
+
 def parse_amount(value):
     """``"$1,250.00"``, ``"25"``, ``""``: the number, or zero."""
     cleaned = re.sub(r"[^0-9.\-]", "", value or "")
@@ -105,14 +110,16 @@ class CsvAdapter(Adapter):
         columns = self.ticketing.csv_columns or {}
 
         def value(field):
-            header = columns.get(field)
-            return (row.get(header) or "").strip() if header else ""
+            # "First Name + Last Name": several columns, joined by a space,
+            # for exports that split what we keep as one field.
+            parts = [(row.get(h) or "").strip() for h in headers(columns.get(field))]
+            return " ".join(part for part in parts if part)
 
         email = value("email").lower()
         amount = parse_amount(value("amount"))
         status_word = value("status")
         product = value("product")
-        mapped = set(columns.values())
+        mapped = {h for spec in columns.values() for h in headers(spec)}
         return Registration(
             provider=self.provider,
             code=self.code_for(value("code") or email),

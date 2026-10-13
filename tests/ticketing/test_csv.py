@@ -96,6 +96,22 @@ class TestAdapter:
         ]
         assert adapter.normalise(dict(row, Ticket="Donation")).kind == "donation"
 
+    def test_a_name_split_across_columns_is_joined(self, csv_ticketing):
+        """PyCon US exports first and last name apart: name = First + Last."""
+        csv_ticketing.csv_columns = {
+            "email": "Email",
+            "name": "First Name + Last Name",
+        }
+        row = {"Email": "dana@example.org", "First Name": "Dana", "Last Name": " Ruiz "}
+        registration = CsvAdapter(csv_ticketing).normalise(row)
+        assert registration.name == "Dana Ruiz"
+        # Both columns are mapped, so neither is kept as an answer.
+        assert registration.answers == []
+        assert (
+            CsvAdapter(csv_ticketing).normalise(dict(row, **{"Last Name": ""})).name
+            == "Dana"
+        )
+
     @pytest.mark.parametrize(
         "word,amount,expected",
         [
