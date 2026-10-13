@@ -180,6 +180,9 @@ class SessionForm(forms.ModelForm):
         if self.recordings == Recordings.NONE:
             for field in VIDEO_FIELDS:
                 del self.fields[field]
+        elif self.recordings == Recordings.TEAM:
+            # Nobody uploads a video to fit a limit: the team records.
+            del self.fields["video_length_limit_minutes"]
         self.fields["duration_minutes"].help_text = (
             "Leave blank to use the default for the type: "
             + ", ".join(
@@ -189,6 +192,46 @@ class SessionForm(forms.ModelForm):
             )
             + "."
         )
+
+    #: Who sees what, as the form shows it: the speaker edits the first
+    #: group on their own session page, sees the second there without
+    #: changing it, and never sees the third anywhere in the portal.
+    FIELD_GROUPS = (
+        (
+            "speaker_edits",
+            "The speaker sees and can edit",
+            (
+                "title",
+                "slug",
+                "summary_md",
+                "outline_md",
+                "prerequisites_md",
+                "audience_md",
+                "level",
+                "language",
+            ),
+        ),
+        (
+            "speaker_sees",
+            "The speaker sees, the team sets",
+            ("kind", "delivery", "duration_minutes", "video_length_limit_minutes"),
+        ),
+        (
+            "team_only",
+            "Team only: never shown to the speaker",
+            ("premiere_location", "youtube_url", "youtube_publish_at", "notes_md"),
+        ),
+    )
+
+    def field_groups(self):
+        """``FIELD_GROUPS`` as bound fields, leaving out fields this edition
+        dropped and groups left empty."""
+        groups = []
+        for key, title, names in self.FIELD_GROUPS:
+            fields = [self[name] for name in names if name in self.fields]
+            if fields:
+                groups.append({"key": key, "title": title, "fields": fields})
+        return groups
 
     def clean_slug(self):
         return _clean_slug(self, Session, "session")

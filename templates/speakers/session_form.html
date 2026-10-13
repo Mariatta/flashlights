@@ -28,7 +28,22 @@
     </h1>
     <form method="post" class="col-lg-9">
         {% csrf_token %}
-        {% bootstrap_form form %}
+        {% bootstrap_form_errors form type="non_fields" %}
+        {% for group in form.field_groups %}
+            <fieldset class="card mb-4{% if group.key == 'team_only' %} border-secondary{% endif %}">
+                <legend class="card-header h6 mb-0">
+                    {% if group.key == "team_only" %}
+                        <i class="icon-lock" aria-hidden="true"></i>
+                    {% endif %}
+                    {{ group.title }}
+                </legend>
+                <div class="card-body">
+                    {% for field in group.fields %}
+                        {% bootstrap_field field %}
+                    {% endfor %}
+                </div>
+            </fieldset>
+        {% endfor %}
         {% bootstrap_button "Save" button_type="submit" %}
         {% if object.pk %}
             <a href="{{ object.get_absolute_url }}" class="btn btn-link">{% trans "Cancel" %}</a>

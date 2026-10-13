@@ -264,12 +264,12 @@ class TestRecordings:
                 "title": "Talk",
                 "youtube_url": "https://youtube.com/watch?v=x",
                 "youtube_publish_at": "2026-06-01T10:00",
-                "video_length_limit_minutes": 10,
             },
         )
-        assert form.is_valid() is False
-        # The limit is about a pre-recorded upload; the link is not.
-        assert set(form.errors) == {"video_length_limit_minutes"}
+        assert form.is_valid(), form.errors
+        # The limit is about a speaker's upload, so the form does not offer
+        # it when the team records; the link stays.
+        assert "video_length_limit_minutes" not in form.fields
 
     def test_seeds_for_the_team_recording(self, conference, in_person):
         seed_checklists(conference)
