@@ -23,6 +23,7 @@ from speakers.constants import (
 )
 from speakers.models import ChecklistItem, MediaAsset
 from speakers.seeds import seed_checklists
+from tests.grants import on_team
 from volunteer.constants import ApplicationStatus
 from volunteer.models import VolunteerProfile
 
@@ -35,7 +36,7 @@ SESSIONS = reverse("speakers:session_list")
 
 @pytest.fixture
 def organizer(db):
-    return User.objects.create_user("org", email="org@x.org", is_staff=True)
+    return on_team(User.objects.create_user("org", email="org@x.org"))
 
 
 @pytest.fixture

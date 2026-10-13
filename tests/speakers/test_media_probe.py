@@ -25,6 +25,7 @@ from speakers.probe import run_ffprobe as real_run_ffprobe
 from speakers.rules import Blocked, video_length_ok
 from speakers.signals import asset_ready
 from speakers.tasks import probe_asset_task
+from tests.grants import on_team
 
 from .factories import add_presenter, make_presenter, make_session, make_settings
 from .test_rules import auto_item
@@ -247,7 +248,7 @@ class TestOnThePage:
         presenter = session.session_presenters.first().presenter
         presenter.user = performer
         presenter.save()
-        organizer = User.objects.create_user("o", email="o@x.org", is_staff=True)
+        organizer = on_team(User.objects.create_user("o", email="o@x.org"))
         make_video(session, probe_error="ffprobe is not installed on the worker.")
         client.force_login(performer)
         html = client.get(f"/speakers/me/sessions/{session.slug}/").content.decode()

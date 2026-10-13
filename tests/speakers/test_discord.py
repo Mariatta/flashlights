@@ -14,6 +14,7 @@ from speakers.program_types import session_type
 from speakers.seeds import seed_checklists
 from speakers.services import link_presenter_user
 from speakers.shared import presenter_discord_username
+from tests.grants import on_team
 from volunteer.forms import VolunteerProfileForm
 from volunteer.models import VolunteerProfile
 
@@ -48,8 +49,8 @@ def presenter(conference, enabled, speaker):
 
 @pytest.fixture
 def organizer(db):
-    return User.objects.create_user(
-        username="organizer", email="org@example.com", is_staff=True
+    return on_team(
+        User.objects.create_user(username="organizer", email="org@example.com")
     )
 
 

@@ -71,9 +71,9 @@ reverse accessor named after every child model (`basemodel.role`,
   the Django admin is the one thing that flag still means. Two consequences
   worth knowing: team grants belong to the active edition, so with no
   edition active nobody but a superuser reaches Organize (the notice there
-  says to ask one); and the speakers views still read the flags until 3.4,
-  so until then a Program-team member without the Organizers set sees the
-  speaker pages without the Organize tab.
+  says to ask one); and a Program-team member without the Organizers set
+  reaches the speaker pages while the Organize tab and the rail's volunteer
+  entries stay hidden from them, which task 3.5 tidies.
 - Sponsorship reads `sponsorship/permissions.py` (task 3.3): entry to the
   list and a sponsor's page is `view_sponsorshipprofile`, which every
   approved volunteer of the active edition holds through the backend's
@@ -957,12 +957,26 @@ installed; this app keeps small factory functions in `tests/speakers/factories.p
   `speakers.mixins.SpeakerModuleRequiredMixin`, which 404s while the active
   edition is off and sets `self.conference`. The row also hosts later
   per-edition settings (program visibility, pretix, media limits).
-- Organizer predicate: `speakers.permissions.is_speaker_organizer`
-  (superuser or staff, matching the rest of the portal). Liaisons are
-  `Presenter.liaison` users; `SessionQuerySet.visible_to` and
-  `PresenterQuerySet.visible_to` scope what they see, and the
-  `SpeakerStaffRequiredMixin` / `SpeakerOrganizerRequiredMixin` mixins gate
-  the organizer side. An organizer item can be handed to any approved
+- Organizer predicate: `speakers.permissions.is_speaker_organizer` reads
+  `speakers.manage_program` (task 3.4; the Organizers and Program sets
+  carry it), and `can_view_program` reads `speakers.view_program`, which
+  managing implies. Liaisons are `Presenter.liaison` users;
+  `SessionQuerySet.visible_to` and `PresenterQuerySet.visible_to` show
+  everything to a program reader and a liaison only their presenters, and
+  the `SpeakerStaffRequiredMixin` (read or liaise) /
+  `SpeakerOrganizerRequiredMixin` (manage) mixins gate the organizer side.
+  Three more permissions split content and settings work off the program:
+  `change_checklisttemplate` (`TemplateEditorRequiredMixin`),
+  `change_handbook` (`HandbookEditorRequiredMixin`) and
+  `change_speakersettings` (`SpeakerSettingsRequiredMixin`: types, roles,
+  readiness gates; the Program leads' permission). Reassigning an item is
+  `assign_checklistitem` (`can_assign_items`), which the Speaker liaisons
+  set carries, so a liaison on that team may hand work on. Liaison
+  candidates are whoever holds `liaise_presenters`
+  (`people.liaison_candidates`, by team or group); item assignees are
+  program readers plus the edition's approved volunteers; the organizer
+  inbox fallback is whoever manages the program. The staff flag grants
+  nothing here any more. An organizer item can be handed to any approved
   volunteer (`people.organizer_side_candidates`), so a third predicate,
   `is_speaker_assignee`, admits whoever carries one: `can_work_queue` (the
   `SpeakerQueueRequiredMixin`) gates the queue and the per-item actions, and

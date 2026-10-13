@@ -8,18 +8,17 @@ import logging
 from datetime import timedelta
 
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
 from django.core import signing
-from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
 
 from common.markdown_emails import MarkdownEmailRenderer
 from common.models import SentEmail, SentEmailStatus
+from common.permissions import users_with_perm
 from common.send_emails import send_email
 
-from .constants import SessionStatus
+from .constants import MANAGE_PROGRAM, SessionStatus
 from .models import MediaAsset, SpeakerSettings
 from .people import user_label
 
@@ -231,10 +230,9 @@ def organizer_inbox(conference, presenter=None):
     """Where organizer-facing mail for this edition goes.
 
     The team's own address when they have set one: a proposal is work for
-    whoever runs the program, not news for everybody who happens to hold
-    ``is_staff`` (which is not per edition and outlives the year someone
-    helped). With the field blank it falls back to the staff accounts, so
-    nothing sits unread in the queue while nobody is told.
+    whoever runs the program. With the field blank it falls back to the
+    accounts that hold ``speakers.manage_program``, so nothing sits unread
+    in the queue while nobody is told.
     """
     settings_row = SpeakerSettings.objects.filter(conference=conference).first()
     if settings_row and settings_row.organizers_email:
@@ -263,10 +261,9 @@ def team_reply_to(conference):
 
 
 def organizer_recipients(presenter=None):
-    """Organizer inboxes: staff and superusers, plus the presenter's liaison."""
-    users = get_user_model().objects.filter(
-        Q(is_staff=True) | Q(is_superuser=True), is_active=True
-    )
+    """Organizer inboxes: everyone who manages the program, plus the
+    presenter's liaison."""
+    users = users_with_perm(MANAGE_PROGRAM)
     emails = {user.email for user in users if user.email}
     if presenter is not None and presenter.liaison_email:
         emails.add(presenter.liaison_email)

@@ -89,9 +89,12 @@ class TestIsSpeakerOrganizer:
     def test_plain_user(self, portal_user):
         assert is_speaker_organizer(portal_user) is False
 
-    def test_staff(self, portal_user):
+    def test_staff_flag_alone_is_nothing(self, portal_user):
         portal_user.is_staff = True
-        assert is_speaker_organizer(portal_user) is True
+        assert is_speaker_organizer(portal_user) is False
+
+    def test_organizers_team_member(self, organizer):
+        assert is_speaker_organizer(organizer) is True
 
     def test_superuser(self, admin_user):
         assert is_speaker_organizer(admin_user) is True

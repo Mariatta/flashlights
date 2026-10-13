@@ -43,6 +43,7 @@ from speakers.media import (
 from speakers.models import MediaAsset, MediaUpload, SpeakerSettings
 from speakers.signals import asset_ready
 from speakers.tasks import expire_abandoned_uploads_task
+from tests.grants import on_team
 
 from .factories import add_presenter, make_presenter, make_session, make_settings
 from .test_rules import auto_item
@@ -76,7 +77,7 @@ def bucket(settings):
 
 @pytest.fixture
 def organizer(db):
-    return User.objects.create_user(username="org", email="org@x.org", is_staff=True)
+    return on_team(User.objects.create_user(username="org", email="org@x.org"))
 
 
 @pytest.fixture

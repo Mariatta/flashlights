@@ -40,6 +40,7 @@ from speakers.exports import (
 from speakers.media import MediaBucket
 from speakers.models import MediaAsset, MediaExport
 from speakers.tasks import build_export_zip_task, expire_export_zips_task
+from tests.grants import on_team
 
 from .factories import add_presenter, make_presenter, make_session, make_settings
 
@@ -64,14 +65,14 @@ def bucket(settings):
 
 @pytest.fixture
 def organizer(db):
-    return User.objects.create_user(
-        "org", email="org@x.org", is_staff=True, first_name="Olga"
+    return on_team(
+        User.objects.create_user("org", email="org@x.org", first_name="Olga")
     )
 
 
 @pytest.fixture
 def maintainer(db):
-    user = User.objects.create_user("maint", email="maint@x.org", is_staff=True)
+    user = on_team(User.objects.create_user("maint", email="maint@x.org"))
     group, _ = Group.objects.get_or_create(name="Infra maintainers")
     group.permissions.add(Permission.objects.get(codename="view_maintenance"))
     user.groups.add(group)

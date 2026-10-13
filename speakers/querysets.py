@@ -6,15 +6,17 @@ and export gets the same rows and the same query count.
 
 from django.db import models
 
+from .constants import MANAGE_PROGRAM, VIEW_PROGRAM
+
 
 class SessionQuerySet(models.QuerySet):
     def for_conference(self, conference):
         return self.filter(conference=conference)
 
     def visible_to(self, user):
-        """Organizers see every session; a liaison only those with a presenter
-        they look after; anyone else sees nothing."""
-        if user.is_superuser or user.is_staff:
+        """Whoever reads the program sees every session; a liaison only those
+        with a presenter they look after; anyone else sees nothing."""
+        if user.has_perm(VIEW_PROGRAM) or user.has_perm(MANAGE_PROGRAM):
             return self
         return self.filter(session_presenters__presenter__liaison=user).distinct()
 
@@ -63,8 +65,8 @@ class PresenterQuerySet(models.QuerySet):
         return self.filter(conference=conference)
 
     def visible_to(self, user):
-        """Organizers see everyone; a liaison only their own presenters."""
-        if user.is_superuser or user.is_staff:
+        """Whoever reads the program sees everyone; a liaison only their own."""
+        if user.has_perm(VIEW_PROGRAM) or user.has_perm(MANAGE_PROGRAM):
             return self
         return self.filter(liaison=user)
 

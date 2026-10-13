@@ -13,6 +13,7 @@ from django.urls import reverse
 from speakers.api import conference_block
 from speakers.constants import EventFormat, SessionStatus
 from speakers.schedule import day_bounds, event_tz, schedule_days
+from tests.grants import on_team
 
 from .factories import make_published_slot, make_session, make_settings, make_slot
 
@@ -30,7 +31,7 @@ def long_beach(conference):
 
 @pytest.fixture
 def organizer(db):
-    return User.objects.create_user(username="org", is_staff=True)
+    return on_team(User.objects.create_user(username="org"))
 
 
 class TestDayBounds:

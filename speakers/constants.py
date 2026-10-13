@@ -7,6 +7,16 @@ Session types and presenter roles are not here: they are rows
 
 from django.db import models
 
+# Permission labels (design §7.1). Declared on the models' Meta; named here
+# so querysets, which the models import, can read them without a cycle.
+MANAGE_PROGRAM = "speakers.manage_program"
+VIEW_PROGRAM = "speakers.view_program"
+ASSIGN_ITEMS = "speakers.assign_checklistitem"
+LIAISE_PRESENTERS = "speakers.liaise_presenters"
+CHANGE_TEMPLATES = "speakers.change_checklisttemplate"
+CHANGE_HANDBOOK = "speakers.change_handbook"
+CHANGE_SETTINGS = "speakers.change_speakersettings"
+
 
 class Delivery(models.TextChoices):
     LIVE = "LIVE", "Live"

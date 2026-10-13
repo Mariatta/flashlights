@@ -1,8 +1,9 @@
-from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin, UserPassesTestMixin
 from django.http import Http404
 
 from portal.models import Conference
 
+from .constants import CHANGE_HANDBOOK, CHANGE_SETTINGS, CHANGE_TEMPLATES
 from .models import Presenter, speaker_module_enabled
 from .permissions import can_work_queue, can_work_sessions, is_speaker_organizer
 
@@ -23,7 +24,8 @@ class SpeakerModuleRequiredMixin:
 
 
 class SpeakerStaffRequiredMixin(SpeakerModuleRequiredMixin, UserPassesTestMixin):
-    """Organizers and liaisons. Querysets still scope what a liaison sees."""
+    """Whoever reads the program (``speakers.view_program``), and liaisons.
+    Querysets still scope what a liaison sees."""
 
     def test_func(self):
         return can_work_sessions(self.request.user, self.conference)
@@ -41,10 +43,30 @@ class SpeakerQueueRequiredMixin(SpeakerModuleRequiredMixin, UserPassesTestMixin)
 
 
 class SpeakerOrganizerRequiredMixin(SpeakerModuleRequiredMixin, UserPassesTestMixin):
-    """Organizers only (creating sessions, inviting, publishing)."""
+    """Running the program (``speakers.manage_program``): creating sessions,
+    inviting, publishing, deciding proposals, the pretix link."""
 
     def test_func(self):
         return is_speaker_organizer(self.request.user)
+
+
+class SpeakerSettingsRequiredMixin(SpeakerModuleRequiredMixin, PermissionRequiredMixin):
+    """Types and roles, readiness gates: ``speakers.change_speakersettings``,
+    the Program leads' permission."""
+
+    permission_required = CHANGE_SETTINGS
+
+
+class TemplateEditorRequiredMixin(SpeakerModuleRequiredMixin, PermissionRequiredMixin):
+    """The checklist template editor: ``speakers.change_checklisttemplate``."""
+
+    permission_required = CHANGE_TEMPLATES
+
+
+class HandbookEditorRequiredMixin(SpeakerModuleRequiredMixin, PermissionRequiredMixin):
+    """The speaker guides: ``speakers.change_handbook``."""
+
+    permission_required = CHANGE_HANDBOOK
 
 
 class PresenterRequiredMixin(SpeakerModuleRequiredMixin, UserPassesTestMixin):

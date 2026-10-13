@@ -8,13 +8,14 @@ from django.urls import reverse
 from speakers.constants import MediaKind, MediaStatus
 from speakers.media import can_download, can_upload
 from speakers.models import MediaAsset, SpeakerSettings, media_for_speakers
+from tests.grants import on_team
 
 from .factories import add_presenter, make_presenter, make_session, make_settings
 
 
 @pytest.fixture
 def organizer(db):
-    return User.objects.create_user("org", email="org@x.org", is_staff=True)
+    return on_team(User.objects.create_user("org", email="org@x.org"))
 
 
 @pytest.fixture

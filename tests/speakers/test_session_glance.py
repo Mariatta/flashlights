@@ -12,6 +12,7 @@ from django.urls import reverse
 
 from speakers.constants import ItemOwner, ItemStatus, MediaKind, MediaStatus
 from speakers.models import ChecklistItem, MediaAsset
+from tests.grants import on_team
 
 from .factories import (
     add_presenter,
@@ -30,7 +31,7 @@ def enabled(conference):
 
 @pytest.fixture
 def organizer(db):
-    return User.objects.create_user("org", email="org@x.org", is_staff=True)
+    return on_team(User.objects.create_user("org", email="org@x.org"))
 
 
 @pytest.fixture

@@ -22,6 +22,7 @@ from speakers.public import (
     public_program,
     regenerate_preview,
 )
+from tests.grants import on_team
 
 from .factories import (
     add_presenter,
@@ -46,8 +47,8 @@ def settings_row(conference):
 
 @pytest.fixture
 def organizer(db):
-    return User.objects.create_user(
-        username="organizer", email="org@example.com", is_staff=True
+    return on_team(
+        User.objects.create_user(username="organizer", email="org@example.com")
     )
 
 

@@ -14,6 +14,8 @@ from django.contrib.auth.models import User
 from django.contrib.staticfiles import finders
 from django.urls import reverse
 
+from tests.grants import on_team
+
 from .factories import make_settings
 
 SOURCE = Path(settings.BASE_DIR) / "frontend" / "widget" / "v1.js"
@@ -57,8 +59,8 @@ def test_every_view_reads_a_built_endpoint():
 @pytest.mark.django_db
 def test_the_publishing_page_offers_the_snippet(client, conference):
     make_settings(conference)
-    organizer = User.objects.create_user(
-        username="organizer", email="org@example.com", is_staff=True
+    organizer = on_team(
+        User.objects.create_user(username="organizer", email="org@example.com")
     )
     client.force_login(organizer)
     content = client.get(reverse("speakers:program_share")).content.decode()

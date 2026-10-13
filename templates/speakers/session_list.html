@@ -19,7 +19,7 @@
                 {% blocktranslate with conference=conference.name %}Everything on the {{ conference }} schedule: workshops, panels, performances, and the program skeleton.{% endblocktranslate %}
             </p>
         </div>
-        {% if is_organizer %}
+        {% if perms.speakers.manage_program %}
             <div class="d-flex gap-2">
                 <a class="btn btn-primary" href="{% url 'speakers:session_create' %}">
                     <i class="icon-plus"></i> {% trans "New session" %}

@@ -33,6 +33,7 @@ from speakers.models import (
     TranscriptionJob,
 )
 from speakers.transcription import transcript_variant
+from tests.grants import on_team
 
 from .factories import add_presenter, make_presenter, make_session, make_settings
 
@@ -66,7 +67,7 @@ def commits(django_capture_on_commit_callbacks):
 
 @pytest.fixture
 def organizer(db):
-    return User.objects.create_user("org", email="org@x.org", is_staff=True)
+    return on_team(User.objects.create_user("org", email="org@x.org"))
 
 
 @pytest.fixture

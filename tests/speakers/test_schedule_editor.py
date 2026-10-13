@@ -24,6 +24,7 @@ from speakers.schedule import (
     schedule_days,
     timezone_options,
 )
+from tests.grants import on_team
 
 from .factories import (
     add_presenter,
@@ -46,8 +47,8 @@ def enabled(conference):
 
 @pytest.fixture
 def organizer(db):
-    return User.objects.create_user(
-        username="organizer", email="org@example.com", is_staff=True
+    return on_team(
+        User.objects.create_user(username="organizer", email="org@example.com")
     )
 
 

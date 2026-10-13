@@ -1,9 +1,12 @@
-"""Read-side predicates for the speaker module.
+"""Read-side predicates for the speaker module (design §7.1, task 3.4).
 
-Organizer access follows the portal-wide convention (``AdminRequiredMixin`` in
-``common/mixins.py``): superusers and staff are organizers. Liaison access is
-an object-level check on the data model (``Presenter.liaison``), which is
-the same shape as ``TeamLeadRequiredMixin`` looking at ``team.team_leads``.
+Running the program is ``speakers.manage_program``, reading it
+``speakers.view_program``; the Program team's set carries both, and the
+team backend grants them for the active edition. Liaison access is an
+object-level check on the data model (``Presenter.liaison``), the same
+shape as ``TeamLeadRequiredMixin`` looking at ``team.team_leads``, and so
+is carrying an item. The template editor, the guides and the settings
+pages gate on their own labels in ``speakers.mixins``.
 """
 
 from django.db.models import Q
@@ -11,13 +14,28 @@ from django.db.models import Q
 from volunteer.constants import ApplicationStatus
 from volunteer.models import Team
 
-from .constants import ItemOwner
+from .constants import ASSIGN_ITEMS, MANAGE_PROGRAM, VIEW_PROGRAM, ItemOwner
 from .models import ChecklistItem, Presenter
 
 
 def is_speaker_organizer(user):
-    """Whether ``user`` may run the program: add sessions, invite, schedule."""
-    return bool(user.is_authenticated and (user.is_superuser or user.is_staff))
+    """Whether ``user`` may run the program: add sessions, invite, schedule,
+    publish, decide proposals (``speakers.manage_program``)."""
+    return bool(user.is_authenticated and user.has_perm(MANAGE_PROGRAM))
+
+
+def can_view_program(user):
+    """Whether ``user`` reads every session and presenter of the edition.
+    Managing the program implies it."""
+    return bool(
+        user.is_authenticated
+        and (user.has_perm(VIEW_PROGRAM) or user.has_perm(MANAGE_PROGRAM))
+    )
+
+
+def can_assign_items(user):
+    """Whether ``user`` may hand an organizer item to someone else."""
+    return user.has_perm(ASSIGN_ITEMS)
 
 
 def is_speaker_liaison(user, conference):
@@ -28,8 +46,9 @@ def is_speaker_liaison(user, conference):
 
 
 def can_work_sessions(user, conference):
-    """Organizer or liaison: may open the organizer side of the module."""
-    return is_speaker_organizer(user) or is_speaker_liaison(user, conference)
+    """Reads the program, or liaises: may open the organizer side of the
+    module. Querysets' ``visible_to`` narrow a liaison to their presenters."""
+    return can_view_program(user) or is_speaker_liaison(user, conference)
 
 
 def approved_teams(user, conference):

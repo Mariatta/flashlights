@@ -101,11 +101,14 @@ from .media import (
     video_panel,
 )
 from .mixins import (
+    HandbookEditorRequiredMixin,
     PresenterRequiredMixin,
     SpeakerModuleRequiredMixin,
     SpeakerOrganizerRequiredMixin,
     SpeakerQueueRequiredMixin,
+    SpeakerSettingsRequiredMixin,
     SpeakerStaffRequiredMixin,
+    TemplateEditorRequiredMixin,
 )
 from .models import (
     ActivityLog,
@@ -129,6 +132,7 @@ from .models import (
 )
 from .permissions import (
     approved_teams,
+    can_assign_items,
     can_work_sessions,
     is_speaker_organizer,
     owned_by,
@@ -393,8 +397,8 @@ class SessionDetailView(SessionScopedMixin, DetailView):
         # reads its own current value off the item (review of #425).
         context["owner_choices"] = owner_choices(self.conference)
         # A liaison reaches this page but may not hand work to someone else
-        # (ItemAssignView is organizer-only), so do not offer them the select.
-        context["can_assign"] = is_speaker_organizer(self.request.user)
+        # unless they hold assign_checklistitem, so offer the select on that.
+        context["can_assign"] = can_assign_items(self.request.user)
         context["adhoc_form"] = AdhocItemForm(
             initial={"owner_kind": ItemOwner.ORGANIZER}, conference=self.conference
         )
@@ -702,7 +706,7 @@ class PresenterDetailView(PresenterScopedMixin, DetailView):
         # each row reads its own current value off the item.
         context["owner_choices"] = owner_choices(self.conference)
         context["adhoc_form"] = AdhocItemForm(conference=self.conference)
-        context["can_assign"] = is_speaker_organizer(self.request.user)
+        context["can_assign"] = can_assign_items(self.request.user)
         # Checklists only make sense once the presenter has been invited; ad-hoc
         # items added earlier still show.
         context["show_checklists"] = bool(context["latest_sent"] or items)
@@ -1649,7 +1653,7 @@ class SpeakerScheduleView(LoginRequiredMixin, PresenterRequiredMixin, TemplateVi
         return context
 
 
-class ProgramTypesView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, TemplateView):
+class ProgramTypesView(LoginRequiredMixin, SpeakerSettingsRequiredMixin, TemplateView):
     """Settings: the edition's session types, what each allows, and the
     presenter roles. Organizers add to both here without a code change."""
 
@@ -1670,7 +1674,7 @@ class ProgramTypesView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, Templa
         return context
 
 
-class ReadinessGatesView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, ListView):
+class ReadinessGatesView(LoginRequiredMixin, SpeakerSettingsRequiredMixin, ListView):
     """Settings: the switches that open checklist items nobody can start yet.
 
     A gate stands for work the portal cannot see: the tech check nobody can
@@ -1698,7 +1702,7 @@ class ReadinessGatesView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, List
         return context
 
 
-class ReadinessGateCreateView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, View):
+class ReadinessGateCreateView(LoginRequiredMixin, SpeakerSettingsRequiredMixin, View):
     """Add a gate to this edition. Codes are what templates name, so a
     template cloned forward finds next year's gate by the same code."""
 
@@ -1718,7 +1722,7 @@ class ReadinessGateCreateView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin,
         return redirect("speakers:readiness_gates")
 
 
-class ReadinessGateToggleView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, View):
+class ReadinessGateToggleView(LoginRequiredMixin, SpeakerSettingsRequiredMixin, View):
     """Open or shut one gate, then re-evaluate what was waiting on it."""
 
     def post(self, request, pk):
@@ -1741,7 +1745,7 @@ class ReadinessGateToggleView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin,
         return redirect("speakers:readiness_gates")
 
 
-class ProgramTypeFormMixin(LoginRequiredMixin, SpeakerOrganizerRequiredMixin):
+class ProgramTypeFormMixin(LoginRequiredMixin, SpeakerSettingsRequiredMixin):
     """Shared by the four settings forms: edition-scoped rows, the edition
     passed to the form, back to the settings page when done."""
 
@@ -2012,7 +2016,7 @@ class ItemActionMixin(LoginRequiredMixin, SpeakerQueueRequiredMixin):
                 {
                     "item": item,
                     "owner_choices": owner_choices(self.conference),
-                    "can_assign": is_speaker_organizer(request.user),
+                    "can_assign": can_assign_items(request.user),
                     "error": error,
                 },
             )
@@ -2057,9 +2061,9 @@ class ItemDetailView(ItemActionMixin, TemplateView):
         item = self.get_item()
         item.overdue = item.is_overdue
         organizer_side = can_work_sessions(self.request.user, self.conference)
-        # Reassigning is organizer-only, as it is on the presenter and
+        # Reassigning is its own permission, as it is on the presenter and
         # session pages; carrying an item only lets you change its status.
-        can_manage = is_speaker_organizer(self.request.user)
+        can_manage = can_assign_items(self.request.user)
         context.update(
             {
                 "conference": self.conference,
@@ -2155,7 +2159,7 @@ class ItemAssignView(ItemActionMixin, View):
     do not change organizer-side data)."""
 
     def post(self, request, pk):
-        if not is_speaker_organizer(request.user):
+        if not can_assign_items(request.user):
             raise PermissionDenied("Only organizers reassign items.")
         item = self.get_item()
         form = AssignItemForm(request.POST, conference=self.conference)
@@ -2217,7 +2221,7 @@ class SessionAddItemView(OrganizerSessionActionMixin, View):
 # ---- Template editor (design §9.1, task 2.6) ---------------------------------
 
 
-class TemplateEditorMixin(LoginRequiredMixin, SpeakerOrganizerRequiredMixin):
+class TemplateEditorMixin(LoginRequiredMixin, TemplateEditorRequiredMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["conference"] = self.conference
@@ -2605,7 +2609,7 @@ class SpeakerGuideReadView(LoginRequiredMixin, PresenterRequiredMixin, View):
         return redirect("speakers:my_guide")
 
 
-class HandbookListView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, TemplateView):
+class HandbookListView(LoginRequiredMixin, HandbookEditorRequiredMixin, TemplateView):
     """All guides of the edition, and a form to start another one."""
 
     template_name = "speakers/handbook_list.html"
@@ -2673,9 +2677,7 @@ class HandbookListView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, Templa
         return redirect("speakers:handbook_editor", key=form.cleaned_data["key"])
 
 
-class HandbookEditorView(
-    LoginRequiredMixin, SpeakerOrganizerRequiredMixin, TemplateView
-):
+class HandbookEditorView(LoginRequiredMixin, HandbookEditorRequiredMixin, TemplateView):
     """Write the next version of one guide as a draft, publish it when ready."""
 
     template_name = "speakers/handbook_editor.html"

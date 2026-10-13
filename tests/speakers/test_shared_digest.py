@@ -20,6 +20,7 @@ from speakers.constants import ItemOwner, MediaKind, MediaStatus, SessionStatus
 from speakers.media import new_shared_files, record_asset
 from speakers.models import MediaAsset, SharedFileNotice
 from speakers.reminders import send_checklist_digests
+from tests.grants import on_team
 
 from .factories import (
     add_presenter,
@@ -249,7 +250,7 @@ class TestTheStamp:
     def test_sharing_stamps_the_moment_and_unsharing_clears_it(
         self, client, conference, enabled, panel
     ):
-        organizer = User.objects.create_user("org", email="org@x.org", is_staff=True)
+        organizer = on_team(User.objects.create_user("org", email="org@x.org"))
         asset = share(
             panel, variant="square", shared_with_speaker=False, shared_at=None
         )

@@ -39,7 +39,7 @@
                 </div>
             </div>
         </div>
-        {% if is_organizer %}
+        {% if perms.speakers.manage_program %}
             <a class="btn btn-outline-primary"
                href="{% url 'speakers:presenter_edit' presenter.slug %}">
                 <i class="icon-pen"></i> {% trans "Edit" %}
@@ -80,7 +80,7 @@
                             <i class="icon-mail text-secondary"></i> {% trans "Not invited yet." %}
                         </div>
                     {% endif %}
-                    {% if is_organizer and not accepted %}
+                    {% if perms.speakers.manage_program and not accepted %}
                         <details class="mt-3" {% if not latest_sent %}open{% endif %}>
                             <summary class="btn btn-sm {% if latest_sent %}btn-outline-primary{% else %}btn-primary{% endif %}">
                                 <i class="icon-send"></i>
@@ -183,7 +183,7 @@
                                 <th>
                                     {% trans "Answered" %}
                                 </th>
-                                {% if is_organizer %}
+                                {% if perms.speakers.manage_program %}
                                     <th>
                                     </th>
                                 {% endif %}
@@ -217,7 +217,7 @@
                                             —
                                         {% endif %}
                                     </td>
-                                    {% if is_organizer %}
+                                    {% if perms.speakers.manage_program %}
                                         <td class="text-nowrap">
                                             {% if invitation.status != "ACCEPTED" %}
                                                 <form method="post"
@@ -302,7 +302,7 @@
                             {% trans "No pretix order found for this email yet." %}
                         </div>
                     {% endif %}
-                    {% if is_organizer %}
+                    {% if perms.speakers.manage_program %}
                         <div class="d-flex flex-wrap gap-2 mt-2">
                             {% if pretix_configured %}
                                 <form method="post"

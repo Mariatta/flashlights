@@ -66,17 +66,15 @@ def organizer(db, grant_organizer):
 
 
 @pytest.fixture
-def liaison(db, conference):
-    """An approved volunteer of the edition, so they qualify as a liaison."""
-    user = User.objects.create_user(
-        username="liaison", email="liaison@example.com", first_name="Lena"
+def liaison(db, join_team):
+    """On the Speaker liaisons team, which holds speakers.liaise_presenters,
+    so they qualify as a liaison (design §7.1)."""
+    return join_team(
+        User.objects.create_user(
+            username="liaison", email="liaison@example.com", first_name="Lena"
+        ),
+        "Speaker liaisons",
     )
-    VolunteerProfile.objects.create(
-        user=user,
-        conference=conference,
-        application_status=ApplicationStatus.APPROVED,
-    )
-    return user
 
 
 @pytest.fixture
@@ -191,12 +189,12 @@ class TestPresenterForms:
         assert form.is_valid(), form.errors
 
     def test_liaison_candidates(self, conference, organizer, liaison, portal_user):
+        """Whoever holds speakers.liaise_presenters: the Organizers and
+        Speaker liaisons sets here, and superusers. An approved volunteer
+        on no such team is not offered, nor is a staff flag, nor an
+        inactive account. Sorted by name, and a blank first name sorts first."""
         VolunteerProfile.objects.create(user=portal_user, conference=conference)
-        # Pending volunteers and plain users are not offered; sorted by name,
-        # and a blank first name sorts first.
         assert list(liaison_candidates(conference)) == [organizer, liaison]
-        # Superusers without the staff flag and any approved volunteer count too;
-        # an inactive account never does.
         root = User.objects.create_user(username="root", is_superuser=True)
         helper = User.objects.create_user(username="helper", first_name="Zed")
         VolunteerProfile.objects.create(
@@ -204,9 +202,12 @@ class TestPresenterForms:
             conference=conference,
             application_status=ApplicationStatus.APPROVED,
         )
+        staff = User.objects.create_user(username="staffy", is_staff=True)
         gone = User.objects.create_user(username="gone", is_staff=True, is_active=False)
         candidates = list(liaison_candidates(conference))
-        assert root in candidates and helper in candidates and gone not in candidates
+        assert root in candidates
+        assert helper not in candidates
+        assert staff not in candidates and gone not in candidates
 
     def test_pickers_name_people_with_their_username(
         self, client, organizer, liaison, presenters

@@ -46,7 +46,7 @@ open the tab their target lives in.
                 </div>
             {% endif %}
         </div>
-        {% if is_organizer %}
+        {% if perms.speakers.manage_program %}
             <div class="d-flex flex-wrap gap-2" id="quick-actions">
                 {% if glance.invites_unsent %}
                     <a class="btn btn-primary" href="#presenters">
@@ -87,7 +87,7 @@ open the tab their target lives in.
                         {% endif %}
                     </p>
                 </div>
-                {% if is_organizer %}
+                {% if perms.speakers.manage_program %}
                     <div class="d-flex gap-2">
                         {% if proposal.can_be_approved %}
                             <form method="post"
@@ -391,7 +391,7 @@ open the tab their target lives in.
                                                 {% endif %}
                                             </div>
                                         {% endif %}
-                                        {% if is_organizer and not link.is_confirmed %}
+                                        {% if perms.speakers.manage_program and not link.is_confirmed %}
                                             <details class="mt-2">
                                                 <summary class="small">
                                                     {% if invitation and invitation.sent_at %}
@@ -421,7 +421,7 @@ open the tab their target lives in.
                                                 {% include "speakers/_invitation_preview_slot.html" with pk=link.pk %}
                                             </details>
                                         {% endif %}
-                                        {% if is_organizer %}
+                                        {% if perms.speakers.manage_program %}
                                             {% with role_form=role_forms|get_item:link.pk %}
                                                 <details class="mt-2">
                                                     <summary class="small">
@@ -467,7 +467,7 @@ open the tab their target lives in.
                                 </li>
                             {% endfor %}
                         </ul>
-                        {% if is_organizer %}
+                        {% if perms.speakers.manage_program %}
                             <div class="card-body border-top">
                                 <form method="post"
                                       action="{% url 'speakers:session_add_presenter' session.slug %}">
@@ -593,7 +593,7 @@ open the tab their target lives in.
                 {% trans "No session-level items (post-production items appear here for pre-recorded sessions)." as empty_session %}
                 {% include "speakers/_organizer_item_table.html" with items=session_items owner_choices=owner_choices can_assign=can_assign empty=empty_session %}
             </div>
-            {% if is_organizer %}
+            {% if perms.speakers.manage_program %}
                 <details class="mb-4" id="add-item">
                     <summary class="small">
                         {% trans "Add a one-off session item" %}
@@ -651,7 +651,7 @@ open the tab their target lives in.
                             <span class="badge text-bg-light border align-middle">{{ media_groups|length }}</span>
                         {% endif %}
                     </h2>
-                    {% if is_organizer and media_groups %}
+                    {% if perms.speakers.manage_program and media_groups %}
                         <a class="btn btn-sm btn-outline-secondary"
                            href="{% url 'speakers:media_export' %}?sessions_mode=some&sessions={{ session.slug }}&kinds=RAW_VIDEO&kinds=INTRO&kinds=OUTRO&kinds=PROCESSED_VIDEO&kinds=TRANSCRIPT&kinds=TRANSLATION&kinds=TITLE_CARD&kinds=THUMBNAIL&kinds=PROMO&kinds=OTHER">
                             <i class="icon-download"></i> {% trans "Download all files of this session" %}

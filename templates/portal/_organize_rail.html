@@ -91,7 +91,7 @@ layout, as before.
     {% else %}
         {% include "portal/_sidebar_item.html" with url=checklists_url label=_("Checklists") icon="icon-layout-grid" only %}
     {% endif %}
-    {% if is_organizer %}
+    {% if perms.speakers.change_speakersettings %}
         {% url 'speakers:readiness_gates' as gates_url %}
         {% if active == "gates" %}
             {% include "portal/_sidebar_item.html" with url=gates_url label=_("Readiness gates") icon="icon-hourglass" active=True only %}
@@ -104,12 +104,16 @@ layout, as before.
         {% else %}
             {% include "portal/_sidebar_item.html" with url=program_types_url label=_("Types and roles") icon="icon-tags" only %}
         {% endif %}
+    {% endif %}
+    {% if perms.speakers.change_checklisttemplate %}
         {% url 'speakers:template_list' as templates_url %}
         {% if active == "templates" %}
             {% include "portal/_sidebar_item.html" with url=templates_url label=_("Checklist templates") icon="icon-list-check" active=True only %}
         {% else %}
             {% include "portal/_sidebar_item.html" with url=templates_url label=_("Checklist templates") icon="icon-list-check" only %}
         {% endif %}
+    {% endif %}
+    {% if perms.speakers.change_handbook %}
         {% url 'speakers:handbook_list' as handbook_url %}
         {% if active == "handbook" %}
             {% include "portal/_sidebar_item.html" with url=handbook_url label=_("Speaker guides") icon="icon-book-open" active=True only %}

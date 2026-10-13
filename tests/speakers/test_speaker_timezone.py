@@ -8,6 +8,7 @@ from django.urls import reverse
 from speakers.constants import EventFormat
 from speakers.forms import PresenterForm, ProposalProfileForm, SpeakerProfileForm
 from speakers.models import SpeakerSettings, edition_clock
+from tests.grants import on_team
 
 from .factories import add_presenter, make_presenter, make_session, make_settings
 
@@ -105,7 +106,7 @@ class TestPages:
         assert "s timezone, America/Los_Angeles; to see them in yours" in page
 
     def test_presenter_page_shows_only_a_named_one(self, client, conference, online):
-        organizer = User.objects.create_user(username="org", is_staff=True)
+        organizer = on_team(User.objects.create_user(username="org"))
         client.force_login(organizer)
         presenter = speaker(conference)
         url = reverse("speakers:presenter_detail", args=[presenter.slug])

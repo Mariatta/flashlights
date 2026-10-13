@@ -15,6 +15,7 @@ from speakers.constants import SessionStatus
 from speakers.emails import send_schedule_update_email
 from speakers.models import ActivityLog, PublishedSlot
 from speakers.schedule import publish_schedule, schedule_changes
+from tests.grants import on_team
 
 from .factories import (
     add_presenter,
@@ -37,8 +38,8 @@ def enabled(conference):
 
 @pytest.fixture
 def organizer(db):
-    return User.objects.create_user(
-        username="organizer", email="org@example.com", is_staff=True
+    return on_team(
+        User.objects.create_user(username="organizer", email="org@example.com")
     )
 
 

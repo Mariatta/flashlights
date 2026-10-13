@@ -40,7 +40,7 @@ downloads). Params: view, data_view, filter_query.
            href="{% url 'speakers:presenter_data_zip' %}{% if filter_query %}?{{ filter_query }}{% endif %}">
             <i class="icon-file-archive"></i> {% trans "Download package (CSV and photos)" %}
         </a>
-        {% if is_organizer %}
+        {% if perms.speakers.manage_program %}
             <a class="btn btn-primary" href="{% url 'speakers:presenter_create' %}">
                 <i class="icon-plus"></i> {% trans "New presenter" %}
             </a>

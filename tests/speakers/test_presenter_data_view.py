@@ -14,6 +14,7 @@ from django.urls import reverse
 
 from speakers.directory import DATA_COLUMNS
 from speakers.tables import PresenterDataTable
+from tests.grants import on_team
 from volunteer.constants import ApplicationStatus
 from volunteer.models import VolunteerProfile
 
@@ -30,8 +31,8 @@ PNG = (
 
 @pytest.fixture
 def organizer(db):
-    return User.objects.create_user(
-        username="organizer", email="org@example.com", is_staff=True
+    return on_team(
+        User.objects.create_user(username="organizer", email="org@example.com")
     )
 
 

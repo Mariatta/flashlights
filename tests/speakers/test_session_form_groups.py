@@ -7,6 +7,7 @@ from django.urls import reverse
 
 from speakers.constants import EventFormat, Recordings
 from speakers.forms import SessionForm
+from tests.grants import on_team
 
 from .factories import make_session, make_settings
 
@@ -49,7 +50,7 @@ class TestFieldGroups:
 
     def test_the_page_marks_the_team_only_group(self, client, conference):
         make_settings(conference)
-        organizer = User.objects.create_user(username="org", is_staff=True)
+        organizer = on_team(User.objects.create_user(username="org"))
         client.force_login(organizer)
         session = make_session(conference)
         page = client.get(reverse("speakers:session_edit", args=[session.slug]))

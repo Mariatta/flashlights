@@ -9,6 +9,7 @@ from django.urls import reverse
 from speakers.constants import ProgramVisibility
 from speakers.models import SpeakerSettings
 from speakers.public import preview_token
+from tests.grants import on_team
 
 from .factories import make_settings
 
@@ -68,8 +69,8 @@ class TestEmbedPage:
         assert client.get(embed()).status_code == 404
 
     def test_the_share_tab_offers_the_iframe(self, client, settings_row):
-        organizer = User.objects.create_user(
-            username="organizer", email="org@example.com", is_staff=True
+        organizer = on_team(
+            User.objects.create_user(username="organizer", email="org@example.com")
         )
         client.force_login(organizer)
         content = client.get(reverse("speakers:program_share")).content.decode()
@@ -80,8 +81,8 @@ class TestEmbedPage:
     def test_the_iframe_title_is_escaped(self, client, settings_row, conference):
         conference.name = 'Py"Con <2025>'
         conference.save()
-        organizer = User.objects.create_user(
-            username="organizer", email="org@example.com", is_staff=True
+        organizer = on_team(
+            User.objects.create_user(username="organizer", email="org@example.com")
         )
         client.force_login(organizer)
         content = client.get(reverse("speakers:program_share")).content.decode()

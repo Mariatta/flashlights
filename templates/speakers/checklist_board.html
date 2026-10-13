@@ -23,7 +23,7 @@
             </p>
         </div>
         <div class="d-flex gap-2">
-            {% if tab == "POST_PRODUCTION" and is_organizer %}
+            {% if tab == "POST_PRODUCTION" and perms.speakers.manage_program %}
                 <a class="btn btn-outline-primary btn-sm"
                    href="{% url 'speakers:media_export' %}">
                     <i class="icon-download"></i> {% trans "Download files" %}

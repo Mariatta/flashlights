@@ -11,6 +11,7 @@ from speakers.constants import ChecklistScope, NoticeKind, SessionStatus
 from speakers.models import ChecklistItem
 from speakers.seeds import seed_checklists
 from speakers.services import approve_proposal
+from tests.grants import on_team
 
 from .factories import (
     add_presenter,
@@ -46,7 +47,7 @@ class TestLoadDefaultsAfterApproval:
 
     def test_the_button_says_so(self, client, approved, settings):
         settings.DEBUG = True  # the button is a local tool
-        organizer = User.objects.create_user(username="org", is_staff=True)
+        organizer = on_team(User.objects.create_user(username="org"))
         client.force_login(organizer)
         page = client.post(reverse("speakers:template_seed"), follow=True)
         assert "checklists of speakers already accepted" in page.content.decode()
