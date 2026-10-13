@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n tz %}
 {% comment %}
 One placed session on the grid. Dragged whole; the handle at the bottom
 resizes; the pencil opens the keyboard form. Params: card (schedule.py's
@@ -9,7 +9,7 @@ dict), lanes, days.
      draggable="true"
      data-slot-url="{% url 'speakers:session_slot' card.session.slug %}"
      data-minutes="{{ card.minutes }}"
-     title="{{ card.session.title }} · {{ card.slot.start_utc|date:'H:i' }} to {{ card.slot.end_utc|date:'H:i' }} UTC"
+     title="{{ card.session.title }} · {{ card.slot.start_utc|timezone:event_timezone|date:'H:i' }} to {{ card.slot.end_utc|timezone:event_timezone|date:'H:i' }} {{ event_timezone }}"
      style="grid-row: {{ card.row }} / span {{ card.span }};
             grid-column: {{ card.start_column }} / {{ card.end_column }}">
 {# djlint:on #}
@@ -47,7 +47,7 @@ dict), lanes, days.
             </summary>
             <div class="schedule-card-popover card shadow">
                 {% url 'speakers:session_slot' card.session.slug as slot_url %}
-                {% include "speakers/_slot_form.html" with url=slot_url lanes=lanes days=days sel_room=card.slot.room_id|default_if_none:"" sel_date=card.slot.start_utc|date:"Y-m-d" sel_time=card.slot.start_utc|date:"H:i" minutes=card.minutes removable=True only %}
+                {% include "speakers/_slot_form.html" with url=slot_url lanes=lanes days=days sel_room=card.slot.room_id|default_if_none:"" sel_date=card.slot.start_utc|timezone:event_timezone|date:"Y-m-d" sel_time=card.slot.start_utc|timezone:event_timezone|date:"H:i" tz_name=event_timezone minutes=card.minutes removable=True only %}
             </div>
         </details>
     </div>

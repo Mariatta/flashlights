@@ -9,7 +9,7 @@ mode (spreadsheet view): header controls, day tabs, alerts, the board.
             {% trans "Schedule" %}
         </h1>
         <p class="text-secondary mb-0">
-            {% trans "Drag a session onto the grid, drag it to move it, pull the bottom edge to change its length. The pencil on a card does the same with a form. Times are stored in UTC." %}
+            {% trans "Drag a session onto the grid, drag it to move it, pull the bottom edge to change its length. The pencil on a card does the same with a form. Days run midnight to midnight in the event's timezone." %}
         </p>
     </div>
     <div class="d-flex align-items-center gap-2">
@@ -39,7 +39,9 @@ mode (spreadsheet view): header controls, day tabs, alerts, the board.
         </label>
         <label class="form-label small mb-0 d-flex align-items-center gap-1">
             {% trans "Show times in" %}
-            <select class="form-select form-select-sm w-auto" id="schedule-timezone">
+            <select class="form-select form-select-sm w-auto"
+                    id="schedule-timezone"
+                    data-default="{{ event_timezone }}">
                 <option value="local">
                     {% trans "Your browser's timezone" %}
                 </option>
@@ -93,7 +95,7 @@ mode (spreadsheet view): header controls, day tabs, alerts, the board.
                 </summary>
                 <div class="schedule-card-popover card shadow p-2 vstack gap-2 text-start">
                     <span class="small">
-                        {% blocktrans with day=day|date:"D j M" %}Takes every session on {{ day }} (the UTC day, as the tabs count) off the grid, back to Unscheduled. Published sessions keep their slot.{% endblocktrans %}
+                        {% blocktrans with day=day|date:"D j M" %}Takes every session on {{ day }} (midnight to midnight in the event's timezone, as the tabs count) off the grid, back to Unscheduled. Published sessions keep their slot.{% endblocktrans %}
                     </span>
                     <form method="post"
                           action="{% url 'speakers:schedule_clear_day' %}?{{ base_query }}{% if wide %}&amp;wide=1{% endif %}">

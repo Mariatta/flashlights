@@ -145,7 +145,11 @@
     this.preview = d.preview || new URLSearchParams(location.search).get("preview");
     this.fallback = d.fallbackUrl || base + "/embed/" + encodeURIComponent(this.conf) + "/schedule/";
     this.browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-    this.tz = load("tz") || this.browserTz;
+    // A visitor's own choice wins; without one, an in-person program reads
+    // in the event's time (set once the data says so), an online one in
+    // the visitor's.
+    this.chosenTz = load("tz");
+    this.tz = this.chosenTz || this.browserTz;
     this.room = load("room:" + this.conf) || "";
     this.people = {};
     el.classList.add("fl");
@@ -174,7 +178,11 @@
       speaker: "presenters/" + e(this.slug) + "/"
     }[this.view] || "sessions/";
     this.get(path)
-      .then(function (data) { self.data = data; self.render(); })
+      .then(function (data) {
+        self.data = data;
+        if (!self.chosenTz && data.conference.in_person) self.tz = data.conference.timezone;
+        self.render();
+      })
       .catch(function () {
         self.note("The program can't load right now.", h("a", { href: self.fallback, text: "See the full program." }));
       });
@@ -214,7 +222,7 @@
         self.render();
       }
     }, list.filter(function (z) { return z && !seen[z] && (seen[z] = true); }).map(function (z) {
-      var label = z + (z === self.browserTz ? " (yours)" : z === own ? " (conference)" : "");
+      var label = z + (z === self.browserTz ? " (yours)" : z === own ? " (event)" : "");
       return h("option", { value: z, selected: z === self.tz, text: label });
     }));
     var venue = this.data.conference.venue;

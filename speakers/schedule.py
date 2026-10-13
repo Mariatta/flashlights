@@ -1,11 +1,14 @@
 """Building the schedule editor's grid (design §10, task 4.2).
 
-Rooms across, 15-minute steps down, one day at a time. Everything is
-computed in UTC; the browser relabels the times in whatever timezone the
-organizer picks (``static/js/schedule-editor.js`` reads the ``data-utc``
+Rooms across, 15-minute steps down, one day at a time. A day is the
+event's own (midnight to midnight in its timezone), so an evening social
+stays on its day; every moment is stored and sent as UTC, and the browser
+labels the times in whatever timezone the organizer picks, the event's by
+default (``static/js/schedule-editor.js`` reads the ``data-utc``
 attributes this module's cards carry).
 """
 
+import zoneinfo
 from datetime import datetime, timedelta, timezone
 
 from django.db import transaction
@@ -41,6 +44,17 @@ FIRST_ROOM_COLUMN = 3
 FIRST_TIME_ROW = 2
 
 
+def event_tz(conference):
+    """The event's own timezone: the speaker settings' display timezone,
+    UTC without a row."""
+    name = (
+        SpeakerSettings.objects.filter(conference=conference)
+        .values_list("conference_timezone", flat=True)
+        .first()
+    )
+    return zoneinfo.ZoneInfo(name or "UTC")
+
+
 def schedule_days(conference):
     """The dates the editor offers as tabs.
 
@@ -51,7 +65,7 @@ def schedule_days(conference):
     days = {
         moment.date()
         for moment in ScheduleSlot.objects.filter(conference=conference).datetimes(
-            "start_utc", "day", tzinfo=timezone.utc
+            "start_utc", "day", tzinfo=event_tz(conference)
         )
     }
     if conference.start_date and conference.end_date:
@@ -66,10 +80,14 @@ def schedule_days(conference):
     return sorted(days)
 
 
-def day_bounds(day):
-    """Midnight to midnight, UTC."""
-    start = datetime(day.year, day.month, day.day, tzinfo=timezone.utc)
-    return start, start + timedelta(days=1)
+def day_bounds(day, tz=timezone.utc):
+    """Midnight to midnight in ``tz``, as UTC moments. The next midnight is
+    computed on its own date, so a day that changes clocks is 23 or 25
+    hours long rather than spilling into the next."""
+    start = datetime(day.year, day.month, day.day, tzinfo=tz)
+    following = day + timedelta(days=1)
+    end = datetime(following.year, following.month, following.day, tzinfo=tz)
+    return start.astimezone(timezone.utc), end.astimezone(timezone.utc)
 
 
 def _row_of(moment, window_start, row_count):
@@ -109,7 +127,7 @@ def _window(day_start, day_end, slots, full_day):
 
 def grid_for_day(conference, day, full_day=False):
     """Everything the grid template needs for one day, in flat queries."""
-    day_start, day_end = day_bounds(day)
+    day_start, day_end = day_bounds(day, event_tz(conference))
     rooms = list(Room.objects.filter(conference=conference, is_active=True))
     slots = list(
         ScheduleSlot.objects.filter(

@@ -10,6 +10,7 @@ from django.core.cache import cache
 from django.db.models import Prefetch
 from django.urls import reverse
 
+from .constants import EventFormat
 from .emails import absolute_url
 from .markdown import render_md
 from .models import Room, SessionPresenter
@@ -65,6 +66,8 @@ def conference_block(conference):
         "slug": conference.slug,
         "name": conference.name,
         "timezone": conference.speaker_settings.conference_timezone,
+        # An in-person program is read in the event's own time.
+        "in_person": conference.speaker_settings.event_format == EventFormat.IN_PERSON,
         "venue": venue_block(conference),
     }
 

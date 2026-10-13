@@ -1,5 +1,5 @@
 {% extends "speakers/_organize_shell.html" %}
-{% load i18n static %}
+{% load i18n static tz %}
 {% block head_title %}
     {% trans "Publishing" %}
 {% endblock head_title %}
@@ -52,7 +52,7 @@
                             <span class="small text-secondary">{{ row.session.kind.name }}</span>
                             <span class="small text-secondary ms-auto text-nowrap">
                                 {% if row.can_publish %}
-                                    {{ row.session.published_slot.start_utc|date:"D j M, H:i" }} UTC
+                                    {{ row.session.published_slot.start_utc|timezone:settings.conference_timezone|date:"D j M, H:i" }} {{ settings.conference_timezone }}
                                 {% else %}
                                     {% trans "Not on the confirmed schedule yet" %}
                                 {% endif %}

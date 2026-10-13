@@ -295,7 +295,8 @@
         }
         send(form.dataset.url, "PATCH", {
             room: value("room") || null,
-            start: value("date") + "T" + time + ":00+00:00",
+            // The event's local time; the server knows the timezone.
+            start: value("date") + "T" + time + ":00",
             duration: parseInt(value("duration"), 10) || STEP_MINUTES
         });
     });
@@ -455,12 +456,14 @@
         } catch (error) {
             remembered = null;
         }
-        if (remembered) {
+        /* The organizer's last choice, else the event's own timezone. */
+        var wanted = remembered || select.dataset.default;
+        if (wanted) {
             var known = Array.prototype.some.call(
                 select.options,
-                function (option) { return option.value === remembered; }
+                function (option) { return option.value === wanted; }
             );
-            if (known) select.value = remembered;
+            if (known) select.value = wanted;
         }
         select.addEventListener("change", function () {
             try {

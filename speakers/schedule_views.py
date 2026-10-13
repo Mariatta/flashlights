@@ -31,6 +31,7 @@ from .schedule import (
     STEP_MINUTES,
     also_in,
     day_bounds,
+    event_tz,
     grid_for_day,
     publish_schedule,
     schedule_changes,
@@ -94,14 +95,15 @@ def _editor_query(request, conference, day=None):
     return "&".join(params)
 
 
-def _parse_moment(value, field):
-    """An aware UTC datetime from an ISO string; naive means UTC."""
+def _parse_moment(value, field, tz=dt_timezone.utc):
+    """An aware UTC datetime from an ISO string. A time with no offset is
+    in ``tz``: the keyboard form sends the event's local time."""
     try:
         moment = datetime.fromisoformat(value)
     except (TypeError, ValueError):
         raise SlotError(f"{field} is not a time the grid understands.")
     if moment.tzinfo is None:
-        moment = moment.replace(tzinfo=dt_timezone.utc)
+        moment = moment.replace(tzinfo=tz)
     return moment.astimezone(dt_timezone.utc)
 
 
@@ -146,6 +148,7 @@ class ScheduleEditorView(
                 ),
                 "unscheduled": unscheduled_sessions(self.conference),
                 "timezones": timezone_options(self.conference),
+                "event_timezone": str(event_tz(self.conference)),
                 "unpublished": (
                     counts := {
                         kind: len(rows)
@@ -255,7 +258,7 @@ class ScheduleClearDayView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, Vi
                 "That day is not on the schedule any more; nothing was " "unscheduled.",
             )
             return redirect(f"{url}?{_editor_query(request, self.conference)}")
-        start, end = day_bounds(day)
+        start, end = day_bounds(day, event_tz(self.conference))
         slots = ScheduleSlot.objects.filter(
             conference=self.conference, start_utc__lt=end, end_utc__gt=start
         ).select_related("session")
@@ -407,7 +410,9 @@ class SlotView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, View):
         if "room" in payload:
             slot.room = _resolve_room(self.conference, payload["room"])
         if "start" in payload:
-            slot.start_utc = _parse_moment(payload["start"], "start")
+            slot.start_utc = _parse_moment(
+                payload["start"], "start", event_tz(self.conference)
+            )
             slot.end_utc = slot.start_utc + length if length else None
         if slot.start_utc is None:
             raise SlotError("Give the slot a start time.")
@@ -423,7 +428,9 @@ class SlotView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, View):
             slot.end_utc = slot.start_utc + timedelta(minutes=minutes)
         elif "end" in payload:
             slot.end_utc = (
-                _parse_moment(payload["end"], "end") if payload["end"] else None
+                _parse_moment(payload["end"], "end", event_tz(self.conference))
+                if payload["end"]
+                else None
             )
         if slot.end_utc is not None and slot.end_utc - slot.start_utc > timedelta(
             minutes=MAX_SLOT_MINUTES
