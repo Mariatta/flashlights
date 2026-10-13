@@ -68,10 +68,12 @@
                                class="btn btn-sm btn-outline-primary"
                                title="Edit"
                                aria-label="Edit"><i class="icon-pencil"></i></a>
-                            <a href="{% url 'conference_delete' conference.pk %}"
-                               class="btn btn-sm btn-outline-danger"
-                               title="Delete"
-                               aria-label="Delete"><i class="icon-trash"></i></a>
+                            {% if perms.portal.delete_conference %}
+                                <a href="{% url 'conference_delete' conference.pk %}"
+                                   class="btn btn-sm btn-outline-danger"
+                                   title="Delete"
+                                   aria-label="Delete"><i class="icon-trash"></i></a>
+                            {% endif %}
                         </td>
                     </tr>
                 {% endfor %}

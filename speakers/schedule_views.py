@@ -20,10 +20,11 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views import View
-from django.views.generic import TemplateView
+from django.views.generic import ListView, TemplateView
+from django.views.generic.edit import CreateView, UpdateView
 
 from .constants import OFF_SCHEDULE_STATUSES, SessionStatus
-from .forms import ProgramItemForm
+from .forms import ProgramItemForm, RoomForm
 from .mixins import SpeakerOrganizerRequiredMixin
 from .models import ActivityLog, Room, ScheduleSlot, Session
 from .schedule import (
@@ -438,3 +439,62 @@ class SlotView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, View):
             raise SlotError("A slot cannot run longer than a day.")
         slot.save()
         return slot, created
+
+
+class RoomListView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, ListView):
+    """The edition's rooms, in use first: what the schedule editor lays out
+    as lanes. Added and edited here, not in the Django admin."""
+
+    template_name = "speakers/room_list.html"
+    context_object_name = "rooms"
+
+    def get_queryset(self):
+        return Room.objects.filter(conference=self.conference).order_by(
+            "-is_active", "name"
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(conference=self.conference, rail_active="rooms")
+        return context
+
+
+class RoomFormMixin(LoginRequiredMixin, SpeakerOrganizerRequiredMixin):
+    form_class = RoomForm
+    template_name = "speakers/room_form.html"
+
+    def get_queryset(self):
+        return Room.objects.filter(conference=self.conference)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["conference"] = self.conference
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(conference=self.conference, rail_active="rooms")
+        return context
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        ActivityLog.record(
+            self.conference,
+            self.log_action,
+            target=self.object,
+            actor=self.request.user,
+            message=self.object.name,
+        )
+        messages.success(self.request, f"Saved the room “{self.object.name}”.")
+        return response
+
+    def get_success_url(self):
+        return reverse("speakers:room_list")
+
+
+class RoomCreateView(RoomFormMixin, CreateView):
+    log_action = "room.created"
+
+
+class RoomUpdateView(RoomFormMixin, UpdateView):
+    log_action = "room.changed"

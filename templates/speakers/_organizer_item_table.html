@@ -25,7 +25,7 @@ owner_choices (people and teams, built once by the view), can_assign, empty (mes
         </thead>
         <tbody>
             {% for item in items %}
-                {% include "speakers/_organizer_item_row.html" with item=item owner_choices=owner_choices can_assign=can_assign %}
+                {% include "speakers/_organizer_item_row.html" with item=item owner_choices=owner_choices can_assign=can_assign read_only=read_only %}
             {% empty %}
                 <tr>
                     <td colspan="5" class="text-secondary">

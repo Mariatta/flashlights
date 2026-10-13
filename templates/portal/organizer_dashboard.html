@@ -197,15 +197,17 @@
                     </a>
                 </div>
             {% endif %}
-            <div class="col">
-                <a href="{% url 'admin:index' %}"
-                   class="card h-100 text-decoration-none">
-                    <div class="card-body d-flex align-items-center gap-3">
-                        <i class="icon-shield-check fs-5 text-primary"></i>
-                        <span class="text-body">{% trans "Admin area" %}</span>
-                    </div>
-                </a>
-            </div>
+            {% if user.is_staff and user.is_superuser %}
+                <div class="col">
+                    <a href="{% url 'admin:index' %}"
+                       class="card h-100 text-decoration-none">
+                        <div class="card-body d-flex align-items-center gap-3">
+                            <i class="icon-shield-check fs-5 text-primary"></i>
+                            <span class="text-body">{% trans "Admin area" %}</span>
+                        </div>
+                    </a>
+                </div>
+            {% endif %}
         </div>
         {# The prospectus is the org-facing external reference. #}
         <div class="mt-4">

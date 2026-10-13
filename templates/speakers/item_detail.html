@@ -97,7 +97,11 @@ their personal rail and may only mark it done or reopen it.
                             {% endif %}
                         </form>
                     {% endif %}
-                    {% if item.is_waiting %}
+                    {% if not can_act %}
+                        <p class="text-secondary small mb-0">
+                            {% trans "You can read this item; the people working on it change its status." %}
+                        </p>
+                    {% elif item.is_waiting %}
                         <p class="text-secondary small mb-0">
                             {% trans "Nobody can work on this yet, so the status actions are off." %}
                         </p>

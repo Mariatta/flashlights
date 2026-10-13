@@ -570,7 +570,7 @@ open the tab their target lives in.
                         </h4>
                         <div class="mb-2">
                             {% trans "None." as empty_speaker %}
-                            {% include "speakers/_organizer_item_table.html" with items=group.speaker owner_choices=owner_choices can_assign=can_assign empty=empty_speaker %}
+                            {% include "speakers/_organizer_item_table.html" with items=group.speaker owner_choices=owner_choices can_assign=can_assign read_only=items_read_only empty=empty_speaker %}
                         </div>
                     {% endif %}
                     {% if group.organizer %}
@@ -578,7 +578,7 @@ open the tab their target lives in.
                             {% trans "What we're preparing for them" %}
                         </h4>
                         {% trans "None." as empty_organizer %}
-                        {% include "speakers/_organizer_item_table.html" with items=group.organizer owner_choices=owner_choices can_assign=can_assign empty=empty_organizer %}
+                        {% include "speakers/_organizer_item_table.html" with items=group.organizer owner_choices=owner_choices can_assign=can_assign read_only=items_read_only empty=empty_organizer %}
                     {% endif %}
                 </div>
             {% empty %}
@@ -591,7 +591,7 @@ open the tab their target lives in.
                     {% trans "Session items" %}
                 </h3>
                 {% trans "No session-level items (post-production items appear here for pre-recorded sessions)." as empty_session %}
-                {% include "speakers/_organizer_item_table.html" with items=session_items owner_choices=owner_choices can_assign=can_assign empty=empty_session %}
+                {% include "speakers/_organizer_item_table.html" with items=session_items owner_choices=owner_choices can_assign=can_assign read_only=items_read_only empty=empty_session %}
             </div>
             {% if perms.speakers.manage_program %}
                 <details class="mb-4" id="add-item">

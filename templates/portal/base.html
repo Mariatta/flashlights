@@ -164,11 +164,12 @@
                                data-bs-toggle="dropdown"
                                aria-expanded="false"><span class="avatar-initial me-2" aria-hidden="true">{{ user.username|first|upper }}</span>{{ user.username }}</a>
                             <ul class="dropdown-menu dropdown-menu-end text-small">
-                                {# Admin Area follows is_staff, the one thing that flag still #}
-                                {# means: signing in to the Django admin. Maintenance follows #}
-                                {# its own permission. A person may see either or both. #}
-                                {% if user.is_staff or is_maintainer %}
-                                    {% if user.is_staff %}
+                                {# Admin Area is for whoever can use the Django admin: a staff #}
+                                {# superuser. Access to everything else comes from teams, so a #}
+                                {# staff flag alone would open an empty admin. Maintenance #}
+                                {# follows its own permission. #}
+                                {% if user.is_staff and user.is_superuser or is_maintainer %}
+                                    {% if user.is_staff and user.is_superuser %}
                                         <li>
                                             <a class="dropdown-item" href="{% url 'admin:index' %}">{% trans "Admin area" %}</a>
                                         </li>

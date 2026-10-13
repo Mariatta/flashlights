@@ -1,0 +1,68 @@
+{% extends "speakers/_organize_shell.html" %}
+{% load i18n %}
+{% block head_title %}
+    {% trans "Rooms" %}
+{% endblock head_title %}
+{% block breadcrumb %}
+    {% url 'speakers:schedule_editor' as bc_url %}
+    {% trans "Schedule" as bc_section %}
+    {% trans "Rooms" as bc_page %}
+    {% include "portal/_breadcrumbs.html" with section=bc_section section_url=bc_url page=bc_page %}
+{% endblock breadcrumb %}
+{% block content %}
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+        <div>
+            <h1 class="h3 mb-0">
+                {% trans "Rooms" %}
+            </h1>
+            <p class="text-secondary mb-0">
+                {% trans "Where sessions happen. Each room in use is a lane in the schedule editor; the all-rooms lane is always there for the opening, breaks and the social." %}
+            </p>
+        </div>
+        <a class="btn btn-primary" href="{% url 'speakers:room_create' %}">
+            <i class="icon-plus" aria-hidden="true"></i> {% trans "New room" %}
+        </a>
+    </div>
+    {% if rooms %}
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>
+                            {% trans "Room" %}
+                        </th>
+                        <th>
+                            {% trans "Kind" %}
+                        </th>
+                        <th>
+                            {% trans "In use" %}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for room in rooms %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'speakers:room_edit' room.pk %}">{{ room.name }}</a>
+                            </td>
+                            <td>
+                                {{ room.get_kind_display }}
+                            </td>
+                            <td>
+                                {% if room.is_active %}
+                                    {% trans "Yes" %}
+                                {% else %}
+                                    <span class="text-secondary">{% trans "No" %}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-secondary">
+            {% trans "No rooms yet." %}
+        </p>
+    {% endif %}
+{% endblock content %}

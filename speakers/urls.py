@@ -45,6 +45,17 @@ urlpatterns = [
         schedule_views.SchedulePublishView.as_view(),
         name="schedule_publish",
     ),
+    path("schedule/rooms/", schedule_views.RoomListView.as_view(), name="room_list"),
+    path(
+        "schedule/rooms/new/",
+        schedule_views.RoomCreateView.as_view(),
+        name="room_create",
+    ),
+    path(
+        "schedule/rooms/<int:pk>/",
+        schedule_views.RoomUpdateView.as_view(),
+        name="room_edit",
+    ),
     path(
         "schedule/publishing/",
         publishing_views.ProgramPublishingView.as_view(),

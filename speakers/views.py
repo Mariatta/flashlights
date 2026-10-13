@@ -138,6 +138,7 @@ from .permissions import (
     can_add_media,
     can_assign_items,
     can_review_proposals,
+    can_view_program,
     can_work_sessions,
     is_speaker_organizer,
     owned_by,
@@ -404,6 +405,14 @@ class SessionDetailView(SessionScopedMixin, DetailView):
         # A liaison reaches this page but may not hand work to someone else
         # unless they hold assign_checklistitem, so offer the select on that.
         context["can_assign"] = can_assign_items(self.request.user)
+        # Someone who only reads the program (a reviewer) sees the items
+        # without the boxes that would tick them.
+        context["items_read_only"] = not (
+            is_speaker_organizer(self.request.user)
+            or self.object.session_presenters.filter(
+                presenter__liaison=self.request.user
+            ).exists()
+        )
         context["adhoc_form"] = AdhocItemForm(
             initial={"owner_kind": ItemOwner.ORGANIZER}, conference=self.conference
         )
@@ -1998,7 +2007,9 @@ def _queue_groups(items):
 class ItemActionMixin(LoginRequiredMixin, SpeakerQueueRequiredMixin):
     """An item this organizer, liaison or assignee may act on."""
 
-    def get_item(self):
+    def get_item(self, read=False):
+        """The item, if this user may act on it; with ``read``, also for
+        someone who only reads the program (a reviewer opening a session)."""
         item = get_object_or_404(
             ChecklistItem.objects.select_related(
                 "presenter",
@@ -2011,15 +2022,20 @@ class ItemActionMixin(LoginRequiredMixin, SpeakerQueueRequiredMixin):
             pk=self.kwargs["pk"],
             conference=self.conference,
         )
-        user = self.request.user
-        if is_speaker_organizer(user) or self.carries(item):
+        if self.may_act(item) or (read and can_view_program(self.request.user)):
             return item
-        if item.presenter is None or item.presenter.liaison_id != user.pk:
-            raise PermissionDenied(
-                "This item is not yours: you neither liaise its presenter nor "
-                "carry it."
-            )
-        return item
+        raise PermissionDenied(
+            "This item is not yours: you neither liaise its presenter nor carry it."
+        )
+
+    def may_act(self, item):
+        """Organizers, whoever carries the item, and its presenter's liaison."""
+        user = self.request.user
+        return (
+            is_speaker_organizer(user)
+            or self.carries(item)
+            or (item.presenter is not None and item.presenter.liaison_id == user.pk)
+        )
 
     def carries(self, item):
         """Whether this item was handed to the actor, in person or through
@@ -2096,9 +2112,10 @@ class ItemDetailView(ItemActionMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        item = self.get_item()
+        item = self.get_item(read=True)
         item.overdue = item.is_overdue
         organizer_side = can_work_sessions(self.request.user, self.conference)
+        context["can_act"] = self.may_act(item)
         # Reassigning is its own permission, as it is on the presenter and
         # session pages; carrying an item only lets you change its status.
         can_manage = can_assign_items(self.request.user)

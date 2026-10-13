@@ -1,8 +1,14 @@
-{% extends "portal/base.html" %}
+{% extends "portal/base_sidebar.html" %}
 {% load i18n django_bootstrap5 %}
 {% block head_title %}
     {% trans "Tickets" %}
 {% endblock head_title %}
+{% block sidebar_title %}
+    {% trans "Organize" %}
+{% endblock sidebar_title %}
+{% block sidebar %}
+    {% include "portal/_organize_rail.html" with active="tickets" %}
+{% endblock sidebar %}
 {% block content %}
     <div class="container py-4">
         <h1 class="h3 pb-2 mb-3 border-bottom">

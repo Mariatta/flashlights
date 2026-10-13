@@ -53,6 +53,7 @@ sit on top with inline grid positions computed in speakers/schedule.py.
 {% endif %}
 {% if not rooms %}
     <p class="text-secondary small mt-2 mb-0">
-        {% trans "No rooms are recorded for this edition yet; only the all-rooms lane is available. Rooms are added in the admin, and for an online edition a room is usually a Discord channel." %}
+        {% url 'speakers:room_list' as rooms_url %}
+        {% blocktrans %}No rooms are recorded for this edition yet; only the all-rooms lane is available. Add them on <a href="{{ rooms_url }}">Rooms</a>.{% endblocktrans %}
     </p>
 {% endif %}

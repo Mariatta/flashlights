@@ -20,6 +20,7 @@ from .constants import (
     Delivery,
     ItemOwner,
     Recordings,
+    RoomKind,
     SessionLevel,
     SessionStatus,
     format_owner,
@@ -32,6 +33,7 @@ from .models import (
     Presenter,
     PresenterRole,
     ReadinessGate,
+    Room,
     Session,
     SessionPresenter,
     SessionType,
@@ -1267,3 +1269,38 @@ class SpeakerSettingsForm(forms.ModelForm):
         if recordings(conference) == Recordings.NONE:
             self.fields.pop("media_for_speakers")
             self.fields.pop("auto_transcribe")
+
+
+class RoomForm(forms.ModelForm):
+    """A room of the edition: where sessions happen. In person it is a
+    room at the venue; online, usually a Discord channel."""
+
+    class Meta:
+        model = Room
+        fields = ["name", "kind", "url", "discord_id", "is_active"]
+        labels = {"url": "Link", "is_active": "In use"}
+        help_texts = {
+            "url": "A map of the venue, or the channel's invite link.",
+            "is_active": "Off keeps the room for past slots but leaves it "
+            "out of the schedule editor.",
+        }
+
+    def __init__(self, *args, conference, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.conference = conference
+        if not self.instance.conference_id:
+            self.instance.conference = conference
+        if is_in_person(conference):
+            # Online-only kinds are noise in person; a room is a room.
+            self.fields["kind"].initial = RoomKind.ROOM
+        if not conference.uses_discord:
+            del self.fields["discord_id"]
+
+    def clean_name(self):
+        name = self.cleaned_data["name"].strip()
+        clash = Room.objects.filter(conference=self.conference, name__iexact=name)
+        if self.instance.pk:
+            clash = clash.exclude(pk=self.instance.pk)
+        if clash.exists():
+            raise forms.ValidationError("This edition already has a room by that name.")
+        return name

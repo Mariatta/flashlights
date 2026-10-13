@@ -44,7 +44,9 @@ class TicketingSettingsView(PermissionRequiredMixin, FormView):
     def form_valid(self, form):
         form.save()
         messages.success(self.request, f"Saved the tickets for {self.conference}.")
-        return redirect("conference_edit", pk=self.conference.pk)
+        # Back to this page: someone who sets up ticketing need not be able
+        # to edit the edition itself.
+        return redirect("conference_tickets", pk=self.conference.pk)
 
 
 class CsvImportView(PermissionRequiredMixin, FormView):

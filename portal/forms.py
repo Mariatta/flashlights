@@ -242,8 +242,17 @@ class ConferenceForm(forms.ModelForm):
             "venue_address": forms.Textarea(attrs={"rows": 3}),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
+        # Which edition is active decides whose team grants count, so
+        # switching it is the year rollover's call (portal.start_next_year,
+        # the Organizers leads), not every editor's: one tick by someone
+        # else would take everyone's access with it.
+        if user is not None and not user.has_perm("portal.start_next_year"):
+            self.fields["is_active"].disabled = True
+            self.fields["is_active"].help_text = (
+                "Only the Organizers leads switch the active edition."
+            )
         model = _speaker_settings_model()
         if model is None:
             del self.fields["speaker_module_enabled"]

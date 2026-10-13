@@ -53,6 +53,14 @@ layout, as before.
         {% include "portal/_sidebar_item.html" with url=conferences_url label=_("Events") icon="icon-calendar-days" only %}
     {% endif %}
 {% endif %}
+{% if active_conference and perms.ticketing.change_ticketingsettings %}
+    {% url 'conference_tickets' active_conference.pk as tickets_url %}
+    {% if active == "tickets" %}
+        {% include "portal/_sidebar_item.html" with url=tickets_url label=_("Tickets") icon="icon-ticket" active=True only %}
+    {% else %}
+        {% include "portal/_sidebar_item.html" with url=tickets_url label=_("Tickets") icon="icon-ticket" only %}
+    {% endif %}
+{% endif %}
 {% if active_conference and perms.ticketing.import_registrations %}
     {% url 'conference_tickets_import' active_conference.pk as import_url %}
     {% if active == "registrations" %}
@@ -78,6 +86,12 @@ layout, as before.
         {% else %}
             {% include "portal/_sidebar_item.html" with url=schedule_url label=_("Schedule") icon="icon-calendar-range" only %}
         {% endif %}
+        {% url 'speakers:room_list' as rooms_url %}
+        {% if active == "rooms" %}
+            {% include "portal/_sidebar_item.html" with url=rooms_url label=_("Rooms") icon="icon-door-open" active=True only %}
+        {% else %}
+            {% include "portal/_sidebar_item.html" with url=rooms_url label=_("Rooms") icon="icon-door-open" only %}
+        {% endif %}
     {% endif %}
     {% if perms.speakers.publish_program %}
         {% url 'speakers:program_publishing' as publishing_url %}
@@ -93,7 +107,7 @@ layout, as before.
     {% else %}
         {% include "portal/_sidebar_item.html" with url=presenters_url label=_("Presenters") icon="icon-users" only %}
     {% endif %}
-    {% if speaker_proposals_open %}
+    {% if speaker_proposals_open or pending_proposal_count %}
         {% url 'speakers:proposal_queue' as proposals_url %}
         {% if active == "proposals" %}
             {% include "portal/_sidebar_item.html" with url=proposals_url label=_("Proposals") icon="icon-send" badge=pending_proposal_count active=True only %}

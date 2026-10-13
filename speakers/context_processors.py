@@ -2,7 +2,12 @@ from portal.models import Conference
 
 from .constants import ProposalDecision
 from .models import Presenter, Proposal, speaker_module_enabled
-from .permissions import can_work_queue, is_speaker_liaison, is_speaker_organizer
+from .permissions import (
+    can_review_proposals,
+    can_work_queue,
+    is_speaker_liaison,
+    is_speaker_organizer,
+)
 from .services import proposals_open
 
 
@@ -51,13 +56,14 @@ def speaker_module(request):
     taking_proposals = proposals_open(conference)
     return {
         "speaker_proposals_open": taking_proposals,
-        # Organizers see the count; nobody else needs it, and it is one
-        # query for the people who do.
+        # Whoever answers proposals sees the count, open call or not:
+        # reviewing usually happens after the call closes. One query, and
+        # only for them.
         "pending_proposal_count": (
             Proposal.objects.filter(
                 conference=conference, decision=ProposalDecision.PENDING
             ).count()
-            if taking_proposals and is_speaker_organizer(user)
+            if enabled and can_review_proposals(user)
             else None
         ),
         "has_speaker_proposals": taking_proposals

@@ -10,6 +10,7 @@ One checklist item as a table row on organizer pages. Params:
     item             — ChecklistItem with .overdue set
     owner_choices    — the person-and-team options, built once per page
     can_assign       — truthy to render the assignee select (organizers)
+    read_only:       truthy for someone who only reads the program: no box to tick
     error            — text to show inline; an htmx swap never shows messages
 The row is the htmx target for status and assignee changes. The CSRF header
 for htmx is set once on <body> by the organizer shell. The box at the start
@@ -31,6 +32,12 @@ automatic items get a dashed box nobody can click.
                 <span class="checklist-box checklist-box-waiting"
                       title="{{ waiting_label }}">
                     <i class="icon-hourglass"></i>
+                </span>
+            {% elif read_only %}
+                <span class="checklist-box checklist-box-static {% if item.is_done %}checklist-box-done{% endif %}">
+                    {% if item.is_done %}
+                        <i class="icon-check"></i>
+                    {% endif %}
                 </span>
             {% elif item.is_automatic %}
                 <span class="checklist-box checklist-box-static {% if item.is_done %}checklist-box-done{% elif item.status == 'BLOCKED' %}checklist-box-blocked{% elif item.status == 'SKIPPED' %}checklist-box-skipped{% endif %}"
@@ -162,7 +169,7 @@ automatic items get a dashed box nobody can click.
         {% endif %}
     </td>
     <td class="text-nowrap">
-        {% if item.status != "SKIPPED" and not item.is_waiting %}
+        {% if item.status != "SKIPPED" and not item.is_waiting and not read_only %}
             <form method="post"
                   class="d-inline"
                   action="{% url 'speakers:item_status' item.pk %}"

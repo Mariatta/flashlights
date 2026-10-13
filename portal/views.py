@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user
-from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin, UserPassesTestMixin
 from django.db.models import ProtectedError
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
@@ -338,8 +338,15 @@ class ConferenceUpdate(ConferenceAdminRequiredMixin, UpdateView):
     template_name = "portal/conference_form.html"
     success_url = reverse_lazy("conference_list")
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
-class ConferenceDelete(ConferenceAdminRequiredMixin, DeleteView):
+
+class ConferenceDelete(PermissionRequiredMixin, DeleteView):
+    # Deleting an edition is the Organizers leads' alone, not every editor's.
+    permission_required = "portal.delete_conference"
     model = Conference
     template_name = "portal/conference_confirm_delete.html"
     context_object_name = "conference"
