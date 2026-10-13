@@ -120,6 +120,17 @@ class TeamAdmin(admin.ModelAdmin):
     list_display = ("short_name", "conference", "open_to_new_members")
     list_filter = ("conference", "open_to_new_members")
     search_fields = ("short_name", "description")
+    # The two permission sets and the leads as side-by-side boxes, the way
+    # Django's own group page shows permissions.
+    filter_horizontal = ("team_leads", "permissions", "lead_permissions")
+
+    def formfield_for_manytomany(self, db_field, request=None, **kwargs):
+        if db_field.name in ("permissions", "lead_permissions"):
+            # A permission's label reads its content type; without this the
+            # box costs one query per permission on the site.
+            queryset = kwargs.get("queryset", db_field.remote_field.model.objects)
+            kwargs["queryset"] = queryset.select_related("content_type")
+        return super().formfield_for_manytomany(db_field, request=request, **kwargs)
 
 
 admin.site.register(Team, TeamAdmin)

@@ -1,7 +1,7 @@
 import pytest
 from django.conf import settings
 from django.contrib import admin
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Permission, User
 from django.core import mail
 from django.urls import reverse
 from tablib import Dataset
@@ -253,3 +253,29 @@ class TestActiveConferenceFilter:
         qs = self._changelist_queryset(client, admin_user)
         assert active_profile in qs
         assert past_profile in qs
+
+
+@pytest.mark.django_db
+class TestTeamAdmin:
+    def test_permission_sets_are_side_by_side_boxes(
+        self, client, admin_user, conference
+    ):
+        from django.db import connection
+        from django.test.utils import CaptureQueriesContext
+
+        from volunteer.models import Team
+
+        team = Team.objects.create(
+            conference=conference, short_name="S", description="d"
+        )
+        client.force_login(admin_user)
+        url = reverse("admin:volunteer_team_change", args=[team.pk])
+        with CaptureQueriesContext(connection) as captured:
+            content = client.get(url).content.decode()
+        assert content.count('class="selectfilter"') == 3
+        assert "SelectFilter2" in content
+        # Permission labels come with their content types joined in, not one
+        # query per permission: a couple of dozen queries for the page,
+        # against a few hundred permissions on the site.
+        assert Permission.objects.count() > 100
+        assert len(captured) < 30
