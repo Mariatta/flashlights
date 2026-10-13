@@ -55,7 +55,7 @@ reverse accessor named after every child model (`basemodel.role`,
   per-user profile: pronouns, picture, CoC/ToS flags. It is global, not
   per-edition.
 - "Organizer" means `portal.view_organizer_dashboard` in the portal and
-  volunteer apps (task 3.2): `common.mixins.AdminRequiredMixin` and the
+  volunteer apps: `common.mixins.AdminRequiredMixin` and the
   `is_organizer` flag from `portal.context_processors.user_capabilities`
   read it through `portal.permissions.is_organizer`; the conference pages
   read `change_conference` (`ConferenceAdminRequiredMixin`) and Start next
@@ -78,7 +78,7 @@ reverse accessor named after every child model (`basemodel.role`,
   permission, so the personal rail carries an "Organizing" group for
   specialists (Volunteers, Teams, Program, each on its permission) that
   gets them to their management pages from the hub.
-- Sponsorship reads `sponsorship/permissions.py` (task 3.3): entry to the
+- Sponsorship reads `sponsorship/permissions.py`: entry to the
   list and a sponsor's page is `view_sponsorshipprofile`, which every
   approved volunteer of the active edition holds through the backend's
   baseline; which editions a reader may open stays a data check
@@ -91,7 +91,7 @@ reverse accessor named after every child model (`basemodel.role`,
   `view_unconfirmed_sponsors`. The internal contact on the sponsor form is
   anyone who manages sponsors (`sponsor_contact_candidates`), and the
   internal notification emails go to `sponsorship_notification_recipients()`.
-- The catalogue (design §7.1, task 3.1) exists on the granting side. Custom
+- The catalogue (design §7.1) exists on the granting side. Custom
   permissions are declared in `Meta.permissions` on the model that owns the
   feature (`portal.view_organizer_dashboard`, `portal.start_next_year`,
   `volunteer.review_volunteerprofile`,
@@ -119,7 +119,7 @@ reverse accessor named after every child model (`basemodel.role`,
   access is a data check (`TeamLeadRequiredMixin` looks at `team.team_leads`),
   which is the pattern liaison scoping follows.
 - Volunteers are `volunteer.VolunteerProfile` rows per edition on `Team`s.
-  The `Role` model went with task 3.6 (it granted nothing; its Admin and
+  The `Role` model is no longer read (it granted nothing; its Admin and
   Staff holders were moved onto their edition's Organizers team by the
   migration); internal notification emails go to whoever holds the
   notifications permissions, and the onboarding email's organizer variant
@@ -965,7 +965,7 @@ installed; this app keeps small factory functions in `tests/speakers/factories.p
   edition is off and sets `self.conference`. The row also hosts later
   per-edition settings (program visibility, pretix, media limits).
 - Organizer predicate: `speakers.permissions.is_speaker_organizer` reads
-  `speakers.manage_program` (task 3.4; the Organizers and Program sets
+  `speakers.manage_program` (the Organizers and Program sets
   carry it), and `can_view_program` reads `speakers.view_program`, which
   managing implies. Liaisons are `Presenter.liaison` users;
   `SessionQuerySet.visible_to` and `PresenterQuerySet.visible_to` show
@@ -984,7 +984,7 @@ installed; this app keeps small factory functions in `tests/speakers/factories.p
   program readers plus the edition's approved volunteers; the organizer
   inbox fallback is whoever manages the program. The staff flag grants
   nothing here any more.
-- Granting is in the portal, not the Django admin (task 3.5): the team
+- Granting is in the portal, not the Django admin: the team
   form carries "Team permissions" and "Lead permissions" as grouped
   checkbox lists in plain words (`volunteer.permission_presets.CATALOGUE`)
   and a "Start from preset" select that ticks them in the browser, or

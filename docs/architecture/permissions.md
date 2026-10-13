@@ -54,10 +54,16 @@ the pages show.
 | | `speakers.change_speakersettings` | types, roles, readiness gates, the settings row |
 | | `speakers.assign_checklistitem` | handing an organizer item to someone else |
 | | `speakers.liaise_presenters` | being offered as a presenter's liaison |
+| | `speakers.review_proposal` | the proposal queue and its decisions, without the rest of the program |
+| | `speakers.publish_program` | the Publishing tabs: visibility, each session's tick, the preview link, the websites allowed to show the program |
+| Recordings | `speakers.view/add/change/delete_mediaasset` | session files: seeing and downloading, uploading, editing, sharing and transcribing, deleting; the bulk downloads and the post-production board |
+| | `speakers.publish_session_video` | a session's YouTube link, publish time and premiere |
+| Registrations | `ticketing.change_ticketingsettings` | the Tickets page, which holds the provider's token |
+| | `ticketing.import_registrations` | the import page, for a registration desk that should not see the token |
 | Maintenance | `portal_account.view_maintenance` | the Maintenance section (granted by a group, not a team) |
 
-The media-asset and promo-asset permissions join the catalogue with the
-media pipeline (task 3.7).
+A performer still uploads raw video to their own session without any of
+these: that is a relation in the data, checked in `speakers/media.py`.
 
 ## Teams grant
 
@@ -76,9 +82,10 @@ The presets, in `volunteer.permission_presets.PRESETS`:
 | Organizers | every catalogue permission except the two below | `delete_conference`, `start_next_year` |
 | Volunteer coordination | view and review volunteers, manage teams, volunteer notifications | |
 | Sponsorship | sponsor add/change/delete, send invoice, unconfirmed statuses, tiers, sponsorship notifications | |
-| Program | manage and view the program, assign items, liaise, templates, guides | `change_speakersettings` |
+| Program | manage and view the program, assign items, liaise, templates, guides, review proposals, publish the program, view, upload and edit files, publish session videos | `change_speakersettings`, delete files |
+| Proposal reviewers | view the program, review proposals | |
 | Speaker liaisons | liaise presenters, assign items | |
-| Design | view the program (media permissions arrive with task 3.7) | assign items |
+| Recordings | view the program, view, upload and edit files, publish session videos | delete files, assign items |
 
 A team with no set at all is still a team: work reaches it through task
 assignment, which is relational.
@@ -124,11 +131,12 @@ team backend together.
    the denial for someone without it, and that a staff flag alone opens
    nothing.
 
-## What went away
+## What is no longer read
 
-The volunteer `Role` model and `VolunteerProfile.roles` (the `RoleTypes` enum stays in `volunteer/constants.py` only because the first migration seeds from it). Roles
-granted no access; the Admin and Staff ones routed the internal emails and
-picked the organizer variant of the onboarding email, both of which read
-permissions now. The migration that removed them put every Admin and Staff
-holder on their edition's Organizers team first. Rosters, profiles and
-emails show teams and a Lead badge instead.
+The volunteer `Role` model and `VolunteerProfile.roles` stay in the schema,
+because they are upstream's, but nothing reads or shows them. Roles granted
+no access; the Admin and Staff ones routed the internal emails and picked
+the organizer variant of the onboarding email, both of which read
+permissions now. The migration put every Admin and Staff holder on their
+edition's Organizers team. Rosters, profiles and emails show teams and a
+Lead badge instead, and the Django admin no longer lists roles.

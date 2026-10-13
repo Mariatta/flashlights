@@ -35,7 +35,8 @@ To see what a team grants, open the team; to see what a person holds and
 where each grant comes from, open their volunteer profile.
 
 The usual teams start from a preset when they are created (Organizers,
-Volunteer coordination, Sponsorship, Program, Speaker liaisons) and
+Volunteer coordination, Sponsorship, Program, Proposal reviewers, Speaker
+liaisons, Recordings) and
 their sets can be adjusted afterwards on the team's edit form. Superusers
 bypass all of this, and the Infra maintainers group, which outlives
 editions, is managed in the Django admin.

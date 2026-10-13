@@ -173,7 +173,7 @@ class SpeakerSettings(TimestampedModel):
         default=False,
         help_text="Turn the speaker portal on for this edition.",
     )
-    # Decision 0013: in person, online or hybrid. Rows from before the
+    # In person, online or hybrid. Rows from before the
     # field read online, which is what they were.
     event_format = models.CharField(
         "format",
@@ -267,7 +267,7 @@ class SpeakerSettings(TimestampedModel):
     )
     # Pretix (design §12.1): upstream's columns, kept so upstream merges
     # apply, but nothing reads them. Ticketing is per edition in the
-    # ticketing app (decision 0012); its migration copied these over.
+    # ticketing app; its migration copied these over.
     pretix_base_url = models.URLField(
         default=BASE_PRETIX_URL,
         db_default=BASE_PRETIX_URL,
@@ -386,7 +386,7 @@ class AllowedOrigin(TimestampedModel):
 
 
 def event_format(conference):
-    """The edition's format (decision 0013): online with no edition or no
+    """The edition's format: online with no edition or no
     settings row, which is what every edition was before the field."""
     if conference is None:
         return EventFormat.ONLINE
@@ -399,7 +399,7 @@ def event_format(conference):
 
 
 def recordings(conference):
-    """How the edition records sessions (decision 0013): speakers pre-record
+    """How the edition records sessions: speakers pre-record
     with no edition or no row, which is what every edition did."""
     if conference is None:
         return Recordings.SPEAKERS
@@ -1847,7 +1847,7 @@ class ChecklistTemplate(TimestampedModel):
     def for_session(cls, session):
         """The active session-scope template for this session's type and
         delivery; one that names no kind applies to every kind (the team's
-        recording pipeline, decision 0013) and comes second."""
+        recording pipeline) and comes second."""
         active = cls.objects.filter(
             conference_id=session.conference_id,
             scope=ChecklistScope.SESSION,

@@ -56,7 +56,7 @@ def enabled(conference):
 
 @pytest.fixture
 def organizer(db, grant_organizer):
-    # Staff for the speakers views (until task 3.4) and on the Organizers
+    # Staff for the speakers views and on the Organizers
     # team for the Organize surface, which reads the permission.
     return grant_organizer(
         User.objects.create_user(

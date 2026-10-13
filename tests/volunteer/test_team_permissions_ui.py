@@ -1,4 +1,4 @@
-"""The team permissions UI (design §7.1, task 3.5): pickers and a preset on
+"""The team permissions UI (design §7.1): pickers and a preset on
 the team form, the grants on the team page, and where each of a person's
 permissions comes from on their profile page."""
 

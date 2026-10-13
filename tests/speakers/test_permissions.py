@@ -1,4 +1,4 @@
-"""Speakers on has_perm (design §7.1, task 3.4): a Program-team member runs
+"""Speakers on has_perm (design §7.1): a Program-team member runs
 the program with no Django flag, a Recordings-team member reads it and cannot
 invite, and liaison scoping is untouched (the existing suites cover it)."""
 

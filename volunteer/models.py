@@ -105,7 +105,7 @@ class Team(BaseModel):
 
 class Role(BaseModel):
     # Upstream's volunteer role. Nothing reads it since access moved to team
-    # permissions (decision 0014): kept because the model is upstream's, and
+    # permissions: kept because the model is upstream's, and
     # hidden from every form and page.
     short_name = models.CharField("name", max_length=40)
     description = models.CharField("description", max_length=1000)
