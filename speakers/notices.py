@@ -89,7 +89,7 @@ def _try_send(conference, recipients, group, speaker_side):
     try:
         with transaction.atomic():
             send_email(
-                f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX} {conference.name}: {subject}",
+                f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}{conference.name}: {subject}",
                 list(recipients),
                 markdown_template="emails/speakers/checklist_changes.md",
                 context=context,

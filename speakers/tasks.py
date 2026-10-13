@@ -414,7 +414,7 @@ def build_export_zip_task(export_id):
     link = zip_url(export)
     if export.created_by.email:
         send_email(
-            f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX} Your {export.conference.name} "
+            f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}Your {export.conference.name} "
             "file export is ready",
             [export.created_by.email],
             markdown_template="emails/speakers/export_ready.md",

@@ -246,3 +246,11 @@ class SendEmailCompatibilityTest(TestCase):
         self.assertEqual(result, "Rendered content")
         mock_get_template.assert_called_once_with("test.md")
         mock_template.render.assert_called_once_with({"key": "value"})
+
+
+def test_plain_text_decodes_entities():
+    """The text part reads "Convention & Center", not "&amp;": a venue or a
+    title with an ampersand comes through as written."""
+    renderer = MarkdownEmailRenderer()
+    text = renderer.markdown_to_text("Long Beach Convention &amp; Center, <b>A & B</b>")
+    assert text == "Long Beach Convention & Center, A & B"

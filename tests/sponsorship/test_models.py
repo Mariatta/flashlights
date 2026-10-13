@@ -112,7 +112,7 @@ class TestSponsorshipModel:
         for email in mail.outbox:
             assert (  # user creation, to internal staff
                 str(email.subject)
-                == f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX} New Sponsorship Tracking: {profile.organization_name}"
+                == f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}New Sponsorship Tracking: {profile.organization_name}"
             )
 
     def test_no_email_if_no_admin_user(self, portal_user, conference):
@@ -146,7 +146,7 @@ class TestSponsorshipModel:
         profile.save()
         assert (
             str(mail.outbox[0].subject)
-            == f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX} Update in Sponsorship Tracking for {profile.organization_name}"
+            == f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}Update in Sponsorship Tracking for {profile.organization_name}"
         )
 
     def test_sponsorship_notification_email_contains_info(self, admin_user, conference):

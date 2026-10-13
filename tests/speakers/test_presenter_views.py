@@ -1052,7 +1052,7 @@ class TestInviteFromPresenterPage:
         # One email, the one that fits: no invitation to accept what they
         # are already confirmed on, and no invitation row for it either.
         assert [m.subject for m in mail.outbox[before:]] == [
-            f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX} You've been added to A talk"
+            f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}You've been added to A talk"
         ]
         assert not Invitation.objects.filter(session=talk).exists()
 

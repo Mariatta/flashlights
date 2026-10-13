@@ -66,7 +66,7 @@ def invitation_url(invitation):
 
 def invitation_subject(invitation, conference):
     subject = (
-        f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX} You're invited to {conference.name}"
+        f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}You're invited to {conference.name}"
     )
     if invitation.session is not None:
         subject += f": {invitation.session.title}"
@@ -292,7 +292,7 @@ def send_copresenter_suggestion_email(presenter, session, name, email, note):
     # does not see every staff address.
     for recipient in recipients:
         send_email(
-            f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX} Co-presenter suggested for "
+            f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}Co-presenter suggested for "
             f"{session.title}",
             [recipient],
             markdown_template="emails/speakers/copresenter_suggestion.md",
@@ -305,7 +305,7 @@ def send_acceptance_email(invitation):
     """After accepting: account details, how to sign in, sessions, next steps."""
     presenter = invitation.presenter
     send_email(
-        f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX} Welcome aboard, "
+        f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}Welcome aboard, "
         f"{presenter.display_name}!",
         [presenter.email],
         markdown_template=ACCEPTED_TEMPLATE,
@@ -331,7 +331,7 @@ def send_added_to_session_email(link):
     presenter, session = link.presenter, link.session
     slot = getattr(session, "slot", None)
     send_email(
-        f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX} You've been added to "
+        f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}You've been added to "
         f"{session.title}",
         [presenter.email],
         markdown_template=ADDED_TO_SESSION_TEMPLATE,
@@ -409,7 +409,7 @@ def send_schedule_update_email(presenter, session_changes, published_at):
             }
         )
     return send_email(
-        "The event schedule was updated",
+        f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}The event schedule was updated",
         [presenter.email],
         markdown_template=SCHEDULE_UPDATE_TEMPLATE,
         context={
@@ -464,7 +464,7 @@ def send_upload_notice_email(asset, presenter):
         .first()
     )
     return send_email(
-        f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX} {presenter.display_name} "
+        f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}{presenter.display_name} "
         f"uploaded a video for {session.title}",
         recipients,
         markdown_template=UPLOAD_NOTICE_TEMPLATE,
@@ -525,7 +525,7 @@ def send_proposal_received_email(proposal):
         "proposals_url": absolute_url(reverse("speakers:my_proposals")),
     }
     send_email(
-        f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX} We have your proposal: "
+        f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}We have your proposal: "
         f"{session.title}",
         [presenter.email],
         markdown_template="emails/speakers/proposal_received.md",
@@ -537,7 +537,7 @@ def send_proposal_received_email(proposal):
     recipients = organizer_inbox(proposal.conference, presenter)
     if recipients:
         send_email(
-            f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX} New session proposal: "
+            f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}New session proposal: "
             f"{session.title}",
             recipients,
             markdown_template="emails/speakers/proposal_for_organizers.md",
@@ -556,7 +556,7 @@ def send_proposal_approved_email(proposal):
     """Yes. The onboarding email, for someone who already has an account."""
     presenter, session = proposal.presenter, proposal.session
     send_email(
-        f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX} Your session is in: "
+        f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}Your session is in: "
         f"{session.title}",
         [presenter.email],
         markdown_template=PROPOSAL_APPROVED_TEMPLATE,
@@ -578,7 +578,7 @@ def send_proposal_rejected_email(proposal):
     """No. Short, kind, and without a reason, which is what was asked for."""
     presenter = proposal.presenter
     send_email(
-        f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX} About your proposal: "
+        f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}About your proposal: "
         f"{proposal.session.title}",
         [presenter.email],
         markdown_template=PROPOSAL_REJECTED_TEMPLATE,

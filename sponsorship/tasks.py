@@ -57,7 +57,7 @@ def send_internal_sponsor_onboarding_email_task(self, profile_id):
         profile = SponsorshipProfile.objects.get(id=profile_id)
 
         context = {"profile": profile}
-        subject = f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX} New Sponsorship Tracking: {profile.organization_name}"
+        subject = f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}New Sponsorship Tracking: {profile.organization_name}"
         markdown_template = "emails/sponsorship/internal_sponsor_onboarding.md"
 
         return send_internal_email_task(subject, markdown_template, context)
@@ -76,7 +76,7 @@ def send_internal_sponsor_progress_update_email_task(self, profile_id):
         profile = SponsorshipProfile.objects.get(id=profile_id)
 
         context = {"profile": profile}
-        subject = f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX} Update in Sponsorship Tracking for {profile.organization_name}"
+        subject = f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}Update in Sponsorship Tracking for {profile.organization_name}"
         markdown_template = "emails/sponsorship/internal_sponsor_updated.md"
 
         return send_internal_email_task(subject, markdown_template, context)

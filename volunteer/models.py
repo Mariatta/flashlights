@@ -345,7 +345,7 @@ def send_volunteer_notification_email(instance, updated=False):
     """Send email to the user whenever their volunteer profile was updated/created."""
     context = {"profile": instance}
     subject = (
-        f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX} {instance.conference} "
+        f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}{instance.conference} "
         "Volunteer Application"
     )
     if updated:
@@ -372,7 +372,7 @@ def send_volunteer_onboarding_email(instance):
     """
     if instance.application_status == ApplicationStatus.APPROVED:
         context = {"profile": instance, "GDRIVE_FOLDER_ID": settings.GDRIVE_FOLDER_ID}
-        subject = f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX} Welcome to the {instance.conference} Volunteer Team"
+        subject = f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}Welcome to the {instance.conference} Volunteer Team"
 
         for role in instance.roles.all():
             if role.short_name in [RoleTypes.ADMIN, RoleTypes.STAFF]:
@@ -394,7 +394,7 @@ def send_internal_volunteer_onboarding_email(instance):
     """
     if instance.application_status == ApplicationStatus.APPROVED:
         context = {"profile": instance, "GDRIVE_FOLDER_ID": settings.GDRIVE_FOLDER_ID}
-        subject = f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX} Complete the {instance.conference} Volunteer Onboarding for: {instance.user.first_name} {instance.user.last_name}"
+        subject = f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}Complete the {instance.conference} Volunteer Onboarding for: {instance.user.first_name} {instance.user.last_name}"
         for role in instance.roles.all():
             if role.short_name in [RoleTypes.ADMIN, RoleTypes.STAFF]:
                 context["admin_onboarding"] = True
@@ -453,7 +453,7 @@ def send_internal_notification_email(instance):
 
     """
     context = {"profile": instance}
-    subject = f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX} New {instance.conference} Volunteer Application"
+    subject = f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}New {instance.conference} Volunteer Application"
 
     markdown_template = (
         "emails/volunteer/internal_volunteer_profile_email_notification.md"
@@ -477,7 +477,7 @@ def send_volunteer_cancelled_emails(instance, teams_before_cancel, roles_before_
         "roles_removed": roles_before_cancel,
     }
     send_email(
-        subject=f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX} Volunteer Application Cancelled",
+        subject=f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}Volunteer Application Cancelled",
         recipient_list=[instance.user.email],
         markdown_template="emails/volunteer/volunteer_cancellation_confirmation.md",
         context=context,
@@ -492,7 +492,7 @@ def send_volunteer_cancelled_emails(instance, teams_before_cancel, roles_before_
                 "team": team,
             }
             send_email(
-                subject=f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX} Team Member Cancelled: {instance.user.get_full_name() or instance.user.username}",
+                subject=f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}Team Member Cancelled: {instance.user.get_full_name() or instance.user.username}",
                 recipient_list=team_leads_emails,
                 markdown_template="emails/volunteer/team_lead_cancellation_notification.md",
                 context=context,

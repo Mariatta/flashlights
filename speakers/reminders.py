@@ -105,9 +105,8 @@ def _digest_subject(conference, due, shared):
     if shared:
         count = sum(len(files) for _, files in shared)
         parts.append(f"{count} new file(s) from the team")
-    return (
-        f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX} {conference.name}: "
-        + " and ".join(parts)
+    return f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}{conference.name}: " + " and ".join(
+        parts
     )
 
 
@@ -235,7 +234,7 @@ def _organizer_digests(conference, items, now, sent, settings_row):
                 "for_organizer": True,
             },
             due,
-            subject=f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX} {conference.name}: "
+            subject=f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}{conference.name}: "
             f"{len(due)} team todo(s) with deadlines coming up",
             user=accounts.get(recipients),
         ):

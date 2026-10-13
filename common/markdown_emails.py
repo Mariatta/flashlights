@@ -5,6 +5,7 @@ converting them to both HTML and plain text formats for email delivery.
 """
 
 import re
+from html import unescape
 from typing import Any, Dict, Optional, Tuple
 
 import bleach
@@ -123,8 +124,9 @@ class MarkdownEmailRenderer:
         html = self.md.convert(markdown_content)
         self.md.reset()
 
-        # Remove HTML tags and decode entities
-        text = bleach.clean(html, tags=[], strip=True)
+        # Remove HTML tags, then decode the entities bleach leaves behind:
+        # plain text says "Convention & Center", not "&amp;".
+        text = unescape(bleach.clean(html, tags=[], strip=True))
 
         # Clean up extra whitespace
         text = re.sub(r"\n\s*\n", "\n\n", text)  # Normalize line breaks
