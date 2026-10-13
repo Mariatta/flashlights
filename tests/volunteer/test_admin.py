@@ -1,14 +1,13 @@
 import pytest
 from django.conf import settings
-from django.contrib.admin.sites import AdminSite
+from django.contrib import admin
 from django.contrib.auth.models import User
 from django.core import mail
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from tablib import Dataset
 
 from portal.models import Conference
-from volunteer.admin import PyladiesChapterAdmin, VolunteerProfileResource
+from volunteer.admin import VolunteerProfileResource
 from volunteer.constants import ApplicationStatus
 from volunteer.models import PyladiesChapter, VolunteerProfile
 
@@ -115,30 +114,17 @@ class TestAdminActions:
 
 
 @pytest.mark.django_db
-class TestPyLadiesChapterAdmin:
-
-    def test_pyladies_chapter_admin_view(self):
-        pyladies_chapter_admin = PyladiesChapterAdmin(
-            model=PyladiesChapter, admin_site=AdminSite
-        )
-
-        chapter = PyladiesChapter.objects.create(
-            chapter_name="vancouver",
-            chapter_description="Vancouver, Canada",
-            chapter_website="https://vancouver.pyladies.com/",
-        )
-
-        has_logo_field = pyladies_chapter_admin.has_logo(chapter)
-        assert has_logo_field is False
-
-        chapter.logo = SimpleUploadedFile(
-            name="test_image.jpg",
-            content=open("./tests/sponsorship/test_img.png", "rb").read(),
-            content_type="image/jpeg",
-        )
-        has_logo_field = pyladies_chapter_admin.has_logo(chapter)
-
-        assert has_logo_field is True
+class TestNoPyLadiesNotions:
+    def test_no_chapter_page_and_no_chapter_or_region_on_profiles(
+        self, client, admin_user
+    ):
+        """PyLadies chapters and regions are upstream's notions: the models
+        keep them, the admin shows neither."""
+        assert not admin.site.is_registered(PyladiesChapter)
+        client.force_login(admin_user)
+        page = client.get(reverse("admin:volunteer_volunteerprofile_add"))
+        content = page.content.decode()
+        assert 'name="region"' not in content and 'name="chapter"' not in content
 
 
 class TestVolunteerImportExport:

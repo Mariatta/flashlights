@@ -149,14 +149,14 @@
                                 Send Invoice Request
                             </h5>
                             <p>
-                                Send an email to the PSF accounting team to prepare the sponsorship contract.
+                                Send an email to the accounting team (the accounting and sponsorship addresses in the settings) to prepare the sponsorship contract.
                             </p>
                             <form method="post"
                                   action="{% url 'sponsorship:sponsorship_send_invoice' profile.pk %}">
                                 {% csrf_token %}
                                 <button type="submit"
                                         class="btn btn-primary"
-                                        onclick="return confirm('Are you sure you want to send the invoice request to PSF accounting?')">
+                                        onclick="return confirm('Are you sure you want to send the invoice request to the accounting team?')">
                                     <i class="fas icon-mail"></i> Send Invoice Request
                                 </button>
                             </form>

@@ -8,7 +8,7 @@ from portal.admin_filters import ActiveConferenceFilter
 from portal.models import Conference
 
 from .constants import ApplicationStatus
-from .models import Language, PyladiesChapter, Role, Team, VolunteerProfile
+from .models import Language, Role, Team, VolunteerProfile
 
 
 @admin.action(description="Mark selected Volunteers as waitlisted")
@@ -82,8 +82,6 @@ class VolunteerProfileResource(resources.ModelResource):
             "mastodon_url",
             "x_username",
             "linkedin_url",
-            "region",
-            "chapter__chapter_name",
         )
 
 
@@ -111,43 +109,11 @@ class VolunteerProfileAdmin(ImportExportModelAdmin):
     # Dual-list ("available"/"chosen") pickers for the many-to-many fields.
     filter_horizontal = ("teams", "roles", "language")
     # ``languages_spoken`` is deprecated in favour of the ``language`` m2m; hide
-    # it from the admin form (the public form already excludes it).
-    exclude = ("languages_spoken",)
-
-
-class PyladiesChapterResource(resources.ModelResource):
-    class Meta:
-        model = PyladiesChapter
-        fields = (
-            "id",
-            "chapter_name",
-            "chapter_description",
-            "chapter_email",
-            "chapter_website",
-        )
-
-
-@admin.register(PyladiesChapter)
-class PyladiesChapterAdmin(ImportExportModelAdmin):
-    list_display = (
-        "chapter_name",
-        "chapter_description",
-        "chapter_email",
-        "chapter_website",
-        "has_logo",
-    )
-    resource_classes = [PyladiesChapterResource]
-    search_fields = ["chapter_name", "chapter_description", "chapter_email"]
-
-    def has_logo(self, obj):
-        """Returns True if the chapter has a logo uploaded."""
-        if obj.logo:
-            return True
-        else:
-            return False
-
-    has_logo.boolean = True  # Render the has_logo column with a check icon
-    has_logo.short_description = "Has Logo"
+    # it from the admin form (the public form already excludes it). The
+    # region and the PyLadies chapter are upstream's own notions, kept on the
+    # model and hidden everywhere in Flashlights; affiliations replace the
+    # chapter, and PyLadies chapters have no admin page of their own.
+    exclude = ("languages_spoken", "region", "chapter")
 
 
 class TeamAdmin(admin.ModelAdmin):

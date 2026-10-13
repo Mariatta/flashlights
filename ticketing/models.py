@@ -1,8 +1,8 @@
 """Where an edition's registrations come from.
 
 One row per edition, replacing the ``PRETIX_*`` environment variables, the
-speakers' Pretix settings and the PyLadiesCon question identifiers that
-were written into the attendee app. The provider says how registrations
+speakers' Pretix settings and the question identifiers that were written
+into the attendee app. The provider says how registrations
 arrive: Pretix through its API (and webhooks), or a CSV export from
 anything else. The question map says which registration question fills
 which attendee field; the product map says which product is a ticket and
@@ -38,7 +38,6 @@ ATTENDEE_FIELDS = [
     ("current_position", "Current position"),
     ("experience_level", "Experience level"),
     ("age_range", "Age range"),
-    ("pyladies_chapter", "Local chapter or group"),
     ("heard_about", "How they heard about the event"),
     ("expectation_from_event", "What they expect from the event"),
     ("participated_in_previous_event", "Came to a previous edition"),

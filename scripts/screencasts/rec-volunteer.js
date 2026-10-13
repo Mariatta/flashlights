@@ -38,7 +38,7 @@ const ctxRef = {};
   await clock.type(
     page,
     'textarea[name="you-bio_md"]',
-    "Maya volunteered with the PyLadiesCon 2025 design team. She builds data pipelines for a public library network and teaches Python to first-time programmers.",
+    "Maya volunteered with last year's design team. She builds data pipelines for a public library network and teaches Python to first-time programmers.",
     39.3,
   );
   await clock.at(39.7, "location and timezone");

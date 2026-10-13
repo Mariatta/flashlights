@@ -43,9 +43,6 @@ class AttendeeProfileResource(resources.ModelResource):
             "order__email",
             "order__status",
             "may_share_email_with_sponsor",
-            "chapter_description",
-            "chapter_email",
-            "chapter_website",
         )
 
 
@@ -58,7 +55,6 @@ class AttendeeProfileAdmin(ImportExportModelAdmin):
         "current_position",
         "experience_level",
         "may_share_email_with_sponsor",
-        "pyladies_chapter",
         "age_range",
         "organization_name",
     )
@@ -76,4 +72,6 @@ class AttendeeProfileAdmin(ImportExportModelAdmin):
         "participated_in_previous_event",
     )
     readonly_fields = ("raw_answers",)
+    # Upstream's PyLadies chapter answer: kept on the model, not shown.
+    exclude = ("pyladies_chapter",)
     resource_classes = [AttendeeProfileResource]

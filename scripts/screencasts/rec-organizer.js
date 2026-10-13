@@ -69,7 +69,7 @@ const ctxRef = {};
   await clock.at(51.8, "choose session");
   await L.choose(page, `${invite} select[name="session"]`, "Hands-on Testing for Data Pipelines (Workshop)");
   await clock.at(54.9, "note");
-  await clock.type(page, `${invite} textarea`, "We loved your work on testing pipelines and would love to have you speak at PyLadiesCon 2026.", 59.2);
+  await clock.type(page, `${invite} textarea`, "We loved your work on testing pipelines and would love to have you speak this year.", 59.2);
   await page.locator(`${invite} textarea`).blur();
   await clock.at(59.5, "caption preview");
   await cap("The preview shows exactly the email they will receive");

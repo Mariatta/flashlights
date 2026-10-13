@@ -16,8 +16,8 @@ We're writing to let you know that a new volunteer has just signed up for **{{ p
 
 - **Availability:** {{ profile.availability_hours_per_week }} hours per week
 - **GitHub username:** {{ profile.github_username }}
-- **Discord username:** {{ profile.discord_username }}
-- **Instagram username:** {{ profile.instagram_username }}
+{% if profile.conference.uses_discord %}- **Discord username:** {{ profile.discord_username }}
+{% endif %}- **Instagram username:** {{ profile.instagram_username }}
 - **Bluesky username:** {{ profile.bluesky_username }}
 - **Mastodon URL:** {{ profile.mastodon_url }}
 - **X username:** {{ profile.x_username }}

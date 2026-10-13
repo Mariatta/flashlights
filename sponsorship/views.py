@@ -333,12 +333,12 @@ class SponsorshipProfileSendInvoice(AdminRequiredMixin, View):
     def post(self, request, pk):
         profile = get_object_or_404(SponsorshipProfile, pk=pk)
 
-        # Send email to PSF accounting team
+        # Ask whoever issues invoices to prepare the contract.
         send_psf_invoice_request_email(profile)
 
         messages.success(
             request,
-            f"Invoice request sent to PSF accounting team for {profile.organization_name}",
+            f"Invoice request sent to the accounting team for {profile.organization_name}",
         )
 
         return redirect("sponsorship:sponsorship_profile_detail", pk=pk)

@@ -16,8 +16,8 @@ Your current volunteer application status: **{{ profile.application_status }}**.
 
 - **Availability:** {{ profile.availability_hours_per_week }} hours per week
 - **GitHub username:** {{ profile.github_username }}
-- **Discord username:** {{ profile.discord_username }}
-- **Instagram username:** {{ profile.instagram_username }}
+{% if profile.conference.uses_discord %}- **Discord username:** {{ profile.discord_username }}
+{% endif %}- **Instagram username:** {{ profile.instagram_username }}
 - **Bluesky username:** {{ profile.bluesky_username }}
 - **Mastodon URL:** {{ profile.mastodon_url }}
 - **X username:** {{ profile.x_username }}
@@ -27,6 +27,6 @@ Your current volunteer application status: **{{ profile.application_status }}**.
 
 If you would like to review or update your application at any time, go to your [Volunteer Dashboard](https://{{ current_site.domain }}{% url 'volunteer:index' %}) at https://{{ current_site.domain }}{% url 'volunteer:index' %}.
 
-Be sure to join our [Discord server](https://discord.com/invite/2fUN4ddVfP) at https://discord.com/invite/2fUN4ddVfP. All of our volunteers are required to join the server to communicate and collaborate with the rest of the team.
+{% if profile.conference.has_chat %}{% if profile.conference.chat_url %}Be sure to join us on [{{ profile.conference.chat_label }}]({{ profile.conference.chat_url }}) at {{ profile.conference.chat_url }}.{% else %}Be sure to join us on {{ profile.conference.chat_label }}; your team lead sends the invitation.{% endif %} It is where the volunteers talk and work together.{% endif %}
 
 {% endblock content %}

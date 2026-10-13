@@ -103,7 +103,8 @@ class SponsorshipProfile(BaseModel):
 
 
 class IndividualDonation(BaseModel):
-    """Representation of Individual Donations coming in from PSF CivicCRM platform."""
+    """An individual donation recorded outside the ticket shop, for example
+    imported from a donation platform."""
 
     # Every donation belongs to a conference edition (backfilled in Phase 3).
     # See docs/architecture/multi-year-conferences.md.

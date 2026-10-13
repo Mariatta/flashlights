@@ -746,7 +746,7 @@ class TestSponsorshipCreateViews:
 
         # Check that emails were sent
         assert len(mail.outbox) >= 1
-        # Find the PSF invoice email
+        # Find the invoice request email
         psf_email = None
         for email in mail.outbox:
             if "Flashlights sponsorship contract request: Test Corp" in email.subject:
@@ -757,7 +757,7 @@ class TestSponsorshipCreateViews:
         # Check success message
         messages = list(response.wsgi_request._messages)
         assert len(messages) == 1
-        assert "Invoice request sent to PSF accounting team for Test Corp" in str(
+        assert "Invoice request sent to the accounting team for Test Corp" in str(
             messages[0].message
         )
 

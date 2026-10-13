@@ -1,6 +1,6 @@
-Dear PSF Accounting Team,
+Dear accounting team,
 
-We have an approved sponsorship from **{{ profile.organization_name }}** for PyLadiesCon.
+We have an approved sponsorship from **{{ profile.organization_name }}** for {{ profile.conference.name }}.
 
 Please prepare the sponsorship contract and invoice with the following information:
 
@@ -16,4 +16,4 @@ Please prepare the sponsorship contract and invoice with the following informati
 Please let us know if you need any additional information.
 
 Best regards,  
-PyLadiesCon Team
+The {{ profile.conference.name }} team

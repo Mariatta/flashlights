@@ -13,7 +13,7 @@ Find an issue in our [repo](https://github.com/mariatta/flashlights) to get star
 
 To start working with the code, refer to our [setup guide](/developer/setup/).
 
-Ask questions in the **[#portal_dev](https://discord.gg/X6fcufjb)** channel of our Discord comunity.
+Ask questions in a [discussion](https://github.com/mariatta/flashlights/discussions) on GitHub.
 
 ## Running Tests
 

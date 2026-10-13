@@ -30,8 +30,8 @@ If you need any help, have questions, or no longer able to volunteer, please rea
 
 **Important:** Please complete these action items to activate your volunteering.
 
-- **Join the team's Discord server** if you haven't done so; your team lead sends the invitation. *Failure to join the Discord server within 7 days may result in cancellation of your volunteering activity.*
-
+{% if profile.conference.has_chat %}- **Join {{ profile.conference.chat_label }}** if you haven't done so; {% if profile.conference.chat_url %}the invitation is at {{ profile.conference.chat_url }}{% else %}your team lead sends the invitation{% endif %}. It is where the volunteers talk and work together.
+{% endif %}
 - **Read your team's description and the volunteer guide** to understand the roles of your team and what is expected.
 
 {% if not profile.github_username %}
@@ -45,18 +45,17 @@ If you need any help, have questions, or no longer able to volunteer, please rea
 
 Since you've been added as a core organizing team (as a team lead, a staff, or admin), we will also be granting you additional privileges and access, such as:
 
-- The Organizer Role on Discord
-{% if not profile.github_username %}
+{% if profile.conference.uses_discord %}- The Organizer Role on Discord
+{% endif %}{% if not profile.github_username %}
 - Access to the organizers' GitHub team (**⚠️ Please update your GitHub username on the portal first**)
 {% else %}
 - Access to the organizers' GitHub team
 {% endif %}
 - Access to the shared drive ({{ GDRIVE_FOLDER_ID }})
-- Invitation to [Jelly](https://letsjelly.com/)
 - Invitation to the organizers' meeting calendar
 - Invitation to the shared password manager
 
-You should be receiving additional emails and invites to the above items within a few days. Please be sure to follow through and activate your access to the above services and items since they are crucial to our event. If you have not received those after 5 days or if you need them sooner, please reach out to the other core organizers on Discord.
+You should be receiving additional emails and invites to the above items within a few days. Please be sure to follow through and activate your access to the above services and items since they are crucial to our event. If you have not received those after 5 days or if you need them sooner, please reach out to the other core organizers.
 {% endif %}
 
 **Thank you.**

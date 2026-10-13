@@ -60,7 +60,7 @@ async function band(page, from, to, file, { pad = 16, padBottom = pad, left = nu
   await admin.waitForLoadState();
   const invite = 'form[id^="invite-form"]';
   await admin.selectOption(`${invite} select[name="session"]`, { label: "Hands-on Testing for Data Pipelines (Workshop)" });
-  await admin.fill(`${invite} textarea`, "We loved your work on testing pipelines and would love to have you at PyLadiesCon 2026.");
+  await admin.fill(`${invite} textarea`, "We loved your work on testing pipelines and would love to have you this year.");
   await admin.click(`${invite} button:has-text("Send")`);
   await admin.waitForLoadState();
 
@@ -114,7 +114,7 @@ async function band(page, from, to, file, { pad = 16, padBottom = pad, left = nu
   await login(vol, "vol_maya");
   await vol.goto(S + "/speakers/propose/");
   await vol.fill('input[name="you-display_name"]', "Maya Okafor");
-  await vol.fill('textarea[name="you-bio_md"]', "Maya volunteered with the PyLadiesCon 2025 design team and teaches Python to first-time programmers.");
+  await vol.fill('textarea[name="you-bio_md"]', "Maya volunteered with last year's design team and teaches Python to first-time programmers.");
   await vol.selectOption('select[name="you-timezone"]', "America/Toronto");
   await vol.check('input[name="session-kind"] >> nth=0');
   await vol.fill('input[name="session-title"]', "Build Your First Data Pipeline");
