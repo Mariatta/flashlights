@@ -11,7 +11,7 @@ organizers changed.
 """
 
 from .constants import Delivery
-from .models import PresenterRole, SessionType, is_in_person
+from .models import PresenterRole, SessionType, is_in_person, speakers_pre_record
 
 # code, name, the word the thank-you preface uses, sort order
 DEFAULT_ROLES = [
@@ -31,8 +31,8 @@ DEFAULT_SESSION_TYPES = [
     ("LIGHTNING", "Lightning talk", True, 5, Delivery.LIVE, False, ["PRESENTER"], 30),
     ("PANEL", "Panel", True, 60, Delivery.LIVE, False, ["PANELIST", "MODERATOR"], 40),
     (
-        "PYJAM",
-        "PyJam performance",
+        "PERFORMANCE",
+        "Performance",
         True,
         30,
         Delivery.PRE_RECORDED,
@@ -51,11 +51,11 @@ DEFAULT_SESSION_TYPES = [
 
 
 # The types a person may propose, or add for themselves, on a fresh
-# edition: the three someone brings to the conference. The rest are the
+# edition: the two someone brings to the conference. The rest are the
 # program's own furniture (the opening, a break) or an invitation the team
 # makes (a keynote). Every edition can change this on the "Types and roles"
 # page; the seed only decides where it starts.
-PROPOSABLE_CODES = {"TALK", "WORKSHOP", "PYJAM"}
+PROPOSABLE_CODES = {"TALK", "WORKSHOP"}
 
 
 def seed_program_types(conference):
@@ -88,6 +88,10 @@ def seed_program_types(conference):
         role_codes,
         order,
     ) in DEFAULT_SESSION_TYPES:
+        # A performance is a video the performer sends ahead: only for an
+        # edition where speakers pre-record.
+        if code == "PERFORMANCE" and not speakers_pre_record(conference):
+            continue
         session_type, created = SessionType.objects.get_or_create(
             conference=conference,
             code=code,

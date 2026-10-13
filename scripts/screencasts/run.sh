@@ -48,7 +48,7 @@ export AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-minioadmin}"
 export AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-minioadmin}"
 export SCREENCAST_MEDIA="$MEDIA"
 # The performer's session in the media takes; seed.py renames the sample
-# PyJam session to this, and the scripts find it by this title.
+# performance to this, and the scripts find it by this title.
 export SCREENCAST_SESSION_TITLE="${SCREENCAST_SESSION_TITLE:-Duck Typing the Blues}"
 
 manage() { (cd "$ROOT" && "$PYTHON" manage.py "$@"); }

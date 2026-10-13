@@ -174,7 +174,7 @@ class TestPublicFeed:
         assert "STATUS:CANCELLED" in personal
 
     def test_youtube_premiere_is_the_location(self, client, enabled, conference):
-        session = make_session(conference, title="PyJam set", kind="PYJAM")
+        session = make_session(conference, title="Performance set", kind="PERFORMANCE")
         add_presenter(session, make_presenter(conference), confirmed=True)
         session.confirm()
         session.youtube_url = "https://youtube.com/watch?v=x"

@@ -60,10 +60,10 @@ def liaison(db):
 
 @pytest.fixture
 def world(conference, performer, liaison):
-    """Maria on a PyJam set, with Lia as her liaison; the edition has a
+    """Maria on a Performance set, with Lia as her liaison; the edition has a
     team address."""
     make_settings(conference, organizers_email="team@x.org")
-    session = make_session(conference, title="A PyJam set", kind="PYJAM")
+    session = make_session(conference, title="A performance", kind="PERFORMANCE")
     presenter = make_presenter(
         conference, display_name="Maria", user=performer, liaison=liaison
     )
@@ -110,10 +110,10 @@ class TestWhoIsTold:
         assert len(mail.outbox) == 1
         message = mail.outbox[0]
         assert message.to == ["lia@x.org"]
-        assert message.subject.endswith("Maria uploaded a video for A PyJam set")
+        assert message.subject.endswith("Maria uploaded a video for A performance")
         assert message.reply_to == [world["presenter"].email]
         body = message.body
-        assert "has uploaded their video for A PyJam set" in body
+        assert "has uploaded their video for A performance" in body
         assert "take.mp4 (3" in body and "v1, the first" in body
         assert "being checked" in body
         assert f"{session.get_absolute_url()}#files" in body

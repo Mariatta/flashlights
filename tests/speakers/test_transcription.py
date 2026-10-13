@@ -64,7 +64,7 @@ class FakeEngine(Engine):
             if segments is not None
             else [
                 (0.0, 2.5, "Hello everyone."),
-                (2.5, 5.0, "Welcome to PyJam."),
+                (2.5, 5.0, "Welcome to the show."),
             ]
         )
         self.language = language
@@ -112,11 +112,13 @@ def organizer(db):
 
 @pytest.fixture
 def world(conference, bucket, organizer):
-    """A PyJam set in English with the seeded post-production items and the
+    """A performance in English with the seeded post-production items and the
     edition's switch on."""
     make_settings(conference, auto_transcribe=True)
     seed_checklists(conference)
-    session = make_session(conference, title="A PyJam set", kind="PYJAM", language="en")
+    session = make_session(
+        conference, title="A performance", kind="PERFORMANCE", language="en"
+    )
     add_presenter(
         session, make_presenter(conference, display_name="Ada"), confirmed=True
     )
@@ -262,7 +264,7 @@ class TestPipeline:
         assert draft.title == "Machine transcript of take.mp4"
         stored = bucket.client.get_object(Bucket=BUCKET, Key=draft.storage_key)
         assert stored["ContentType"] == "text/vtt"
-        assert b"Welcome to PyJam." in stored["Body"].read()
+        assert b"Welcome to the show." in stored["Body"].read()
         assert engine.calls[0][1] == "en" and engine.calls[0][0].endswith("audio.raw")
         transcribe_item.refresh_from_db()
         review.refresh_from_db()

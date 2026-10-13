@@ -65,7 +65,7 @@ def liaison(db):
 
 @pytest.fixture
 def session(conference, enabled, performer, liaison):
-    session = make_session(conference, title="A PyJam set", kind="PYJAM")
+    session = make_session(conference, title="A performance", kind="PERFORMANCE")
     presenter = make_presenter(
         conference, display_name="Maria", user=performer, liaison=liaison
     )
@@ -318,7 +318,7 @@ class TestDownload:
         client.force_login(stranger)
         assert client.get(download(session, asset)).status_code == 403
         client.force_login(organizer)
-        other = make_session(conference, kind="PYJAM")
+        other = make_session(conference, kind="PERFORMANCE")
         assert client.get(download(other, asset)).status_code == 404
         empty = MediaAsset.objects.create(session=session, kind=MediaKind.OTHER)
         assert client.get(download(session, empty)).status_code == 404

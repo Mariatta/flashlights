@@ -55,7 +55,7 @@ def speaker(db):
 @pytest.fixture
 def session(conference, speaker):
     make_settings(conference)
-    session = make_session(conference, title="A PyJam set", kind="PYJAM")
+    session = make_session(conference, title="A performance", kind="PERFORMANCE")
     add_presenter(
         session,
         make_presenter(conference, display_name="Ada", user=speaker),

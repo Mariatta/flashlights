@@ -46,7 +46,7 @@ def bucket(settings):
 
 @pytest.fixture
 def session(conference, enabled, performer):
-    session = make_session(conference, title="A PyJam set", kind="PYJAM")
+    session = make_session(conference, title="A performance", kind="PERFORMANCE")
     presenter = make_presenter(conference, display_name="Maria", user=performer)
     add_presenter(session, presenter, confirmed=True)
     return session

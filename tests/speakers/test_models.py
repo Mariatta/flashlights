@@ -137,7 +137,7 @@ class TestSession:
         )
 
     def test_is_content(self, conference):
-        assert make_session(conference, kind="PYJAM").is_content is True
+        assert make_session(conference, kind="PERFORMANCE").is_content is True
         assert make_session(conference, kind="BREAK").is_content is False
 
     def test_is_pre_recorded(self, conference):

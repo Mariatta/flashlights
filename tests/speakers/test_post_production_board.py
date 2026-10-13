@@ -47,8 +47,8 @@ def liaison(db, conference):
     return user
 
 
-def pyjam(conference, title, presenter, **kwargs):
-    session = make_session(conference, title=title, kind="PYJAM", **kwargs)
+def performance(conference, title, presenter, **kwargs):
+    session = make_session(conference, title=title, kind="PERFORMANCE", **kwargs)
     add_presenter(session, presenter, confirmed=True)
     instantiate_session_checklist(session)
     return session
@@ -66,15 +66,15 @@ def item(session, title):
 
 @pytest.fixture
 def world(conference, liaison, organizer):
-    """Two PyJam sets with the seeded pipeline (Ada's liaised by Lena, over
+    """Two Performance sets with the seeded pipeline (Ada's liaised by Lena, over
     the limit and blocked; Grace's with a final cut in), a live talk, and
     a set that is only proposed."""
     make_settings(conference, translation_languages=["pt-br"])
     seed_checklists(conference)
     ada = make_presenter(conference, display_name="Ada", liaison=liaison)
     grace = make_presenter(conference, display_name="Grace")
-    loud = pyjam(conference, "Loud set", ada, language="en")
-    quiet = pyjam(conference, "Quiet set", grace, language="en")
+    loud = performance(conference, "Loud set", ada, language="en")
+    quiet = performance(conference, "Quiet set", grace, language="en")
     video(loud, version=2, duration_seconds=11 * 60)
     block_item(
         item(loud, "Check video length is within limit"),
@@ -87,7 +87,7 @@ def world(conference, liaison, organizer):
     talk = make_session(conference, title="A talk", kind="TALK")
     add_presenter(talk, grace, confirmed=True)
     proposed = make_session(
-        conference, title="Maybe", kind="PYJAM", status=SessionStatus.PROPOSED
+        conference, title="Maybe", kind="PERFORMANCE", status=SessionStatus.PROPOSED
     )
     return {
         "loud": loud,
@@ -180,7 +180,7 @@ class TestBoard:
         with CaptureQueriesContext(connection) as before:
             client.get(BOARD, {"tab": "post_production"})
         for n in range(4):
-            session = pyjam(conference, f"Set {n}", make_presenter(conference))
+            session = performance(conference, f"Set {n}", make_presenter(conference))
             video(session, version=1)
             video(session, kind=MediaKind.PROCESSED_VIDEO, version=1)
             assign_item(item(session, "Transcribe"), assignee=organizer)
@@ -227,7 +227,7 @@ class TestVideosColumn:
 
     def test_no_raw_video_yet(self, client, organizer, conference):
         make_settings(conference)
-        pyjam(conference, "Silent set", make_presenter(conference))
+        performance(conference, "Silent set", make_presenter(conference))
         client.force_login(organizer)
         html = client.get(SESSIONS).content.decode()
         assert "no raw video" in html
@@ -239,7 +239,7 @@ class TestVideosColumn:
         with CaptureQueriesContext(connection) as before:
             client.get(SESSIONS)
         for n in range(4):
-            session = pyjam(conference, f"Set {n}", make_presenter(conference))
+            session = performance(conference, f"Set {n}", make_presenter(conference))
             video(session, version=1, duration_seconds=60)
             video(session, version=2, duration_seconds=61)
             video(session, kind=MediaKind.PROCESSED_VIDEO, version=1)

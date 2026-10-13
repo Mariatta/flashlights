@@ -382,7 +382,7 @@ and maildev at http://localhost:1080 gets the email). After pulling code
 that adds a Celery task, restart the worker (`docker compose restart
 celery`): a running worker only knows the tasks it started with and drops
 a message for one it does not know. Log in as a performer (the sample data's
-`volunteer2` is on the PyJam session) and upload from the session page;
+`volunteer2` is on the performance) and upload from the session page;
 leaving the page mid-upload and choosing the same file again should
 continue from the parts that already landed.
 
@@ -505,7 +505,7 @@ every screen of the speaker module has something to show. It creates:
   presenters), 2 approved volunteers on teams (`vol_maya` on Design Team,
   `vol_kim` on Media Team), 1 pending volunteer (`vol_pending`)
 - **7 Sessions**: a workshop and a keynote (scheduled on the first conference
-  day), a panel and a pre-recorded PyJam performance (confirmed), a talk
+  day), a panel and a pre-recorded performance (confirmed), a talk
   (draft), plus the opening (scheduled) and a coffee break
 - **6 Presenters**, one per invitation state:
     - `ada@example.com`: accepted and onboarded workshop presenter, with
@@ -514,7 +514,7 @@ every screen of the speaker module has something to show. It creates:
       the workshop and panel moderator, so she gets both the keynote and the
       workshop guides
     - `dex@example.com`: invited panelist who has not accepted yet
-    - `maria@example.com`: onboarded PyJam performer whose uploaded video is
+    - `maria@example.com`: onboarded performer whose uploaded video is
       over the length limit, which blocks the video-length item
     - `sam@example.com`: talk presenter who has not been invited yet
     - `nina@example.com`: accepted host of the opening who has not been

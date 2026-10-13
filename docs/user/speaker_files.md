@@ -1,7 +1,7 @@
 # Your video and files
 
 This guide is for speakers whose session has a recording: one you
-pre-recorded for an online event (a PyJam performance, a community highlight
+pre-recorded for an online event (a performance, a community highlight
 video, any session we broadcast from a recording), or the team's recording of
 your session at an in-person event, which the team uploads after the day and
 you only review. It covers how to send us your video through the
@@ -24,7 +24,7 @@ speaker dashboard. If not, start with the [Speakers guide](speakers.md).
 *[Video: Upload your performance video. Embedded here once it is on
 YouTube.]*
 
-*Recording: a PyJam performer signs in, opens her session and uploads her
+*Recording: a performer signs in, opens her session and uploads her
 video. A chapter highlight video goes up the same way. Practice data.*
 
 ### Before you start
@@ -36,7 +36,7 @@ video. A chapter highlight video goes up the same way. Practice data.*
   work too. A slide deck with recorded audio is not a video; export it as one
   first.
 - Your session page shows the **length limit** for your kind of session: a
-  PyJam performance and a chapter highlight have different limits, and the
+  Performance and a community highlight have different limits, and the
   page shows yours. The portal measures your video after the upload and tells
   you if it is over.
 - Big files are fine. The video goes straight to our storage in pieces, not

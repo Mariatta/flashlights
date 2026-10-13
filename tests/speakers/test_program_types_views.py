@@ -46,7 +46,7 @@ class TestListing:
         client.force_login(organizer)
         content = client.get(PAGE).content.decode()
         assert "Session types" in content and "Presenter roles" in content
-        assert "PyJam performance" in content and "Pre-recorded" in content
+        assert "Performance" in content and "Pre-recorded" in content
         assert "No, confirmed as created" in content  # a break
         assert "nobody" in content  # the break allows no roles
         assert "Performer" in content and "thank you for being a performer" in content

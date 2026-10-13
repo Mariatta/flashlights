@@ -72,7 +72,7 @@ def speaker(db):
 @pytest.fixture
 def session(conference, speaker):
     make_settings(conference)
-    session = make_session(conference, title="A PyJam set", kind="PYJAM")
+    session = make_session(conference, title="A performance", kind="PERFORMANCE")
     add_presenter(
         session,
         make_presenter(conference, display_name="Ada", user=speaker),
@@ -290,7 +290,7 @@ class TestOnThePages:
             client.get(board, {"tab": "post_production"})
             client.get(reverse("speakers:session_list"))
         for n in range(3):
-            other = make_session(conference, title=f"Set {n}", kind="PYJAM")
+            other = make_session(conference, title=f"Set {n}", kind="PERFORMANCE")
             add_presenter(other, make_presenter(conference), confirmed=True)
             instantiate_session_checklist(other)
             video = put(

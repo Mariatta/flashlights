@@ -444,14 +444,14 @@ class TestWhereProposalsLive:
             in client.get(reverse("speakers:my_dashboard")).content.decode()
         )
 
-    def test_pyjam_can_be_proposed(self, conference, enabled):
-        """A performance is something people bring, like a talk or a
-        workshop; the furniture of the program is not."""
+    def test_talks_and_workshops_can_be_proposed(self, conference, enabled):
+        """What people bring is proposable; the furniture of the program and
+        the pre-recorded performance (opened per edition) are not."""
         from speakers.services import proposable_types
 
         codes = set(proposable_types(conference).values_list("code", flat=True))
-        assert {"TALK", "WORKSHOP", "PYJAM"} <= codes
-        assert "BREAK" not in codes and "OPENING" not in codes
+        assert {"TALK", "WORKSHOP"} <= codes
+        assert not codes & {"BREAK", "OPENING", "PERFORMANCE"}
 
 
 @pytest.mark.django_db

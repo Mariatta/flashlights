@@ -80,11 +80,13 @@ def maintainer(db):
 
 @pytest.fixture
 def world(conference, bucket, organizer):
-    """Two PyJam sets with files in the bucket: Loud with two raw versions
+    """Two Performance sets with files in the bucket: Loud with two raw versions
     and an English transcript, Quiet with a raw video and a square poster."""
     make_settings(conference)
-    loud = make_session(conference, title="Loud set", kind="PYJAM", slug="loud")
-    quiet = make_session(conference, title="Quiet set", kind="PYJAM", slug="quiet")
+    loud = make_session(conference, title="Loud set", kind="PERFORMANCE", slug="loud")
+    quiet = make_session(
+        conference, title="Quiet set", kind="PERFORMANCE", slug="quiet"
+    )
     add_presenter(loud, make_presenter(conference, display_name="Ada"), confirmed=True)
     add_presenter(quiet, make_presenter(conference, display_name="Bea"), confirmed=True)
     assets = {}
@@ -328,10 +330,10 @@ class TestExport:
         )
         html = some.content.decode()
         assert 'id="sessions-mode-some"' in html and 'data-select="group:1:all"' in html
-        assert "PyJam performance (2)" in html and 'data-title="quiet set"' in html
+        assert "Performance (2)" in html and 'data-title="quiet set"' in html
         assert "1 session chosen" in html
         groups = some.context["sessions"]
-        assert [g["kind"] for g in groups] == ["PyJam performance"]
+        assert [g["kind"] for g in groups] == ["Performance"]
         assert [s.slug for s in groups[0]["sessions"]] == ["loud", "quiet"]
 
     def test_expired_export_says_so(self, client, world, organizer, conference):
@@ -420,7 +422,7 @@ class TestExport:
             client.get(EXPORT, {"kinds": ["RAW_VIDEO"]})
             client.get(url)
         for n in range(4):
-            session = make_session(conference, title=f"Set {n}", kind="PYJAM")
+            session = make_session(conference, title=f"Set {n}", kind="PERFORMANCE")
             add_presenter(session, make_presenter(conference), confirmed=True)
             MediaAsset.objects.create(
                 session=session,

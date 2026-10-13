@@ -19,7 +19,7 @@ const ctxRef = {};
 
   await page.goto(S + "/accounts/login/");
   await clock.at(1.5, "caption 1");
-  await cap("1. PyJam, chapter highlights and other pre-recorded sessions: how to send us your video");
+  await cap("1. Performances and other pre-recorded sessions: how to send us your video");
   await clock.at(14.3, "caption sign in");
   await cap("Sign in with your speaker account");
   await clock.at(15.3, "username");

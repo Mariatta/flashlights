@@ -86,7 +86,7 @@ def enabled(conference):
 
 @pytest.fixture
 def session(conference, enabled, performer, liaison):
-    session = make_session(conference, title="A PyJam set", kind="PYJAM")
+    session = make_session(conference, title="A performance", kind="PERFORMANCE")
     presenter = make_presenter(
         conference, display_name="Maria", user=performer, liaison=liaison
     )
@@ -254,7 +254,7 @@ class TestOrganizerDeletes:
         assert response.status_code == 403
         client.force_login(organizer)
         assert client.get(delete_url(session, video)).status_code == 405
-        other = make_session(session.conference, title="Other", kind="PYJAM")
+        other = make_session(session.conference, title="Other", kind="PERFORMANCE")
         response = client.post(delete_url(other, video), {"confirm": "x"})
         assert response.status_code == 404
         assert MediaAsset.objects.filter(pk=video.pk).exists()

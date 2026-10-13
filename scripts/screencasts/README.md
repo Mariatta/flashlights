@@ -48,7 +48,7 @@ scripts/screencasts/run.sh volunteer  # or one take: organizer, invited, volunte
 
 `--setup` creates the `flashlights_screencasts` database, migrates it, loads the
 sample data on the screencast edition (2026) and runs `seed.py`, then snapshots
-it. `seed.py` keeps one confirmed PyJam performer from the sample data, Maria
+it. `seed.py` keeps one confirmed performer from the sample data, Maria
 Performer, who signs in as `maria_performer`, with no video yet; the media
 takes are hers. Every take starts by
 restoring that snapshot and starting a server on port 8002, so a take that

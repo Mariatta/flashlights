@@ -53,7 +53,7 @@ def bucket(settings):
 
 @pytest.fixture
 def session(conference, enabled):
-    session = make_session(conference, kind="PYJAM")
+    session = make_session(conference, kind="PERFORMANCE")
     add_presenter(session, make_presenter(conference), confirmed=True)
     return session
 

@@ -33,7 +33,7 @@ to chase.
 
 1. Sign in and open **Organize**.
 2. Under **Speakers**, choose **Sessions**, then **New session**.
-3. Choose the **Type** (Talk, Workshop, Panel, PyJam performance and so on).
+3. Choose the **Type** (Talk, Workshop, Panel, Performance and so on).
    The type sets the default length and whether the session is live or
    pre-recorded, and decides which checklist template the speaker gets.
 4. Give it a **Title** and a **Summary**. Everything else can wait: the speaker

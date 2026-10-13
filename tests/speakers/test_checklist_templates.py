@@ -239,7 +239,9 @@ class TestSeed:
         post = ChecklistTemplate.objects.get(
             conference=conference, scope=ChecklistScope.SESSION
         )
-        assert post.kind.code == "PYJAM" and post.delivery == Delivery.PRE_RECORDED
+        assert (
+            post.kind.code == "PERFORMANCE" and post.delivery == Delivery.PRE_RECORDED
+        )
         translate = post.items.get(title="Translate")
         assert translate.per_translation_language is True
         assert translate.auto_complete_rule == AutoRule.ASSET_EXISTS
@@ -414,17 +416,19 @@ class TestValidation:
             )
             is None
         )
-        jam = make_session(conference, kind="PYJAM", delivery=Delivery.PRE_RECORDED)
+        jam = make_session(
+            conference, kind="PERFORMANCE", delivery=Delivery.PRE_RECORDED
+        )
         post = make_template(
             conference,
             scope=ChecklistScope.SESSION,
-            kind="PYJAM",
+            kind="PERFORMANCE",
             name="Post",
         )
         assert ChecklistTemplate.for_session(jam) == post
         assert str(post) == "Post"
         other_jam = make_session(
-            other_conference, kind="PYJAM", delivery=Delivery.PRE_RECORDED
+            other_conference, kind="PERFORMANCE", delivery=Delivery.PRE_RECORDED
         )
         assert ChecklistTemplate.for_session(other_jam) is None
 

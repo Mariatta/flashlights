@@ -145,7 +145,7 @@ PROPOSALS = [
         "prop_iris",
         "Iris Again",
         "Live-coding a synth",
-        "PYJAM",
+        "PERFORMANCE",
         "A set, built from an empty file.",
         "REJECTED",
     ),
@@ -183,7 +183,7 @@ SESSIONS = [
     ),
     (
         "Live-coded music with Python",
-        "PYJAM",
+        "PERFORMANCE",
         Delivery.PRE_RECORDED,
         "A performance.",
     ),
@@ -535,7 +535,7 @@ class Command(BaseCommand):
             SessionPresenter.objects.create(
                 session=session,
                 presenter=presenter,
-                # Per type: a PyJam has a performer, not a presenter.
+                # Per type: a performance has a performer, not a presenter.
                 role=session.kind.default_role,
             )
             proposal = submit_proposal(presenter, session)

@@ -54,11 +54,13 @@ def performer(db):
 
 @pytest.fixture
 def world(conference, performer):
-    """A PyJam set in English with the seeded lines on both sides, and
+    """A performance in English with the seeded lines on both sides, and
     pt-br and es as the edition's translation languages."""
     make_settings(conference, translation_languages=["pt-br", "es"])
     seed_checklists(conference)
-    session = make_session(conference, title="A PyJam set", kind="PYJAM", language="en")
+    session = make_session(
+        conference, title="A performance", kind="PERFORMANCE", language="en"
+    )
     presenter = make_presenter(conference, display_name="Maria", user=performer)
     link = add_presenter(session, presenter, confirmed=True)
     instantiate_presenter_checklist(link)

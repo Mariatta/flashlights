@@ -260,7 +260,7 @@ class TestSessionScope:
     def test_confirm_creates_post_production_items(self, seeded):
         jam = make_session(
             seeded,
-            kind="PYJAM",
+            kind="PERFORMANCE",
             delivery=Delivery.PRE_RECORDED,
             language="en",
         )
@@ -280,15 +280,17 @@ class TestSessionScope:
         assert instantiate_session_checklist(jam) == []
 
     def test_live_session_has_no_post_production(self, seeded):
-        # A PyJam defaults to pre-recorded; this one is explicitly live.
-        jam = make_session(seeded, kind="PYJAM", delivery=Delivery.LIVE)
+        # A performance defaults to pre-recorded; this one is explicitly live.
+        jam = make_session(seeded, kind="PERFORMANCE", delivery=Delivery.LIVE)
         add_presenter(jam, make_presenter(seeded), confirmed=True)
         jam.confirm()
         assert jam.checklist_items.count() == 0
 
     def test_without_settings_row_no_translation_items(self, conference):
         seed_checklists(conference)
-        jam = make_session(conference, kind="PYJAM", delivery=Delivery.PRE_RECORDED)
+        jam = make_session(
+            conference, kind="PERFORMANCE", delivery=Delivery.PRE_RECORDED
+        )
         created = instantiate_session_checklist(jam)
         assert not any(i.title.startswith("Translate") for i in created)
 
@@ -318,8 +320,10 @@ class TestTemplateChangesReachExistingChecklists:
         assert apply_new_template_item(new_item) == []
 
     def test_new_session_line_reaches_instantiated_sessions_only(self, seeded):
-        jam = make_session(seeded, kind="PYJAM", delivery=Delivery.PRE_RECORDED)
-        untouched = make_session(seeded, kind="PYJAM", delivery=Delivery.PRE_RECORDED)
+        jam = make_session(seeded, kind="PERFORMANCE", delivery=Delivery.PRE_RECORDED)
+        untouched = make_session(
+            seeded, kind="PERFORMANCE", delivery=Delivery.PRE_RECORDED
+        )
         instantiate_session_checklist(jam)
         template = ChecklistTemplate.for_session(jam)
         new_item = ChecklistTemplateItem.objects.create(
@@ -414,7 +418,7 @@ class TestTemplateChangesReachExistingChecklists:
         assert instance.description_md == "Bring headphones"
 
     def test_translate_lines_keep_their_language_suffix(self, seeded):
-        jam = make_session(seeded, kind="PYJAM", delivery=Delivery.PRE_RECORDED)
+        jam = make_session(seeded, kind="PERFORMANCE", delivery=Delivery.PRE_RECORDED)
         instantiate_session_checklist(jam)
         line = ChecklistTemplate.for_session(jam).items.get(title="Translate")
         line.title = "Translate the transcript"

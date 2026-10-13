@@ -159,7 +159,10 @@ class TestSeeds:
     def test_every_default_type_is_live(self, conference, in_person):
         seed_program_types(conference)
         types = SessionType.objects.filter(conference=conference)
-        assert types.count() == len(DEFAULT_SESSION_TYPES)
+        # Every default but the pre-recorded performance, which needs
+        # speakers who pre-record.
+        assert types.count() == len(DEFAULT_SESSION_TYPES) - 1
+        assert not types.filter(code="PERFORMANCE").exists()
         assert set(types.values_list("default_delivery", flat=True)) == {Delivery.LIVE}
 
     def test_no_gates_no_tech_check_no_video_templates(self, conference, in_person):

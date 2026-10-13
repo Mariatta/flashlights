@@ -332,7 +332,9 @@ class TestReceiverGuards:
 @pytest.mark.django_db
 class TestAssetExists:
     def test_ready_asset_of_kind_and_language(self, conference):
-        session = make_session(conference, kind="PYJAM", delivery=Delivery.PRE_RECORDED)
+        session = make_session(
+            conference, kind="PERFORMANCE", delivery=Delivery.PRE_RECORDED
+        )
         item = auto_item(
             conference,
             AutoRule.ASSET_EXISTS,
@@ -374,7 +376,9 @@ class TestVideoLengthOk:
     @pytest.fixture
     def jam(self, conference):
         make_settings(conference, default_video_length_limit_minutes=10)
-        return make_session(conference, kind="PYJAM", delivery=Delivery.PRE_RECORDED)
+        return make_session(
+            conference, kind="PERFORMANCE", delivery=Delivery.PRE_RECORDED
+        )
 
     def add_video(self, session, seconds, version=1):
         return MediaAsset.objects.create(
@@ -408,7 +412,9 @@ class TestVideoLengthOk:
         assert status_of(item) == ItemStatus.BLOCKED
 
     def test_no_limit_anywhere_passes(self, conference):
-        jam = make_session(conference, kind="PYJAM", delivery=Delivery.PRE_RECORDED)
+        jam = make_session(
+            conference, kind="PERFORMANCE", delivery=Delivery.PRE_RECORDED
+        )
         item = auto_item(conference, AutoRule.VIDEO_LENGTH_OK, session=jam)
         self.add_video(jam, 3600)
         assert status_of(item) == ItemStatus.DONE
@@ -430,7 +436,9 @@ class TestVideoLengthOk:
 @pytest.mark.django_db
 class TestYoutubePublished:
     def test_flips_when_url_and_time_set(self, conference):
-        session = make_session(conference, kind="PYJAM", delivery=Delivery.PRE_RECORDED)
+        session = make_session(
+            conference, kind="PERFORMANCE", delivery=Delivery.PRE_RECORDED
+        )
         item = auto_item(conference, AutoRule.YOUTUBE_PUBLISHED, session=session)
         session.youtube_url = "https://youtube.com/watch?v=abc"
         session.save()

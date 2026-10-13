@@ -36,8 +36,8 @@ class TestSeeding:
         }
         assert panel.default_role.code == "PANELIST"
         assert panel.is_content and panel.default_duration_minutes == 60
-        pyjam = SessionType.objects.get(conference=conference, code="PYJAM")
-        assert pyjam.default_delivery == Delivery.PRE_RECORDED
+        performance = SessionType.objects.get(conference=conference, code="PERFORMANCE")
+        assert performance.default_delivery == Delivery.PRE_RECORDED
         coffee = SessionType.objects.get(conference=conference, code="BREAK")
         assert not coffee.is_content and coffee.spans_all_rooms
         assert not coffee.has_presenters and coffee.default_role is None
@@ -110,9 +110,12 @@ class TestSeeding:
 @pytest.mark.django_db
 class TestSessionDefaults:
     def test_duration_and_delivery_follow_the_type(self, conference):
-        assert make_session(conference, kind="PYJAM").delivery == Delivery.PRE_RECORDED
+        assert (
+            make_session(conference, kind="PERFORMANCE").delivery
+            == Delivery.PRE_RECORDED
+        )
         assert make_session(conference, kind="TALK").delivery == Delivery.LIVE
-        live_jam = make_session(conference, kind="PYJAM", delivery=Delivery.LIVE)
+        live_jam = make_session(conference, kind="PERFORMANCE", delivery=Delivery.LIVE)
         assert live_jam.delivery == Delivery.LIVE  # an explicit choice wins
         assert make_session(conference, kind="KEYNOTE").duration_minutes == 45
 
@@ -152,12 +155,12 @@ class TestRoleMapping:
         add_presenter(panel, make_presenter(conference), role="MODERATOR")
         assert panel.session_presenters.count() == 2
 
-    def test_performer_only_on_pyjam(self, conference):
+    def test_performer_only_on_a_performance(self, conference):
         with pytest.raises(ValidationError, match="Workshop cannot have a performer"):
             add_presenter(
                 make_session(conference), make_presenter(conference), role="PERFORMER"
             )
-        jam = make_session(conference, kind="PYJAM")
+        jam = make_session(conference, kind="PERFORMANCE")
         link = add_presenter(jam, make_presenter(conference))  # the type's default
         assert link.role.code == "PERFORMER"
 

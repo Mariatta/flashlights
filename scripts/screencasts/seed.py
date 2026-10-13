@@ -5,10 +5,10 @@ Run after ``generate_sample_data`` and ``generate_speaker_sample_data``, with
 
 - makes 2026 the active edition, with the speaker module on, proposals open
   and the speaker side of the media pipeline on (the Files tab),
-- offers only Workshop and PyJam performance for proposals,
+- offers only Workshop and Performance for proposals,
 - marks every sample account's email verified (a returning volunteer has
   verified theirs),
-- keeps one confirmed PyJam performer, Maria Performer, with a password so
+- keeps one confirmed performer, Maria Performer, with a password so
   the media takes can sign in as her, renames her session to
   ``SCREENCAST_SESSION_TITLE`` (run.sh sets it), and removes her sample
   video, and
@@ -67,7 +67,7 @@ settings_row.save()
 
 SessionType.objects.filter(conference=conference).update(open_for_proposals=False)
 SessionType.objects.filter(
-    conference=conference, name__in=["Workshop", "PyJam performance"]
+    conference=conference, name__in=["Workshop", "Performance"]
 ).update(open_for_proposals=True)
 seed_checklists(conference)
 
@@ -107,9 +107,7 @@ for user in User.objects.all():
         defaults={"verified": True, "primary": True},
     )
 
-Site.objects.update_or_create(
-    pk=1, defaults={"domain": DOMAIN, "name": "Flashlights"}
-)
+Site.objects.update_or_create(pk=1, defaults={"domain": DOMAIN, "name": "Flashlights"})
 print(
     f"Screencast data ready for {conference} on {DOMAIN}: "
     f"{performance.title} is {performance.status}, "

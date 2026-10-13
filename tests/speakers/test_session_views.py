@@ -504,7 +504,7 @@ class TestSessionForms:
         form = SessionForm(
             conference=conference,
             data={
-                "kind": session_type(conference, "PYJAM").pk,
+                "kind": session_type(conference, "PERFORMANCE").pk,
                 "delivery": Delivery.LIVE,
                 "title": "Jam",
                 "video_length_limit_minutes": 10,
@@ -523,7 +523,7 @@ class TestSessionForms:
         form = SessionForm(
             conference=conference,
             data={
-                "kind": session_type(conference, "PYJAM").pk,
+                "kind": session_type(conference, "PERFORMANCE").pk,
                 "delivery": Delivery.PRE_RECORDED,
                 "title": "Jam",
                 "video_length_limit_minutes": 10,
@@ -540,9 +540,9 @@ class TestSessionForms:
         assert "title" in form.errors
 
     def test_blank_delivery_follows_the_type(self, conference):
-        """A PyJam left on the blank delivery is pre-recorded, so the video
+        """A performance left on the blank delivery is pre-recorded, so the video
         fields are allowed; a talk on the blank delivery is live."""
-        jam = session_type(conference, "PYJAM").pk
+        jam = session_type(conference, "PERFORMANCE").pk
         form = SessionForm(
             conference=conference,
             data={

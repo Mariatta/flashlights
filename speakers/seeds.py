@@ -331,7 +331,7 @@ PERFORMER = [
         ACCEPTED,
         14,
         AutoRule.HANDBOOK_READ,
-        description_md="How PyJam works, the video format we need and the deadlines. Ticks itself when you reach the end.",
+        description_md="How performances work, the video format we need and the deadlines. Ticks itself when you reach the end.",
         requires_handbook="performer",
         once_per_presenter=True,
     ),
@@ -485,7 +485,7 @@ TEAM_RECORDING = [
 
 # (scope, name, type code, role code, delivery, items)
 # The performer's lines are about the video they upload before the event.
-PERFORMER_NAME = "PyJam performer"
+PERFORMER_NAME = "Performer"
 # The team's pipeline for a live session of any kind: seeded only when the
 # edition says the team records, on top of the defaults.
 RECORDED_SESSION_NAME = "Recorded session"
@@ -560,7 +560,7 @@ DEFAULT_TEMPLATES = [
     (
         ChecklistScope.PRESENTER,
         PERFORMER_NAME,
-        "PYJAM",
+        "PERFORMANCE",
         "PERFORMER",
         "",
         PERFORMER + ORGANIZER_ITEMS,
@@ -591,8 +591,8 @@ DEFAULT_TEMPLATES = [
     ),
     (
         ChecklistScope.SESSION,
-        "PyJam post-production",
-        "PYJAM",
+        "Performance post-production",
+        "PERFORMANCE",
         "",
         Delivery.PRE_RECORDED,
         POST_PRODUCTION,

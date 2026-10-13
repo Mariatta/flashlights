@@ -229,7 +229,9 @@ class TestDashboardLists:
         assert "Ticks itself" in content
 
     def test_blocked_item_and_video_items(self, client, speaker, presenter, conference):
-        jam = make_session(conference, kind="PYJAM", delivery=Delivery.PRE_RECORDED)
+        jam = make_session(
+            conference, kind="PERFORMANCE", delivery=Delivery.PRE_RECORDED
+        )
         add_presenter(jam, presenter, role="PERFORMER", confirmed=True)
         length = add_adhoc_item(
             conference, "Check video length", ItemOwner.ORGANIZER, session=jam
