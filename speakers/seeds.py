@@ -20,7 +20,7 @@ from typing import NamedTuple
 
 from django.db import transaction
 
-from .checklists import collapse_general_duplicates
+from .checklists import apply_new_template_item, collapse_general_duplicates
 from .constants import (
     SESSION_LANGUAGE,
     AssigneeDefault,
@@ -52,6 +52,7 @@ from .program_types import (
     seed_program_types,
     session_type,
 )
+from .rules import evaluate_items
 
 SPK, ORG = ItemOwner.SPEAKER, ItemOwner.ORGANIZER
 ACCEPTED, CONF, SESSION = (
@@ -161,7 +162,7 @@ DISCORD = _item(
     description_md="Where the team, the other speakers and the attendees are during the event; the link is in the speaker guide.",
 )
 DISCORD_ROLE_TITLE = "Discord channel and speaker role assigned"
-# In the room (decision 0013): what the tech check is for an online
+# In the room: what the tech check is for an online
 # speaker, asked of everyone who will stand in front of people.
 ROOM_NEEDS = _item(
     SPK,
@@ -177,7 +178,7 @@ IN_PERSON_REGISTER = dict(
 
 
 def chat_line(conference):
-    """The "join the chat" line for this edition (decision 0013): the
+    """The "join the chat" line for this edition: the
     Discord line, one naming another platform, or None with no chat."""
     if conference.uses_discord:
         line = dict(DISCORD)
@@ -424,7 +425,7 @@ POST_PRODUCTION = [
     ),
 ]
 
-# The team's recording pipeline (decision 0013, "the team records"): the
+# The team's recording pipeline ("the team records"): the
 # recording lands after the session, so these count days after it.
 REVIEW_RECORDING = _item(
     SPK,
@@ -486,7 +487,7 @@ TEAM_RECORDING = [
 # The performer's lines are about the video they upload before the event.
 PERFORMER_NAME = "PyJam performer"
 # The team's pipeline for a live session of any kind: seeded only when the
-# edition says the team records (decision 0013), on top of the defaults.
+# edition says the team records, on top of the defaults.
 RECORDED_SESSION_NAME = "Recorded session"
 TEAM_TEMPLATES = [
     (
@@ -607,6 +608,7 @@ class SeedResult(NamedTuple):
     items: int
     skipped: list  # of (template name, reason) pairs
     described: int = 0  # existing lines whose empty description was filled in
+    reached: int = 0  # items given to people accepted before the load
 
 
 def seed_checklists(conference):
@@ -629,8 +631,7 @@ def seed_checklists(conference):
 def seed_readiness_gates(conference):
     """Create the default gates for an edition, shut. Existing gates keep
     whatever organizers changed, including whether they are open. An
-    in-person edition gets none: both defaults guard online-only lines
-    (decision 0013)."""
+    in-person edition gets none: both defaults guard online-only lines."""
     created = 0
     in_person = is_in_person(conference)
     pre_record = recordings(conference) == Recordings.SPEAKERS
@@ -663,10 +664,11 @@ def _seed_checklists(conference):
     roles = {r.code: r for r in PresenterRole.objects.filter(conference=conference)}
     templates_created = items_created = described = 0
     skipped = []
+    new_lines = []
     mode = recordings(conference)
     specs = DEFAULT_TEMPLATES + (TEAM_TEMPLATES if mode == Recordings.TEAM else [])
     for scope, name, kind, role, delivery, items in specs:
-        # Decision 0013: the pre-recording pipeline (the performer's upload,
+        # The pre-recording pipeline (the performer's upload,
         # the post-production of a pre-recorded session) only when speakers
         # pre-record; no tech check over a call in person.
         if (delivery == Delivery.PRE_RECORDED or name == PERFORMER_NAME) and (
@@ -675,7 +677,7 @@ def _seed_checklists(conference):
             skipped.append((name, "speakers do not pre-record in this edition"))
             continue
         if scope == ChecklistScope.GENERAL:
-            # The edition's chat (decision 0013): the Discord line becomes
+            # The edition's chat: the Discord line becomes
             # the platform's own, or goes, with the organizer's role line.
             chat = chat_line(conference)
             items = [
@@ -741,8 +743,10 @@ def _seed_checklists(conference):
                     line.save(update_fields=["description_md", "modified_date"])
                     described += 1
                 continue
-            ChecklistTemplateItem.objects.create(
-                template=template, order=next_order, **spec
+            new_lines.append(
+                ChecklistTemplateItem.objects.create(
+                    template=template, order=next_order, **spec
+                )
             )
             existing[spec["title"]] = None
             next_order += 1
@@ -750,7 +754,15 @@ def _seed_checklists(conference):
     # An edition seeded before a line moved to the general template still
     # carries it per session; fold those copies into the general item.
     collapse_general_duplicates(conference)
-    return SeedResult(templates_created, items_created, skipped, described)
+    # Speakers approved or invited before the defaults were loaded get the
+    # new lines too, as when a line is added by hand.
+    reached = []
+    for line in new_lines:
+        reached.extend(apply_new_template_item(line))
+    evaluate_items(reached)
+    return SeedResult(
+        templates_created, items_created, skipped, described, len(reached)
+    )
 
 
 ITEM_FIELDS = [

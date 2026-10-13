@@ -408,7 +408,7 @@ class SessionDetailView(SessionScopedMixin, DetailView):
         # fail, and the team gathers recordings as before (README).
         media_on = bool(settings.SPEAKER_MEDIA_BUCKET)
         context["media_on"] = media_on
-        # Decision 0013: no recordings, no Files tab and no video card.
+        # No recordings, no Files tab and no video card.
         context["recordings_on"] = records_sessions(self.conference)
         context["line_titles"] = line_titles(self.object, assets)
         context["line_variants"] = line_variants(self.object, assets)
@@ -590,7 +590,7 @@ class PresenterListView(
 
     def get_table_kwargs(self):
         kwargs = super().get_table_kwargs()
-        if not self.conference.uses_discord:  # decision 0013
+        if not self.conference.uses_discord:
             kwargs["exclude"] = (*kwargs.get("exclude", ()), "discord_username")
         return kwargs
 
@@ -2265,6 +2265,12 @@ class ChecklistTemplateSeedView(TemplateEditorMixin, View):
         messages.success(
             request,
             f"Loaded {result.templates} template(s) and {result.items} item(s)."
+            + (
+                f" Added {result.reached} item(s) to the checklists of speakers "
+                "already accepted; they will hear about it in the daily update."
+                if result.reached
+                else ""
+            )
             + (
                 f" Filled in {result.described} missing description(s)."
                 if result.described

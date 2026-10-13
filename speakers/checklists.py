@@ -19,6 +19,7 @@ from .constants import (
     ItemOwner,
     ItemStatus,
     NoticeKind,
+    SessionStatus,
 )
 from .lifecycle import confirm_session_if_ready
 from .models import (
@@ -27,6 +28,7 @@ from .models import (
     ChecklistTemplate,
     ChecklistTemplateItem,
     Presenter,
+    Session,
     SessionPresenter,
     SpeakerSettings,
 )
@@ -211,6 +213,14 @@ def instantiate_session_checklist(session):
     return _settle_readiness(created)
 
 
+#: Sessions past confirmation: the ones ``session_confirmed`` has fired for.
+CONFIRMED_ONWARDS = (
+    SessionStatus.CONFIRMED,
+    SessionStatus.SCHEDULED,
+    SessionStatus.PUBLISHED,
+)
+
+
 def _matching_targets(template_item):
     """``(session, presenter, anchors)`` for every checklist already created
     from the line's template. ``session`` is None for general lines and for
@@ -260,10 +270,21 @@ def _matching_targets(template_item):
             )
             for link in links
         ]
-    sessions = (
-        ChecklistItem.objects.filter(template_item__template=template)
-        .values_list("session", flat=True)
-        .distinct()
+    # Sessions that already carry this template's items, and confirmed ones
+    # the template now applies to: a session confirmed before the template
+    # (or before "Load defaults") existed gets it too.
+    sessions = set(
+        ChecklistItem.objects.filter(template_item__template=template).values_list(
+            "session", flat=True
+        )
+    )
+    confirmed = Session.objects.filter(
+        conference=template.conference, status__in=CONFIRMED_ONWARDS
+    ).exclude(pk__in=sessions)
+    sessions.update(
+        session.pk
+        for session in confirmed
+        if ChecklistTemplate.for_session(session) == template
     )
     return [
         (session, None, _anchors(session))
@@ -272,9 +293,10 @@ def _matching_targets(template_item):
 
 
 def apply_new_template_item(template_item):
-    """Add a new template line to every checklist already created from its
-    template (design §9.2, as revised: no back-fill step). The new items
-    are flagged for the daily update email. Returns the items created."""
+    """Add a new template line to everyone it applies to: every accepted
+    presenter for general and presenter lines, every confirmed session for
+    session lines, whenever the line was written. The new items are
+    flagged for the daily update email. Returns the items created."""
     created = []
     for session, presenter, anchors in _matching_targets(template_item):
         for language in (
