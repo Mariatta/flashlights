@@ -197,6 +197,8 @@ def render_invitation_preview(invitation):
         expires_at=timezone.now() + type(invitation).TOKEN_MAX_AGE,
     )
     context["current_site"] = Site.objects.get_current()
+    # What render_markdown_email adds when the email is really sent.
+    context["brand"] = settings.BRAND
     context["preview"] = True
     renderer = MarkdownEmailRenderer()
     body = renderer.render_template(INVITATION_TEMPLATE, context)

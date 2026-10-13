@@ -70,7 +70,7 @@ class TestRecording:
         assert record.to == "someone@example.com"
         assert record.subject == "Hello"
         assert record.template == TEMPLATE
-        assert "Hello from" in record.body_md
+        assert "**Flashlights** ·" in record.body_md
         # Shown as the HTML part was, through the same sanitizing renderer.
         assert "<strong>" in record.body_html and "**" not in record.body_html
         assert record.status == SentEmailStatus.SENT and record.error == ""
@@ -189,9 +189,9 @@ class TestRecording:
         assert record.to == ada.email and record.user == ada
 
     def test_secrets_go_out_and_are_withheld_from_the_record(self):
-        record = send(["a@x.org"], secrets=["Hello from", ""])
-        assert "Hello from" in mail.outbox[0].body
-        assert "Hello from" not in record.body_md and WITHHELD in record.body_md
+        record = send(["a@x.org"], secrets=["example.com", ""])
+        assert "example.com" in mail.outbox[0].body
+        assert "example.com" not in record.body_md and WITHHELD in record.body_md
 
     def test_invitation_accept_link_is_withheld(self, conference, presenter):
         """Opening the accept link signs its reader in as the presenter

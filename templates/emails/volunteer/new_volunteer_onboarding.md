@@ -11,51 +11,40 @@ You have been assigned to the following team(s):
 {% for team in profile.teams.all %}
 - **{{ team.short_name }}**. Team Lead(s): {% for team_lead in team.team_leads.all %}{{ team_lead.user.first_name }} {{ team_lead.user.last_name }}{% if not forloop.last %}, {% endif %}{% endfor %}
 {% endfor %}
-
+{% with roles=profile.roles.all %}{% if roles %}
 ## Role Assignment
 
 You have been assigned the following role(s):
 
-{% for role in profile.roles.all %}
+{% for role in roles %}
 - {{ role.short_name }}
 {% endfor %}
-
+{% endif %}{% endwith %}
 ## Your Dashboard
 
 You can review and update your volunteer profile at any time through your [Volunteer Dashboard](https://{{ current_site.domain }}{% url 'volunteer:index' %}).
 
-If you need any help, have questions, or no longer able to volunteer, please reach out to your team lead(s).
+If you need any help, have questions, or are no longer able to volunteer, please reach out to your team lead(s).
 
 ## Action Items
 
 **Important:** Please complete these action items to activate your volunteering.
-
-{% if profile.conference.has_chat %}- **Join {{ profile.conference.chat_label }}** if you haven't done so; {% if profile.conference.chat_url %}the invitation is at {{ profile.conference.chat_url }}{% else %}your team lead sends the invitation{% endif %}. It is where the volunteers talk and work together.
+{% if profile.conference.has_chat %}
+- **Join {{ profile.conference.chat_label }}** if you haven't done so; {% if profile.conference.chat_url %}the invitation is at {{ profile.conference.chat_url }}{% else %}your team lead sends the invitation{% endif %}. It is where the volunteers talk and work together.
 {% endif %}
 - **Read your team's description and the volunteer guide** to understand the roles of your team and what is expected.
-
-{% if not profile.github_username %}
-- **⚠️ Update your GitHub username:** Your GitHub profile is currently missing. You will be added to the volunteers' GitHub team to access our repositories. Please update your GitHub username on the portal through your [Volunteer Dashboard](https://{{ current_site.domain }}{% url 'volunteer:index' %}) and let your team lead know after you've done that.
-{% else %}
-- **GitHub Access:** You will be added to the volunteers' GitHub team using your GitHub username: **{{ profile.github_username }}**. This will give you access to the organisers' repositories.
-{% endif %}
 
 {% if admin_onboarding %}
 ## Core Organizer Access
 
-Since you've been added as a core organizing team (as a team lead, a staff, or admin), we will also be granting you additional privileges and access, such as:
+Since you've been added to the core organizing team (as a team lead, a staff member, or an admin), the other organizers will give you access to the team's shared tools, such as:
 
-{% if profile.conference.uses_discord %}- The Organizer Role on Discord
-{% endif %}{% if not profile.github_username %}
-- Access to the organizers' GitHub team (**⚠️ Please update your GitHub username on the portal first**)
-{% else %}
-- Access to the organizers' GitHub team
-{% endif %}
-- Access to the shared drive ({{ GDRIVE_FOLDER_ID }})
-- Invitation to the organizers' meeting calendar
-- Invitation to the shared password manager
+{% if profile.conference.uses_discord %}- The Organizer role on Discord
+{% endif %}{% if GDRIVE_FOLDER_ID %}- The shared drive: <https://drive.google.com/drive/folders/{{ GDRIVE_FOLDER_ID }}>
+{% endif %}- The organizers' meeting calendar
+- The shared password manager
 
-You should be receiving additional emails and invites to the above items within a few days. Please be sure to follow through and activate your access to the above services and items since they are crucial to our event. If you have not received those after 5 days or if you need them sooner, please reach out to the other core organizers.
+Please accept the invitations as they arrive. If one you need has not come, reach out to the other core organizers.
 {% endif %}
 
 **Thank you.**

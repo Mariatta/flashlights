@@ -284,8 +284,10 @@ class TestGeneratedImages:
 
 @pytest.mark.django_db
 class TestEmailWording:
-    def test_greeting_and_sign_off_use_the_title(self, conference):
+    def test_sign_off_uses_the_title(self, conference):
+        """No product greeting: each email greets its reader by name, and
+        the footer names the instance and its address."""
         markdown, _, text = render_markdown_email("emails/base_email.md", {})
-        assert "Hello from Flashlights." in markdown
-        assert "Thank you for using **Flashlights**." in markdown
+        assert "Hello from" not in markdown and "Thank you for using" not in markdown
+        assert "**Flashlights** · [example.com](https://example.com)" in markdown
         assert "!" not in text

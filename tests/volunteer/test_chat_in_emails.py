@@ -86,3 +86,32 @@ class TestOnboardingEmails:
         )
         assert "Discord" not in body
         assert "Join Slack" in body and "https://slack.example.org" in body
+
+
+@pytest.mark.django_db
+class TestOnboardingWording:
+    def test_no_roles_no_heading_and_no_drive_without_a_folder(
+        self, conference, portal_user, settings
+    ):
+        settings.GDRIVE_FOLDER_ID = ""
+        profile, _ = applicant(conference, portal_user)
+        profile.application_status = ApplicationStatus.APPROVED
+        mail.outbox.clear()
+        send_volunteer_onboarding_email(profile)
+        body = mail.outbox[0].body
+        assert "Role Assignment" not in body
+        assert "GitHub" not in body and "shared drive" not in body
+        assert "are no longer able to volunteer" in body
+
+    def test_the_drive_is_a_link_for_core_organizers(
+        self, conference, portal_user, settings
+    ):
+        settings.GDRIVE_FOLDER_ID = "abc123"
+        profile, _ = applicant(conference, portal_user)
+        profile.roles.add(
+            Role.objects.create(short_name=RoleTypes.ADMIN, description="d")
+        )
+        profile.application_status = ApplicationStatus.APPROVED
+        mail.outbox.clear()
+        send_volunteer_onboarding_email(profile)
+        assert "https://drive.google.com/drive/folders/abc123" in mail.outbox[0].body

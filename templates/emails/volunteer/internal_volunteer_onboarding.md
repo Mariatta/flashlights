@@ -4,7 +4,7 @@
 
 Hello, {{ recipient_name }}. We're writing to let you know that a **new {{ profile.conference }} volunteer has just been approved and onboarded**.
 
-Be sure to complete the rest of the onboarding process. They've been sent an introductory email with further instructions, however, there are some action items that you need to complete as well since not everything can be automated.
+They've been sent an introductory email with further instructions. Some onboarding steps cannot be automated, so they are yours to complete.
 
 ## New Team Member
 
@@ -17,48 +17,38 @@ They have been assigned to the following team(s):
 {% for team in profile.teams.all %}
 - **{{ team.short_name }}**. Team Lead(s): {% for team_lead in team.team_leads.all %}{{ team_lead.user.first_name }} {{ team_lead.user.last_name }}{% if not forloop.last %}, {% endif %}{% endfor %}
 {% endfor %}
-
+{% with roles=profile.roles.all %}{% if roles %}
 ### Role Assignment
 
 They have been assigned the following role(s):
 
-{% for role in profile.roles.all %}
+{% for role in roles %}
 - {{ role.short_name }}
 {% endfor %}
-
+{% endif %}{% endwith %}
 ## Action Items
 
-**Please complete these tasks to complete the onboarding:**
-
-{% if profile.conference.uses_discord %}- **Grant them the Volunteer role on Discord.** Their Discord username is: **{{ profile.discord_username }}**.
-{% elif profile.conference.has_chat %}- **Invite them to {{ profile.conference.chat_label }}.**
-{% endif %}
-{% if profile.github_username %}
-- **Add them to the volunteers' GitHub team.** Their GitHub username is: **{{ profile.github_username }}**.
-{% else %}
-- **⚠️ GitHub Access Pending:** They have not provided their GitHub username yet. Once they update their profile, add them to the volunteers' GitHub team.
-{% endif %}
-
-{% if profile.conference.has_chat %}- **Say hi and welcome them on {{ profile.conference.chat_label }}.**
+**Please complete these tasks to finish the onboarding:**
+{% if profile.conference.uses_discord %}
+- **Grant them the Volunteer role on Discord.** Their Discord username is: **{{ profile.discord_username }}**.
+{% elif profile.conference.has_chat %}
+- **Invite them to {{ profile.conference.chat_label }}.**
+{% endif %}{% if profile.conference.has_chat %}
+- **Say hi and welcome them on {{ profile.conference.chat_label }}.**
 {% endif %}
 - **Give them a shout out on social media.** Check their [Volunteer Profile](https://{{ current_site.domain }}{% url 'volunteer:volunteer_profile_detail' profile.id %}) for their social media handles.
 
 {% if admin_onboarding %}
 ## Core Organizer Access
 
-Since this is a new core-organizer, you will also need to grant them additional privileges and access, such as:
+Since this is a new core organizer, they also need access to the team's shared tools, such as:
 
-{% if profile.conference.uses_discord %}- The Organizer Role on Discord
-{% endif %}{% if profile.github_username %}
-- Add them to the organizers' GitHub team (username: **{{ profile.github_username }}**)
-{% else %}
-- **⚠️ GitHub Access Pending:** Add them to the organizers' GitHub team once they provide their GitHub username
-{% endif %}
-- Access to the shared drive ({{ GDRIVE_FOLDER_ID }})
-- Invitation to the organizers' meeting calendar
-- Invitation to the shared password manager
+{% if profile.conference.uses_discord %}- The Organizer role on Discord
+{% endif %}{% if GDRIVE_FOLDER_ID %}- The shared drive: <https://drive.google.com/drive/folders/{{ GDRIVE_FOLDER_ID }}>
+{% endif %}- The organizers' meeting calendar
+- The shared password manager
 
-**Please complete the above tasks within 5 days.** If you cannot complete these tasks, please reach out to the other core organizers.
+If you cannot give them any of these, reach out to the other core organizers.
 {% endif %}
 
 **Thank you.**

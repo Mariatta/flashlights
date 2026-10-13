@@ -44,7 +44,7 @@ class TestMaintenanceEmails:
         client.force_login(maintainer)
         content = client.get(TRAIL).content.decode()
         assert content.index("Second one") < content.index("First one")
-        assert "Hello from" in content
+        assert "<strong>Flashlights</strong> ·" in content
         assert "<strong>" in content and "**" not in content
         assert f"email-{first.pk}" in content and f"email-{second.pk}" in content
         # UTC on the server, the reader's clock added by the page.
