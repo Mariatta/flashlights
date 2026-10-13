@@ -35,6 +35,7 @@ from .models import (
     Session,
     SessionPresenter,
     SessionType,
+    SpeakerSettings,
     is_in_person,
     recordings,
     volunteer_discord_username,
@@ -1217,3 +1218,52 @@ class ProposalProfileForm(forms.ModelForm):
             self, user.pk if user is not None else None, conference
         )
         drop_timezone_in_person(self, conference)
+
+
+class SpeakerSettingsForm(forms.ModelForm):
+    """The edition's speaker settings, in the portal rather than the Django
+    admin: the call for proposals, where replies and reminders go, the
+    event's timezone, and the media switches the edition has use for."""
+
+    conference_timezone = forms.ChoiceField(
+        label="Event timezone",
+        choices=timezone_choices,
+        help_text="Times are shown in it for organizers, and for speakers who "
+        "do not name their own.",
+    )
+
+    class Meta:
+        model = SpeakerSettings
+        fields = [
+            "proposals_open",
+            "proposals_intro_md",
+            "organizers_email",
+            "conference_timezone",
+            "default_premiere_location",
+            "default_video_length_limit_minutes",
+            "media_for_speakers",
+            "auto_transcribe",
+        ]
+        labels = {
+            "proposals_open": "Taking proposals",
+            "proposals_intro_md": "Call for proposals intro",
+            "organizers_email": "Speaker team address",
+            "default_premiere_location": "Default premiere",
+            "default_video_length_limit_minutes": "Default video length limit (minutes)",
+            "media_for_speakers": "Speakers see their files",
+            "auto_transcribe": "Transcribe videos automatically",
+        }
+        widgets = {"proposals_intro_md": forms.Textarea(attrs={"rows": 4})}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        conference = self.instance.conference
+        # Only what this edition can use: no premiere in person, no length
+        # limit unless speakers pre-record, no files without recordings.
+        if is_in_person(conference):
+            self.fields.pop("default_premiere_location")
+        if recordings(conference) != Recordings.SPEAKERS:
+            self.fields.pop("default_video_length_limit_minutes")
+        if recordings(conference) == Recordings.NONE:
+            self.fields.pop("media_for_speakers")
+            self.fields.pop("auto_transcribe")

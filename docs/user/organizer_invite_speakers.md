@@ -124,10 +124,12 @@ the walkthrough, and share it with speakers who ask "what happens next?".
 ## Speakers who propose
 
 Some speakers reach us through the public **Propose a session** link instead of
-an invitation. Proposals only work while the edition has them switched on: in
-the Django admin, open the edition's **Speaker settings** and tick the
-proposals switch under **Proposals**. The intro text on the same form appears
-above the proposal form.
+an invitation. Proposals only work while the edition has them switched on:
+open **Speaker settings** under **Speakers** and tick **Taking proposals**. The
+intro text on the same page appears above the proposal form. Which session
+types people may propose is set on **Types and roles**. The page needs the
+speaker settings permission, which the Program team's leads and the
+Organizers team hold.
 
 Proposals land in **Proposals** under **Speakers**, and a notice goes to the
 organizers' email address from the same settings. There you can:

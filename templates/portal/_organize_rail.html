@@ -108,6 +108,12 @@ layout, as before.
         {% include "portal/_sidebar_item.html" with url=checklists_url label=_("Checklists") icon="icon-layout-grid" only %}
     {% endif %}
     {% if perms.speakers.change_speakersettings %}
+        {% url 'speakers:speaker_settings' as speaker_settings_url %}
+        {% if active == "speaker_settings" %}
+            {% include "portal/_sidebar_item.html" with url=speaker_settings_url label=_("Speaker settings") icon="icon-settings" active=True only %}
+        {% else %}
+            {% include "portal/_sidebar_item.html" with url=speaker_settings_url label=_("Speaker settings") icon="icon-settings" only %}
+        {% endif %}
         {% url 'speakers:readiness_gates' as gates_url %}
         {% if active == "gates" %}
             {% include "portal/_sidebar_item.html" with url=gates_url label=_("Readiness gates") icon="icon-hourglass" active=True only %}

@@ -61,6 +61,11 @@ urlpatterns = [
         name="program_share",
     ),
     path(
+        "schedule/publishing/share/websites/",
+        publishing_views.AllowedOriginsView.as_view(),
+        name="allowed_origins",
+    ),
+    path(
         "schedule/clear/",
         schedule_views.ScheduleClearDayView.as_view(),
         name="schedule_clear_day",
@@ -247,6 +252,7 @@ urlpatterns = [
         views.ProposalDecisionView.as_view(),
         name="proposal_decide",
     ),
+    path("settings/", views.SpeakerSettingsView.as_view(), name="speaker_settings"),
     path("settings/types/", views.ProgramTypesView.as_view(), name="program_types"),
     path(
         "settings/gates/",

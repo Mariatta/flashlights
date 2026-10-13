@@ -42,11 +42,19 @@
             <p class="text-secondary small mb-2">
                 {% trans "Browsers only let the widget read the program on websites listed here, for example https://2026.example.org." %}
             </p>
-            {% if allowed_origins %}
-                <ul class="small mb-2">
-                    {% for origin in allowed_origins %}
-                        <li class="font-monospace">
-                            {{ origin }}
+            {% url 'speakers:allowed_origins' as origins_url %}
+            {% if origins %}
+                <ul class="list-unstyled small mb-2">
+                    {% for origin in origins %}
+                        <li class="d-flex align-items-center gap-2 mb-1">
+                            <span class="font-monospace">{{ origin.url }}</span>
+                            <form method="post" action="{{ origins_url }}" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="remove" value="{{ origin.pk }}">
+                                <button type="submit" class="btn btn-link btn-sm p-0 text-danger">
+                                    <i class="icon-x" aria-hidden="true"></i> {% trans "Remove" %}
+                                </button>
+                            </form>
                         </li>
                     {% endfor %}
                 </ul>
@@ -56,16 +64,23 @@
                     {% trans "No website can show the widget until one is added." %}
                 </p>
             {% endif %}
-            {% if origins_admin_url %}
-                <a class="btn btn-outline-secondary btn-sm"
-                   href="{{ origins_admin_url }}">
-                    <i class="icon-pencil" aria-hidden="true"></i> {% trans "Edit in admin" %}
-                </a>
-            {% else %}
-                <p class="text-secondary small mb-0">
-                    {% trans "A portal admin adds or removes websites here; ask one to list yours." %}
-                </p>
-            {% endif %}
+            <form method="post"
+                  action="{{ origins_url }}"
+                  class="d-flex flex-wrap gap-2 align-items-center">
+                {% csrf_token %}
+                <label class="visually-hidden" for="origin-url">
+                    {% trans "Website" %}
+                </label>
+                <input type="url"
+                       name="url"
+                       id="origin-url"
+                       class="form-control form-control-sm w-auto"
+                       placeholder="https://2027.example.org"
+                       required>
+                <button type="submit" class="btn btn-outline-primary btn-sm">
+                    <i class="icon-plus" aria-hidden="true"></i> {% trans "Add website" %}
+                </button>
+            </form>
         </div>
     </section>
     <section class="card mb-4">

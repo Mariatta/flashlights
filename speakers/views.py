@@ -85,6 +85,7 @@ from .forms import (
     SpeakerOnboardingForm,
     SpeakerProfileForm,
     SpeakerSessionForm,
+    SpeakerSettingsForm,
     SuggestCoPresenterForm,
     owner_choices,
 )
@@ -1657,6 +1658,37 @@ class SpeakerScheduleView(LoginRequiredMixin, PresenterRequiredMixin, TemplateVi
                         entry["session"].title,
                     )
         return context
+
+
+class SpeakerSettingsView(LoginRequiredMixin, SpeakerSettingsRequiredMixin, UpdateView):
+    """The edition's speaker settings: the call for proposals and the rest
+    of the settings row an organizer needs, outside the Django admin."""
+
+    form_class = SpeakerSettingsForm
+    template_name = "speakers/speaker_settings.html"
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(SpeakerSettings, conference=self.conference)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(conference=self.conference, rail_active="speaker_settings")
+        return context
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        ActivityLog.record(
+            self.conference,
+            "speakers.settings_changed",
+            target=self.object,
+            actor=self.request.user,
+            fields=sorted(form.changed_data),
+        )
+        messages.success(self.request, "Saved the speaker settings.")
+        return response
+
+    def get_success_url(self):
+        return reverse("speakers:speaker_settings")
 
 
 class ProgramTypesView(LoginRequiredMixin, SpeakerSettingsRequiredMixin, TemplateView):

@@ -12,15 +12,23 @@ import html
 from django.conf import settings as django_settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import ValidationError
+from django.core.validators import URLValidator
 from django.db import transaction
 from django.http import HttpResponseBadRequest
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, View
 
 from .constants import ProgramVisibility, SessionStatus
 from .mixins import PublishingRequiredMixin
-from .models import ActivityLog, Session, SpeakerSettings
+from .models import (
+    ActivityLog,
+    AllowedOrigin,
+    Session,
+    SpeakerSettings,
+    normalize_origin,
+)
 from .public import preview_token, regenerate_preview
 
 # Sessions in these statuses can be ticked: they are on the confirmed
@@ -208,15 +216,8 @@ class ProgramShareView(PublishingTabView):
             iframe_snippet=self.iframe_snippet(),
             iframe_listener=self.iframe_listener(),
             data_links=self.data_links(),
-            allowed_origins=settings.api_origins,
+            origins=settings.allowed_origins.all(),
         )
-        user = self.request.user
-        # The admin is where the list is edited; offer it only to someone
-        # who can open that page (superusers included).
-        if user.is_staff and user.has_perm("speakers.change_speakersettings"):
-            context["origins_admin_url"] = reverse(
-                "admin:speakers_speakersettings_change", args=[settings.pk]
-            )
         if not context["program_published"]:
             context["preview_token"] = preview_token(settings)
         return context
@@ -288,3 +289,38 @@ class ProgramShareView(PublishingTabView):
                 ("schedule_ics", "Calendar feed (.ics)"),
             )
         ]
+
+
+class AllowedOriginsView(LoginRequiredMixin, PublishingRequiredMixin, View):
+    """Add or remove a website allowed to show the program, from the Share
+    tab: whoever publishes the program decides where it may appear."""
+
+    def post(self, request):
+        settings = get_object_or_404(SpeakerSettings, conference=self.conference)
+        remove = request.POST.get("remove")
+        if remove:
+            AllowedOrigin.objects.filter(settings=settings, pk=remove).delete()
+            messages.success(request, "Removed the website.")
+        else:
+            url = request.POST.get("url", "").strip()
+            try:
+                URLValidator(schemes=["http", "https"])(url)
+            except ValidationError:
+                messages.error(
+                    request, "Give the site's address, like https://2027.example.org."
+                )
+            else:
+                _, created = AllowedOrigin.objects.get_or_create(
+                    settings=settings, url=normalize_origin(url)
+                )
+                if created:
+                    messages.success(request, "Added the website.")
+                else:
+                    messages.info(request, "That website is already on the list.")
+        ActivityLog.record(
+            self.conference,
+            "program.allowed_origins_changed",
+            actor=request.user,
+            origins=settings.api_origins,
+        )
+        return redirect("speakers:program_share")
