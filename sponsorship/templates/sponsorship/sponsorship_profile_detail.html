@@ -37,12 +37,16 @@
                                 {{ profile.organization_name }}
                                 <span class="badge bg-secondary align-middle fs-6">{{ profile.conference }}</span>
                             </h5>
-                            {% if user.is_superuser or user.is_staff %}
+                            {% if perms.sponsorship.change_sponsorshipprofile or perms.sponsorship.delete_sponsorshipprofile %}
                                 <div class="mb-2">
-                                    <a href="{% url 'sponsorship:sponsorship_profile_edit' profile.pk %}"
-                                       class="btn btn-sm btn-outline-primary"><i class="icon-pencil"></i> {% trans "Edit" %}</a>
-                                    <a href="{% url 'sponsorship:sponsorship_profile_delete' profile.pk %}"
-                                       class="btn btn-sm btn-outline-danger"><i class="icon-trash"></i> {% trans "Delete" %}</a>
+                                    {% if perms.sponsorship.change_sponsorshipprofile %}
+                                        <a href="{% url 'sponsorship:sponsorship_profile_edit' profile.pk %}"
+                                           class="btn btn-sm btn-outline-primary"><i class="icon-pencil"></i> {% trans "Edit" %}</a>
+                                    {% endif %}
+                                    {% if perms.sponsorship.delete_sponsorshipprofile %}
+                                        <a href="{% url 'sponsorship:sponsorship_profile_delete' profile.pk %}"
+                                           class="btn btn-sm btn-outline-danger"><i class="icon-trash"></i> {% trans "Delete" %}</a>
+                                    {% endif %}
                                 </div>
                             {% endif %}
                             <p class="card-text">

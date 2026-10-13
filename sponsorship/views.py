@@ -1,7 +1,7 @@
 import django_filters
 import django_tables2 as tables
 from django.contrib import messages
-from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin, UserPassesTestMixin
 from django.contrib.postgres.search import SearchQuery, SearchVector
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
@@ -12,7 +12,6 @@ from django.views.generic.edit import CreateView, DeleteView, UpdateView
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
 
-from common.mixins import AdminRequiredMixin
 from portal.common import get_sponsorships_stats_dict
 from portal.models import Conference
 from volunteer.constants import ApplicationStatus
@@ -21,14 +20,28 @@ from volunteer.models import VolunteerProfile
 from .emails import send_psf_invoice_request_email
 from .forms import SponsorshipProfileForm, SponsorshipTierForm
 from .models import SponsorshipProfile, SponsorshipProgressStatus, SponsorshipTier
+from .permissions import (
+    ADD_SPONSOR,
+    ADD_TIER,
+    CHANGE_SPONSOR,
+    CHANGE_TIER,
+    DELETE_SPONSOR,
+    DELETE_TIER,
+    SEND_INVOICE,
+    can_manage_sponsors,
+    can_send_invoice,
+    can_view_sponsors,
+    can_view_unconfirmed,
+)
 
 
 class CanViewSponsorship(UserPassesTestMixin):
     """Mixin for views that allow sponsorship viewing.
 
-    Staff and superusers may view every conference. Other users may only view
-    the conferences they were an approved volunteer for — they see the year(s)
-    they are approved for.
+    Entry is ``sponsorship.view_sponsorshipprofile``, which every approved
+    volunteer of the active edition holds as the team backend's baseline.
+    Which years they may open is a data check: managers (``change``) see
+    every edition, everyone else the editions they were approved for.
     """
 
     def viewable_conferences(self):
@@ -36,9 +49,9 @@ class CanViewSponsorship(UserPassesTestMixin):
         # Anonymous users have no viewable conferences; filtering on them would
         # try to coerce AnonymousUser to a user id and raise (a 500 instead of
         # the login redirect).
-        if not user.is_authenticated:
+        if not user.is_authenticated or not can_view_sponsors(user):
             return Conference.objects.none()
-        if user.is_superuser or user.is_staff:
+        if can_manage_sponsors(user):
             return Conference.objects.all()
         return Conference.objects.filter(
             volunteer_profiles__user=user,
@@ -49,7 +62,8 @@ class CanViewSponsorship(UserPassesTestMixin):
         return self.viewable_conferences().exists()
 
 
-class SponsorshipProfileCreate(AdminRequiredMixin, CreateView):
+class SponsorshipProfileCreate(PermissionRequiredMixin, CreateView):
+    permission_required = ADD_SPONSOR
     model = SponsorshipProfile
     template_name = "sponsorship/sponsorship_profile_form.html"
     success_url = reverse_lazy("sponsorship:sponsorship_list")
@@ -65,7 +79,8 @@ class SponsorshipProfileCreate(AdminRequiredMixin, CreateView):
         return kwargs
 
 
-class SponsorshipProfileUpdate(AdminRequiredMixin, UpdateView):
+class SponsorshipProfileUpdate(PermissionRequiredMixin, UpdateView):
+    permission_required = CHANGE_SPONSOR
     model = SponsorshipProfile
     template_name = "sponsorship/sponsorship_profile_form.html"
     form_class = SponsorshipProfileForm
@@ -78,7 +93,8 @@ class SponsorshipProfileUpdate(AdminRequiredMixin, UpdateView):
         )
 
 
-class SponsorshipProfileDelete(AdminRequiredMixin, DeleteView):
+class SponsorshipProfileDelete(PermissionRequiredMixin, DeleteView):
+    permission_required = DELETE_SPONSOR
     model = SponsorshipProfile
     template_name = "sponsorship/sponsorship_profile_confirm_delete.html"
     context_object_name = "profile"
@@ -198,7 +214,7 @@ class SponsorshipProfileFilter(django_filters.FilterSet):
     @property
     def qs(self):
         queryset = super().qs
-        if self.request.user.is_superuser:
+        if can_view_unconfirmed(self.request.user):
             return queryset
         else:
             return queryset.filter(
@@ -254,9 +270,9 @@ class SponsorshipProfileList(CanViewSponsorship, SingleTableMixin, FilterView):
     def get_table_kwargs(self):
         kwargs = super().get_table_kwargs()
         user = self.request.user
-        # Read-only viewers (approved volunteers, not staff) can't edit or
-        # delete, so drop the actions column instead of showing buttons that 403.
-        if not (user.is_superuser or user.is_staff):
+        # Read-only viewers (approved volunteers) can't edit or delete, so
+        # drop the actions column instead of showing buttons that 403.
+        if not can_manage_sponsors(user):
             kwargs["exclude"] = ("actions",)
         return kwargs
 
@@ -289,7 +305,7 @@ class SponsorshipProfileList(CanViewSponsorship, SingleTableMixin, FilterView):
 
         # Needs-attention buckets for managers: each is a single status that
         # signals an action is owed, and links to the list filtered to it.
-        if self.request.user.is_superuser or self.request.user.is_staff:
+        if can_manage_sponsors(self.request.user):
             base = SponsorshipProfile.objects.filter(conference=selected_conference)
             context["status_agreement_sent"] = SponsorshipProgressStatus.AGREEMENT_SENT
             context["status_agreement_signed"] = (
@@ -324,12 +340,15 @@ class SponsorshipProfileDetail(CanViewSponsorship, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["can_send_invoice"] = (
-            self.request.user.is_superuser or self.request.user.is_staff
-        ) and self.object.progress_status == SponsorshipProgressStatus.APPROVED
+            can_send_invoice(self.request.user)
+            and self.object.progress_status == SponsorshipProgressStatus.APPROVED
+        )
         return context
 
 
-class SponsorshipProfileSendInvoice(AdminRequiredMixin, View):
+class SponsorshipProfileSendInvoice(PermissionRequiredMixin, View):
+    permission_required = SEND_INVOICE
+
     def post(self, request, pk):
         profile = get_object_or_404(SponsorshipProfile, pk=pk)
 
@@ -344,7 +363,8 @@ class SponsorshipProfileSendInvoice(AdminRequiredMixin, View):
         return redirect("sponsorship:sponsorship_profile_detail", pk=pk)
 
 
-class SponsorshipTierList(AdminRequiredMixin, ListView):
+class SponsorshipTierList(PermissionRequiredMixin, ListView):
+    permission_required = CHANGE_TIER
     model = SponsorshipTier
     template_name = "sponsorship/sponsorshiptier_list.html"
     context_object_name = "tiers"
@@ -370,21 +390,24 @@ class SponsorshipTierList(AdminRequiredMixin, ListView):
         return context
 
 
-class SponsorshipTierCreate(AdminRequiredMixin, CreateView):
+class SponsorshipTierCreate(PermissionRequiredMixin, CreateView):
+    permission_required = ADD_TIER
     model = SponsorshipTier
     form_class = SponsorshipTierForm
     template_name = "sponsorship/sponsorshiptier_form.html"
     success_url = reverse_lazy("sponsorship:tier_list")
 
 
-class SponsorshipTierUpdate(AdminRequiredMixin, UpdateView):
+class SponsorshipTierUpdate(PermissionRequiredMixin, UpdateView):
+    permission_required = CHANGE_TIER
     model = SponsorshipTier
     form_class = SponsorshipTierForm
     template_name = "sponsorship/sponsorshiptier_form.html"
     success_url = reverse_lazy("sponsorship:tier_list")
 
 
-class SponsorshipTierDelete(AdminRequiredMixin, DeleteView):
+class SponsorshipTierDelete(PermissionRequiredMixin, DeleteView):
+    permission_required = DELETE_TIER
     model = SponsorshipTier
     template_name = "sponsorship/sponsorshiptier_confirm_delete.html"
     context_object_name = "tier"

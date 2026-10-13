@@ -2,7 +2,7 @@ import django_filters
 import django_tables2 as tables
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.postgres.search import SearchQuery, SearchVector
 from django.db.models import Count, Q
 from django.http import Http404
@@ -100,31 +100,22 @@ class MyConferencesView(ListView):
         )
 
 
-class PermissionMixin(UserPassesTestMixin):
-    """Gate a view on one permission label; ``required_permission`` names it."""
-
-    required_permission = None
-
-    def test_func(self):
-        return self.request.user.has_perm(self.required_permission)
-
-
-class VolunteerViewerRequiredMixin(PermissionMixin):
+class VolunteerViewerRequiredMixin(PermissionRequiredMixin):
     """The volunteers list and other people's profiles."""
 
-    required_permission = VIEW_VOLUNTEERS
+    permission_required = VIEW_VOLUNTEERS
 
 
-class VolunteerReviewerRequiredMixin(PermissionMixin):
+class VolunteerReviewerRequiredMixin(PermissionRequiredMixin):
     """Approving, waitlisting and re-sending onboarding."""
 
-    required_permission = REVIEW_VOLUNTEERS
+    permission_required = REVIEW_VOLUNTEERS
 
 
-class TeamManagerRequiredMixin(PermissionMixin):
-    """The team management pages."""
+class TeamManagerRequiredMixin(PermissionRequiredMixin):
+    """The team management pages; create and delete name their own."""
 
-    required_permission = CHANGE_TEAM
+    permission_required = CHANGE_TEAM
 
 
 class VolunteerProfileFilter(django_filters.FilterSet):
@@ -620,7 +611,7 @@ class MyTeamsView(LoginRequiredMixin, ListView):
 
 
 class TeamCreate(TeamManagerRequiredMixin, CreateView):
-    required_permission = ADD_TEAM
+    permission_required = ADD_TEAM
     model = Team
     form_class = TeamForm
     template_name = "team/team_form.html"
@@ -650,7 +641,7 @@ class TeamUpdate(TeamManagerRequiredMixin, UpdateView):
 
 
 class TeamDelete(TeamManagerRequiredMixin, DeleteView):
-    required_permission = DELETE_TEAM
+    permission_required = DELETE_TEAM
     model = Team
     template_name = "team/team_confirm_delete.html"
     success_url = reverse_lazy("teams")

@@ -137,34 +137,50 @@ def captcha_solution(db):
 
 
 @pytest.fixture
-def organizers_team(conference):
-    """The active edition's Organizers team with the preset sets (design §7.1)."""
-    team = Team.objects.create(
-        conference=conference, short_name=ORGANIZERS, description="Core team"
-    )
-    team.permissions.set(permissions_for(PRESETS[ORGANIZERS].members))
-    team.lead_permissions.set(permissions_for(PRESETS[ORGANIZERS].leads))
-    return team
+def preset_team(conference):
+    """A team of the active edition carrying one of the §7.1 presets, made
+    on first use and reused after: ``preset_team("Sponsorship")``."""
+
+    def _team(name):
+        team, created = Team.objects.get_or_create(
+            conference=conference, short_name=name, defaults={"description": name}
+        )
+        if created:
+            team.permissions.set(permissions_for(PRESETS[name].members))
+            team.lead_permissions.set(permissions_for(PRESETS[name].leads))
+        return team
+
+    return _team
 
 
 @pytest.fixture
-def grant_organizer(organizers_team):
-    """Put an account on the Organizers team: an approved profile in the
-    active edition, and membership. Returns the account."""
+def join_team(preset_team):
+    """Put an account on a preset team: an approved profile in the active
+    edition, and membership (leadership too when asked). Returns the account.
+    An existing profile is reused as it is: a test that made one pending and
+    then expects access is asking for two things at once."""
 
-    def _grant(user, lead=False):
-        # An existing profile is reused as it is: a test that made one
-        # pending and then expects organizer access is asking for two
-        # things at once, and the backend will say no.
+    def _join(user, name, lead=False):
+        team = preset_team(name)
         profile, _ = VolunteerProfile.objects.get_or_create(
             user=user,
-            conference=organizers_team.conference,
+            conference=team.conference,
             defaults={"application_status": ApplicationStatus.APPROVED},
         )
-        profile.teams.add(organizers_team)
+        profile.teams.add(team)
         if lead:
-            organizers_team.team_leads.add(profile)
+            team.team_leads.add(profile)
         return user
+
+    return _join
+
+
+@pytest.fixture
+def grant_organizer(join_team):
+    """Put an account on the Organizers team. Returns the account."""
+
+    def _grant(user, lead=False):
+        return join_team(user, ORGANIZERS, lead=lead)
 
     return _grant
 

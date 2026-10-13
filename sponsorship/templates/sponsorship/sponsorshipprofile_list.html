@@ -25,7 +25,7 @@
 {% endblock sidebar %}
 {% block content %}
     <h1 class="h3 mb-3">
-        {% if request.user.is_superuser %}
+        {% if perms.sponsorship.add_sponsorshipprofile %}
             Manage Sponsors <a class="btn btn-primary"
     href="{% url 'sponsorship:sponsorship_profile_new' %}">Add New Sponsor</a>
         {% else %}

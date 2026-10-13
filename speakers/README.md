@@ -71,9 +71,22 @@ reverse accessor named after every child model (`basemodel.role`,
   the Django admin is the one thing that flag still means. Two consequences
   worth knowing: team grants belong to the active edition, so with no
   edition active nobody but a superuser reaches Organize (the notice there
-  says to ask one); and the speakers and sponsorship views still read the
-  flags until 3.3 and 3.4, so until then a Program-team member without the
-  Organizers set sees the speaker pages without the Organize tab.
+  says to ask one); and the speakers views still read the flags until 3.4,
+  so until then a Program-team member without the Organizers set sees the
+  speaker pages without the Organize tab.
+- Sponsorship reads `sponsorship/permissions.py` (task 3.3): entry to the
+  list and a sponsor's page is `view_sponsorshipprofile`, which every
+  approved volunteer of the active edition holds through the backend's
+  baseline; which editions a reader may open stays a data check
+  (`CanViewSponsorship.viewable_conferences`: managers every year, others
+  the years they were approved for, so a volunteer approved only in a past
+  year no longer reads that year's sponsors once the edition moves on).
+  Create, edit and delete read `add/change/delete_sponsorshipprofile`,
+  the invoice button `send_invoice`, the tier pages the tier permissions,
+  and the status filter shows the unconfirmed statuses on
+  `view_unconfirmed_sponsors`. The internal contact on the sponsor form is
+  anyone who manages sponsors (`sponsor_contact_candidates`), and the
+  internal notification emails go to `sponsorship_notification_recipients()`.
 - The catalogue (design §7.1, task 3.1) exists on the granting side. Custom
   permissions are declared in `Meta.permissions` on the model that owns the
   feature (`portal.view_organizer_dashboard`, `portal.start_next_year`,

@@ -1,31 +1,20 @@
 from celery import shared_task
 from django.conf import settings
-from django.contrib.auth.models import User
-from django.db.models import Q
 
 from common.send_emails import send_email
-from volunteer.models import RoleTypes, VolunteerProfile
 
 from .models import SponsorshipProfile
+from .permissions import sponsorship_notification_recipients
 
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=60)
 def send_internal_email_task(self, subject, markdown_template, context):
     """
-    Send internal notification emails to team members.
-
-    This task looks up admin/staff users and sends individual emails
-    to each recipient for privacy.
+    Send internal notification emails to team members: everyone holding
+    sponsorship.receive_sponsorship_notifications, one email each for
+    privacy.
     """
-    recipients = User.objects.filter(
-        Q(
-            id__in=VolunteerProfile.objects.prefetch_related("roles")
-            .filter(roles__short_name__in=[RoleTypes.ADMIN, RoleTypes.STAFF])
-            .values_list("id", flat=True)
-        )
-        | Q(is_superuser=True)
-        | Q(is_staff=True)
-    ).distinct()
+    recipients = sponsorship_notification_recipients()
 
     if not recipients.exists():
         return f"No recipients found for: {subject}"

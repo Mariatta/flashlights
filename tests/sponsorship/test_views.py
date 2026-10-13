@@ -94,13 +94,17 @@ class TestSponsorshipConferenceScoping:
         assert past_tier in tier_options(f"?conference={past.pk}")
         assert active_tier not in tier_options(f"?conference={past.pk}")
 
-    def test_volunteer_sees_only_the_year_they_are_approved_for(
+    def test_volunteer_sees_only_the_years_they_are_approved_for(
         self, client, portal_user, conference
     ):
+        """Reading sponsors is the active edition's approved volunteers'
+        (design §7.1): approved for a past edition only, a person holds no
+        permission today and the door is shut. Approved this year too, they
+        see the years they were approved for, and no other."""
         past = Conference.objects.create(
             year=2024, name="Flashlights 2024", slug="2024"
         )
-        # approved for the past edition only, not the active one
+        older = Conference.objects.create(year=2023, name="2023", slug="2023")
         VolunteerProfile.objects.create(
             user=portal_user,
             conference=past,
@@ -109,13 +113,25 @@ class TestSponsorshipConferenceScoping:
         )
         self._sponsor("Active Sponsor", conference)
         self._sponsor("Past Sponsor", past)
+        self._sponsor("Older Sponsor", older)
         client.force_login(portal_user)
+        assert client.get(reverse("sponsorship:sponsorship_list")).status_code == 403
 
+        VolunteerProfile.objects.create(
+            user=portal_user,
+            conference=conference,
+            application_status=ApplicationStatus.APPROVED,
+            discord_username="d",
+        )
         response = client.get(reverse("sponsorship:sponsorship_list"))
         assert response.status_code == 200
+        years = {c.year for c in response.context["conferences"]}
+        assert years == {conference.year, past.year}
+        response = client.get(
+            reverse("sponsorship:sponsorship_list"), {"conference": past.pk}
+        )
         orgs = [p.organization_name for p in response.context["object_list"]]
-        assert "Past Sponsor" in orgs
-        assert "Active Sponsor" not in orgs
+        assert orgs == ["Past Sponsor"]
 
     def test_volunteer_cannot_open_other_year_sponsor_detail(
         self, client, portal_user, conference

@@ -4,12 +4,15 @@ from django.contrib.auth.models import User
 from portal.models import Conference
 
 from .models import SponsorshipProfile, SponsorshipTier
+from .permissions import sponsor_contact_candidates
 
 
 class SponsorshipProfileForm(forms.ModelForm):
 
     main_contact_user = forms.ModelChoiceField(
-        queryset=User.objects.filter(is_staff=True),
+        # Set per form: who manages sponsors depends on the active edition's
+        # teams, which is not known at import time.
+        queryset=User.objects.none(),
         help_text="Required. The organisers' contact person for this sponsor. Defaults to the person who creates the profile.",
         label="Internal Contact",
     )
@@ -58,9 +61,10 @@ class SponsorshipProfileForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
-        # set the main contact user to the currently logged in user
-        # for Now only admin users can be the creator of sponsorship profiles
         super().__init__(*args, **kwargs)
+        # Whoever manages sponsors may be the internal contact; the creator
+        # is offered first.
+        self.fields["main_contact_user"].queryset = sponsor_contact_candidates()
         if self.user:
             self.fields["main_contact_user"].initial = self.user.id
         active = Conference.get_active()
