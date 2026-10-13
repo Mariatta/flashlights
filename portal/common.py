@@ -36,6 +36,8 @@ from portal.constants import (
     STATS_CACHE_TIMEOUT,
 )
 from portal.models import Conference
+from speakers.constants import ProposalDecision
+from speakers.models import Proposal
 from speakers.stats import get_task_stats_dict  # noqa: F401 (see below)
 from sponsorship.models import (
     IndividualDonation,
@@ -670,6 +672,19 @@ def get_attendee_field_breakdown(attendee_profiles, field_name):
     return [[value, count] for value, count in sorted(counts.items())]
 
 
+def proposals_received(conference):
+    """How many proposals the edition received: the number organizers typed
+    in when their call for proposals ran somewhere else, else the portal's
+    own proposals, leaving out the withdrawn ones."""
+    if conference.proposals_count:
+        return conference.proposals_count
+    return (
+        Proposal.objects.filter(conference=conference)
+        .exclude(decision=ProposalDecision.WITHDRAWN)
+        .count()
+    )
+
+
 def _conference_comparison_metrics(conference):
     """Per-year metrics for the comparison charts.
 
@@ -695,7 +710,7 @@ def _conference_comparison_metrics(conference):
         }
     metrics["sponsorship_amount"] = sponsorship_amount
     metrics["donation_amount"] = donation_amount
-    metrics["proposals"] = conference.proposals_count
+    metrics["proposals"] = proposals_received(conference)
     metrics["proceeds"] = sponsorship_amount + donation_amount
     return metrics
 

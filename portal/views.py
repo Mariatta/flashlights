@@ -14,6 +14,7 @@ from portal.common import (
     SPONSOR_AWAITING_INVOICE_STATUS,
     get_historical_comparison_data,
     get_stats_cached_values,
+    proposals_received,
 )
 from portal.constants import (
     CACHE_KEY_ATTENDEE_COUNT,
@@ -107,6 +108,7 @@ def stats(request):
         "selected_conference": conference,
         # Years that predate the portal have no live data, only a snapshot.
         "historical_snapshot": conference.historical_snapshot if conference else None,
+        "proposals": proposals_received(conference) if conference else 0,
     }
 
     return render(request, "portal/stats.html", context)

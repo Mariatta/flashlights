@@ -11,7 +11,7 @@ from pytest_django.asserts import assertRedirects
 from portal import branding
 from portal.models import Conference
 from portal_account.models import PortalProfile
-from speakers.constants import EventFormat, Recordings
+from speakers.constants import EventFormat, ProposalDecision, Recordings
 from speakers.models import ChecklistTemplate, SpeakerSettings
 from speakers.seeds import seed_new_edition
 from sponsorship.models import (
@@ -19,6 +19,7 @@ from sponsorship.models import (
     SponsorshipProgressStatus,
     SponsorshipTier,
 )
+from tests.speakers.factories import make_presenter, make_proposal, make_session
 from tests.ticketing_ids import make_ticketing
 from ticketing.models import TicketingSettings
 from volunteer.constants import ApplicationStatus
@@ -241,6 +242,25 @@ class TestPortalStats:
         assert "Final numbers" in content
         assert "600" in content  # snapshot registrations
         assert "164" in content  # proposals_count
+
+    def test_stats_count_the_portals_proposals_unless_typed_in(
+        self, client, conference
+    ):
+        """A call for proposals run in the portal counts itself; one run
+        elsewhere keeps the number organizers typed in."""
+        session = make_session(conference)
+        presenter = make_presenter(conference)
+        make_proposal(session, presenter)
+        make_proposal(
+            make_session(conference),
+            presenter,
+            decision=ProposalDecision.WITHDRAWN,
+        )
+        url = reverse("portal_stats") + f"?year={conference.year}"
+        assert client.get(url).context["proposals"] == 1
+        conference.proposals_count = 192
+        conference.save()
+        assert client.get(url).context["proposals"] == 192
 
     def test_stats_currency_figures_dont_wrap(self, client, conference):
         # Large currency amounts (e.g. $54,805) must stay on one line.

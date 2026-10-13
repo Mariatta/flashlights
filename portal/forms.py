@@ -215,12 +215,16 @@ class ConferenceForm(forms.ModelForm):
             "schedule_url",
         ]
         labels = {
+            "proposals_count": "Proposals received elsewhere",
             "is_active": "Active edition",
             "volunteer_application_open": "Taking volunteer applications",
             "sponsorship_open": "Taking sponsors",
             "accepting_donations": "Taking donations",
         }
         help_texts = {
+            "proposals_count": "Only if your call for proposals ran outside "
+            "this portal: how many you received. Leave at 0 and the stats count "
+            "the proposals sent here.",
             "volunteer_application_open": "Advertises volunteering on the landing "
             "page and opens volunteer sign-up for this edition. Off, the public "
             "page says nothing about volunteering and the team keeps its hub.",
