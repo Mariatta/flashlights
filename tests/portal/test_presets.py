@@ -16,7 +16,7 @@ from volunteer.models import Team
 
 BARE = Path(__file__).resolve().parents[2] / "presets" / "bare"
 drop = importlib.import_module(
-    "portal.migrations.0010_flashlights_drop_pyladiescon_editions"
+    "portal.migrations.0008_flashlights_rebrand"
 ).drop_untouched
 
 

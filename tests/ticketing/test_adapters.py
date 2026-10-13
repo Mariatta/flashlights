@@ -24,7 +24,7 @@ from ticketing.sync import sync
 from ticketing.tasks import PollFailed, poll_registrations_task
 
 fill_state = importlib.import_module(
-    "attendee.migrations.0007_flashlights_registrations"
+    "attendee.migrations.0006_flashlights_rebrand"
 ).fill_state
 
 
@@ -225,7 +225,7 @@ class TestPolling:
         assert PretixOrder.objects.get(order_code="ORDER123").is_registered
 
     def test_schedule_is_seeded_and_the_old_one_retired(self):
-        poll = importlib.import_module("ticketing.migrations.0002_poll_schedule")
+        poll = importlib.import_module("ticketing.migrations.0001_initial")
         PeriodicTask.objects.filter(name=poll.TASK_NAME).delete()
         old = PeriodicTask.objects.filter(name=poll.OLD_TASK_NAME)
         old.update(enabled=True)
