@@ -1,4 +1,4 @@
-"""The design system's tokens and fonts ship with the portal (decision 0010):
+"""The design system's tokens and fonts ship with the portal:
 one entry stylesheet, every font file present, nothing fetched from a
 third party on page load."""
 
@@ -66,7 +66,7 @@ def test_every_page_loads_the_entry_stylesheet_and_nothing_remote(client, confer
 
 
 def test_bootstrap_is_mapped_onto_the_tokens():
-    """portal.css re-themes Bootstrap through its variables (decision 0010):
+    """portal.css re-themes Bootstrap through its variables:
     body type and surface, radii, the focus ring, the status colours; the
     old white logo chip for a navy navbar is gone."""
     css = Path(finders.find("css/portal.css")).read_text()

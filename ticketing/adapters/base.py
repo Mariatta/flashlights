@@ -1,4 +1,4 @@
-"""The adapter interface and the normalised registration (decision 0012)."""
+"""The adapter interface and the normalised registration."""
 
 from dataclasses import dataclass, field
 from datetime import datetime

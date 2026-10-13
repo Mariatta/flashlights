@@ -1,4 +1,4 @@
-"""Where an edition's registrations come from (decision 0012).
+"""Where an edition's registrations come from.
 
 One row per edition, replacing the ``PRETIX_*`` environment variables, the
 speakers' Pretix settings and the PyLadiesCon question identifiers that

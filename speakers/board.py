@@ -114,7 +114,7 @@ def build_post_production_board(conference, user, sort="overdue"):
     (the newest READY asset of each kind, or None).
     """
     today = current_date()
-    # Which sessions have a recording to shepherd (decision 0013): the
+    # Which sessions have a recording to shepherd: the
     # pre-recorded ones when speakers pre-record, every content session
     # when the team records, none otherwise.
     mode = recordings(conference)

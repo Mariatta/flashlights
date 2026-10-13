@@ -61,7 +61,7 @@ PRETIX_ORDER_STATUS_CHOICES = [
 # The question identifiers that used to sit here were PyLadiesCon's own
 # Pretix shop. Which question fills which field, and which answer means a
 # donor stays anonymous, are per edition now: the ticketing app's settings
-# row (decision 0012).
+# row.
 
 
 class PretixOrder(BaseModel):
@@ -91,7 +91,7 @@ class PretixOrder(BaseModel):
     is_anonymous = models.BooleanField(default=True, null=True, blank=True)
     event_slug = models.CharField(max_length=100, null=True)
     raw_data = models.JSONField(null=True, blank=True)
-    # Decision 0012: any provider's registration, normalised. ``status``
+    # Any provider's registration, normalised. ``status``
     # keeps the provider's own code (Pretix's ``p``); ``state`` is what the
     # stats and the speakers' registration check read.
     provider = models.CharField(max_length=16, default="PRETIX")
@@ -139,7 +139,7 @@ class PretixOrder(BaseModel):
         return self.from_registration(PretixAdapter(row).normalise(data))
 
     def from_registration(self, registration):
-        """Record a normalised registration (decision 0012). Unchanged
+        """Record a normalised registration. Unchanged
         since the last time (same modification stamp), nothing moves; a
         provider with no stamp (a CSV row) always updates."""
         if (
@@ -289,7 +289,7 @@ class AttendeeProfile(BaseModel):
 
     def from_pretix_data(self, pretix_data):
         """Fill the demographic fields from the order's answers, through the
-        edition's question map (decision 0012). A mapped field this order
+        edition's question map. A mapped field this order
         does not answer is cleared, so a changed answer never lingers."""
         raw = [
             answer

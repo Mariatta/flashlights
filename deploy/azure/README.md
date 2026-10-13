@@ -5,7 +5,7 @@ for Redis, a Container Apps environment with the `web` and `worker`
 processes of the minimum formation, and a manual job for the release step
 (migrations). Object storage is an S3-compatible bucket from another
 provider, Cloudflare R2 or Backblaze B2 for instance, because Azure Blob
-does not speak the S3 API (decision 0011); its four values are parameters.
+does not speak the S3 API; its four values are parameters.
 
 1. Push an image to a registry the environment can pull from, or use a
    public tag.

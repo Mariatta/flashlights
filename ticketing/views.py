@@ -12,7 +12,7 @@ from .sync import CsvImportError, import_csv
 
 
 class TicketingSettingsView(SuperuserRequiredMixin, FormView):
-    """The edition's Tickets page (decision 0012): where registrations come
+    """The edition's Tickets page: where registrations come
     from, and how its questions and products map."""
 
     form_class = TicketingSettingsForm
@@ -45,7 +45,7 @@ class TicketingSettingsView(SuperuserRequiredMixin, FormView):
 
 
 class CsvImportView(SuperuserRequiredMixin, FormView):
-    """Upload an export of the edition's registrations (decision 0012)."""
+    """Upload an export of the edition's registrations."""
 
     form_class = CsvImportForm
     template_name = "ticketing/csv_import.html"

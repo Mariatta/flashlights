@@ -75,8 +75,8 @@ class TestSponsorshipEnabled:
                 response = client.get(reverse("portal_stats_comparison"))
             return {c["chart_id"] for c in response.context["historical_comparison"]}
 
-        # Registrations compare once any edition has some (decision 0012:
-        # ticketing is per edition, not an instance setting).
+        # Registrations compare once any edition has some: ticketing
+        # is per edition, not an instance setting.
         lite = ids(SPONSORSHIP_ENABLED=False)
         assert lite == {"proposals_comparison"}
         PretixOrder.objects.create(order_code="R1", conference=conference)

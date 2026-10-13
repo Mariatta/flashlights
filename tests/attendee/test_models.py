@@ -23,7 +23,7 @@ from tests.ticketing_ids import (
 
 @pytest.fixture(autouse=True)
 def mapped(conference):
-    """The edition's questions mapped (decision 0012): the attendee app
+    """The edition's questions mapped: the attendee app
     no longer carries anyone's question ids."""
     return make_ticketing(conference)
 
@@ -162,7 +162,7 @@ class TestAttendeeProfileModel:
             "Support community activities",
         ]
         assert profile.heard_about == ["Social Media", "Other"]
-        # Kept whole: the first-time answer is matched exactly (decision 0012).
+        # Kept whole: the first-time answer is matched exactly.
         assert profile.participated_in_previous_event == ["No, this is my first one"]
         assert profile.pyladies_chapter == "San Francisco"
         assert profile.age_range == "19-25"
@@ -267,7 +267,7 @@ class TestAttendeeProfileModel:
             "Support community activities",
         ]
         assert profile.heard_about == ["Social Media", "Other"]
-        # Kept whole: the first-time answer is matched exactly (decision 0012).
+        # Kept whole: the first-time answer is matched exactly.
         assert profile.participated_in_previous_event == ["No, this is my first one"]
         assert profile.pyladies_chapter is None
         assert profile.age_range == "19-25"

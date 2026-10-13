@@ -1,4 +1,4 @@
-"""The CSV adapter (decision 0012): a spreadsheet export from any ticketing
+"""The CSV adapter: a spreadsheet export from any ticketing
 system, or a plain list of the people registered.
 
 The edition's column map says which header holds the email, the name, the

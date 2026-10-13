@@ -186,7 +186,7 @@ class TestSeedDevData:
         assert Affiliation.objects.filter(user__username="volunteer1").count() == 3
         assert Affiliation.objects.filter(user__username="ada").count() == 2
         assert "ada" in out.getvalue() and "Speaker" in out.getvalue()
-        # A past in-person edition next to the online one (decision 0013).
+        # A past in-person edition next to the online one.
         from portal.models import Conference
 
         past = Conference.objects.get(year=2024)

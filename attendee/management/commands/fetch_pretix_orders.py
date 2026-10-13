@@ -1,5 +1,5 @@
 """Fetch orders from pretix for every edition with a Pretix API set up (or
-one edition), through its ticketing settings (decision 0012)."""
+one edition), through its ticketing settings."""
 
 from django.core.management.base import BaseCommand, CommandError
 

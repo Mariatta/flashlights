@@ -1,5 +1,5 @@
 """The instance-wide pretix webhook, now resolved per edition through the
-ticketing settings (decision 0012)."""
+ticketing settings."""
 
 import json
 from unittest.mock import patch

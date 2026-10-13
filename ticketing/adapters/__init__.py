@@ -1,4 +1,4 @@
-"""Ticketing providers behind one interface (decision 0012).
+"""Ticketing providers behind one interface.
 
 An adapter turns a provider's orders into ``Registration`` records: the
 fields every provider has (a code, a status, who, how much, when, the

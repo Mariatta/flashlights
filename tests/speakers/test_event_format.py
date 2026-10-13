@@ -1,4 +1,4 @@
-"""Decision 0013, stage b: an in-person edition leaves out the online-only
+"""An in-person edition leaves out the online-only
 parts of the module (pre-recorded delivery, premieres, the tech check and
 the upload gate); online and hybrid editions keep everything."""
 

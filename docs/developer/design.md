@@ -2,7 +2,7 @@
 
 Flashlights has one look, fixed for every instance, and one colour an
 instance chooses. The look is the design system in the private
-architecture notes (`design/`, decision 0010); this page says how it maps
+architecture notes (`design/`); this page says how it maps
 onto the code.
 
 ## Where things live

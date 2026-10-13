@@ -1,15 +1,14 @@
 """Instance identity: name, colours, logo, favicon, share image, doc links.
 
-Read once from the environment at boot (flashlights-architecture, decision
-0004). The keys mirror the Popular theme's ``SITE`` and ``BRAND`` config so a
-community sets the same values for its public site and its Flashlights
-instance:
+Read once from the environment at boot. The keys mirror the Popular
+theme's ``SITE`` and ``BRAND`` config so a community sets the same values
+for its public site and its Flashlights instance:
 
 ``SITE_TITLE``, ``SITE_SHORT_NAME``, ``SITE_DESCRIPTION``, ``SITE_LOGO``,
 ``SITE_FAVICON``, ``SITE_OG_IMAGE``, ``BRAND_PRESET``, ``BRAND_PRIMARY``,
 ``DOCS_URL``, ``TERMS_URL``.
 
-Colours (decision 0010): the design system fixes the chrome (Night, Paper,
+Colours: the design system fixes the chrome (Night, Paper,
 type, spacing); the accent is the one instance colour. It comes from a
 preset, ``beam`` by default, or from ``BRAND_PRIMARY`` as the escape hatch.
 The ink on the accent is chosen by contrast, Night on a light accent and

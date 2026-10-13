@@ -203,7 +203,7 @@ class TestPublishEmails:
         steady = confirmed_session(conference, title="Steady panel", presenter=grace)
         make_slot(moved, room=make_room(conference), start_utc=T0)
         make_slot(steady, room=make_room(conference), start_utc=T0)
-        conference.venue_name = "Long Beach Convention Center"  # decision 0013
+        conference.venue_name = "Long Beach Convention Center"
         conference.save()
         publish_schedule(conference, organizer, notify=False)
         moved.slot.start_utc = T0 + timedelta(hours=2)

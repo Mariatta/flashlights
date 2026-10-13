@@ -74,8 +74,8 @@ plugins:
   - rss
   - git-revision-date-localized:
       enable_creation_date: true
-  # Asks GitHub for each page's authors; off until the repository is public
-  # (phase 3b). Set MKDOCS_GIT_COMMITTERS=true to turn it on.
+  # Asks GitHub for each page's authors; off until the repository is
+  # public. Set MKDOCS_GIT_COMMITTERS=true to turn it on.
   - git-committers:
       enabled: !ENV [MKDOCS_GIT_COMMITTERS, false]
       repository: mariatta/flashlights

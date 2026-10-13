@@ -243,7 +243,7 @@ review before merging.
 - **CoC/ToS versioning**: when the text changes substantively, what's the
   re-acceptance trigger? Currently solved by a one-off migration; revisit
   if changes become frequent.
-- **Multi-tenant conferences**: out of scope today, and for good in Flashlights (one instance per community, decision 0003). If a community ever wants
+- **Multi-tenant conferences**: out of scope today, and for good in Flashlights (one instance per community). If a community ever wants
   to run other branded events through the portal, `Conference` may need to
   become `Event` or gain an `event_type` field.
 - **Pretix event slug per conference**: assumes one Pretix event per

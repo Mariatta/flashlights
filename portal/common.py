@@ -633,8 +633,8 @@ def get_first_time_attendee_percent(conference):
 
 
 def get_attendee_breakdown(conference):
-    """One chart per attendee field the edition's question map fills
-    (decision 0012): an edition that asks nothing shows no charts."""
+    """One chart per attendee field the edition's question map fills: an
+    edition that asks nothing shows no charts."""
     cache_key = f"{CACHE_KEY_ATTENDEE_BREAKDOWN}_{conference.year}"
     attendee_breakdown = cache.get(cache_key)
     if not attendee_breakdown:

@@ -1,5 +1,5 @@
 #!/bin/sh
-# The worker process (decision 0008). The minimum formation is web plus this
+# The worker process. The minimum formation is web plus this
 # one process: it serves every queue and runs beat embedded, so a small
 # instance needs no scheduler process. Scaling out:
 #   - more workers:        CELERY_EMBED_BEAT=0 on all of them and run the

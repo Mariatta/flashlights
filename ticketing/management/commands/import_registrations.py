@@ -1,4 +1,4 @@
-"""Import a CSV export of an edition's registrations (decision 0012)."""
+"""Import a CSV export of an edition's registrations."""
 
 from django.core.management.base import BaseCommand, CommandError
 

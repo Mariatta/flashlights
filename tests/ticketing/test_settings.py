@@ -1,4 +1,4 @@
-"""Per-edition ticketing settings (decision 0012, phase 3c stage 1)."""
+"""Per-edition ticketing settings."""
 
 import importlib
 from io import StringIO

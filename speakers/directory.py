@@ -60,8 +60,8 @@ DATA_COLUMNS = [
 
 
 def data_columns(conference=None):
-    """The columns for one edition: Discord only where the edition uses it
-    (decision 0013); every column with no edition given."""
+    """The columns for one edition: Discord only where the edition uses
+    it; every column with no edition given."""
     if conference is None or conference.uses_discord:
         return DATA_COLUMNS
     return [column for column in DATA_COLUMNS if column[0] != "Discord"]

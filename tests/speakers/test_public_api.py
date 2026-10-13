@@ -601,7 +601,7 @@ class TestAllowedOrigin:
 
 @pytest.mark.django_db
 class TestVenue:
-    # Decision 0013: where the edition happens, for the website to print.
+    # Where the edition happens, for the website to print.
     # One captured save per test: the receiver bumps the cache once per
     # transaction, and a test is one transaction.
 

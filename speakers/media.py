@@ -238,7 +238,7 @@ def can_upload(user, session, kind):
     if not media_for_speakers(session.conference):
         return False
     if not speakers_pre_record(session.conference):
-        return False  # the team records (decision 0013)
+        return False  # the team records
     return session.session_presenters.filter(presenter__user=user).exists()
 
 

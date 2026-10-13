@@ -43,7 +43,7 @@
       "required": true
     },
     "EMAIL_URL": {
-      "description": "SMTP server, from any provider: smtp://user:password@host:port/?tls=true (decision 0011).",
+      "description": "SMTP server, from any provider: smtp://user:password@host:port/?tls=true.",
       "required": true
     },
     "DJANGO_DEFAULT_FROM_EMAIL": {

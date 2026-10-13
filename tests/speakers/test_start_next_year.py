@@ -74,10 +74,10 @@ class TestStartNextYear:
         assert speaker_module_enabled(new) is True
         row = SpeakerSettings.objects.get(conference=new)
         assert row.conference_timezone == "Europe/Lisbon"
-        assert row.event_format == EventFormat.HYBRID  # decision 0013
+        assert row.event_format == EventFormat.HYBRID
         assert row.organizers_email == "team@example.com"
         assert row.translation_languages == ["pt-br"]
-        # The ticketing comes along (decision 0012): same shop and maps, the
+        # The ticketing comes along: same shop and maps, the
         # event slug the form gave.
         ticketing = TicketingSettings.objects.get(conference=new)
         assert ticketing.organizer == "flashlights"

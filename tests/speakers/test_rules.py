@@ -201,7 +201,7 @@ class TestSessionScheduled:
 @pytest.mark.django_db
 class TestPretixRegistered:
     def make_order(self, conference, code, email, state=Status.PAID, positions=None):
-        """The normalised state is what counts (decision 0012); the
+        """The normalised state is what counts; the
         provider's own status code rides along."""
         return PretixOrder.objects.create(
             conference=conference,

@@ -1,2 +1,1 @@
-"""Per-edition ticketing: where an edition's registrations come from
-(decision 0012)."""
+"""Per-edition ticketing: where an edition's registrations come from."""

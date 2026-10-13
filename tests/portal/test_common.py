@@ -395,7 +395,7 @@ class TestAttendeeStats:
             current_position=["Manager"],
         )
 
-        # Nothing mapped, nothing charted (decision 0012).
+        # Nothing mapped, nothing charted.
         assert get_attendee_breakdown(conference) == []
         cache.clear()
         make_ticketing(

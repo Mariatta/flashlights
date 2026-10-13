@@ -2,7 +2,7 @@
 
 Kept for shops already pointed at it. It used to read one organizer, one
 event and one secret from the environment; it now finds the edition whose
-ticketing settings name the payload's organizer and event (decision 0012),
+ticketing settings name the payload's organizer and event,
 checks that edition's secret, and queues the same re-fetch the per-edition
 receiver does (``speakers.webhooks``).
 """

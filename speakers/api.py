@@ -48,7 +48,7 @@ def program_state(conference, previewing):
 
 
 def venue_block(conference):
-    """Where the edition happens (decision 0013), or None online."""
+    """Where the edition happens, or None online."""
     if not conference.venue_name:
         return None
     return {

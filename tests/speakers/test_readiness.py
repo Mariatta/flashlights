@@ -123,7 +123,7 @@ class TestWaitSources:
         register = item(world["ada"], "Register for the event")
         assert register.is_waiting
         assert register.waiting_reason == "registration is not open yet"
-        # The edition's ticketing (decision 0012): a CSV import counts as
+        # The edition's ticketing: a CSV import counts as
         # somewhere to register, just as a Pretix API does.
         make_ticketing(conference, provider="CSV", api_token="")
         refresh_for_conference(conference)

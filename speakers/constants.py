@@ -84,7 +84,7 @@ class SessionLevel(models.TextChoices):
 
 
 class EventFormat(models.TextChoices):
-    """How an edition's sessions happen (decision 0013). Online is what the
+    """How an edition's sessions happen. Online is what the
     module was built for; in person drops the online-only parts; hybrid
     keeps everything, per session."""
 
@@ -94,7 +94,7 @@ class EventFormat(models.TextChoices):
 
 
 class Recordings(models.TextChoices):
-    """Whether an edition's sessions are recorded and how (decision 0013).
+    """Whether an edition's sessions are recorded and how.
     Speakers pre-recording is the pipeline the module was built around; a
     filmed in-person event has the team upload each recording afterwards."""
 

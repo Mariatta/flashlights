@@ -122,7 +122,7 @@ class TestPublicFeed:
         assert "LOCATION:main-stage" in text
         assert "SEQUENCE:0" in text
         assert "Hidden draft" not in text
-        # With a venue (decision 0013) the room is followed by it, so a
+        # With a venue the room is followed by it, so a
         # calendar can map the place; the comma is escaped as iCalendar wants.
         conference.venue_name = "Long Beach Convention Center, CA"
         conference.save()

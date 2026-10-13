@@ -1,7 +1,7 @@
-# Ticketing settings per edition (decision 0012), carrying the speakers'
+# Ticketing settings per edition, carrying the speakers'
 # Pretix settings over.
 #
-# Polling is the baseline (decision 0012): every edition with a provider
+# Polling is the baseline: every edition with a provider
 # API, every 15 minutes. The schedule is data, editable under "Periodic
 # tasks"; seeding it here gives a fresh database the same default. The
 # speakers' nightly Pretix reconcile did the same for Pretix alone and is
@@ -44,7 +44,7 @@ def unseed(apps, schema_editor):
 
 
 def copy_speakers_pretix(apps, schema_editor):
-    """Carry the speakers' per-edition Pretix settings over (decision 0012).
+    """Carry the speakers' per-edition Pretix settings over.
     A token or secret this deploy cannot decrypt is left behind: it could
     not be written again, and the edition reads as not configured anyway."""
     SpeakerSettings = apps.get_model("speakers", "SpeakerSettings")

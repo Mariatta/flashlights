@@ -15,7 +15,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # take thumbnail frames, and pulls the audio out for transcription.
 RUN apt-get update && apt-get install -y gettext flite sox ffmpeg
 
-# Two image flavours (decision 0008). Slim is the default: no transcription
+# Two image flavours. Slim is the default: no transcription
 # library, no model, about 500 MB lighter, what most instances need. Full
 # adds machine transcription: build with --build-arg WHISPER_MODEL=small
 # (or another faster-whisper model name) and the library goes in and the

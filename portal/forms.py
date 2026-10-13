@@ -166,7 +166,7 @@ class ConferenceForm(forms.ModelForm):
         help_text="Turn on sessions, presenters, invitations and checklists "
         "for this edition.",
     )
-    # Decision 0013: the format lives on the speaker settings row but is
+    # The format lives on the speaker settings row but is
     # chosen here, where the edition's dates and venue are.
     event_format = forms.ChoiceField(
         required=False,

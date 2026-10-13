@@ -1,4 +1,4 @@
-"""Recording registrations, whatever the provider (decision 0012)."""
+"""Recording registrations, whatever the provider."""
 
 import csv
 import io

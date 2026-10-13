@@ -3,7 +3,7 @@
 # Upstream's 0005_backfill_conferences seeds every fresh database with the
 # PyLadiesCon 2023 to 2026 editions (and PyLadiesCon's historical numbers),
 # so a new Flashlights instance started with four editions of someone
-# else's event. Upstream migrations are not edited (decision 0001); this
+# else's event. Upstream migrations are not edited; this
 # one removes those rows instead, but only while nothing hangs off them: an
 # edition anything points at is left alone.
 

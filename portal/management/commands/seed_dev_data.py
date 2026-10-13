@@ -91,7 +91,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f"Created {created} affiliations"))
 
     def _in_person_edition(self):
-        """A past edition held in a room (decision 0013): a venue, the team
+        """A past edition held in a room: a venue, the team
         recording the talks, the chat on another platform. The active
         edition stays online, so both shapes of every form can be seen."""
         edition, created = Conference.objects.get_or_create(

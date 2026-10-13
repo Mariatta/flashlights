@@ -76,7 +76,7 @@ def seed_program_types(conference):
         roles[code] = role
         roles_created += created
     types_created = 0
-    # Decision 0013: nothing is pre-recorded at an in-person edition.
+    # Nothing is pre-recorded at an in-person edition.
     in_person = is_in_person(conference)
     for (
         code,

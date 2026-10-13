@@ -397,7 +397,7 @@ class TestStartNewYear:
         assert str(new.start_date) == "2028-12-01"
         assert str(new.end_date) == "2028-12-03"
         assert str(new.conference_date) == "2028-12-02"
-        # The event slug lands on the edition's ticketing row (decision 0012).
+        # The event slug lands on the edition's ticketing row.
         assert new.ticketing.event_id == "2028"
 
     def test_carries_the_ticketing_forward(self, client, admin_user, conference):
@@ -551,7 +551,7 @@ class TestConferenceCRUD:
         assert str(conference.conference_date) == "2025-11-15"
 
     def test_update_saves_venue_and_format(self, client, admin_user, conference):
-        # Decision 0013: the format is chosen on the edition form and kept on
+        # The format is chosen on the edition form and kept on
         # the speaker settings row, created here when there is none.
         SpeakerSettings.objects.filter(conference=conference).delete()
         client.force_login(admin_user)

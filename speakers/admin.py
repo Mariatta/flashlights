@@ -54,7 +54,7 @@ class SpeakerSettingsAdmin(admin.ModelAdmin):
         "translation_languages",
     )
     #: Upstream's Pretix columns, unread since ticketing moved to its own
-    #: app (decision 0012), kept off the form so nobody edits a dead value;
+    #: app, kept off the form so nobody edits a dead value;
     #: and the voucher switch, off until voucher creation is built. Named
     #: rather than dropped in silence: the admin tests check that every
     #: editable field is offered or excluded.
@@ -67,7 +67,7 @@ class SpeakerSettingsAdmin(admin.ModelAdmin):
         "pretix_webhook_secret",
         "pretix_last_synced_at",
     )
-    #: Decision 0013: settings an in-person edition has no use for.
+    #: Settings an in-person edition has no use for.
     ONLINE_ONLY_FIELDS = (
         "default_premiere_location",
         "default_video_length_limit_minutes",
@@ -75,7 +75,7 @@ class SpeakerSettingsAdmin(admin.ModelAdmin):
     MEDIA_FIELDS = ("media_for_speakers", "auto_transcribe")
 
     def get_fieldsets(self, request, obj=None):
-        """Decision 0013: an in-person row has no use for the premiere and
+        """An in-person row has no use for the premiere and
         the video length limit; a row with no recordings has no Media."""
         fieldsets = super().get_fieldsets(request, obj)
         if obj is None:

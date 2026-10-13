@@ -1,5 +1,5 @@
 # Heroku and compatible hosts build the image from the Dockerfile (slim
-# flavour) and run the processes of the minimum formation (decision 0008).
+# flavour) and run the processes of the minimum formation.
 build:
   docker:
     web: Dockerfile

@@ -3,7 +3,7 @@
    and the instance's accent (served at /theme.css from the environment, see
    portal/branding.py). Nothing here is a brand decision.
 
-   The first section maps Bootstrap onto the tokens (decision 0010: Bootstrap
+   The first section maps Bootstrap onto the tokens (Bootstrap
    stays for grid, collapse, dropdown, modal and forms, re-themed through its
    own variables). What follows is the portal's own components. */
 

@@ -22,7 +22,7 @@ def features(request):
     * ``sponsorship_enabled``: sponsors, tiers and donations do
     * ``stats_public``: the public stats pages are served
     * ``pretix_configured``: attendee numbers can exist: the active edition
-      has ticketing set up, or registrations already (decision 0012)
+      has ticketing set up, or registrations already
     """
     return {
         "volunteering_enabled": settings.VOLUNTEERING_ENABLED,

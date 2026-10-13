@@ -1,5 +1,5 @@
 """Neutral question and answer ids for the ticketing tests, and a factory
-for an edition's ticketing row with them mapped (decision 0012). The ids
+for an edition's ticketing row with them mapped. The ids
 that used to live in the attendee app were PyLadiesCon's own shop."""
 
 from ticketing.models import TicketingSettings

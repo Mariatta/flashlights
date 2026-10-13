@@ -1,4 +1,4 @@
-"""The boot contract (decision 0008): what an instance needs to start.
+"""The boot contract: what an instance needs to start.
 
 An instance is one container image, started with environment variables.
 A few of them are mandatory in production, and a missing one must fail

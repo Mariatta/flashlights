@@ -1,4 +1,4 @@
-"""CSV import (decision 0012, phase 3c stage 4): the Maintainer Summit's
+"""CSV import: the Maintainer Summit's
 case, a registrant export from a shop the edition does not run."""
 
 from datetime import UTC, datetime

@@ -137,7 +137,7 @@ COMPARISON_CHART_SWITCHES = {
 
 def _chart_is_on(chart):
     """A setting name, or a callable for what a setting cannot say (any
-    edition has registrations: ticketing is per edition, decision 0012)."""
+    edition has registrations: ticketing is per edition)."""
     setting = COMPARISON_CHART_SWITCHES.get(chart["chart_id"])
     if setting is None:
         return True

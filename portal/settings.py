@@ -38,7 +38,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(os.environ.get("DEBUG", default=0))
 
-# The boot contract (portal/boot.py, decision 0008): in production every
+# The boot contract (portal/boot.py): in production every
 # missing mandatory variable stops the boot here, by name, all at once.
 if not DEBUG and "pytest" not in sys.modules:
     boot.check(os.environ, debug=False)
@@ -273,7 +273,7 @@ STATIC_ROOT = BASE_DIR / "staticroot"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = "/media/"
 
-# Uploads go to an S3-compatible bucket (any provider, decision 0011) when
+# Uploads go to an S3-compatible bucket (any provider) when
 # USE_OBJECT_STORAGE is on; USE_SPACES is the upstream name of the same
 # switch and still works. Off, files stay on local disk (development only).
 USE_OBJECT_STORAGE = boot.switch(os.environ, "USE_OBJECT_STORAGE", "USE_SPACES")
@@ -323,7 +323,7 @@ SITE_ID = 1
 # Instance identity (name, colours, logo, doc links), read from the environment.
 BRAND = branding.from_env()
 
-# Feature switches (flashlights-architecture, decision 0007: the lite profile).
+# Feature switches (the lite profile).
 # Parsed explicitly: "0", "false", "no" and "off" turn a switch off, anything
 # else leaves it on. Off, a feature's pages answer 404 (portal/middleware.py)
 # and its nav, rail, dashboard, landing and stats entries disappear.
@@ -502,7 +502,7 @@ BOOTSTRAP5 = {
 
 # Email settings
 if "EMAIL_URL" in os.environ:
-    # One variable, smtp://user:password@host:port/?tls=true (decision 0011).
+    # One variable, smtp://user:password@host:port/?tls=true.
     globals().update(boot.email_url(os.environ["EMAIL_URL"]))
     EMAIL_TIMEOUT = int(os.getenv("DJANGO_EMAIL_TIMEOUT", "30"))
     DEFAULT_FROM_EMAIL = (
@@ -544,7 +544,7 @@ CACHES = {
     }
 }
 
-# Ticketing is per edition (decision 0012): the ticketing app's settings
+# Ticketing is per edition: the ticketing app's settings
 # row, edited on the edition's Tickets page, not the environment.
 
 # Who receives a sponsorship contract request besides the sponsor: the

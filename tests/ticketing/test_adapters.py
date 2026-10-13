@@ -1,4 +1,4 @@
-"""The adapter interface and the Pretix adapter (decision 0012, stage 2)."""
+"""The adapter interface and the Pretix adapter."""
 
 import importlib
 from decimal import Decimal

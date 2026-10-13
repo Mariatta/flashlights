@@ -1,8 +1,8 @@
-// Flashlights on Azure (decision 0008): Postgres Flexible Server, Azure
+// Flashlights on Azure: Postgres Flexible Server, Azure
 // Cache for Redis, and Container Apps for the minimum formation, web plus
 // one worker, with the release command as a job. The image is pulled from
 // a registry by tag; object storage is an S3-compatible bucket from another
-// provider (decision 0011: Azure Blob does not speak the S3 API), given as
+// provider (Azure Blob does not speak the S3 API), given as
 // parameters. Deploy into an existing resource group:
 //
 //   az deployment group create -g <group> -f main.bicep -p @params.json
