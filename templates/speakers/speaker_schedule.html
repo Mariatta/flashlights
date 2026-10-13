@@ -26,7 +26,14 @@
     </div>
     <p class="text-secondary">
         {% url 'speakers:my_profile' as profile_url %}
-        {% blocktrans with tz=presenter.timezone %}Times are shown in your timezone, {{ tz }}; change it on <a href="{{ profile_url }}">your profile</a>. Your sessions are marked, and a session that is not public yet is visible only to you.{% endblocktrans %}
+        {% if not presenter.asks_timezone %}
+            {% blocktrans with tz=presenter.display_timezone %}Times are local to the event, {{ tz }}.{% endblocktrans %}
+        {% elif presenter.timezone %}
+            {% blocktrans with tz=presenter.display_timezone %}Times are shown in your timezone, {{ tz }}; change it on <a href="{{ profile_url }}">your profile</a>.{% endblocktrans %}
+        {% else %}
+            {% blocktrans with tz=presenter.display_timezone %}Times are in the event's timezone, {{ tz }}; to see them in yours, set it on <a href="{{ profile_url }}">your profile</a>.{% endblocktrans %}
+        {% endif %}
+        {% trans "Your sessions are marked, and a session that is not public yet is visible only to you." %}
     </p>
     {% for group in schedule_days %}
         <h2 class="h5 mt-4 mb-2">

@@ -325,10 +325,11 @@ class TestQueries:
         with CaptureQueriesContext(connection) as queries:
             assert send_checklist_digests(conference, now=NOW) == 4
         sql = [q["sql"] for q in queries.captured_queries]
-        # Three reads of the edition's settings for the whole run, whatever
+        # Four reads of the edition's settings for the whole run, whatever
         # the presenter count: the organizer digest's timezone, the speaker
-        # side's switch, and the team's reply-to address.
-        assert sum("speakers_speakersettings" in q for q in sql) == 3
+        # side's switch, the team's reply-to address, and the clock the
+        # presenters' times are shown on.
+        assert sum("speakers_speakersettings" in q for q in sql) == 4
         assert (
             sum(
                 q.startswith("SELECT") and "speakers_sharedfilenotice" in q for q in sql

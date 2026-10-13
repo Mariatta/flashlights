@@ -72,7 +72,7 @@ def _adopt_volunteer_discord(form, user_id, conference=None):
     When their volunteer profile has one, the field leaves the form, the
     instance takes that value (so saving the form keeps the presenter row
     in step) and the value is returned for the template to show read-only.
-    An edition that is not on Discord asks nobody (decision 0013): the
+    An edition that is not on Discord asks nobody: the
     field leaves the form and nothing is shown.
     """
     if conference is not None and not conference.uses_discord:
@@ -167,7 +167,7 @@ class SessionForm(forms.ModelForm):
         )
         self.fields["kind"].queryset = types
         self.fields["kind"].label = "Type"
-        # Decision 0013: an in-person edition's sessions are live, and a
+        # An in-person edition's sessions are live, and a
         # premiere is an online notion.
         self.in_person = is_in_person(conference)
         if self.in_person:
@@ -237,10 +237,29 @@ def timezone_choices():
     return [(name, name) for name in sorted(zoneinfo.available_timezones())]
 
 
+def optional_timezone_choices():
+    """Blank first: the presenter's times then follow the event's."""
+    return [("", "Same as the event"), *timezone_choices()]
+
+
+def optional_timezone(help_text):
+    return forms.ChoiceField(
+        choices=optional_timezone_choices, required=False, help_text=help_text
+    )
+
+
+def drop_timezone_in_person(form, conference):
+    """An in-person edition never asks: every time is the event's."""
+    if conference is not None and is_in_person(conference):
+        form.fields.pop("timezone", None)
+
+
 class PresenterForm(forms.ModelForm):
     """Organizer-side presenter create/edit, including the liaison."""
 
-    timezone = forms.ChoiceField(choices=timezone_choices, initial="UTC")
+    timezone = optional_timezone(
+        "Leave as the event's unless they will join from elsewhere."
+    )
     slug = _slug_field("/speakers/presenters/ada-lovelace/", "name", "this presenter's")
 
     class Meta:
@@ -278,6 +297,7 @@ class PresenterForm(forms.ModelForm):
         self.shared_discord_username = _adopt_volunteer_discord(
             self, self.instance.user_id, conference
         )
+        drop_timezone_in_person(self, conference)
 
     def clean_slug(self):
         return _clean_slug(self, Presenter, "presenter")
@@ -369,9 +389,9 @@ class SpeakerProfileForm(IdentityLockMixin, forms.ModelForm):
     and shown read-only via ``locked_fields``.
     """
 
-    timezone = forms.ChoiceField(
-        choices=timezone_choices,
-        help_text="Reminders and your schedule view use this.",
+    timezone = optional_timezone(
+        "Your schedule and reminders use it. Leave it as the event's and "
+        "times are shown as they happen there."
     )
     slug = _slug_field("/speakers/presenters/ada-lovelace/", "name", "your")
 
@@ -409,6 +429,7 @@ class SpeakerProfileForm(IdentityLockMixin, forms.ModelForm):
         self.shared_discord_username = _adopt_volunteer_discord(
             self, self.instance.user_id, self.instance.conference
         )
+        drop_timezone_in_person(self, self.instance.conference)
 
     def clean_slug(self):
         return _clean_slug(self, Presenter, "presenter")
@@ -575,7 +596,7 @@ class SessionTypeForm(forms.ModelForm):
         self.fields["default_role"].queryset = roles
         if self.instance.pk and self.instance.sessions.exists():
             self.fields["code"].disabled = True
-        # Decision 0013: every type of an in-person edition is live.
+        # Every type of an in-person edition is live.
         if is_in_person(conference):
             del self.fields["default_delivery"]
             self.instance.default_delivery = Delivery.LIVE
@@ -698,7 +719,7 @@ class ChecklistTemplateForm(forms.ModelForm):
         self.fields["role"].queryset = PresenterRole.objects.filter(
             conference=conference
         ).filter(keep_role)
-        # Decision 0013: in person, a session template can only be live, so
+        # In person, a session template can only be live, so
         # there is nothing to choose.
         self.in_person = is_in_person(conference)
         if self.in_person:
@@ -1106,9 +1127,8 @@ class ProposalProfileForm(forms.ModelForm):
     filled it in when they accepted.
     """
 
-    timezone = forms.ChoiceField(
-        choices=timezone_choices,
-        help_text="So we show you times in yours, and know when to reach you.",
+    timezone = optional_timezone(
+        "Optional: so we show you times in yours, and know when to reach you."
     )
 
     def clean_display_name(self):
@@ -1145,3 +1165,4 @@ class ProposalProfileForm(forms.ModelForm):
         self.shared_discord_username = _adopt_volunteer_discord(
             self, user.pk if user is not None else None, conference
         )
+        drop_timezone_in_person(self, conference)

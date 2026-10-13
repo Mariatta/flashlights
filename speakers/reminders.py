@@ -35,6 +35,7 @@ from .models import (
     SessionPresenter,
     SharedFileNotice,
     SpeakerSettings,
+    edition_clock,
     media_for_speakers,
 )
 
@@ -145,11 +146,13 @@ def _speaker_digests(conference, items, now, sent):
     media_on = media_for_speakers(conference)
     told = told_files(conference) if media_on else {}
     reply_to = team_reply_to(conference)
+    clock = edition_clock(conference.pk)
     if media_on:
         for presenter in _presenters_with_shared_files(conference):
             by_presenter.setdefault(presenter, [])
     emails = DigestCount(0)
     for presenter, presenter_items in by_presenter.items():
+        presenter.use_clock(clock)
         today = now.astimezone(presenter.tzinfo).date()
         due = [
             (item, _pending_thresholds(item, today, sent)) for item in presenter_items
@@ -175,7 +178,7 @@ def _speaker_digests(conference, items, now, sent):
                     for session, files in shared
                 ],
                 "today": today,
-                "timezone": presenter.timezone,
+                "timezone": presenter.display_timezone,
                 "link": _dashboard_url(),
                 "for_organizer": False,
                 **presenter_email_context(presenter),

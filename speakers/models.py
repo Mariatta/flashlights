@@ -9,7 +9,8 @@ import mimetypes
 import secrets
 import zoneinfo
 from datetime import timedelta
-from functools import lru_cache
+from functools import cached_property, lru_cache
+from typing import NamedTuple
 from urllib.parse import urlsplit
 
 from django.conf import settings
@@ -300,7 +301,7 @@ class SpeakerSettings(TimestampedModel):
         choices=ProgramVisibility.choices,
         default=ProgramVisibility.INTERNAL,
         db_default=ProgramVisibility.INTERNAL,
-        help_text="The master switch (design §11.5): while internal, the "
+        help_text="The master switch: while internal, the "
         "public program is empty and the website shows it as coming soon.",
     )
     # Not a secret: preview links are signed with SECRET_KEY, and this only
@@ -421,6 +422,26 @@ def team_records(conference):
 
 def speakers_pre_record(conference):
     return recordings(conference) == Recordings.SPEAKERS
+
+
+class EditionClock(NamedTuple):
+    """What a presenter's times hang on: whether the edition asks people
+    for their timezone (not in person) and the event's own timezone."""
+
+    asks: bool
+    timezone: str
+
+
+def edition_clock(conference_id):
+    """One read of the edition's settings for ``EditionClock``."""
+    row = (
+        SpeakerSettings.objects.filter(conference_id=conference_id)
+        .values_list("event_format", "conference_timezone")
+        .first()
+    )
+    if row is None:
+        return EditionClock(True, "UTC")
+    return EditionClock(row[0] != EventFormat.IN_PERSON, row[1] or "UTC")
 
 
 def is_in_person(conference):
@@ -608,8 +629,10 @@ class Presenter(TimestampedModel):
     bio_md = models.TextField("bio", blank=True, help_text="Markdown.")
     headshot = models.ImageField(upload_to="speakers/headshots/", blank=True)
     location = models.CharField(max_length=200, blank=True)
+    # Optional: blank means the event's own timezone. An in-person edition
+    # never asks, since the speaker is in the room (``display_timezone``).
     timezone = models.CharField(
-        max_length=64, default="UTC", validators=[validate_timezone]
+        max_length=64, blank=True, default="", validators=[validate_timezone]
     )
     website_url = models.URLField(blank=True)
     github_username = models.CharField(max_length=39, blank=True)
@@ -678,9 +701,33 @@ class Presenter(TimestampedModel):
             )
         super().save(*args, **kwargs)
 
+    @cached_property
+    def asks_timezone(self):
+        """Whether the profile asks for a timezone: not in person, where
+        every time is the event's."""
+        return edition_clock(self.conference_id).asks
+
+    @cached_property
+    def display_timezone(self):
+        """The timezone this presenter's times are shown in: their own when
+        they named one and the edition asks, else the event's."""
+        return self.timezone_on(edition_clock(self.conference_id))
+
+    def timezone_on(self, clock):
+        """``display_timezone`` against an ``edition_clock`` read once for a
+        batch, so a nightly run over every presenter reads it once."""
+        if self.timezone and clock.asks:
+            return self.timezone
+        return clock.timezone
+
+    def use_clock(self, clock):
+        """Settle both properties from a clock the caller already read."""
+        self.asks_timezone = clock.asks
+        self.display_timezone = self.timezone_on(clock)
+
     @property
     def tzinfo(self):
-        return zoneinfo.ZoneInfo(self.timezone)
+        return zoneinfo.ZoneInfo(self.display_timezone)
 
     def get_absolute_url(self):
         return reverse("speakers:presenter_detail", kwargs={"slug": self.slug})
@@ -930,7 +977,9 @@ class Session(TimestampedModel):
         "organizers did not type it in.",
     )
     is_public = models.BooleanField(
-        default=False, help_text="Explicit publish switch (design §11.5)."
+        default=False,
+        help_text="On the public program. Publishing the program sets it; "
+        "set it by hand only to show or hide one session.",
     )
     presenters = models.ManyToManyField(
         Presenter, through="SessionPresenter", related_name="sessions", blank=True

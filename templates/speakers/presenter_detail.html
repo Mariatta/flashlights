@@ -33,7 +33,9 @@
                     {% if presenter.location %}
                         · {{ presenter.location }}
                     {% endif %}
-                    · {{ presenter.timezone }}
+                    {% if presenter.timezone and presenter.asks_timezone %}
+                        · {{ presenter.timezone }}
+                    {% endif %}
                 </div>
             </div>
         </div>

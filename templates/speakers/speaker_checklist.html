@@ -32,7 +32,7 @@
         </div>
     </div>
     <p class="text-secondary">
-        {% blocktranslate with tz=presenter.timezone %}Dates are in {{ tz }}.{% endblocktranslate %}
+        {% blocktranslate with tz=presenter.display_timezone %}Dates are in {{ tz }}.{% endblocktranslate %}
         {% if only %}
             <a href="{% url 'speakers:my_checklist' %}?view=session">{% trans "Show every session" %}</a>
         {% endif %}
