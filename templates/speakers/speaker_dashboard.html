@@ -74,7 +74,7 @@
                                 {% endif %}
                             </span>
                         {% endif %}
-                        {% if not summary.session.is_public and not summary.session.is_a_proposal %}
+                        {% if not summary.session.goes_public and not summary.session.is_a_proposal %}
                             <span class="badge text-bg-secondary">{% trans "Not yet public" %}</span>
                         {% endif %}
                         {% if summary.session.identity_locked %}

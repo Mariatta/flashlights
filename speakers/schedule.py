@@ -253,7 +253,8 @@ def presenter_schedule(conference, presenter):
     """The schedule as one presenter may see it, by their local day.
 
     Reads the published schedule only (§10.1): the working grid is the
-    organizers' draft. Public sessions, plus the presenter's own; an
+    organizers' draft. Public sessions and program items (the keynote, the
+    breaks, the social), plus the presenter's own; an
     entry of their own that is not on the public site yet carries a
     draft flag for the "not yet public" badge (design §2.4). Times are
     pre-formatted in the presenter's timezone, so the template never
@@ -273,6 +274,7 @@ def presenter_schedule(conference, presenter):
         .exclude(session__status__in=OFF_SCHEDULE_STATUSES)
         .filter(
             Q(session__is_public=True)
+            | Q(session__kind__is_content=False)
             | (
                 Q(session_id__in=mine)
                 & Q(
@@ -300,7 +302,7 @@ def presenter_schedule(conference, presenter):
             "end_label": slot.end_utc.astimezone(tz).strftime("%H:%M"),
             "duration": f"{minutes} min",
             "is_mine": slot.session_id in mine,
-            "is_draft": not slot.session.is_public,
+            "is_draft": not slot.session.goes_public,
             # On stage right now: the card inverts to Night with a live tag.
             "is_live": slot.start_utc <= now < slot.end_utc,
         }

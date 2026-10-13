@@ -1105,6 +1105,13 @@ class Session(TimestampedModel):
             self.save(update_fields=["status"])
 
     @property
+    def goes_public(self):
+        """Whether the session is on the public program once the program
+        is: published by an organizer, or a program item (opening, keynote,
+        break, social), which goes public with the schedule itself."""
+        return self.is_public or not self.kind.is_content
+
+    @property
     def identity_locked(self):
         """Title and address are the speaker's to edit until an organizer
         schedules the session; after that only organizers change them."""
