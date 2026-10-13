@@ -247,16 +247,17 @@ def organizer_inbox(conference, presenter=None):
 
 def team_reply_to(conference):
     """Where a speaker's reply to the portal goes: the team address set in
-    this edition's speaker settings (``organizers_email``).
+    this edition's speaker settings (``organizers_email``), else the
+    edition's reply-to address.
 
     Unlike ``organizer_inbox`` it never falls back to staff accounts, whose
-    addresses are personal: with the field blank it returns nothing and the
+    addresses are personal: with both blank it returns nothing and the
     reply goes to ``DEFAULT_FROM_EMAIL``, as for any other portal email.
     """
     settings_row = SpeakerSettings.objects.filter(conference=conference).first()
     if settings_row and settings_row.organizers_email:
         return [settings_row.organizers_email]
-    return None
+    return conference.reply_to
 
 
 def organizer_recipients(presenter=None):

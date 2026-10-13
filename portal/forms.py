@@ -206,6 +206,7 @@ class ConferenceForm(forms.ModelForm):
             "chat_platform",
             "chat_name",
             "chat_url",
+            "reply_to_email",
             "banner_text",
             "sponsors_url",
             "coc_url",

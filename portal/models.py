@@ -113,6 +113,15 @@ class Conference(BaseModel):
         help_text="For another platform: Slack, Zulip, Matrix...",
     )
     chat_url = models.URLField("chat invite link", blank=True)
+    # Where replies to the portal's email go: the team's own inbox or list
+    # (a Google Group works), since mail is sent from a no-reply address.
+    reply_to_email = models.EmailField(
+        "reply-to address",
+        blank=True,
+        help_text="Replies to every email this edition sends go here, for "
+        "example the team's Google Group. Leave blank and replies go to the "
+        "sending address.",
+    )
 
     # Per-edition external links. Organizers set these per year; when blank the
     # templates fall back to a sensible default.
@@ -143,6 +152,11 @@ class Conference(BaseModel):
     def get_active(cls):
         """Return the active conference, or ``None`` if none is set."""
         return cls.objects.filter(is_active=True).first()
+
+    @property
+    def reply_to(self):
+        """The reply-to list for this edition's email, or None when unset."""
+        return [self.reply_to_email] if self.reply_to_email else None
 
     @property
     def uses_discord(self):

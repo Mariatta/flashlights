@@ -1,8 +1,8 @@
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage, send_mail
 from django.template.loader import render_to_string
 
-from common.send_emails import send_email
+from common.send_emails import edition_reply_to, send_email
 
 
 def send_sponsorship_status_emails(profile):
@@ -14,9 +14,13 @@ def send_sponsorship_status_emails(profile):
         "sponsorship/email/sponsor_status_update.txt",
         {"user": user, "profile": profile},
     )
-    send_mail(
-        sponsor_subject, sponsor_message, settings.DEFAULT_FROM_EMAIL, [user.email]
-    )
+    EmailMessage(
+        sponsor_subject,
+        sponsor_message,
+        settings.DEFAULT_FROM_EMAIL,
+        [user.email],
+        reply_to=edition_reply_to(profile.conference),
+    ).send()
 
     # Email to internal team (hardcoded for now)
     team_subject = f"New Sponsorship Approved: {profile.organization_name}"

@@ -24,7 +24,7 @@ variable, when one of these is unset:
 | `CELERY_BROKER_URL` or `REDIS_URL` | The Redis URL the worker and beat share; managed hosts inject `REDIS_URL` |
 | `FERNET_KEY` or `FERNET_KEYS` | The key for fields encrypted at rest (see One-time configuration) |
 | `DJANGO_EMAIL_HOST` or `EMAIL_URL` | The SMTP server. `EMAIL_URL` is one variable, `smtp://user:password@host:port/?tls=true`; `smtps://` means SSL |
-| `DJANGO_DEFAULT_FROM_EMAIL` | The address the portal's email comes from |
+| `DJANGO_DEFAULT_FROM_EMAIL` | The address the portal's email comes from. Keep it on a domain you send from (SPF and DKIM); replies go to each edition's reply-to address, set on the edition form, so a team with only a Google Group can still receive them |
 | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_STORAGE_BUCKET_NAME`, `AWS_S3_ENDPOINT_URL` | The bucket, through the S3 API: DigitalOcean Spaces, AWS S3, Cloudflare R2, Backblaze B2 or MinIO. `USE_OBJECT_STORAGE=true` turns it on; the upstream name `USE_SPACES` still works |
 
 Everything else has a default. With `DEBUG` on, and under the test suite,

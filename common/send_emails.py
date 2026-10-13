@@ -10,6 +10,7 @@ line as a speaker's.
 import re
 
 from allauth.account.models import EmailAddress
+from django.apps import apps
 
 from .markdown_emails import deliver_markdown_email, render_markdown_email
 from .models import SentEmail, SentEmailStatus
@@ -102,9 +103,9 @@ def send_email(
         recipient_list: List of recipient email addresses
         markdown_template: Path to Markdown template (required)
         context: Template context dictionary
-        reply_to: Addresses replies go to, instead of ``DEFAULT_FROM_EMAIL``;
-            never a recipient, so never a copy. The caller supplies it, so
-            ``common`` imports nothing from the apps.
+        reply_to: Addresses replies go to; never a recipient, so never a
+            copy. Left out, replies go to the edition's reply-to address
+            (``edition_reply_to``), else to ``DEFAULT_FROM_EMAIL``.
     """
     context = context or {}
     markdown_content, html_content, text_content = render_markdown_email(
@@ -122,7 +123,11 @@ def send_email(
     )
     try:
         deliver_markdown_email(
-            subject, recipient_list, html_content, text_content, reply_to=reply_to
+            subject,
+            recipient_list,
+            html_content,
+            text_content,
+            reply_to=reply_to or edition_reply_to(record.conference),
         )
     except Exception as exc:
         record.status = SentEmailStatus.FAILED
@@ -135,6 +140,18 @@ def send_email(
     record.body_md = withhold_credentials(markdown_content)
     record.save()
     return record
+
+
+def edition_reply_to(conference=None):
+    """The reply-to list set on ``conference``, or on the active edition when
+    the email is about none; None when neither has one.
+
+    Mail leaves from a no-reply address on the sending domain, so this is
+    how a reply reaches the team: their inbox or their Google Group.
+    """
+    if conference is None:
+        conference = apps.get_model("portal", "Conference").get_active()
+    return conference.reply_to if conference is not None else None
 
 
 def describe(
