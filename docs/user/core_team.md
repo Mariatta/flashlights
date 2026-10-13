@@ -49,6 +49,24 @@ switches for what is on this year: taking volunteer applications, taking
 sponsors, taking donations, the speaker portal. Starting the next edition
 copies the structure forward and leaves the people to re-apply.
 
+### Planning the next edition
+
+One edition is active: it is what the public sees, and its teams decide who
+can do what. The next edition can be started at any time while it does not
+exist yet; leave "Activate this edition now" unticked and the current one
+stays active.
+
+While it waits, the program pages (sessions, presenters, invitations,
+proposals to review, rooms, the schedule) can work on it. Choose it under
+"Program for" at the top of the Organize rail; a note there reminds you that
+the public site still shows the active edition. The choice is yours alone
+and lasts until you sign out. Access does not change: whoever runs the
+program this year can plan the next one. Volunteering, sponsorship, stats
+and the public proposal form stay on the active edition.
+
+Speakers invited to the next edition have their speaker pages straight
+away. When it is time, make the next edition active from its edit page.
+
 ### Where and how it happens
 
 Three choices on the edition form shape the speaker portal and what people

@@ -1,7 +1,8 @@
 from portal.models import Conference
 
 from .constants import ProposalDecision
-from .models import Presenter, Proposal, speaker_module_enabled
+from .editions import speaker_edition, working_edition
+from .models import Proposal, speaker_module_enabled
 from .permissions import (
     can_review_proposals,
     can_work_queue,
@@ -14,15 +15,16 @@ from .services import proposals_open
 def speaker_module(request):
     """Flags the shared rails need to show the speaker portal entries.
 
-    * ``speaker_module_enabled``: the active edition has opted in.
+    * ``speaker_module_enabled``: the edition this person works on (the
+      active one, or the newer one they chose to plan) has opted in.
     * ``is_speaker_liaison``: this user looks after at least one presenter, so
       the personal rail offers their sessions even though they are not an
       organizer.
     * ``can_work_speaker_queue``: this user may open "My volunteering
       tasks" (an organizer, a liaison, or anyone carrying an organizer
       item), so the personal rail offers the page the digest links to.
-    * ``is_speaker_presenter``: this user is a presenter in the active
-      edition, so the navbar offers "Speaking".
+    * ``is_speaker_presenter``: this user is on the program of the active
+      edition or a newer one, so the navbar offers "Speaking".
     * ``speaker_proposals_open``: the edition is taking proposals, so the
       Organize rail offers the queue and the hubs offer the form.
     * ``pending_proposal_count``: how many are waiting, for the rail badge.
@@ -51,9 +53,11 @@ def speaker_module(request):
             "can_work_speaker_queue": False,
             "is_speaker_presenter": False,
         }
-    conference = Conference.get_active()
+    active = Conference.get_active()
+    conference = working_edition(request)
     enabled = speaker_module_enabled(conference)
-    taking_proposals = proposals_open(conference)
+    # The public call is the active edition's, whatever is being planned.
+    taking_proposals = proposals_open(active)
     return {
         "speaker_proposals_open": taking_proposals,
         # Whoever answers proposals sees the count, open call or not:
@@ -70,7 +74,7 @@ def speaker_module(request):
         or (
             enabled
             and Proposal.objects.filter(
-                conference=conference, presenter__user=user
+                conference=active, presenter__user=user
             ).exists()
         ),
         "speaker_module_enabled": enabled,
@@ -84,8 +88,5 @@ def speaker_module(request):
         # proposal that has not been answered yet makes a presenter row
         # and no program. The rule lives on the queryset, shared with the
         # gate on the pages the tab opens.
-        "is_speaker_presenter": enabled
-        and Presenter.objects.filter(conference=conference, user=user)
-        .onboarded()
-        .exists(),
+        "is_speaker_presenter": speaker_edition(user, conference) is not None,
     }

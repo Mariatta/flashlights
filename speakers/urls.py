@@ -1,6 +1,7 @@
 from django.urls import path
 
 from . import (
+    edition_views,
     export_views,
     feed_views,
     publishing_views,
@@ -18,6 +19,11 @@ urlpatterns = [
         "invitations/<str:token>/",
         views.InvitationView.as_view(),
         name="invitation",
+    ),
+    path(
+        "working-edition/",
+        edition_views.WorkingEditionView.as_view(),
+        name="working_edition",
     ),
     path("sessions/", views.SessionListView.as_view(), name="session_list"),
     path(

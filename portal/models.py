@@ -185,18 +185,16 @@ class Conference(BaseModel):
     def can_start_next_year(cls):
         """Whether the "start a new year" flow should be available.
 
-        Available once the active edition's ``conference_date`` has passed, so
-        organizers set up next year only after the current edition is over.
-        Hidden while the active edition's date is unset or still upcoming. When
-        there is no active edition at all, it is available so the first edition
-        can be created.
+        Available while no edition newer than the active one exists, so the
+        next edition can be set up and planned while the current one is
+        still running; activating it is the rollover. When there is no
+        active edition at all, it is available so the first edition can be
+        created.
         """
         active = cls.get_active()
         if active is None:
             return True
-        if active.conference_date is None:
-            return False
-        return active.conference_date < now().date()
+        return not cls.objects.filter(year__gt=active.year).exists()
 
     @property
     def next_event_date(self):

@@ -24,6 +24,7 @@ from .constants import (
     ProposalDecision,
     SessionStatus,
 )
+from .editions import program_editions
 from .emails import INVITATION_SALT
 from .lifecycle import confirm_session_if_ready
 from .models import (
@@ -94,6 +95,25 @@ def send_invitation(invitation, actor=None):
         transaction.on_commit(
             lambda: enqueue(send_invitation_email_task, invitation.pk)
         )
+
+
+def invitation_edition(signed):
+    """The edition a URL token's invitation belongs to, when that is the
+    active edition or one being planned after it; else None. Says nothing
+    about whether the invitation can still be used: ``resolve_invitation``
+    does."""
+    try:
+        payload = signing.loads(
+            signed, salt=INVITATION_SALT, max_age=Invitation.TOKEN_MAX_AGE
+        )
+    except signing.BadSignature:
+        return None
+    conference_id = (
+        Invitation.objects.filter(pk=payload["i"])
+        .values_list("conference", flat=True)
+        .first()
+    )
+    return next((one for one in program_editions() if one.pk == conference_id), None)
 
 
 def resolve_invitation(signed, conference):

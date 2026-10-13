@@ -460,23 +460,33 @@ class TestStartNewYear:
 
 @pytest.mark.django_db
 class TestStartNextYearGate:
-    def test_wizard_blocked_when_date_not_passed(self, client, admin_user, conference):
-        conference.conference_date = None
-        conference.save()
+    def test_wizard_blocked_once_the_next_edition_exists(
+        self, client, admin_user, conference
+    ):
+        Conference.objects.create(
+            year=conference.year + 1, name="Next", slug="next-edition"
+        )
         client.force_login(admin_user)
         response = client.get(reverse("start_new_year"))
-        assert response.status_code == 302
         assert response.url == reverse("index")
+        page = client.get(reverse("organizer_dashboard")).content.decode()
+        assert "The next edition already exists" in page
 
-    def test_card_shown_when_date_passed(self, client, admin_user, conference):
-        # autouse conference_date is in the past -> can start next year
+    def test_card_shown_while_the_edition_runs(self, client, admin_user, conference):
+        # The current edition's date has not come yet: planning the next
+        # one need not wait for it.
+        conference.conference_date = None
+        conference.save()
         client.force_login(admin_user)
         response = client.get(reverse("organizer_dashboard"))
         assert "Start next year" in response.content.decode()
 
-    def test_card_hidden_when_date_not_passed(self, client, admin_user, conference):
-        conference.conference_date = None
-        conference.save()
+    def test_card_hidden_once_the_next_edition_exists(
+        self, client, admin_user, conference
+    ):
+        Conference.objects.create(
+            year=conference.year + 1, name="Next", slug="next-edition"
+        )
         client.force_login(admin_user)
         response = client.get(reverse("organizer_dashboard"))
         assert "Start next year" not in response.content.decode()
@@ -541,11 +551,12 @@ class TestConferenceCRUD:
         response = client.get(reverse("conference_list"))
         assert reverse("start_new_year") in response.content.decode()
 
-    def test_list_hides_start_button_while_edition_upcoming(
+    def test_list_hides_start_button_once_the_next_exists(
         self, client, admin_user, conference
     ):
-        conference.conference_date = None  # date unset -> not yet startable
-        conference.save()
+        Conference.objects.create(
+            year=conference.year + 1, name="Next", slug="next-edition"
+        )
         client.force_login(admin_user)
         response = client.get(reverse("conference_list"))
         assert reverse("start_new_year") not in response.content.decode()

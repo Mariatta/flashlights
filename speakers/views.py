@@ -20,6 +20,7 @@ from django_tables2.views import SingleTableMixin
 
 from attendee.models import PretixOrder
 from common.tasks import enqueue
+from portal.models import Conference
 from portal_account import agreements
 from ticketing.models import has_api as ticketing_has_api
 from volunteer.models import Team
@@ -60,6 +61,7 @@ from .constants import (
     SessionStatus,
 )
 from .directory import build_presenters_package, write_presenters_csv
+from .editions import speaker_edition
 from .emails import render_invitation_preview
 from .feeds import presenter_feed_token, subscribe_links
 from .filters import PresenterFilter, SessionFilter
@@ -161,6 +163,7 @@ from .services import (
     cancel_invitation,
     change_presenter_role,
     decline_invitation,
+    invitation_edition,
     pending_proposals,
     presenter_added_to_session,
     proposals_open,
@@ -187,11 +190,9 @@ class SpeakerPortalIndexView(
     template_name = "speakers/index.html"
 
     def get(self, request, *args, **kwargs):
-        if (
-            Presenter.objects.filter(conference=self.conference, user=request.user)
-            .onboarded()
-            .exists()
-        ):
+        # On the program of this edition or a newer one: the dashboard
+        # follows them there (``PresenterRequiredMixin``).
+        if speaker_edition(request.user, self.conference):
             return redirect("speakers:my_dashboard")
         if can_work_sessions(request.user, self.conference):
             return redirect("speakers:session_list")
@@ -208,8 +209,12 @@ class InvitationView(SpeakerModuleRequiredMixin, View):
 
     No login is needed: the signed token is the credential. Accepting links
     or creates the account and signs the presenter in, so the link doubles
-    as their first magic-link login.
+    as their first magic-link login. The page belongs to the invitation's
+    own edition, which may be one being planned ahead of the active one.
     """
+
+    def get_edition(self):
+        return invitation_edition(self.kwargs["token"]) or Conference.get_active()
 
     def dispatch(self, request, *args, **kwargs):
         try:
@@ -2899,7 +2904,12 @@ class DismissPasswordReminderView(LoginRequiredMixin, PresenterRequiredMixin, Vi
 
 
 class ProposalsOpenMixin(SpeakerModuleRequiredMixin):
-    """Every proposal page asks whether the edition is taking them."""
+    """Every proposal page asks whether the edition is taking them. The
+    public call is the active edition's, whichever one an organizer is
+    planning."""
+
+    def get_edition(self):
+        return Conference.get_active()
 
     @cached_property
     def open_for_proposals(self):
@@ -3055,7 +3065,11 @@ class MyProposalsView(LoginRequiredMixin, ProposalsOpenMixin, TemplateView):
 
 
 class ProposalActionMixin(LoginRequiredMixin, SpeakerModuleRequiredMixin):
-    """One proposal, which must be this person's own."""
+    """One proposal, which must be this person's own, sent to the active
+    edition's call."""
+
+    def get_edition(self):
+        return Conference.get_active()
 
     def get_proposal(self):
         return get_object_or_404(

@@ -1,5 +1,5 @@
 {% extends "portal/base_sidebar.html" %}
-{% load i18n %}
+{% load i18n speakers_extras %}
 {% comment %}
 Shared shell for organizer-side speaker pages: the Organize rail with the
 Speakers group highlighted. Children set rail_active ("sessions",
@@ -23,5 +23,6 @@ fill content and get "sessions" highlighted.
     {% trans "Organize" %}
 {% endblock sidebar_title %}
 {% block sidebar %}
+    {% edition_switcher %}
     {% include "portal/_organize_rail.html" with active=rail_active|default:"sessions" %}
 {% endblock sidebar %}

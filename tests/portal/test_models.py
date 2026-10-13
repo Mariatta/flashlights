@@ -124,13 +124,8 @@ class TestCanStartNextYear:
         Conference.objects.create(year=2025, name="Flashlights 2025", slug="2025")
         assert Conference.can_start_next_year() is True
 
-    def test_false_when_active_date_unset(self):
-        Conference.objects.create(
-            year=2025, name="Flashlights 2025", slug="2025", is_active=True
-        )
-        assert Conference.can_start_next_year() is False
-
-    def test_false_when_active_date_in_future(self):
+    def test_true_while_the_active_edition_runs(self):
+        # Its date unset or still to come: the next edition can be planned.
         Conference.objects.create(
             year=2025,
             name="Flashlights 2025",
@@ -138,17 +133,16 @@ class TestCanStartNextYear:
             is_active=True,
             conference_date=date.today() + timedelta(days=2),
         )
-        assert Conference.can_start_next_year() is False
-
-    def test_true_when_active_date_passed(self):
-        Conference.objects.create(
-            year=2025,
-            name="Flashlights 2025",
-            slug="2025",
-            is_active=True,
-            conference_date=date.today() - timedelta(days=2),
-        )
         assert Conference.can_start_next_year() is True
+
+    def test_false_once_a_newer_edition_exists(self):
+        Conference.objects.create(
+            year=2025, name="Flashlights 2025", slug="2025", is_active=True
+        )
+        Conference.objects.create(year=2024, name="Flashlights 2024", slug="2024")
+        assert Conference.can_start_next_year() is True
+        Conference.objects.create(year=2026, name="Flashlights 2026", slug="2026")
+        assert Conference.can_start_next_year() is False
 
 
 @pytest.mark.django_db

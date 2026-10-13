@@ -10,26 +10,15 @@ a proposal, gets the plain agreements page.
 
 from django.urls import reverse
 
-from portal.models import Conference
-
-from .models import Presenter, speaker_module_enabled
+from .editions import speaker_edition
 
 
 def welcome_url_for(user):
-    """The speaker welcome page when ``user`` is a presenter, else None."""
-    conference = Conference.get_active()
-    if not speaker_module_enabled(conference):
-        return None
-    # On the program, not merely known to us: someone whose proposal has
-    # not been answered has a presenter row and no speaker pages, so the
-    # speaker welcome would 403 on them. They get the plain agreements
-    # page, and the speaker welcome when their session is approved. The
-    # rule itself lives on the queryset, so this and the mixin cannot
-    # drift apart.
-    if (
-        not Presenter.objects.filter(conference=conference, user=user)
-        .onboarded()
-        .exists()
-    ):
+    """The speaker welcome page when ``user`` is on the program of the active
+    edition or a newer one they were invited to, else None. Someone whose
+    proposal nobody has answered gets the plain agreements page, and the
+    speaker welcome when their session is approved (``speaker_edition``
+    applies the same rule as the speaker pages' gate)."""
+    if speaker_edition(user) is None:
         return None
     return reverse("speakers:my_welcome")

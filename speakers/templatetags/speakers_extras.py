@@ -1,9 +1,12 @@
 from django import template
 from django.utils.safestring import mark_safe
 
+from portal.models import Conference
 from speakers.constants import SessionStatus
+from speakers.editions import program_editions, working_edition
 from speakers.markdown import render_md
 from speakers.people import user_label
+from speakers.permissions import can_work_sessions
 from speakers.tables import INVITATION_BADGE_CLASSES, STATUS_BADGE_CLASSES
 
 register = template.Library()
@@ -48,3 +51,19 @@ def duration(seconds):
 
 
 register.filter("user_label", user_label)
+
+
+@register.inclusion_tag("speakers/_edition_switcher.html", takes_context=True)
+def edition_switcher(context):
+    """Which edition the program pages show, and the others an organizer may
+    plan: the active one and any newer one with the speaker portal on."""
+    request = context["request"]
+    user = request.user
+    editions = [one for one in program_editions() if can_work_sessions(user, one)]
+    return {
+        "editions": editions if len(editions) > 1 else [],
+        "working": working_edition(request),
+        "active": Conference.get_active(),
+        "next": request.get_full_path(),
+        "csrf_token": context.get("csrf_token"),
+    }

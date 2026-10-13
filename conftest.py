@@ -90,8 +90,7 @@ def conference(request):
         pretix_event_slug="2025",
         sponsorship_goal=15000,
         donation_goal=2500,
-        # In the past, so the active edition is "over" by default and the
-        # start-a-new-year flow is available. Gate-specific tests override this.
+        # In the past, so the active edition is "over" by default.
         conference_date=date.today() - timedelta(days=30),
     )
 

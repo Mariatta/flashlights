@@ -5,6 +5,7 @@ from django.test import RequestFactory
 from django.test.utils import CaptureQueriesContext
 
 from portal.context_processors import user_capabilities
+from portal.models import Conference
 from volunteer.models import ApplicationStatus, Team, VolunteerProfile
 
 
@@ -37,7 +38,7 @@ class TestUserCapabilities:
         assert caps["is_organizer"] is True
         assert caps["can_manage_sponsorship"] is True
         assert caps["can_view_sponsorship"] is True
-        # The fixture edition's date has passed, so the action is available.
+        # No newer edition exists yet, so the action is available.
         assert caps["can_start_next_year"] is True
 
     def test_can_start_next_year_requires_organizer(self, portal_user, conference):
@@ -65,11 +66,12 @@ class TestUserCapabilities:
         assert caps["can_manage_conferences"] is False
         assert user_capabilities(_request())["can_manage_conferences"] is False
 
-    def test_can_start_next_year_false_while_edition_running(
+    def test_can_start_next_year_false_once_the_next_exists(
         self, admin_user, conference
     ):
-        conference.conference_date = None
-        conference.save()
+        Conference.objects.create(
+            year=conference.year + 1, name="Next", slug="next-edition"
+        )
         caps = user_capabilities(_request(admin_user))
         assert caps["can_start_next_year"] is False
 

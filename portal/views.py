@@ -35,6 +35,7 @@ from portal.services import (
     clone_sponsorship_tiers,
     clone_teams,
 )
+from speakers.editions import set_working_edition
 from speakers.models import Presenter, SpeakerSettings, speaker_module_enabled
 from speakers.seeds import clone_speaker_setup, seed_new_edition
 from speakers.stats import edition_task_stats
@@ -260,8 +261,8 @@ class StartNewYearView(UserPassesTestMixin, FormView):
         if not Conference.can_start_next_year():
             messages.info(
                 request,
-                "Next year's event can be started once the current "
-                "edition's date has passed.",
+                "The next edition already exists: plan it from the program "
+                "pages, and make it active from its edit page when it is time.",
             )
             return redirect("index")
         return super().dispatch(request, *args, **kwargs)
@@ -315,6 +316,9 @@ class StartNewYearView(UserPassesTestMixin, FormView):
             )
             seed_new_edition(conference)
 
+        if data["speaker_portal"] and not data["activate"]:
+            # Created to be planned: the program pages open on it.
+            set_working_edition(self.request, conference)
         message = f"Created {conference}."
         if carried:
             message += f" Carried over: {', '.join(carried)}."
@@ -322,6 +326,8 @@ class StartNewYearView(UserPassesTestMixin, FormView):
             message += " It is now the active edition."
         if data["speaker_portal"]:
             message += " The speaker portal is on."
+            if not data["activate"]:
+                message += " The program pages now show it; the public site stays on the active edition."
         messages.success(self.request, message)
         return super().form_valid(form)
 

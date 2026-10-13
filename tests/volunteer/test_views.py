@@ -1703,11 +1703,12 @@ class TestUnifiedRails:
         content = client.get(reverse("teams")).content.decode()
         assert reverse("start_new_year") in content
 
-    def test_start_next_year_hidden_while_edition_running(
+    def test_start_next_year_hidden_once_the_next_exists(
         self, client, admin_user, conference
     ):
-        conference.conference_date = None
-        conference.save()
+        Conference.objects.create(
+            year=conference.year + 1, name="Next", slug="next-edition"
+        )
         client.force_login(admin_user)
         content = client.get(reverse("teams")).content.decode()
         assert reverse("start_new_year") not in content
