@@ -71,9 +71,12 @@ reverse accessor named after every child model (`basemodel.role`,
   the Django admin is the one thing that flag still means. Two consequences
   worth knowing: team grants belong to the active edition, so with no
   edition active nobody but a superuser reaches Organize (the notice there
-  says to ask one); and a Program-team member without the Organizers set
-  reaches the speaker pages while the Organize tab and the rail's volunteer
-  entries stay hidden from them, which task 3.5 tidies.
+  says to ask one); and the Organize rail offers each entry on the
+  permission its page reads, so a Program-team member without the
+  Organizers set sees the speaker entries and not the dashboard, the
+  volunteers or the teams, and reaches their pages by URL or from the
+  pages they can open, since the Organize tab itself follows the
+  dashboard permission.
 - Sponsorship reads `sponsorship/permissions.py` (task 3.3): entry to the
   list and a sponsor's page is `view_sponsorshipprofile`, which every
   approved volunteer of the active edition holds through the backend's

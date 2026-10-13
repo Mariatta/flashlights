@@ -139,6 +139,44 @@ class TestTeamForm:
 
 
 @pytest.mark.django_db
+class TestOrganizeRailFollowsPermissions:
+    def test_each_entry_follows_the_permission_its_page_reads(
+        self, client, join_team, organizer, conference
+    ):
+        from speakers.models import SpeakerSettings
+
+        SpeakerSettings.objects.create(
+            conference=conference, speaker_module_enabled=True
+        )
+        dashboard = reverse("organizer_dashboard")
+        volunteers = reverse("volunteer:volunteers_list")
+        teams = reverse("teams")
+        new_team = reverse("team_new")
+        sessions = reverse("speakers:session_list")
+        board = reverse("speakers:checklist_board")
+        sponsors = reverse("sponsorship:sponsorship_list")
+
+        sally = join_team(User.objects.create_user(username="sally"), "Sponsorship")
+        client.force_login(sally)
+        content = client.get(sponsors).content.decode()
+        assert reverse("sponsorship:tier_list") in content
+        for url in (dashboard, volunteers, teams, new_team, sessions, board):
+            assert url not in content, url
+
+        pat = join_team(User.objects.create_user(username="pat"), "Program")
+        client.force_login(pat)
+        content = client.get(sessions).content.decode()
+        assert board in content and reverse("speakers:presenter_list") in content
+        for url in (dashboard, volunteers, teams, new_team, sponsors):
+            assert url not in content, url
+
+        client.force_login(organizer)
+        content = client.get(dashboard).content.decode()
+        for url in (volunteers, teams, new_team, sessions, board, sponsors):
+            assert url in content, url
+
+
+@pytest.mark.django_db
 class TestTeamPage:
     def test_lists_what_the_team_may_do(self, client, organizer, conference):
         team = Team.objects.create(

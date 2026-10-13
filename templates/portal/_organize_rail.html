@@ -19,19 +19,25 @@ and from speakers.context_processors.speaker_module:
 Render only when is_organizer; read-only sponsorship viewers get the plain
 layout, as before.
 {% endcomment %}
-{% url 'organizer_dashboard' as dashboard_url %}
-{% if active == "dashboard" %}
-    {% include "portal/_sidebar_item.html" with url=dashboard_url label=_("Dashboard") icon="icon-gauge" active=True only %}
-{% else %}
-    {% include "portal/_sidebar_item.html" with url=dashboard_url label=_("Dashboard") icon="icon-gauge" only %}
+{# Every entry follows the permission its page reads, so a specialist #}
+{# team's member is offered their own pages and nothing that refuses them. #}
+{% if is_organizer %}
+    {% url 'organizer_dashboard' as dashboard_url %}
+    {% if active == "dashboard" %}
+        {% include "portal/_sidebar_item.html" with url=dashboard_url label=_("Dashboard") icon="icon-gauge" active=True only %}
+    {% else %}
+        {% include "portal/_sidebar_item.html" with url=dashboard_url label=_("Dashboard") icon="icon-gauge" only %}
+    {% endif %}
 {% endif %}
-{% if volunteering_enabled %}
+{% if volunteering_enabled and perms.volunteer.view_volunteerprofile %}
     {% url 'volunteer:volunteers_list' as volunteers_url %}
     {% if active == "volunteers" %}
         {% include "portal/_sidebar_item.html" with url=volunteers_url label=_("Volunteers") icon="icon-users" active=True only %}
     {% else %}
         {% include "portal/_sidebar_item.html" with url=volunteers_url label=_("Volunteers") icon="icon-users" only %}
     {% endif %}
+{% endif %}
+{% if volunteering_enabled and perms.volunteer.change_team %}
     {% url 'teams' as teams_url %}
     {% if active == "teams" %}
         {% include "portal/_sidebar_item.html" with url=teams_url label=_("Teams") icon="icon-users-round" active=True only %}
@@ -47,7 +53,7 @@ layout, as before.
         {% include "portal/_sidebar_item.html" with url=conferences_url label=_("Events") icon="icon-calendar-days" only %}
     {% endif %}
 {% endif %}
-{% if speaker_module_enabled %}
+{% if speaker_module_enabled and perms.speakers.view_program or speaker_module_enabled and perms.speakers.manage_program or speaker_module_enabled and is_speaker_liaison %}
     <div class="text-uppercase text-secondary small fw-semibold mt-3 mb-1 px-2">
         {% trans "Speakers" %}
     </div>
@@ -57,7 +63,7 @@ layout, as before.
     {% else %}
         {% include "portal/_sidebar_item.html" with url=sessions_url label=_("Sessions") icon="icon-presentation" only %}
     {% endif %}
-    {% if is_organizer %}
+    {% if perms.speakers.manage_program %}
         {% url 'speakers:schedule_editor' as schedule_url %}
         {% if active == "schedule" %}
             {% include "portal/_sidebar_item.html" with url=schedule_url label=_("Schedule") icon="icon-calendar-range" active=True only %}
@@ -155,7 +161,7 @@ layout, as before.
     {% include "portal/_sidebar_item.html" with url=maintenance_invitations_url label=_("Invitations") icon="icon-send" only %}
 {% endif %}
 <hr class="my-2">
-{% if volunteering_enabled %}
+{% if volunteering_enabled and perms.volunteer.add_team %}
     {% url 'team_new' as team_new_url %}
     {% include "portal/_sidebar_item.html" with url=team_new_url label=_("New team") icon="icon-plus" only %}
 {% endif %}
