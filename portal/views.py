@@ -33,7 +33,7 @@ from portal.services import (
     clone_teams,
 )
 from speakers.models import Presenter, SpeakerSettings, speaker_module_enabled
-from speakers.seeds import clone_speaker_setup
+from speakers.seeds import clone_speaker_setup, seed_new_edition
 from speakers.stats import edition_task_stats
 from sponsorship.models import SponsorshipProfile
 from ticketing.models import carry_forward
@@ -304,6 +304,7 @@ class StartNewYearView(SuperuserRequiredMixin, FormView):
             SpeakerSettings.objects.update_or_create(
                 conference=conference, defaults={"speaker_module_enabled": True}
             )
+            seed_new_edition(conference)
 
         message = f"Created {conference}."
         if carried:

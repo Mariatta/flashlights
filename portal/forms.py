@@ -4,6 +4,7 @@ from captcha.conf import settings as captcha_settings
 from captcha.fields import CaptchaField, CaptchaTextInput
 from django import forms
 from django.apps import apps
+from django.utils.module_loading import import_string
 
 from portal.models import Conference
 
@@ -293,10 +294,13 @@ class ConferenceForm(forms.ModelForm):
             # a choice other than the default.
             if enabled or any(values[n] != defaults[n] for n in defaults):
                 model.objects.create(conference=conference, **values)
-            return conference
-        changed = [n for n, v in values.items() if getattr(settings_row, n) != v]
-        for name in changed:
-            setattr(settings_row, name, values[name])
-        if changed:
-            settings_row.save(update_fields=changed + ["modified_date"])
+        else:
+            changed = [n for n, v in values.items() if getattr(settings_row, n) != v]
+            for name in changed:
+                setattr(settings_row, name, values[name])
+            if changed:
+                settings_row.save(update_fields=changed + ["modified_date"])
+        if enabled:
+            # Its checklists, on the format and recordings just saved.
+            import_string("speakers.seeds.seed_new_edition")(conference)
         return conference

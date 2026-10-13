@@ -2244,6 +2244,9 @@ class ChecklistTemplateListView(TemplateEditorMixin, TemplateView):
             .annotate(item_count=Count("items"))
             .order_by("scope", "kind__sort_order", "role__sort_order", "delivery")
         )
+        # "Load defaults" is for a local setup; a live edition gets them
+        # when its speaker module is switched on.
+        context["can_load_defaults"] = settings.DEBUG
         context["general_template"] = next(
             (t for t in templates if t.scope == ChecklistScope.GENERAL), None
         )
@@ -2258,9 +2261,13 @@ class ChecklistTemplateListView(TemplateEditorMixin, TemplateView):
 
 class ChecklistTemplateSeedView(TemplateEditorMixin, View):
     """The "Load defaults" button: an idempotent seed, on its own URL so
-    the list page has no POST of its own."""
+    the list page has no POST of its own. A local development tool only
+    (``DEBUG``): a live edition gets its defaults when its speaker module is
+    switched on (``seed_new_edition``)."""
 
     def post(self, request):
+        if not settings.DEBUG:
+            raise Http404
         result = seed_checklists(self.conference)
         messages.success(
             request,

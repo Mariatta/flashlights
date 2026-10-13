@@ -105,7 +105,8 @@ class TestStartNextYear:
         )
         new = Conference.objects.get(year=2027)
         assert speaker_module_enabled(new) is True
-        assert ChecklistTemplate.objects.filter(conference=new).count() == 0
+        # Nothing carried over, so the edition starts on the defaults.
+        assert ChecklistTemplate.objects.filter(conference=new).exists()
         assert "checklist template" not in response.content.decode()
 
     def test_neither(self, client, admin_user, source):

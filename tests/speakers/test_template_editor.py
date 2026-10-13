@@ -86,9 +86,14 @@ class TestListAndSeed:
         assert len(response.context["session_templates"]) == 1
         assert response.context["general_template"].name == "Every presenter"
         content = response.content.decode()
-        assert "PyJam post-production" in content and "Workshop presenter" in content
+        assert (
+            "Performance post-production" in content and "Workshop presenter" in content
+        )
 
-    def test_empty_then_load_defaults(self, client, organizer, enabled, conference):
+    def test_empty_then_load_defaults(
+        self, client, organizer, enabled, conference, settings
+    ):
+        settings.DEBUG = True  # the button is a local tool
         client.force_login(organizer)
         assert "None yet" in client.get(LIST).content.decode()
         assert client.post(LIST).status_code == 405
@@ -97,6 +102,13 @@ class TestListAndSeed:
             f"Loaded {len(DEFAULT_TEMPLATES)} template(s)" in response.content.decode()
         )
         assert conference.checklist_templates.count() == len(DEFAULT_TEMPLATES)
+
+    def test_load_defaults_is_a_local_tool(self, client, organizer, enabled):
+        """Live, the button is gone and its URL refuses: an edition gets the
+        defaults when its speaker module is switched on."""
+        client.force_login(organizer)
+        assert "Load defaults" not in client.get(LIST).content.decode()
+        assert client.post(reverse("speakers:template_seed")).status_code == 404
 
 
 @pytest.mark.django_db
@@ -172,7 +184,7 @@ class TestTemplateForms:
             conference=other,
             scope=ChecklistScope.SESSION,
             name="x",
-            kind=session_type(other, "PYJAM"),
+            kind=session_type(other, "PERFORMANCE"),
             delivery="PRE_RECORDED",
         )
         client.force_login(organizer)

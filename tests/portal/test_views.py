@@ -12,7 +12,8 @@ from portal import branding
 from portal.models import Conference
 from portal_account.models import PortalProfile
 from speakers.constants import EventFormat, Recordings
-from speakers.models import SpeakerSettings
+from speakers.models import ChecklistTemplate, SpeakerSettings
+from speakers.seeds import seed_new_edition
 from sponsorship.models import (
     SponsorshipProfile,
     SponsorshipProgressStatus,
@@ -549,6 +550,36 @@ class TestConferenceCRUD:
         conference.refresh_from_db()
         assert conference.name == "Renamed Edition"
         assert str(conference.conference_date) == "2025-11-15"
+
+    def test_switching_the_module_on_seeds_the_checklists(
+        self, client, admin_user, conference
+    ):
+        """The edition gets its defaults, on the format just chosen, the
+        moment the speaker module is switched on; switching it off and on
+        again leaves what organizers have."""
+        SpeakerSettings.objects.filter(conference=conference).delete()
+        client.force_login(admin_user)
+        data = {
+            "year": conference.year,
+            "name": conference.name,
+            "slug": conference.slug,
+            "sponsorship_goal": "0",
+            "donation_goal": "0",
+            "proposals_count": "0",
+            "chat_platform": "NONE",
+            "speaker_module_enabled": "on",
+            "event_format": EventFormat.IN_PERSON,
+            "recordings": Recordings.TEAM,
+        }
+        url = reverse("conference_edit", kwargs={"pk": conference.pk})
+        client.post(url, data)
+        templates = ChecklistTemplate.objects.filter(conference=conference)
+        assert templates.filter(name="Recorded session").exists()
+        assert not templates.filter(name="Performer").exists()
+        count = templates.count()
+        client.post(url, data)
+        assert templates.count() == count
+        assert seed_new_edition(conference) is None
 
     def test_update_saves_venue_and_format(self, client, admin_user, conference):
         # The format is chosen on the edition form and kept on

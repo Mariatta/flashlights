@@ -628,6 +628,19 @@ def seed_checklists(conference):
         return _seed_checklists(conference)
 
 
+def seed_new_edition(conference):
+    """The default checklists for an edition that has just switched the
+    speaker module on and has none of its own (none carried over from last
+    year). Returns the ``SeedResult``, or None when it already had some.
+
+    Organizers no longer press "Load defaults": that button is a local
+    development tool now, and ``manage.py seed_checklists`` tops up a live
+    edition."""
+    if ChecklistTemplate.objects.filter(conference=conference).exists():
+        return None
+    return seed_checklists(conference)
+
+
 def seed_readiness_gates(conference):
     """Create the default gates for an edition, shut. Existing gates keep
     whatever organizers changed, including whether they are open. An

@@ -81,7 +81,10 @@ class TestSeed:
             == result.items
         )
 
-    def test_seed_skips_templates_for_types_the_edition_lacks(self, conference, client):
+    def test_seed_skips_templates_for_types_the_edition_lacks(
+        self, conference, client, settings
+    ):
+        settings.DEBUG = True  # the button is a local tool
         """An edition without a keynote (retired, or seeded from an older
         list) keeps not having one: the two keynote templates are skipped
         and reported, the type is not conjured up, and a custom type
@@ -148,10 +151,11 @@ class TestSeed:
         assert {spec[3] for spec in DEFAULT_TEMPLATES if spec[3]} <= roles
 
     def test_seed_fills_empty_descriptions_but_keeps_written_ones(
-        self, conference, client
+        self, conference, client, settings
     ):
         """An edition seeded before the defaults carried descriptions gets
         them on "Load defaults"; an organizer's own text is never touched."""
+        settings.DEBUG = True  # the button is a local tool
         seed_checklists(conference)
         ChecklistTemplateItem.objects.update(description_md="")
         keep = ChecklistTemplateItem.objects.filter(title="Do a tech check").first()

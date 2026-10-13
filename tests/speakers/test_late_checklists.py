@@ -44,7 +44,8 @@ class TestLoadDefaultsAfterApproval:
         # Loading again adds nothing more.
         assert seed_checklists(conference).reached == 0
 
-    def test_the_button_says_so(self, client, approved):
+    def test_the_button_says_so(self, client, approved, settings):
+        settings.DEBUG = True  # the button is a local tool
         organizer = User.objects.create_user(username="org", is_staff=True)
         client.force_login(organizer)
         page = client.post(reverse("speakers:template_seed"), follow=True)

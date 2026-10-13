@@ -18,12 +18,14 @@
             </p>
         </div>
         <div class="d-flex gap-2">
-            <form method="post" action="{% url 'speakers:template_seed' %}">
-                {% csrf_token %}
-                <button class="btn btn-outline-secondary" type="submit">
-                    <i class="icon-sprout"></i> {% trans "Load defaults" %}
-                </button>
-            </form>
+            {% if can_load_defaults %}
+                <form method="post" action="{% url 'speakers:template_seed' %}">
+                    {% csrf_token %}
+                    <button class="btn btn-outline-secondary" type="submit">
+                        <i class="icon-sprout"></i> {% trans "Load defaults" %}
+                    </button>
+                </form>
+            {% endif %}
             <a class="btn btn-primary" href="{% url 'speakers:template_create' %}">
                 <i class="icon-plus"></i> {% trans "New template" %}
             </a>
@@ -42,7 +44,7 @@
         </p>
     {% else %}
         <p class="text-secondary">
-            {% trans "None yet. Load the defaults, or create a template with scope \"Every presenter\"." %}
+            {% trans "None yet. Create a template with scope \"Every presenter\"." %}
         </p>
     {% endif %}
     <h2 class="h5 mt-3">
