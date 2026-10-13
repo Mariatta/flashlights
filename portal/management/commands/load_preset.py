@@ -11,7 +11,9 @@ data live outside the repository, wherever ``PRESETS_PATH`` points.
 import runpy
 from pathlib import Path
 
+from allauth.account.models import EmailAddress
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.test.utils import override_settings
@@ -47,6 +49,28 @@ class Command(BaseCommand):
                 EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend"
             ), transaction.atomic():
                 run(self.stdout)
+                verified = verify_everyone()
         finally:
             app.conf.task_always_eager = eager
+        self.stdout.write(f"Verified {verified} email address(es).")
         self.stdout.write(self.style.SUCCESS(f"Loaded the preset in {preset}."))
+
+
+def verify_everyone():
+    """Every preset account signs in without the verification email: each
+    one's address is recorded as verified and primary. Returns how many
+    addresses were added or marked verified."""
+    count = 0
+    for user in get_user_model().objects.exclude(email=""):
+        address, created = EmailAddress.objects.get_or_create(
+            user=user,
+            email__iexact=user.email,
+            defaults={"email": user.email, "verified": True, "primary": True},
+        )
+        if created:
+            count += 1
+        elif not address.verified:
+            address.verified = True
+            address.save(update_fields=["verified"])
+            count += 1
+    return count

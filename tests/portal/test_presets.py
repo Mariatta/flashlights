@@ -6,6 +6,7 @@ from io import StringIO
 from pathlib import Path
 
 import pytest
+from allauth.account.models import EmailAddress
 from django.apps import apps
 from django.contrib.auth.models import User
 from django.core.management import CommandError, call_command
@@ -45,6 +46,31 @@ class TestLoadPreset:
         assert User.objects.get(username="admin").check_password("password123")
         assert "Loaded the preset" in out.getvalue()
         assert app.conf.task_always_eager == eager  # put back afterwards
+        # Preset accounts sign in without the verification email.
+        assert EmailAddress.objects.get(user__username="admin").verified
+
+    def test_verifies_every_address_once(self, settings, tmp_path):
+        """New addresses are added verified, unverified ones are marked,
+        verified ones are left alone, and users with no email are skipped."""
+        settings.DEBUG = True
+        (tmp_path / "seed.py").write_text(
+            "from allauth.account.models import EmailAddress\n"
+            "from django.contrib.auth.models import User\n"
+            "def run(stdout):\n"
+            "    User.objects.create_user('new', 'new@example.org')\n"
+            "    old = User.objects.create_user('old', 'old@example.org')\n"
+            "    EmailAddress.objects.create(user=old, email=old.email)\n"
+            "    done = User.objects.create_user('done', 'done@example.org')\n"
+            "    EmailAddress.objects.create(\n"
+            "        user=done, email=done.email, verified=True, primary=True\n"
+            "    )\n"
+            "    User.objects.create_user('nobody')\n"
+        )
+        out = StringIO()
+        call_command("load_preset", str(tmp_path), stdout=out)
+        assert "Verified 2 email address(es)." in out.getvalue()
+        assert not EmailAddress.objects.filter(verified=False).exists()
+        assert EmailAddress.objects.count() == 3
 
 
 @pytest.mark.django_db
