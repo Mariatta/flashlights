@@ -13,10 +13,11 @@ from volunteer.tasks import (
 
 
 @pytest.fixture
-def staff_recipient(conference):
-    """A staff user who receives internal team notifications."""
-    return User.objects.create_user(
-        username="staffteam", email="staff@example.com", is_staff=True
+def staff_recipient(grant_organizer):
+    """An Organizers member, who receives internal team notifications
+    through volunteer.receive_volunteer_notifications."""
+    return grant_organizer(
+        User.objects.create_user(username="staffteam", email="staff@example.com")
     )
 
 

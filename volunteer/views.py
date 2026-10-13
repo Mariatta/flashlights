@@ -2,7 +2,7 @@ import django_filters
 import django_tables2 as tables
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.postgres.search import SearchQuery, SearchVector
 from django.db.models import Count, Q
 from django.http import Http404
@@ -17,11 +17,7 @@ from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
 
 from affiliations.views import AffiliationFormsetMixin
-from common.mixins import (
-    AdminRequiredMixin,
-    TeamLeadRequiredMixin,
-    VolunteerOrAdminRequiredMixin,
-)
+from common.mixins import TeamLeadRequiredMixin, VolunteerOrAdminRequiredMixin
 from common.tasks import enqueue
 from portal.common import (
     get_volunteer_onboarded_stat_cache,
@@ -38,6 +34,16 @@ from .models import (  # Language,
     ApplicationStatus,
     Team,
     VolunteerProfile,
+)
+from .permissions import (
+    ADD_TEAM,
+    CHANGE_TEAM,
+    DELETE_TEAM,
+    REVIEW_VOLUNTEERS,
+    VIEW_VOLUNTEERS,
+    can_review_volunteers,
+    can_view_volunteers,
+    leads_team,
 )
 from .tasks import (
     send_volunteer_cancelled_emails_task,
@@ -94,11 +100,31 @@ class MyConferencesView(ListView):
         )
 
 
-class VolunteerAdminRequiredMixin(AdminRequiredMixin):
-    """Mixin for views that require administrative permission for the volunteers.
-    Currently it requires the user to be a superuser or staff member.
-    This can be extended to include more complex permission checks in the future.
-    """
+class PermissionMixin(UserPassesTestMixin):
+    """Gate a view on one permission label; ``required_permission`` names it."""
+
+    required_permission = None
+
+    def test_func(self):
+        return self.request.user.has_perm(self.required_permission)
+
+
+class VolunteerViewerRequiredMixin(PermissionMixin):
+    """The volunteers list and other people's profiles."""
+
+    required_permission = VIEW_VOLUNTEERS
+
+
+class VolunteerReviewerRequiredMixin(PermissionMixin):
+    """Approving, waitlisting and re-sending onboarding."""
+
+    required_permission = REVIEW_VOLUNTEERS
+
+
+class TeamManagerRequiredMixin(PermissionMixin):
+    """The team management pages."""
+
+    required_permission = CHANGE_TEAM
 
 
 class VolunteerProfileFilter(django_filters.FilterSet):
@@ -205,8 +231,6 @@ class VolunteerProfileTable(tables.Table):
             '<a href="{}">{}</a>', detail_url, record.user.username
         )
 
-        if record.user.is_superuser:
-            html_content = format_html('{} <i class="icon-eye-off"></i>', html_content)
         return html_content
 
     def render_teams(self, value, record):
@@ -223,7 +247,7 @@ class VolunteerProfileTable(tables.Table):
         return html_content
 
 
-class VolunteerProfileList(VolunteerAdminRequiredMixin, SingleTableMixin, FilterView):
+class VolunteerProfileList(VolunteerViewerRequiredMixin, SingleTableMixin, FilterView):
     model = VolunteerProfile
     template_name = "volunteer/volunteerprofile_list.html"
     table_class = VolunteerProfileTable
@@ -259,11 +283,7 @@ class VolunteerProfileView(DetailView):
             self.object = self.get_object()
         except Http404:
             return redirect("volunteer:index")
-        if (
-            not self.object
-            or self.object.user != request.user
-            and not request.user.is_staff
-        ):
+        if self.object.user != request.user and not can_view_volunteers(request.user):
             return redirect("volunteer:index")
         return super(VolunteerProfileView, self).get(request, *args, **kwargs)
 
@@ -275,7 +295,7 @@ class VolunteerProfileView(DetailView):
         return context
 
 
-class ManageVolunteerProfile(VolunteerAdminRequiredMixin, UpdateView):
+class ManageVolunteerProfile(VolunteerReviewerRequiredMixin, UpdateView):
     """View for managing a volunteer profile.
 
     Only accessible to staff or superusers.
@@ -376,7 +396,7 @@ class VolunteerProfileDelete(DeleteView):
     success_url = reverse_lazy("volunteer:index")
 
 
-class TeamList(VolunteerAdminRequiredMixin, ListView):
+class TeamList(TeamManagerRequiredMixin, ListView):
     model = Team
     template_name = "team/index.html"
     context_object_name = "teams"
@@ -416,7 +436,7 @@ class TeamList(VolunteerAdminRequiredMixin, ListView):
         return context
 
 
-class TeamView(VolunteerAdminRequiredMixin, DetailView):
+class TeamView(TeamManagerRequiredMixin, DetailView):
     model = Team
     template_name = "team/team_detail.html"
     context_object_name = "team"
@@ -432,20 +452,20 @@ class TeamView(VolunteerAdminRequiredMixin, DetailView):
 class TeamDashboardView(TeamLeadRequiredMixin, DetailView):
     """Internal management dashboard for a single team.
 
-    Reachable by an admin (superuser/staff) or a lead of this team. Surfaces the
-    same stat-card pattern as the sponsorship list, then the roster split into
-    pending / waitlisted / approved.
+    Reachable by whoever may see volunteers, or a lead of this team. Surfaces
+    the same stat-card pattern as the sponsorship list, then the roster split
+    into pending / waitlisted / approved.
 
     Two distinct capability flags drive the template:
 
-    * ``can_manage_members`` — admin OR a lead of this team. Controls whether
-      the pending/waitlisted rosters and member detail links are shown. Leads
-      need this visibility into who is waiting on their team.
-    * ``is_admin`` — superuser/staff only. Controls the approve/manage *action*
-      buttons, which link to ``ManageVolunteerProfile`` (admin-only today).
-      Keeping approval admin-only matches the "recommend, don't approve"
-      default for leads; flip these to ``can_manage_members`` if/when leads are
-      allowed to approve their own members.
+    * ``can_manage_members`` — may see volunteers, OR a lead of this team.
+      Controls whether the pending/waitlisted rosters and member detail links
+      are shown. Leads need this visibility into who is waiting on their team.
+    * ``is_admin`` — holds ``volunteer.review_volunteerprofile``. Controls the
+      approve/manage *action* buttons, which link to ``ManageVolunteerProfile``.
+      Keeping approval with reviewers matches the "recommend, don't approve"
+      default for leads; flip these to ``can_manage_members`` if/when leads
+      are allowed to approve their own members.
     """
 
     model = Team
@@ -464,14 +484,13 @@ class TeamDashboardView(TeamLeadRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         team = self.object
         user = self.request.user
-        is_admin = user.is_superuser or user.is_staff
 
         context["approved"] = team.approved_members
         context["pending"] = team.pending_members
         context["waitlisted"] = team.waitlisted_members
-        context["is_admin"] = is_admin
-        context["can_manage_members"] = (
-            is_admin or team.team_leads.filter(user=user).exists()
+        context["is_admin"] = can_review_volunteers(user)
+        context["can_manage_members"] = can_view_volunteers(user) or leads_team(
+            user, team
         )
 
         # Applicants who applied to this edition without picking a team. A lead
@@ -600,7 +619,8 @@ class MyTeamsView(LoginRequiredMixin, ListView):
         return context
 
 
-class TeamCreate(VolunteerAdminRequiredMixin, CreateView):
+class TeamCreate(TeamManagerRequiredMixin, CreateView):
+    required_permission = ADD_TEAM
     model = Team
     form_class = TeamForm
     template_name = "team/team_form.html"
@@ -615,7 +635,7 @@ class TeamCreate(VolunteerAdminRequiredMixin, CreateView):
         return reverse("team_detail", kwargs={"pk": self.object.pk})
 
 
-class TeamUpdate(VolunteerAdminRequiredMixin, UpdateView):
+class TeamUpdate(TeamManagerRequiredMixin, UpdateView):
     model = Team
     form_class = TeamForm
     template_name = "team/team_form.html"
@@ -629,13 +649,14 @@ class TeamUpdate(VolunteerAdminRequiredMixin, UpdateView):
         return reverse("team_detail", kwargs={"pk": self.object.pk})
 
 
-class TeamDelete(VolunteerAdminRequiredMixin, DeleteView):
+class TeamDelete(TeamManagerRequiredMixin, DeleteView):
+    required_permission = DELETE_TEAM
     model = Team
     template_name = "team/team_confirm_delete.html"
     success_url = reverse_lazy("teams")
 
 
-class ResendOnboardingEmailView(VolunteerAdminRequiredMixin, View):
+class ResendOnboardingEmailView(VolunteerReviewerRequiredMixin, View):
 
     def post(self, request, pk):
         """
@@ -706,8 +727,8 @@ class CancelVolunteeringView(VolunteerOrAdminRequiredMixin, View):
                 "Your volunteer application has been cancelled successfully.",
             )
 
-            # Redirect based on user type
-            if request.user.is_staff or request.user.is_superuser:
+            # Reviewers go back to the list they came from.
+            if can_view_volunteers(request.user):
                 return redirect("volunteer:volunteer_profile_list")
             else:
                 return redirect("volunteer:index")

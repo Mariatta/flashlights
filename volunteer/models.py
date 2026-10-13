@@ -4,7 +4,6 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Q
 from django.db.models.functions import Lower
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -17,6 +16,7 @@ from portal.validators import validate_linked_in_pattern
 
 from .constants import ApplicationStatus, Region, RoleTypes
 from .languages import LANGUAGES
+from .permissions import volunteer_notification_recipients
 
 APPLICATION_STATUS_CHOICES = [
     (ApplicationStatus.PENDING, ApplicationStatus.PENDING),
@@ -445,15 +445,9 @@ def _send_internal_email(
     Only supports Markdown templates going forward.
     """
 
-    recipients = User.objects.filter(
-        Q(
-            id__in=VolunteerProfile.objects.prefetch_related("roles")
-            .filter(roles__short_name__in=[RoleTypes.ADMIN, RoleTypes.STAFF])
-            .values_list("id", flat=True)
-        )
-        | Q(is_superuser=True)
-        | Q(is_staff=True)
-    ).distinct()
+    # Whoever holds volunteer.receive_volunteer_notifications, by any route:
+    # the active edition's teams or a group (design §7.1).
+    recipients = volunteer_notification_recipients()
 
     if not recipients.exists():
         return
@@ -474,9 +468,7 @@ def _send_internal_email(
 def send_internal_notification_email(instance):
     """Send email to the team whenever a new volunteer profile is created.
 
-    Emails will be sent to team members with the role type Staff or Admin.
-    Emails will also be sent to users with is_superuser or is_staff set to True.
-
+    Emails go to everyone who holds ``volunteer.receive_volunteer_notifications``.
     """
     context = {"profile": instance}
     subject = f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}New {instance.conference} Volunteer Application"

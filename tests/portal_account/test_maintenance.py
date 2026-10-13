@@ -105,11 +105,10 @@ class TestMaintenanceAccountsView:
         assertContains(response, 'href="/maintenance/"')
 
     def test_organize_rail_section_only_for_maintainers(
-        self, client, portal_user, admin_user, conference
+        self, client, portal_user, admin_user, conference, grant_organizer
     ):
         # An organizer who is not a maintainer gets no Maintenance section.
-        portal_user.is_staff = True
-        portal_user.save()
+        grant_organizer(portal_user)
         client.force_login(portal_user)
         response = client.get(reverse("organizer_dashboard"))
         assertNotContains(response, 'href="/maintenance/"')

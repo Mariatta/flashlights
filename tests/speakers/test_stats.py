@@ -147,16 +147,24 @@ class TestDashboards:
         assert response.context["task_stats"] is None
         assert "My volunteering tasks" not in response.content.decode()
 
-    def test_organizer_sees_the_hub_section_even_when_empty(self, client, conference):
+    def test_organizer_sees_the_hub_section_even_when_empty(
+        self, client, conference, grant_organizer
+    ):
         make_settings(conference)
-        organizer = User.objects.create_user(username="org", is_staff=True)
+        organizer = grant_organizer(
+            User.objects.create_user(username="org", is_staff=True)
+        )
         client.force_login(organizer)
         content = client.get(reverse("volunteer:index")).content.decode()
         assert "My volunteering tasks" in content
         assert "Nothing assigned to you yet" in content
 
-    def test_organizer_dashboard_edition_numbers(self, client, conference, world):
-        organizer = User.objects.create_user(username="org", is_staff=True)
+    def test_organizer_dashboard_edition_numbers(
+        self, client, conference, world, grant_organizer
+    ):
+        organizer = grant_organizer(
+            User.objects.create_user(username="org", is_staff=True)
+        )
         client.force_login(organizer)
         response = client.get(reverse("organizer_dashboard"))
         content = response.content.decode()
@@ -165,8 +173,12 @@ class TestDashboards:
         assert "Speakers: 1 of 3 done (33%). Team: 1 of 3 done (33%)." in content
         assert reverse("speakers:checklist_board") in content
 
-    def test_organizer_dashboard_without_module(self, client, conference):
-        organizer = User.objects.create_user(username="org", is_staff=True)
+    def test_organizer_dashboard_without_module(
+        self, client, conference, grant_organizer
+    ):
+        organizer = grant_organizer(
+            User.objects.create_user(username="org", is_staff=True)
+        )
         client.force_login(organizer)
         response = client.get(reverse("organizer_dashboard"))
         assert response.context["task_stats"] is None

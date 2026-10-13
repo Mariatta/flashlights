@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.db.models import ProtectedError
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
@@ -9,7 +10,7 @@ from django.views.generic import ListView, TemplateView
 from django.views.generic.edit import DeleteView, FormView, UpdateView
 
 from attendee.models import PretixOrder
-from common.mixins import AdminRequiredMixin, SuperuserRequiredMixin
+from common.mixins import AdminRequiredMixin, ConferenceAdminRequiredMixin
 from portal.common import (
     SPONSOR_AWAITING_INVOICE_STATUS,
     get_historical_comparison_data,
@@ -28,6 +29,7 @@ from portal.constants import (
 )
 from portal.forms import ConferenceForm, StartNewYearForm
 from portal.models import Conference
+from portal.permissions import can_start_next_year, is_organizer
 from portal.services import (
     bring_forward_volunteers,
     clone_sponsorship_tiers,
@@ -69,7 +71,7 @@ def index(request):
         # An account with no profile never reaches this view: the agreement
         # gate (portal_account.agreements) sends it to the page that asks,
         # and creates the profile when it answers.
-        if user.is_superuser or user.is_staff:
+        if is_organizer(user):
             return redirect("organizer_dashboard")
         if (
             is_presenter
@@ -170,7 +172,7 @@ def dashboard_gallery(request):
 
 
 class OrganizerDashboardView(AdminRequiredMixin, TemplateView):
-    """Cross-app command center for organizers (superuser/staff).
+    """Cross-app command center for organizers (``portal.view_organizer_dashboard``).
 
     A router, not a reimplementation: the top row reuses the same cached stats
     as the public Stats page, and every action/attention item links to the
@@ -237,8 +239,9 @@ class OrganizerDashboardView(AdminRequiredMixin, TemplateView):
         return context
 
 
-class StartNewYearView(SuperuserRequiredMixin, FormView):
-    """Guided flow for organizers to stand up the next conference edition.
+class StartNewYearView(UserPassesTestMixin, FormView):
+    """Guided flow for organizers to stand up the next conference edition
+    (``portal.start_next_year``, the Organizers leads' permission).
 
     Creates the edition and, in one step, carries selected data over from the
     previous edition (teams, sponsorship tiers, goal amounts, returning
@@ -246,6 +249,10 @@ class StartNewYearView(SuperuserRequiredMixin, FormView):
     """
 
     template_name = "portal/start_new_year.html"
+
+    def test_func(self):
+        return can_start_next_year(self.request.user)
+
     form_class = StartNewYearForm
     success_url = reverse_lazy("index")
 
@@ -319,20 +326,20 @@ class StartNewYearView(SuperuserRequiredMixin, FormView):
         return super().form_valid(form)
 
 
-class ConferenceList(SuperuserRequiredMixin, ListView):
+class ConferenceList(ConferenceAdminRequiredMixin, ListView):
     model = Conference
     template_name = "portal/conference_list.html"
     context_object_name = "conferences"
 
 
-class ConferenceUpdate(SuperuserRequiredMixin, UpdateView):
+class ConferenceUpdate(ConferenceAdminRequiredMixin, UpdateView):
     model = Conference
     form_class = ConferenceForm
     template_name = "portal/conference_form.html"
     success_url = reverse_lazy("conference_list")
 
 
-class ConferenceDelete(SuperuserRequiredMixin, DeleteView):
+class ConferenceDelete(ConferenceAdminRequiredMixin, DeleteView):
     model = Conference
     template_name = "portal/conference_confirm_delete.html"
     context_object_name = "conference"

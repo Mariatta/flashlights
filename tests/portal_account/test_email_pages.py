@@ -112,19 +112,17 @@ class TestMaintenanceEmails:
             "Page 2 of 2" in content and "Newer" in content and "search=Mail" in content
         )
 
-    def test_organizer_who_is_not_a_maintainer_is_refused(self, client, conference):
-        organizer = User.objects.create_user(
-            username="org", email="org@x.org", is_staff=True
-        )
+    def test_organizer_who_is_not_a_maintainer_is_refused(self, client, organizer):
         client.force_login(organizer)
         assert client.get(TRAIL).status_code == 403
 
     def test_anonymous_is_sent_to_login(self, client):
         assertRedirects(client.get(TRAIL), reverse("account_login") + "?next=" + TRAIL)
 
-    def test_organize_rail_offers_it_to_maintainers(self, client, maintainer):
-        maintainer.is_staff = True
-        maintainer.save()
+    def test_organize_rail_offers_it_to_maintainers(
+        self, client, maintainer, grant_organizer
+    ):
+        grant_organizer(maintainer)
         client.force_login(maintainer)
         content = client.get(reverse("organizer_dashboard")).content.decode()
         assert TRAIL in content

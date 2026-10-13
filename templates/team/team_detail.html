@@ -21,7 +21,7 @@
             {{ team.short_name }}
             <span class="badge bg-secondary align-middle fs-6">{{ team.conference }}</span>
         </h2>
-        {% if user.is_superuser or user.is_staff %}
+        {% if perms.volunteer.change_team %}
             <div class="mb-3">
                 <a href="{% url 'team_edit' team.id %}"
                    class="btn btn-sm btn-outline-primary"><i class="icon-pencil"></i> {% trans "Edit" %}</a>
@@ -38,7 +38,7 @@
         <ul>
             {% for member in team.team_leads.all %}
                 <li>
-                    {% if user.is_superuser %}
+                    {% if perms.volunteer.view_volunteerprofile %}
                         <a href="{% url 'volunteer:volunteer_profile_detail' member.id %}">{{ member.user.get_full_name }}</a>
                     {% else %}
                         {{ member.user.get_full_name }}

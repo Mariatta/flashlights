@@ -316,7 +316,7 @@ class TestVolunteer:
         assertRedirects(response, reverse("volunteer:index"))
 
     def test_volunteer_profile_view_staff_can_view_other_profile(
-        self, client, portal_user, django_user_model, conference
+        self, client, portal_user, grant_organizer, django_user_model, conference
     ):
         another_user = django_user_model.objects.create_user(
             username="other",
@@ -325,9 +325,7 @@ class TestVolunteer:
         another_profile.region = Region.NORTH_AMERICA
         another_profile.save()
 
-        # Make portal_user staff
-        portal_user.is_staff = True
-        portal_user.save()
+        grant_organizer(portal_user)
 
         client.force_login(portal_user)
         response = client.get(
@@ -485,7 +483,7 @@ class TestManageVolunteers:
         assert response.status_code == 200
 
     def test_manage_volunteers_view_is_staff(
-        self, client, portal_user, django_user_model, conference
+        self, client, portal_user, grant_organizer, django_user_model, conference
     ):
         another_user = django_user_model.objects.create_user(
             username="other",
@@ -493,8 +491,7 @@ class TestManageVolunteers:
         another_profile = VolunteerProfile(user=another_user, conference=conference)
         another_profile.save()
 
-        portal_user.is_staff = True
-        portal_user.save()
+        grant_organizer(portal_user)
 
         client.force_login(portal_user)
         url = reverse("volunteer:volunteer_profile_list")
@@ -560,15 +557,11 @@ class TestManageVolunteers:
         )
         assert another_user.username in name_render
 
-        render_username_for_superuser = volunteer_table.render_username(
-            portal_user, profile
-        )
-        assert "icon-eye-off" in render_username_for_superuser
-
-        render_username_not_superuser = volunteer_table.render_username(
-            another_user, another_profile
-        )
-        assert "icon-eye-off" not in render_username_not_superuser
+        # Usernames link to the profile; no badge marks a superuser, since
+        # the flags no longer mean anything in the portal.
+        render_username = volunteer_table.render_username(portal_user, profile)
+        assert "icon-eye-off" not in render_username
+        assert portal_user.username in render_username
 
         render_application_status = volunteer_table.render_application_status(
             ApplicationStatus.APPROVED
@@ -827,7 +820,7 @@ class TestManageVolunteerApplications:
         assert role.short_name in response.content.decode()
 
     def test_manage_volunteers_view_is_staff(
-        self, client, portal_user, django_user_model, conference
+        self, client, portal_user, grant_organizer, django_user_model, conference
     ):
         another_user = django_user_model.objects.create_user(
             username="other",
@@ -835,8 +828,7 @@ class TestManageVolunteerApplications:
         another_profile = VolunteerProfile(user=another_user, conference=conference)
         another_profile.save()
 
-        portal_user.is_staff = True
-        portal_user.save()
+        grant_organizer(portal_user)
 
         client.force_login(portal_user)
         response = client.get(
@@ -1055,7 +1047,7 @@ class TestCancelVolunteering:
         )
 
     def test_cancel_volunteering_by_staff(
-        self, client, portal_user, django_user_model, conference
+        self, client, portal_user, grant_organizer, django_user_model, conference
     ):
         """Test that staff can cancel volunteer applications."""
         volunteer_user = django_user_model.objects.create_user(username="volunteer")
@@ -1072,9 +1064,7 @@ class TestCancelVolunteering:
         team.save()
         profile.teams.add(team)
 
-        # Make portal_user staff
-        portal_user.is_staff = True
-        portal_user.save()
+        grant_organizer(portal_user)
 
         client.force_login(portal_user)
         response = client.post(

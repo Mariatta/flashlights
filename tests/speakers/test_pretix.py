@@ -47,8 +47,12 @@ def pretix_settings(conference):
 
 
 @pytest.fixture
-def organizer(db):
-    return User.objects.create_user(username="organizer", is_staff=True)
+def organizer(db, grant_organizer):
+    # Staff for the speakers views (until task 3.4) and on the Organizers
+    # team for the Organize surface, which reads the permission.
+    return grant_organizer(
+        User.objects.create_user(username="organizer", is_staff=True)
+    )
 
 
 class FakeResponse:

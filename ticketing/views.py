@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic.edit import FormView
 
-from common.mixins import SuperuserRequiredMixin
+from common.mixins import ConferenceAdminRequiredMixin
 from portal.models import Conference
 
 from .forms import CsvImportForm, TicketingSettingsForm
@@ -11,7 +11,7 @@ from .models import POLL_MINUTES, TicketingSettings, ticketing_for
 from .sync import CsvImportError, import_csv
 
 
-class TicketingSettingsView(SuperuserRequiredMixin, FormView):
+class TicketingSettingsView(ConferenceAdminRequiredMixin, FormView):
     """The edition's Tickets page: where registrations come
     from, and how its questions and products map."""
 
@@ -44,7 +44,7 @@ class TicketingSettingsView(SuperuserRequiredMixin, FormView):
         return redirect("conference_edit", pk=self.conference.pk)
 
 
-class CsvImportView(SuperuserRequiredMixin, FormView):
+class CsvImportView(ConferenceAdminRequiredMixin, FormView):
     """Upload an export of the edition's registrations."""
 
     form_class = CsvImportForm

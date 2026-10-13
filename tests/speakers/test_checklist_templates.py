@@ -82,7 +82,7 @@ class TestSeed:
         )
 
     def test_seed_skips_templates_for_types_the_edition_lacks(
-        self, conference, client, settings
+        self, conference, client, settings, grant_organizer
     ):
         settings.DEBUG = True  # the button is a local tool
         """An edition without a keynote (retired, or seeded from an older
@@ -122,7 +122,9 @@ class TestSeed:
         out = StringIO()
         call_command("seed_checklists", conference=str(conference.year), stdout=out)
         assert "Skipped Keynote host: no KEYNOTE session type" in out.getvalue()
-        organizer = User.objects.create_user(username="seed-org", is_staff=True)
+        organizer = grant_organizer(
+            User.objects.create_user(username="seed-org", is_staff=True)
+        )
         client.force_login(organizer)
         page = client.post(
             reverse("speakers:template_seed"), follow=True
@@ -151,7 +153,7 @@ class TestSeed:
         assert {spec[3] for spec in DEFAULT_TEMPLATES if spec[3]} <= roles
 
     def test_seed_fills_empty_descriptions_but_keeps_written_ones(
-        self, conference, client, settings
+        self, conference, client, settings, grant_organizer
     ):
         """An edition seeded before the defaults carried descriptions gets
         them on "Load defaults"; an organizer's own text is never touched."""
@@ -181,7 +183,9 @@ class TestSeed:
         assert f"Filled in {n} missing description(s)." in out.getvalue()
         guide.update(description_md="")
         make_settings(conference)
-        organizer = User.objects.create_user(username="seed-org2", is_staff=True)
+        organizer = grant_organizer(
+            User.objects.create_user(username="seed-org2", is_staff=True)
+        )
         client.force_login(organizer)
         page = client.post(
             reverse("speakers:template_seed"), follow=True

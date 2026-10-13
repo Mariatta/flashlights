@@ -27,7 +27,7 @@
 {% endblock sidebar %}
 {% block content %}
     <h1 class="h3 mb-4">
-        {% if user.is_superuser and user.username != object.user.username %}
+        {% if not is_own_profile %}
             Volunteer Profile for:  {{ object.user.username }}
         {% else %}
             Your Volunteer Profile
@@ -237,7 +237,7 @@
         </div>
     </div>
     <div class="mt-4">
-        {% if user.is_superuser and user.username != object.user.username %}
+        {% if not is_own_profile and perms.volunteer.review_volunteerprofile %}
             <a class="btn btn-secondary"
                href="{% url 'volunteer:volunteers_list' %}"><i class="icon-arrow-left"></i> Back to Manage Volunteers</a>
             {% if object.application_status != "Cancelled" %}

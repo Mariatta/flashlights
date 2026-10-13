@@ -164,10 +164,11 @@
                                data-bs-toggle="dropdown"
                                aria-expanded="false"><span class="avatar-initial me-2" aria-hidden="true">{{ user.username|first|upper }}</span>{{ user.username }}</a>
                             <ul class="dropdown-menu dropdown-menu-end text-small">
-                                {# Admin Area follows the organizer flag; Maintenance follows #}
+                                {# Admin Area follows is_staff, the one thing that flag still #}
+                                {# means: signing in to the Django admin. Maintenance follows #}
                                 {# its own permission. A person may see either or both. #}
-                                {% if is_organizer or is_maintainer %}
-                                    {% if is_organizer %}
+                                {% if user.is_staff or is_maintainer %}
+                                    {% if user.is_staff %}
                                         <li>
                                             <a class="dropdown-item" href="{% url 'admin:index' %}">{% trans "Admin area" %}</a>
                                         </li>

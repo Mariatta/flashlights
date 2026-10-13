@@ -6,7 +6,9 @@ from captcha.models import CaptchaStore
 
 from portal.models import Conference
 from tests.ticketing_ids import ANONYMOUS_QUESTION, NOT_ANONYMOUS
-from volunteer.models import Language
+from volunteer.constants import ApplicationStatus
+from volunteer.models import Language, Team, VolunteerProfile
+from volunteer.permission_presets import ORGANIZERS, PRESETS, permissions_for
 
 
 @pytest.fixture(autouse=True)
@@ -132,3 +134,47 @@ def captcha_solution(db):
     key = CaptchaStore.generate_key()
     answer = CaptchaStore.objects.get(hashkey=key).response
     return {"captcha_0": key, "captcha_1": answer}
+
+
+@pytest.fixture
+def organizers_team(conference):
+    """The active edition's Organizers team with the preset sets (design §7.1)."""
+    team = Team.objects.create(
+        conference=conference, short_name=ORGANIZERS, description="Core team"
+    )
+    team.permissions.set(permissions_for(PRESETS[ORGANIZERS].members))
+    team.lead_permissions.set(permissions_for(PRESETS[ORGANIZERS].leads))
+    return team
+
+
+@pytest.fixture
+def grant_organizer(organizers_team):
+    """Put an account on the Organizers team: an approved profile in the
+    active edition, and membership. Returns the account."""
+
+    def _grant(user, lead=False):
+        # An existing profile is reused as it is: a test that made one
+        # pending and then expects organizer access is asking for two
+        # things at once, and the backend will say no.
+        profile, _ = VolunteerProfile.objects.get_or_create(
+            user=user,
+            conference=organizers_team.conference,
+            defaults={"application_status": ApplicationStatus.APPROVED},
+        )
+        profile.teams.add(organizers_team)
+        if lead:
+            organizers_team.team_leads.add(profile)
+        return user
+
+    return _grant
+
+
+@pytest.fixture
+def organizer(django_user_model, grant_organizer):
+    """A non-staff, non-superuser account whose access comes from the
+    Organizers team alone: the shape every organizer has after Stage 3."""
+    return grant_organizer(
+        django_user_model.objects.create_user(
+            username="organizer", email="organizer@example.com", first_name="Org"
+        )
+    )

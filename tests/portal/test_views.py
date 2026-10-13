@@ -753,22 +753,38 @@ class TestOrganizerDashboard:
         assert "footer-heading" not in content
         assert "Portal documentation" not in content
 
-    def test_staff_rail_omits_superuser_only_entries(
-        self, client, django_user_model, conference
+    def test_rail_follows_the_organizers_sets(
+        self, client, django_user_model, conference, organizer, grant_organizer
     ):
+        """A member manages conferences but does not start the year; a lead
+        does both; a staff account on no team sees no organizer surface."""
+        client.force_login(organizer)
+        content = client.get(reverse("organizer_dashboard")).content.decode()
+        assert reverse("conference_list") in content
+        assert reverse("start_new_year") not in content
+        assert client.get(reverse("conference_list")).status_code == 200
+        assert client.get(reverse("start_new_year")).status_code == 403
+        grant_organizer(organizer, lead=True)
+        content = client.get(reverse("organizer_dashboard")).content.decode()
+        assert reverse("start_new_year") in content
+        assert client.get(reverse("start_new_year")).status_code == 200
         staff = django_user_model.objects.create_user("staff", is_staff=True)
         client.force_login(staff)
-        content = client.get(reverse("organizer_dashboard")).content.decode()
-        assert reverse("conference_list") not in content
-        assert reverse("start_new_year") not in content
+        assert client.get(reverse("organizer_dashboard")).status_code == 403
         assert client.get(reverse("conference_list")).status_code == 403
-        # With no active edition the notice still shows, without the link.
+
+    def test_no_active_edition_notice(self, client, organizer, admin_user, conference):
+        """Team grants belong to the active edition, so with none active an
+        organizer holds nothing and the dashboard refuses them; the notice
+        that says to ask a superuser is, fittingly, the superuser's."""
         conference.is_active = False
         conference.save()
+        client.force_login(organizer)
+        assert client.get(reverse("organizer_dashboard")).status_code == 403
+        client.force_login(admin_user)
         content = client.get(reverse("organizer_dashboard")).content.decode()
         assert "No active event." in content
-        assert "Ask a superuser" in content
-        assert reverse("conference_list") not in content
+        assert reverse("conference_list") in content
 
     def test_needs_attention_counts(
         self, client, admin_user, conference, django_user_model

@@ -1,5 +1,5 @@
 import pytest
-from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.models import AnonymousUser, User
 from django.db import connection
 from django.test import RequestFactory
 from django.test.utils import CaptureQueriesContext
@@ -46,14 +46,23 @@ class TestUserCapabilities:
         caps = user_capabilities(_request(portal_user))
         assert caps["can_start_next_year"] is False
 
-    def test_conferences_are_superuser_only(self, django_user_model, conference):
-        """Staff organizers get the Organize rail but the Conference views
-        require a superuser, so the rail must not offer what 403s."""
+    def test_flags_follow_the_organizers_sets(
+        self, django_user_model, conference, organizer, grant_organizer
+    ):
+        """A member of Organizers gets the rail and the conferences; starting
+        the next year is the leads' permission. The staff flag alone grants
+        nothing, so a staff account on no team sees no organizer surface."""
+        caps = user_capabilities(_request(organizer))
+        assert caps["is_organizer"] is True
+        assert caps["can_manage_conferences"] is True
+        assert caps["can_start_next_year"] is False
+        grant_organizer(organizer, lead=True)
+        caps = user_capabilities(_request(User.objects.get(pk=organizer.pk)))
+        assert caps["can_start_next_year"] is True
         staff = django_user_model.objects.create_user("staff", is_staff=True)
         caps = user_capabilities(_request(staff))
-        assert caps["is_organizer"] is True
+        assert caps["is_organizer"] is False
         assert caps["can_manage_conferences"] is False
-        assert caps["can_start_next_year"] is False
         assert user_capabilities(_request())["can_manage_conferences"] is False
 
     def test_can_start_next_year_false_while_edition_running(

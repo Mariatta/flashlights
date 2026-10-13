@@ -54,11 +54,26 @@ reverse accessor named after every child model (`basemodel.role`,
 - `portal_account.PortalProfile` (`portal_account/models.py`) is the one
   per-user profile: pronouns, picture, CoC/ToS flags. It is global, not
   per-edition.
-- "Organizer" still means `user.is_superuser or user.is_staff` on the
-  reading side until tasks 3.2 to 3.4 land: `common.mixins.AdminRequiredMixin`
-  (`common/mixins.py`) and the `is_organizer` flag from
-  `portal.context_processors.user_capabilities`, which every template
-  receives.
+- "Organizer" means `portal.view_organizer_dashboard` in the portal and
+  volunteer apps (task 3.2): `common.mixins.AdminRequiredMixin` and the
+  `is_organizer` flag from `portal.context_processors.user_capabilities`
+  read it through `portal.permissions.is_organizer`; the conference pages
+  read `change_conference` (`ConferenceAdminRequiredMixin`) and Start next
+  year `start_next_year`. The volunteer side reads `volunteer/permissions.py`:
+  `view_volunteerprofile` for the list and other people's profiles,
+  `review_volunteerprofile` for approving and re-sending onboarding,
+  `add/change/delete_team` for the team pages; a lead of a team stays a data
+  check (`leads_team`). Internal volunteer emails go to
+  `volunteer_notification_recipients()`, everyone holding
+  `receive_volunteer_notifications`. The staff flag grants nothing in these
+  apps any more: a staff account on no team sees no organizer surface, and
+  "Admin Area" in the user menu follows `is_staff` because signing in to
+  the Django admin is the one thing that flag still means. Two consequences
+  worth knowing: team grants belong to the active edition, so with no
+  edition active nobody but a superuser reaches Organize (the notice there
+  says to ask one); and the speakers and sponsorship views still read the
+  flags until 3.3 and 3.4, so until then a Program-team member without the
+  Organizers set sees the speaker pages without the Organize tab.
 - The catalogue (design §7.1, task 3.1) exists on the granting side. Custom
   permissions are declared in `Meta.permissions` on the model that owns the
   feature (`portal.view_organizer_dashboard`, `portal.start_next_year`,
