@@ -58,7 +58,7 @@ and stats entries disappear.
 |---|---|---|
 | `VOLUNTEERING_ENABLED` | `true` | No Volunteer hub, applications or teams |
 | `SPONSORSHIP_ENABLED` | `true` | No sponsors, tiers, donations or their stats |
-| `STATS_PUBLIC` | `true` | No public stats, comparison, JSON feed or gallery pages |
+| `STATS_PUBLIC` | `true` | No public stats, comparison or JSON feed pages |
 
 The speaker portal is switched per edition, on the edition form. A
 community that runs none of volunteering, sponsorship and the speaker

@@ -48,7 +48,7 @@ is in `docs/developer/deployment.md`.
 | `DOCS_URL`, `TERMS_URL` | Documentation and terms of service links; left out when unset | unset |
 | `VOLUNTEERING_ENABLED` | `false` hides the Volunteer hub, its nav and organizer entries and the landing section; its pages answer 404 | `true` |
 | `SPONSORSHIP_ENABLED` | `false` hides sponsors, tiers, donations, their stats and dashboard tiles; its pages answer 404 | `true` |
-| `STATS_PUBLIC` | `false` takes the public stats pages (stats, year comparison, JSON, gallery) off the site | `true` |
+| `STATS_PUBLIC` | `false` takes the public stats pages (stats, year comparison, JSON) off the site | `true` |
 | `SPONSORSHIP_EMAIL`, `ACCOUNTING_EMAIL` | Who receives a sponsorship contract request; skipped when both are unset | unset |
 
 The Code of Conduct, sponsorship prospectus, donation and schedule links come

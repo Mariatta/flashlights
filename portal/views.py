@@ -163,15 +163,6 @@ def stats_comparison(request):
     return render(request, "portal/stats_comparison.html", context)
 
 
-def dashboard_gallery(request):
-    """
-    Show a gallery of dashboards.
-    """
-    context = {}
-
-    return render(request, "portal/dashboard_gallery.html", context)
-
-
 class OrganizerDashboardView(AdminRequiredMixin, TemplateView):
     """Cross-app command center for organizers (``portal.view_organizer_dashboard``).
 

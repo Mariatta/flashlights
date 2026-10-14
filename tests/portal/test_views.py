@@ -296,12 +296,14 @@ class TestStatsJSON:
 
 
 @pytest.mark.django_db
-class TestDashboardGallery:
+class TestNoDashboardGallery:
 
-    def test_dashboard_gallery_is_public(self, client):
-        response = client.get(reverse("dashboard_gallery"))
-        assert response.status_code == 200
-        assert "Gallery of dashboard visualisations" in response.content.decode()
+    def test_gallery_page_and_stats_link_are_gone(self, client, conference):
+        assert client.get("/dashboard_gallery").status_code == 404
+        assert (
+            "Dashboard Gallery"
+            not in client.get(reverse("portal_stats")).content.decode()
+        )
 
 
 @pytest.mark.django_db

@@ -109,7 +109,6 @@ HOME_NAMES = {
     "brand_favicon_png",
     "brand_apple_touch_icon",
     "brand_share_card",
-    "dashboard_gallery",
     "portal_stats",
     "portal_stats_comparison",
     "portal_stats_json",

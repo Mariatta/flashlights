@@ -345,7 +345,7 @@ def _switch(name):
 VOLUNTEERING_ENABLED = _switch("VOLUNTEERING_ENABLED")
 #: Sponsors, tiers, donations and their stats.
 SPONSORSHIP_ENABLED = _switch("SPONSORSHIP_ENABLED")
-#: The public stats pages (stats, year comparison, JSON feed, gallery).
+#: The public stats pages (stats, year comparison, JSON feed).
 STATS_PUBLIC = _switch("STATS_PUBLIC")
 
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"

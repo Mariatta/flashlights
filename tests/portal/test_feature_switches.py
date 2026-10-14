@@ -12,7 +12,6 @@ STATS_PAGES = (
     "portal_stats",
     "portal_stats_comparison",
     "portal_stats_json",
-    "dashboard_gallery",
 )
 
 
