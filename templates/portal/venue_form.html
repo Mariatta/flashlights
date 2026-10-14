@@ -1,0 +1,45 @@
+{% extends "portal/base_sidebar.html" %}
+{% load i18n %}
+{% load django_bootstrap5 %}
+{% block head_title %}
+    {% if object %}
+        {% trans "Edit venue" %}
+    {% else %}
+        {% trans "Add a venue" %}
+    {% endif %}
+{% endblock head_title %}
+{% block breadcrumb %}
+    {% url 'venue_list' as bc_url %}
+    {% trans "Venues" as bc_section %}
+    {% if object %}
+        {% trans "Edit" as bc_page %}
+    {% else %}
+        {% trans "Add" as bc_page %}
+    {% endif %}
+    {% include "portal/_breadcrumbs.html" with section=bc_section section_url=bc_url page=bc_page %}
+{% endblock breadcrumb %}
+{% block sidebar_title %}
+    {% trans "Organize" %}
+{% endblock sidebar_title %}
+{% block sidebar %}
+    {% include "portal/_organize_rail.html" with active="venues" %}
+{% endblock sidebar %}
+{% block content %}
+    <div class="container px-4 py-3">
+        <h1 class="h3 pb-2 mb-3 border-bottom">
+            {% if object %}
+                {% trans "Edit venue" %}: {{ object.name }}
+            {% else %}
+                {% trans "Add a venue" %}
+            {% endif %}
+        </h1>
+        <form method="post" class="col-md-8">
+            {% csrf_token %}
+            {% bootstrap_form form %}
+            <button type="submit" class="btn btn-primary">
+                {% trans "Save" %}
+            </button>
+            <a href="{% url 'venue_list' %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
+        </form>
+    </div>
+{% endblock content %}

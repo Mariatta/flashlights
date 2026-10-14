@@ -9,7 +9,7 @@ from django.urls import reverse
 from pytest_django.asserts import assertRedirects
 
 from portal import branding
-from portal.models import Conference
+from portal.models import Conference, Venue
 from portal_account.models import PortalProfile
 from speakers.constants import EventFormat, ProposalDecision, Recordings
 from speakers.models import ChecklistTemplate, SpeakerSettings
@@ -104,8 +104,9 @@ class TestPortalIndex:
         content = client.get(reverse("index")).content.decode()
         assert "landing-where" not in content  # nothing to say yet
         conference.conference_date = date(2026, 5, 16)
-        conference.venue_name = "Long Beach Convention Center"
-        conference.venue_url = "https://maps.example.org/lbcc"
+        conference.venue = Venue.objects.create(
+            name="Long Beach Convention Center", url="https://maps.example.org/lbcc"
+        )
         conference.save()
         content = client.get(reverse("index")).content.decode()
         assert "16 May 2026" in content
@@ -115,7 +116,8 @@ class TestPortalIndex:
         )
         # A multi-day edition shows the span; the list page shows the venue.
         conference.end_date = date(2026, 5, 17)
-        conference.venue_url = ""
+        conference.venue.url = ""
+        conference.venue.save()
         conference.save()
         content = client.get(reverse("index")).content.decode()
         assert "16 May to 17 May 2026" in content
@@ -646,6 +648,7 @@ class TestConferenceCRUD:
         # The format is chosen on the edition form and kept on
         # the speaker settings row, created here when there is none.
         SpeakerSettings.objects.filter(conference=conference).delete()
+        venue = Venue.objects.create(name="Long Beach Convention Center")
         client.force_login(admin_user)
         client.post(
             reverse("conference_edit", kwargs={"pk": conference.pk}),
@@ -659,17 +662,14 @@ class TestConferenceCRUD:
                 "proposals_count": "0",
                 "chat_platform": "DISCORD",
                 "conference_date": "2026-05-16",
-                "venue_name": "Room 201A, Long Beach Convention Center",
-                "venue_address": "300 E Ocean Blvd\nLong Beach, CA",
-                "venue_url": "https://maps.example.org/lbcc",
+                "venue": venue.pk,
                 "event_format": EventFormat.IN_PERSON,
                 "recordings": Recordings.TEAM,
             },
             follow=True,
         )
         conference.refresh_from_db()
-        assert conference.venue_name == "Room 201A, Long Beach Convention Center"
-        assert conference.venue_url == "https://maps.example.org/lbcc"
+        assert conference.venue == venue
         row = SpeakerSettings.objects.get(conference=conference)
         assert row.event_format == EventFormat.IN_PERSON
         assert row.recordings == Recordings.TEAM

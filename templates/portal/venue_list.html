@@ -1,0 +1,85 @@
+{% extends "portal/base_sidebar.html" %}
+{% load i18n %}
+{% block head_title %}
+    {% trans "Venues" %}
+{% endblock head_title %}
+{% block breadcrumb %}
+    {% trans "Venues" as bc_section %}
+    {% include "portal/_breadcrumbs.html" with section=bc_section %}
+{% endblock breadcrumb %}
+{% block sidebar_title %}
+    {% trans "Organize" %}
+{% endblock sidebar_title %}
+{% block sidebar %}
+    {% include "portal/_organize_rail.html" with active="venues" %}
+{% endblock sidebar %}
+{% block content %}
+    <div class="container px-4 py-3">
+        <div class="d-flex flex-wrap justify-content-between align-items-center pb-2 mb-3 border-bottom gap-2">
+            <div>
+                <h1 class="h3 mb-0">
+                    {% trans "Venues" %}
+                </h1>
+                <p class="text-secondary mb-0">
+                    {% trans "The places your events happen at: a building, or one room with an address. Add each once; every event, date and room picks from this list." %}
+                </p>
+            </div>
+            <a href="{% url 'venue_create' %}" class="btn btn-primary">
+                <i class="icon-plus"></i> {% trans "Add a venue" %}
+            </a>
+        </div>
+        {% if venues %}
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>
+                            {% trans "Venue" %}
+                        </th>
+                        <th>
+                            {% trans "Address" %}
+                        </th>
+                        <th>
+                            {% trans "Used by" %}
+                        </th>
+                        <th>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for venue in venues %}
+                        <tr>
+                            <td>
+                                {% if venue.url %}
+                                    <a href="{{ venue.url }}">{{ venue.name }}</a>
+                                {% else %}
+                                    {{ venue.name }}
+                                {% endif %}
+                            </td>
+                            <td class="small text-secondary">
+                                {{ venue.address|linebreaksbr }}
+                            </td>
+                            <td class="small">
+                                {% blocktrans count counter=venue.editions_count %}{{ counter }} event{% plural %}{{ counter }} events{% endblocktrans %},
+                                {% blocktrans count counter=venue.rooms_count %}{{ counter }} room{% plural %}{{ counter }} rooms{% endblocktrans %}
+                            </td>
+                            <td class="text-nowrap">
+                                <a href="{% url 'venue_edit' venue.pk %}"
+                                   class="btn btn-sm btn-outline-primary"
+                                   title="Edit"
+                                   aria-label="Edit"><i class="icon-pencil"></i></a>
+                                <a href="{% url 'venue_delete' venue.pk %}"
+                                   class="btn btn-sm btn-outline-danger"
+                                   title="Delete"
+                                   aria-label="Delete"><i class="icon-trash"></i></a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="text-secondary">
+                {% trans "No venues yet. Add the first, then pick it on the event's edit page." %}
+            </p>
+        {% endif %}
+    </div>
+{% endblock content %}

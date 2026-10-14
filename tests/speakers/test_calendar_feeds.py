@@ -6,7 +6,7 @@ import pytest
 from django.contrib.auth.models import User
 from django.urls import reverse
 
-from portal.models import Conference
+from portal.models import Conference, Venue
 from speakers.constants import PremiereLocation, ProgramVisibility
 from speakers.feeds import (
     escape_text,
@@ -124,7 +124,7 @@ class TestPublicFeed:
         assert "Hidden draft" not in text
         # With a venue the room is followed by it, so a
         # calendar can map the place; the comma is escaped as iCalendar wants.
-        conference.venue_name = "Long Beach Convention Center, CA"
+        conference.venue = Venue.objects.create(name="Long Beach Convention Center, CA")
         conference.save()
         text = client.get(FEED).content.decode()
         assert "LOCATION:main-stage\\, Long Beach Convention Center\\, CA" in text

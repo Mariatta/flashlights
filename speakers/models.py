@@ -561,6 +561,15 @@ class Room(TimestampedModel):
         max_length=8, choices=RoomKind.choices, default=RoomKind.STAGE
     )
     is_active = models.BooleanField(default=True)
+    # The venue the room is in; blank for an online room.
+    venue = models.ForeignKey(
+        "portal.Venue",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="rooms",
+        help_text="Blank for an online room.",
+    )
     # Blank: the room is there on every date. A meetup that moves between
     # venues ties each venue's rooms to the nights it hosts.
     event_dates = models.ManyToManyField(

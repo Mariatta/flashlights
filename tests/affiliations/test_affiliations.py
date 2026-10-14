@@ -190,7 +190,7 @@ class TestSeedDevData:
         from portal.models import Conference
 
         past = Conference.objects.get(year=2024)
-        assert past.venue_name.startswith("Vancouver") and not past.uses_discord
+        assert past.venue.name.startswith("Vancouver") and not past.uses_discord
         assert past.speaker_settings.event_format == "IN_PERSON"
         assert past.speaker_settings.recordings == "TEAM"
         assert Conference.get_active().year != 2024

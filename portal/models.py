@@ -56,6 +56,30 @@ class Cadence(models.TextChoices):
     SERIES = "SERIES", "A series of separate dates: a year of meetups"
 
 
+class Venue(models.Model):
+    """A place an edition happens at: a building, or one room with an
+    address. Kept once per instance and picked by editions, dates and
+    rooms, so a community returning to the same building names it once.
+    """
+
+    name = models.CharField(max_length=200, unique=True)
+    address = models.TextField(blank=True)
+    url = models.URLField(
+        "link", blank=True, help_text="A map or the venue's own page."
+    )
+    notes = models.TextField(
+        blank=True,
+        help_text="For the team, not published: how to get in, parking, "
+        "accessibility, who to call.",
+    )
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
 class Conference(BaseModel):
     """A single edition of the event (2023, 2024, 2025, ...).
 
@@ -110,12 +134,17 @@ class Conference(BaseModel):
     # once this date has passed. Null for a freshly-created edition.
     conference_date = models.DateField(null=True, blank=True)
     banner_text = models.CharField(max_length=255, blank=True)
-    # Where it happens: printed on the landing page, the
-    # public program and the calendar feeds. Blank for an online edition.
-    venue_name = models.CharField("venue", max_length=200, blank=True)
-    venue_address = models.TextField("address", blank=True)
-    venue_url = models.URLField(
-        "venue link", blank=True, help_text="A map or the venue's own page."
+    # Where it happens: a venue from the instance's list, printed on the
+    # landing page, the public program and the calendar feeds. Blank for
+    # an online edition. An edition that picks one gets a room at it when
+    # it has none (speakers.rooms).
+    venue = models.ForeignKey(
+        Venue,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="editions",
+        help_text="Leave blank online. Venues are added on the Venues page.",
     )
     # Community chat. Editions from before read Discord,
     # which is what the portal assumed.

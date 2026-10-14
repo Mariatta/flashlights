@@ -77,9 +77,9 @@ year and online the next changes nothing but the form.
   the portal leaves out what only an online event needs: pre-recorded
   delivery, premieres, the tech check and its booking gate, the speaker's
   upload before the event. Hybrid keeps everything and each session says
-  whether it is live or pre-recorded. The **venue** (name, address, link)
-  goes with it and is printed on the landing page, the public program, the
-  calendar feeds and the schedule emails.
+  whether it is live or pre-recorded. The **venue** goes with it, picked
+  from the Venues page, and is printed on the landing page, the public
+  program, the calendar feeds and the schedule emails.
 - **Recordings**: none, the team records, or speakers pre-record. With the
   team recording, the team uploads each session's recording after the event
   and the post-production board follows it through transcript, translation
@@ -93,6 +93,21 @@ year and online the next changes nothing but the form.
 
 The default checklist templates are seeded to match, so a new edition
 starts with the right lines rather than a list to prune.
+
+### Venues
+
+**Venues** in the Organize rail holds the places your events happen at:
+a building such as a convention center, or one room with an address.
+Each is added once (name, address, a map or website link, notes for the
+team) and reused by every edition, so a community returning to the same
+building names it once. An edition picks its venue on its edit page.
+
+The moment an edition picks a venue it has no room at, one room named
+after the venue is made, so the place can be scheduled right away: a
+meetup's single room, or a conference's first lane to rename and add to.
+Starting the next edition carries the previous one's active rooms along,
+with their venues. A venue an event or a room still uses cannot be
+deleted.
 
 ### One event a year, or a series of dates
 

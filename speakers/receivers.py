@@ -41,6 +41,7 @@ from .models import (
     SpeakerSettings,
 )
 from .readiness import refresh_readiness
+from .rooms import room_for_venue
 from .rules import (
     evaluate_items,
     items_for_conference,
@@ -325,6 +326,13 @@ def abort_the_upload(sender, instance, **kwargs):
         return
     pk, key, upload_id = instance.pk, instance.storage_key, instance.upload_id
     transaction.on_commit(lambda: _abort_upload(pk, key, upload_id))
+
+
+@receiver(post_save, sender=Conference, dispatch_uid="speakers.rooms.venue")
+def venue_chosen(sender, instance, **kwargs):
+    """An edition that picks a venue gets a room at it when it has none."""
+    if instance.venue_id and _touches(kwargs, "venue"):
+        room_for_venue(instance, instance.venue)
 
 
 def public_api_changed(sender, instance, **kwargs):

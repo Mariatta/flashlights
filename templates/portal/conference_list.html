@@ -69,9 +69,9 @@
                                     to {{ conference.end_date }}
                                 {% endif %}
                             {% endif %}
-                            {% if conference.venue_name %}
+                            {% if conference.venue %}
                                 <div class="small text-secondary">
-                                    {{ conference.venue_name }}
+                                    {{ conference.venue.name }}
                                 </div>
                             {% endif %}
                         </td>

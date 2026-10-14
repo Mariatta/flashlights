@@ -7,7 +7,7 @@ from django.apps import apps
 from django.forms import inlineformset_factory
 from django.utils.module_loading import import_string
 
-from portal.models import Cadence, Conference, EventDate
+from portal.models import Cadence, Conference, EventDate, Venue
 
 
 class PortalCaptchaTextInput(CaptchaTextInput):
@@ -267,6 +267,18 @@ class LoginForm(AllauthLoginForm):
             self.fields["remember"].label = "Remember me"
 
 
+class VenueForm(forms.ModelForm):
+    """A place, kept once and picked by editions and rooms."""
+
+    class Meta:
+        model = Venue
+        fields = ["name", "address", "url", "notes"]
+        widgets = {
+            "address": forms.Textarea(attrs={"rows": 3}),
+            "notes": forms.Textarea(attrs={"rows": 3}),
+        }
+
+
 class ConferenceForm(EditionDatesForm, forms.ModelForm):
     """Edit an existing conference edition through the portal.
 
@@ -317,9 +329,7 @@ class ConferenceForm(EditionDatesForm, forms.ModelForm):
             "cadence",
             "conference_date",
             "end_date",
-            "venue_name",
-            "venue_address",
-            "venue_url",
+            "venue",
             "chat_platform",
             "chat_name",
             "chat_url",
@@ -344,8 +354,6 @@ class ConferenceForm(EditionDatesForm, forms.ModelForm):
             "volunteer_application_open": "Advertises volunteering on the landing "
             "page and opens volunteer sign-up for this edition. Off, the public "
             "page says nothing about volunteering and the team keeps its hub.",
-            "venue_name": "Shown with the dates on the landing page and the "
-            "public program. Leave blank for an online edition.",
             "chat_url": "The invite link speakers and volunteers are pointed "
             "to. Leave blank to point them at the guide instead.",
         }

@@ -17,6 +17,11 @@ BACKFILLED = {year: f"PyLadiesCon {year}" for year in (2023, 2024, 2025, 2026)}
 
 def drop_untouched(apps, schema_editor):
     Conference = apps.get_model("portal", "Conference")
+    # The deletes below check their constraints at once: the venue foreign
+    # key's index, which Django builds at the end of this migration, cannot
+    # be created while deferred trigger events are pending on the table.
+    if schema_editor.connection.vendor == "postgresql":
+        schema_editor.execute("SET CONSTRAINTS ALL IMMEDIATE")
     relations = [
         rel
         for rel in Conference._meta.related_objects
@@ -106,23 +111,50 @@ class Migration(migrations.Migration):
                 verbose_name="reply-to address",
             ),
         ),
-        migrations.AddField(
-            model_name="conference",
-            name="venue_address",
-            field=models.TextField(blank=True, verbose_name="address"),
+        migrations.CreateModel(
+            name="Venue",
+            fields=[
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=200, unique=True)),
+                ("address", models.TextField(blank=True)),
+                (
+                    "url",
+                    models.URLField(
+                        blank=True,
+                        help_text="A map or the venue's own page.",
+                        verbose_name="link",
+                    ),
+                ),
+                (
+                    "notes",
+                    models.TextField(
+                        blank=True,
+                        help_text="For the team, not published: how to get in, parking, accessibility, who to call.",
+                    ),
+                ),
+            ],
+            options={
+                "ordering": ["name"],
+            },
         ),
         migrations.AddField(
             model_name="conference",
-            name="venue_name",
-            field=models.CharField(blank=True, max_length=200, verbose_name="venue"),
-        ),
-        migrations.AddField(
-            model_name="conference",
-            name="venue_url",
-            field=models.URLField(
+            name="venue",
+            field=models.ForeignKey(
                 blank=True,
-                help_text="A map or the venue's own page.",
-                verbose_name="venue link",
+                help_text="Leave blank online. Venues are added on the Venues page.",
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="editions",
+                to="portal.venue",
             ),
         ),
         migrations.CreateModel(

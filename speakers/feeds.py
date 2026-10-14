@@ -119,8 +119,8 @@ def event_lines(row):
     else:
         location = "All rooms"
     # The venue after the room, so a calendar can map it.
-    if conference.venue_name and location is not session.youtube_url:
-        location = f"{location}, {conference.venue_name}"
+    if conference.venue_id and location is not session.youtube_url:
+        location = f"{location}, {conference.venue.name}"
     lines = [
         "BEGIN:VEVENT",
         f"UID:session-{session.pk}@{conference.slug}.flashlights",

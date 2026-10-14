@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views.generic import ListView, TemplateView
-from django.views.generic.edit import DeleteView, FormView, UpdateView
+from django.views.generic.edit import CreateView, DeleteView, FormView, UpdateView
 
 from attendee.models import PretixOrder
 from common.mixins import AdminRequiredMixin, ConferenceAdminRequiredMixin
@@ -27,8 +27,13 @@ from portal.constants import (
     CACHE_KEY_VOLUNTEER_ONBOARDED_COUNT,
     SPONSORSHIP_GOAL,
 )
-from portal.forms import ConferenceForm, EventDateFormSet, StartNewYearForm
-from portal.models import Cadence, Conference
+from portal.forms import (
+    ConferenceForm,
+    EventDateFormSet,
+    StartNewYearForm,
+    VenueForm,
+)
+from portal.models import Cadence, Conference, Venue
 from portal.permissions import can_start_next_year, is_organizer
 from portal.services import (
     bring_forward_volunteers,
@@ -320,7 +325,7 @@ class StartNewYearView(EditionDatesMixin, UserPassesTestMixin, FormView):
             )
             carried.append(
                 f"{counts['templates']} checklist template(s), "
-                f"{counts['guides']} speaker guide(s)"
+                f"{counts['guides']} speaker guide(s), {counts['rooms']} room(s)"
             )
         elif data["speaker_portal"]:
             SpeakerSettings.objects.update_or_create(
@@ -351,7 +356,12 @@ class ConferenceList(ConferenceAdminRequiredMixin, ListView):
 
     def get_queryset(self):
         # A series shows how many dates it lists.
-        return super().get_queryset().annotate(listed_dates=Count("event_dates"))
+        return (
+            super()
+            .get_queryset()
+            .select_related("venue")
+            .annotate(listed_dates=Count("event_dates"))
+        )
 
 
 class ConferenceUpdate(EditionDatesMixin, ConferenceAdminRequiredMixin, UpdateView):
@@ -377,6 +387,57 @@ class ConferenceUpdate(EditionDatesMixin, ConferenceAdminRequiredMixin, UpdateVi
         response = super().form_valid(form)
         form.save_dates(self.object, formset)
         return response
+
+
+class VenueList(ConferenceAdminRequiredMixin, ListView):
+    """The instance's places, each with what points at it."""
+
+    model = Venue
+    template_name = "portal/venue_list.html"
+    context_object_name = "venues"
+
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .annotate(
+                editions_count=Count("editions", distinct=True),
+                rooms_count=Count("rooms", distinct=True),
+            )
+        )
+
+
+class VenueCreate(ConferenceAdminRequiredMixin, CreateView):
+    model = Venue
+    form_class = VenueForm
+    template_name = "portal/venue_form.html"
+    success_url = reverse_lazy("venue_list")
+
+
+class VenueUpdate(ConferenceAdminRequiredMixin, UpdateView):
+    model = Venue
+    form_class = VenueForm
+    template_name = "portal/venue_form.html"
+    success_url = reverse_lazy("venue_list")
+
+
+class VenueDelete(ConferenceAdminRequiredMixin, DeleteView):
+    model = Venue
+    template_name = "portal/venue_confirm_delete.html"
+    context_object_name = "venue"
+    success_url = reverse_lazy("venue_list")
+
+    def form_valid(self, form):
+        # An edition, a date or a room still points at it: PROTECTed.
+        try:
+            return super().form_valid(form)
+        except ProtectedError:
+            messages.error(
+                self.request,
+                f"Cannot delete {self.object}: an edition or a room still uses "
+                "it. Point those elsewhere first.",
+            )
+            return redirect("venue_list")
 
 
 class ConferenceDelete(PermissionRequiredMixin, DeleteView):

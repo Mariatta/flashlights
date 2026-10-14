@@ -169,4 +169,8 @@ urlpatterns = [
         views.ConferenceDelete.as_view(),
         name="conference_delete",
     ),
+    path("venues/", views.VenueList.as_view(), name="venue_list"),
+    path("venues/new/", views.VenueCreate.as_view(), name="venue_create"),
+    path("venues/<int:pk>/edit/", views.VenueUpdate.as_view(), name="venue_edit"),
+    path("venues/<int:pk>/delete/", views.VenueDelete.as_view(), name="venue_delete"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,0 +1,37 @@
+{% extends "portal/base_sidebar.html" %}
+{% load i18n %}
+{% block head_title %}
+    {% trans "Delete venue" %}
+{% endblock head_title %}
+{% block breadcrumb %}
+    {% url 'venue_list' as bc_url %}
+    {% trans "Venues" as bc_section %}
+    {% trans "Delete" as bc_page %}
+    {% include "portal/_breadcrumbs.html" with section=bc_section section_url=bc_url page=bc_page %}
+{% endblock breadcrumb %}
+{% block sidebar_title %}
+    {% trans "Organize" %}
+{% endblock sidebar_title %}
+{% block sidebar %}
+    {% include "portal/_organize_rail.html" with active="venues" %}
+{% endblock sidebar %}
+{% block content %}
+    <div class="container px-4 py-3">
+        <h1 class="h3 pb-2 mb-3 border-bottom">
+            {% trans "Delete venue" %}
+        </h1>
+        <p class="fs-5">
+            {% blocktrans with name=venue.name %}Are you sure you want to delete "{{ name }}"?{% endblocktrans %}
+        </p>
+        <p class="text-muted">
+            {% trans "A venue an event, a date or a room still uses cannot be deleted." %}
+        </p>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">
+                {% trans "Delete" %}
+            </button>
+            <a href="{% url 'venue_list' %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
+        </form>
+    </div>
+{% endblock content %}

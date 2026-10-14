@@ -11,6 +11,7 @@ from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
+from portal.models import Venue
 from speakers.constants import ProgramVisibility
 from speakers.models import AllowedOrigin, Presenter, Session, SpeakerSettings
 from speakers.public import preview_token
@@ -610,9 +611,11 @@ class TestVenue:
     def test_the_edition_block_carries_the_venue(
         self, client, program, conference, django_capture_on_commit_callbacks
     ):
-        conference.venue_name = "Long Beach Convention Center"
-        conference.venue_address = "300 E Ocean Blvd, Long Beach, CA"
-        conference.venue_url = "https://maps.example.org/lbcc"
+        conference.venue = Venue.objects.create(
+            name="Long Beach Convention Center",
+            address="300 E Ocean Blvd, Long Beach, CA",
+            url="https://maps.example.org/lbcc",
+        )
         with django_capture_on_commit_callbacks(execute=True):
             conference.save()
         _, data = get(client, url("sessions"))
@@ -627,7 +630,7 @@ class TestVenue:
     ):
         _, data = get(client, url("schedule"))
         assert data["conference"]["venue"] is None
-        conference.venue_name = "Long Beach Convention Center"
+        conference.venue = Venue.objects.create(name="Long Beach Convention Center")
         with django_capture_on_commit_callbacks(execute=True):
             conference.save()
         _, data = get(client, url("schedule"))

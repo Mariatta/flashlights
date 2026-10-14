@@ -11,6 +11,7 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from common.models import SentEmail
+from portal.models import Venue
 from speakers.constants import SessionStatus
 from speakers.emails import send_schedule_update_email
 from speakers.models import ActivityLog, PublishedSlot
@@ -204,7 +205,7 @@ class TestPublishEmails:
         steady = confirmed_session(conference, title="Steady panel", presenter=grace)
         make_slot(moved, room=make_room(conference), start_utc=T0)
         make_slot(steady, room=make_room(conference), start_utc=T0)
-        conference.venue_name = "Long Beach Convention Center"
+        conference.venue = Venue.objects.create(name="Long Beach Convention Center")
         conference.save()
         publish_schedule(conference, organizer, notify=False)
         moved.slot.start_utc = T0 + timedelta(hours=2)

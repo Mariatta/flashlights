@@ -25,7 +25,7 @@
                     {{ brand.description }}
                 </p>
                 {% with next_date=active_conference.next_event_date %}
-                    {% if next_date or active_conference.conference_date or active_conference.venue_name %}
+                    {% if next_date or active_conference.conference_date or active_conference.venue %}
                         <p class="landing-where">
                             {% if next_date %}
                                 <span>
@@ -45,13 +45,13 @@
                                     {% endif %}
                                 </span>
                             {% endif %}
-                            {% if active_conference.venue_name %}
+                            {% if active_conference.venue %}
                                 <span>
                                     <i class="icon-map-pin" aria-hidden="true"></i>
-                                    {% if active_conference.venue_url %}
-                                        <a href="{{ active_conference.venue_url }}">{{ active_conference.venue_name }}</a>
+                                    {% if active_conference.venue.url %}
+                                        <a href="{{ active_conference.venue.url }}">{{ active_conference.venue.name }}</a>
                                     {% else %}
-                                        {{ active_conference.venue_name }}
+                                        {{ active_conference.venue.name }}
                                     {% endif %}
                                 </span>
                             {% endif %}

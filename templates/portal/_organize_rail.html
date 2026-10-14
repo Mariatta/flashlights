@@ -52,6 +52,12 @@ layout, as before.
     {% else %}
         {% include "portal/_sidebar_item.html" with url=conferences_url label=_("Events") icon="icon-calendar-days" only %}
     {% endif %}
+    {% url 'venue_list' as venues_url %}
+    {% if active == "venues" %}
+        {% include "portal/_sidebar_item.html" with url=venues_url label=_("Venues") icon="icon-map-pin" active=True only %}
+    {% else %}
+        {% include "portal/_sidebar_item.html" with url=venues_url label=_("Venues") icon="icon-map-pin" only %}
+    {% endif %}
 {% endif %}
 {% if active_conference and perms.ticketing.change_ticketingsettings %}
     {% url 'conference_tickets' active_conference.pk as tickets_url %}

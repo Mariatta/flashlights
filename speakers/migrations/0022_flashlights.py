@@ -547,4 +547,16 @@ class Migration(migrations.Migration):
                 verbose_name="dates",
             ),
         ),
+        migrations.AddField(
+            model_name="room",
+            name="venue",
+            field=models.ForeignKey(
+                blank=True,
+                help_text="Blank for an online room.",
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="rooms",
+                to="portal.venue",
+            ),
+        ),
     ]

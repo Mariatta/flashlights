@@ -40,6 +40,7 @@ from .models import (
     Handbook,
     PresenterRole,
     ReadinessGate,
+    Room,
     SessionType,
     SpeakerSettings,
     event_format,
@@ -886,11 +887,26 @@ def clone_speaker_setup(target, source, enable=False):
     """Carry the speaker-portal setup into a new edition (Start next year).
 
     Copies checklist templates, the latest published version of every guide
-    (as an unpublished draft), and the per-edition settings except the
-    pretix event, token and secret, which are per edition. ``enable``
-    switches the module on. Returns a dict of counts.
+    (as an unpublished draft), the active rooms (with their venue, so a
+    conference returns to its building with its lanes in place) and the
+    per-edition settings except the pretix event, token and secret, which
+    are per edition. ``enable`` switches the module on. Returns a dict of
+    counts.
     """
     templates, items = clone_checklists(target, source)
+    rooms = 0
+    for room in Room.objects.filter(conference=source, is_active=True):
+        _, created = Room.objects.get_or_create(
+            conference=target,
+            name=room.name,
+            defaults={
+                "kind": room.kind,
+                "url": room.url,
+                "discord_id": room.discord_id,
+                "venue": room.venue,
+            },
+        )
+        rooms += created
     guides = 0
     for key, _ in Handbook.keys(source):
         current = Handbook.current(source, key)
@@ -915,4 +931,4 @@ def clone_speaker_setup(target, source, enable=False):
             setattr(settings_row, field, getattr(source_settings, field))
     settings_row.speaker_module_enabled = enable
     settings_row.save()
-    return {"templates": templates, "items": items, "guides": guides}
+    return {"templates": templates, "items": items, "guides": guides, "rooms": rooms}

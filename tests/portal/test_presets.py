@@ -10,6 +10,7 @@ from allauth.account.models import EmailAddress
 from django.apps import apps
 from django.contrib.auth.models import User
 from django.core.management import CommandError, call_command
+from django.db import connection
 
 from portal.celery import app
 from portal.models import Conference
@@ -96,7 +97,8 @@ class TestDropBackfilledEditions:
         )
         Team.objects.create(conference=used, short_name="T", description="d")
         renamed = Conference.objects.create(year=2026, name="Ours 2026", slug="2026")
-        drop(apps, None)
+        with connection.schema_editor(atomic=False) as editor:
+            drop(apps, editor)
         remaining = set(Conference.objects.values_list("pk", flat=True))
         assert untouched.pk not in remaining
         assert {used.pk, renamed.pk} <= remaining

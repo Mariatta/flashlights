@@ -15,7 +15,7 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 
 from affiliations.models import Affiliation, AffiliationKind
-from portal.models import ChatPlatform, Conference
+from portal.models import ChatPlatform, Conference, Venue
 from speakers.constants import EventFormat, Recordings
 from speakers.models import SpeakerSettings
 
@@ -94,6 +94,13 @@ class Command(BaseCommand):
         """A past edition held in a room: a venue, the team
         recording the talks, the chat on another platform. The active
         edition stays online, so both shapes of every form can be seen."""
+        venue, _ = Venue.objects.get_or_create(
+            name="Vancouver Public Library, Alice MacKay Room",
+            defaults={
+                "address": "350 W Georgia St\nVancouver, BC V6B 6B1",
+                "url": "https://www.vpl.ca/",
+            },
+        )
         edition, created = Conference.objects.get_or_create(
             year=2024,
             defaults={
@@ -102,9 +109,7 @@ class Command(BaseCommand):
                 "conference_date": date(2024, 11, 16),
                 "start_date": date(2024, 11, 16),
                 "end_date": date(2024, 11, 16),
-                "venue_name": "Vancouver Public Library, Alice MacKay Room",
-                "venue_address": "350 W Georgia St\nVancouver, BC V6B 6B1",
-                "venue_url": "https://www.vpl.ca/",
+                "venue": venue,
                 "chat_platform": ChatPlatform.OTHER,
                 "chat_name": "Zulip",
                 "chat_url": "https://chat.example.org/join/flashlights",

@@ -50,12 +50,13 @@ def program_state(conference, previewing):
 
 def venue_block(conference):
     """Where the edition happens, or None online."""
-    if not conference.venue_name:
+    venue = conference.venue
+    if venue is None:
         return None
     return {
-        "name": conference.venue_name,
-        "address": conference.venue_address or None,
-        "url": conference.venue_url or None,
+        "name": venue.name,
+        "address": venue.address or None,
+        "url": venue.url or None,
     }
 
 
