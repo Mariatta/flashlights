@@ -108,6 +108,11 @@ LOGGING = {
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "")
 ALLOWED_HOSTS = ALLOWED_HOSTS.split(",") if ALLOWED_HOSTS else []
 
+# Browsers scope cookies by host, not port, so Django's default names would
+# let any other Django app on the same host overwrite this one's session.
+SESSION_COOKIE_NAME = os.environ.get("SESSION_COOKIE_NAME", "flashlights_sessionid")
+CSRF_COOKIE_NAME = os.environ.get("CSRF_COOKIE_NAME", "flashlights_csrftoken")
+
 
 # Key for fields encrypted at rest (speakers.encryption.EncryptedTextField:
 # pretix API token and webhook secret). Required in production; derived from

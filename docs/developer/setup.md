@@ -229,6 +229,10 @@ Then run the server:
 python manage.py runserver
 ```
 
+The session and CSRF cookies are named `flashlights_sessionid` and
+`flashlights_csrftoken`, so another Django app on the same host does not sign
+you out; set `SESSION_COOKIE_NAME` or `CSRF_COOKIE_NAME` to change them.
+
 ## Speaker media uploads (optional)
 
 Performance videos go straight from the browser to a private bucket in
