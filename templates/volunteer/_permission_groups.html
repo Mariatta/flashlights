@@ -1,0 +1,18 @@
+{% comment %}
+Permission groups as a bullet list, each group's permissions nested under it.
+Takes ``groups``: [(group, [words])], as volunteer.permissions.describe returns.
+{% endcomment %}
+<ul class="{{ list_class|default:'mb-2' }}">
+    {% for group, words in groups %}
+        <li>
+            <strong>{{ group }}</strong>
+            <ul>
+                {% for word in words %}
+                    <li>
+                        {{ word }}
+                    </li>
+                {% endfor %}
+            </ul>
+        </li>
+    {% endfor %}
+</ul>

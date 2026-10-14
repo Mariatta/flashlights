@@ -50,11 +50,7 @@
             {% trans "What this team may do" %}
         </h3>
         {% if team_grants %}
-            {% for group, words in team_grants %}
-                <p class="mb-1">
-                    <strong>{{ group }}:</strong> {{ words|join:", " }}
-                </p>
-            {% endfor %}
+            {% include "volunteer/_permission_groups.html" with groups=team_grants only %}
         {% else %}
             <p class="text-secondary">
                 {% trans "Nothing beyond what every approved volunteer may do. Work reaches this team through task assignment." %}
@@ -63,18 +59,14 @@
         {% if lead_grants %}
             <p class="mb-1 mt-2">
                 <em>{% trans "Leads also:" %}</em>
-                {% for group, words in lead_grants %}
-                    <strong>{{ group }}:</strong> {{ words|join:", " }}
-                    {% if not forloop.last %}
-                        ;
-                    {% endif %}
-                {% endfor %}
             </p>
+            {% include "volunteer/_permission_groups.html" with groups=lead_grants only %}
         {% endif %}
         {# Member rosters live on the team dashboard (stats + tables); not #}
         {# duplicated here. #}
         {% if is_organizer %}
-            <a href="{% url 'team_dashboard' team.id %}" class="d-inline-flex align-items-center gap-1">
+            <a href="{% url 'team_dashboard' team.id %}"
+               class="d-inline-flex align-items-center gap-1">
                 {% trans "Open team dashboard" %}
                 <i class="icon-arrow-right"></i>
             </a>

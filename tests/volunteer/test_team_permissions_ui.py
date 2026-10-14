@@ -3,6 +3,7 @@ the team form, the grants on the team page, and where each of a person's
 permissions comes from on their profile page."""
 
 import json
+import re
 
 import pytest
 from django.contrib.auth.models import Group, User
@@ -232,6 +233,9 @@ class TestTeamPage:
         assert "What this team may do" in content
         assert "Manage the program" in content and "Leads also:" in content
         assert "Change the speaker settings" in content
+        # Team and lead permissions are one bullet each, not comma-joined.
+        assert re.search(r"<li>\s*Manage the program[^<,]*</li>", content)
+        assert re.search(r"<li>\s*Change the speaker settings, [^<]*</li>", content)
         empty = Team.objects.create(
             conference=conference, short_name="Web", description="d"
         )
@@ -274,6 +278,11 @@ class TestProfilePage:
         url = reverse("volunteer:volunteer_profile_detail", kwargs={"pk": profile.pk})
         content = client.get(url).content.decode()
         assert "May do:" in content and "Lead of Program" in content
+        # One bullet per permission, not a comma-joined line.
+        assert re.search(
+            r"<li>\s*Change the speaker settings, types, roles and readiness gates\s*</li>",
+            content,
+        )
         client.force_login(admin_user)
         assert "Lead of Program" in client.get(url).content.decode()
         # A superuser's own page says so, and a past edition grants nothing.

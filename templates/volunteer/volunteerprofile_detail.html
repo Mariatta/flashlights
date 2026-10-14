@@ -130,17 +130,13 @@
                     </div>
                     <div class="col-md-9">
                         {% for source, groups in permission_sources %}
-                            <div class="mb-1">
+                            <div class="mb-2">
                                 <span class="badge bg-light text-dark border me-1">{{ source }}</span>
-                                {% for group, words in groups %}
-                                    <small><strong>{{ group }}:</strong> {{ words|join:", " }}
-                                        {% if not forloop.last %}
-                                            ;
-                                        {% endif %}
-                                    </small>
-                                {% empty %}
+                                {% if groups %}
+                                    {% include "volunteer/_permission_groups.html" with groups=groups list_class="small mb-0 mt-1" only %}
+                                {% else %}
                                     <small class="text-secondary">{% trans "nothing on its own" %}</small>
-                                {% endfor %}
+                                {% endif %}
                             </div>
                         {% empty %}
                             <span class="text-secondary">{% trans "Nothing beyond their own pages. Team grants apply to the active edition only." %}</span>
