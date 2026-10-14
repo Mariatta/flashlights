@@ -149,6 +149,8 @@ class TestSwitching:
                 "year": 2026,
                 "name": "Flashlights 2026",
                 "slug": "2026",
+                "cadence": "ONCE",
+                "conference_date": "2027-05-01",
                 "speaker_portal": "on",
             },
         )

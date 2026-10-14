@@ -7,7 +7,7 @@ import pytest
 from django.contrib.auth.models import User
 from django.urls import reverse
 
-from portal.models import Conference, EventDate
+from portal.models import Cadence, Conference, EventDate
 from speakers.models import Room
 from speakers.schedule import grid_for_day, schedule_days
 from tests.grants import on_team
@@ -16,6 +16,7 @@ from .factories import make_room, make_session, make_settings, make_slot
 
 FEB = date(2027, 2, 13)
 MAR = date(2027, 3, 13)
+MAY = date(2027, 5, 15)
 
 
 @pytest.fixture
@@ -37,9 +38,15 @@ def edition_data(conference, **extra):
         "donation_goal": "0",
         "proposals_count": "0",
         "chat_platform": "NONE",
+        "cadence": "ONCE",
+        "conference_date": "2027-05-01",
     }
     data.update(extra)
     return data
+
+
+def series_data(conference, **extra):
+    return edition_data(conference, cadence="SERIES", **extra)
 
 
 def lanes(conference, day):
@@ -53,7 +60,7 @@ class TestEditionForm:
         url = reverse("conference_edit", kwargs={"pk": conference.pk})
         client.post(
             url,
-            edition_data(
+            series_data(
                 conference,
                 event_dates="2027-03-13\n\n2027-02-13 February workshop\n",
             ),
@@ -62,41 +69,89 @@ class TestEditionForm:
             (FEB, "February workshop"),
             (MAR, ""),
         ]
+        # The edition's date and span follow the list.
+        conference.refresh_from_db()
+        assert conference.cadence == Cadence.SERIES
+        assert (conference.conference_date, conference.start_date) == (FEB, FEB)
+        assert conference.end_date == MAR
         feb = conference.event_dates.get(date=FEB)
         room = make_room(conference, name="Improving")
         room.event_dates.add(feb)
         form = client.get(url).context["form"]
         assert form["event_dates"].value() == "2027-02-13 February workshop\n2027-03-13"
         # A date still listed keeps its row, and the room tied to it.
-        client.post(url, edition_data(conference, event_dates="2027-02-13 Workshop"))
+        client.post(url, series_data(conference, event_dates="2027-02-13 Workshop"))
         assert list(conference.event_dates.values_list("date", "label")) == [
             (FEB, "Workshop")
         ]
         assert list(room.event_dates.all()) == [feb]
-        client.post(url, edition_data(conference, event_dates=""))
+        conference.refresh_from_db()
+        assert conference.end_date == FEB
+        # Once a year lists nothing: the rows go, whatever the textarea says.
+        client.post(url, edition_data(conference, event_dates="2027-02-13\njunk"))
         assert not conference.event_dates.exists()
+        conference.refresh_from_db()
+        assert conference.cadence == Cadence.ONCE
+        assert str(conference.conference_date) == "2027-05-01"
 
     @pytest.mark.parametrize(
         "lines, error",
         [
             ("13/02/2027", "is not a date"),
             ("2027-02-13\n2027-02-13 again", "listed twice"),
-            ("2026-12-31", "outside the start and end dates"),
+            ("", "List at least one date"),
         ],
     )
     def test_bad_lines_are_refused(self, client, admin_user, conference, lines, error):
         client.force_login(admin_user)
         response = client.post(
             reverse("conference_edit", kwargs={"pk": conference.pk}),
-            edition_data(
-                conference,
-                start_date="2027-01-01",
-                end_date="2027-12-31",
-                event_dates=lines,
-            ),
+            series_data(conference, event_dates=lines),
         )
         assert error in response.content.decode()
         assert not conference.event_dates.exists()
+
+    def test_once_a_year_needs_its_date(self, client, admin_user, conference):
+        client.force_login(admin_user)
+        url = reverse("conference_edit", kwargs={"pk": conference.pk})
+        response = client.post(url, edition_data(conference, conference_date=""))
+        assert "When does it happen?" in response.content.decode()
+        response = client.post(
+            url, edition_data(conference, conference_date="2027-05-02", end_date=MAR)
+        )
+        assert "The last day is before the event date." in response.content.decode()
+        # The last day is optional; the start date mirrors the event date.
+        client.post(url, edition_data(conference, conference_date="2027-05-02"))
+        conference.refresh_from_db()
+        assert str(conference.start_date) == "2027-05-02"
+        assert str(conference.end_date) == "2027-05-02"
+        client.post(
+            url, edition_data(conference, conference_date="2027-05-02", end_date=MAY)
+        )
+        conference.refresh_from_db()
+        assert (conference.start_date, conference.end_date) == (date(2027, 5, 2), MAY)
+
+    def test_the_form_asks_which_kind_first(self, client, admin_user, conference):
+        client.force_login(admin_user)
+        content = client.get(
+            reverse("conference_edit", kwargs={"pk": conference.pk})
+        ).content.decode()
+        assert "What kind of event" in content
+        assert 'data-show-when="id_cadence=ONCE"' in content
+        assert 'data-show-when="id_cadence=SERIES"' in content
+        assert "js/show-when" in content
+        assert "id_start_date" not in content
+
+    def test_the_list_counts_a_series_dates(self, client, admin_user, conference):
+        client.force_login(admin_user)
+        conference.cadence = Cadence.SERIES
+        conference.save()
+        conference.event_dates.create(date=FEB)
+        conference.event_dates.create(date=MAR)
+        conference.span_from_dates()
+        content = client.get(reverse("conference_list")).content.decode()
+        assert "2 dates" in content
+        assert "13 Feb to 13 Mar 2027" in content
 
     def test_str(self, conference):
         row = EventDate(conference=conference, date=FEB)
@@ -189,6 +244,54 @@ class TestRoomsPerDate:
 
 def make_other_edition():
     return Conference.objects.create(year=1999, name="Other", slug="other")
+
+
+@pytest.mark.django_db
+class TestStartNextYear:
+    def start(self, client, admin_user, **data):
+        client.force_login(admin_user)
+        return client.post(
+            reverse("start_new_year"),
+            {"year": 2027, "name": "Next", "slug": "2027", **data},
+        )
+
+    def test_once_a_year(self, client, admin_user, conference):
+        response = self.start(client, admin_user, cadence="ONCE")
+        assert "When does it happen?" in response.content.decode()
+        self.start(client, admin_user, cadence="ONCE", conference_date="2027-05-01")
+        new = Conference.objects.get(year=2027)
+        assert new.cadence == Cadence.ONCE
+        assert str(new.start_date) == "2027-05-01"
+        assert str(new.end_date) == "2027-05-01"
+
+    def test_a_series(self, client, admin_user, conference):
+        response = self.start(client, admin_user, cadence="SERIES")
+        assert "List at least one date" in response.content.decode()
+        self.start(
+            client,
+            admin_user,
+            cadence="SERIES",
+            event_dates="2027-03-13\n2027-02-13 February workshop",
+        )
+        new = Conference.objects.get(year=2027)
+        assert new.cadence == Cadence.SERIES
+        assert list(new.event_dates.values_list("date", flat=True)) == [FEB, MAR]
+        assert (new.conference_date, new.start_date, new.end_date) == (FEB, FEB, MAR)
+
+    def test_the_form_asks_which_kind_first(self, client, admin_user, conference):
+        client.force_login(admin_user)
+        content = client.get(reverse("start_new_year")).content.decode()
+        assert "What kind of event" in content
+        assert 'data-show-when="id_cadence=SERIES"' in content
+        assert "id_start_date" not in content
+
+
+@pytest.mark.django_db
+def test_span_from_nothing_changes_nothing(conference):
+    before = conference.conference_date
+    conference.span_from_dates()
+    conference.refresh_from_db()
+    assert conference.conference_date == before and conference.start_date is None
 
 
 @pytest.mark.django_db

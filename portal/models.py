@@ -46,6 +46,16 @@ class ChatPlatform(models.TextChoices):
     OTHER = "OTHER", "Another platform"
 
 
+class Cadence(models.TextChoices):
+    """How an edition meets: once a year, on one day or a run of days
+    (a conference, a summit), or as a series of separate dates (a
+    meetup chapter's year). Decides which dates the edition forms ask for
+    and which days the schedule editor offers."""
+
+    ONCE = "ONCE", "One event a year: a conference or a summit"
+    SERIES = "SERIES", "A series of separate dates: a year of meetups"
+
+
 class Conference(BaseModel):
     """A single edition of the event (2023, 2024, 2025, ...).
 
@@ -82,6 +92,17 @@ class Conference(BaseModel):
     sponsorship_open = models.BooleanField(default=False)
     accepting_donations = models.BooleanField(default=True)
 
+    # Once a year or a series: the forms ask for the event date and its
+    # last day, or for the listed dates, and refuse an edition without
+    # either, so the schedule never offers a whole year of days.
+    cadence = models.CharField(
+        max_length=8,
+        choices=Cadence.choices,
+        default=Cadence.ONCE,
+        db_default=Cadence.ONCE,
+        help_text="Once a year: the event date and, for a run of days, the "
+        "last day. A series: the dates it meets on, listed one by one.",
+    )
     # optional metadata
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
@@ -201,6 +222,18 @@ class Conference(BaseModel):
         """The first listed event date from today on, or None when the
         edition lists none still to come."""
         return self.event_dates.filter(date__gte=now().date()).first()
+
+    def span_from_dates(self):
+        """A series takes its date and span from its listed dates, first
+        to last, so what counts days from the start (checklists) and what
+        reads the end (archiving) see the same thing. Nothing listed,
+        nothing changes."""
+        days = list(self.event_dates.values_list("date", flat=True))
+        if not days:
+            return
+        self.conference_date = self.start_date = days[0]
+        self.end_date = days[-1]
+        self.save(update_fields=["conference_date", "start_date", "end_date"])
 
 
 class EventDate(models.Model):

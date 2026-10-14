@@ -1,6 +1,7 @@
 {% extends "portal/base_sidebar.html" %}
 {% load i18n %}
 {% load django_bootstrap5 %}
+{% load static %}
 {% block breadcrumb %}
     {% url 'conference_list' as bc_url %}
     {% trans "Events" as bc_section %}
@@ -47,10 +48,14 @@
                         {% bootstrap_field form.event_format %}
                         {% bootstrap_field form.recordings %}
                     {% endif %}
-                    {% bootstrap_field form.conference_date %}
-                    {% bootstrap_field form.start_date %}
-                    {% bootstrap_field form.end_date %}
-                    {% bootstrap_field form.event_dates %}
+                    {% bootstrap_field form.cadence %}
+                    <div data-show-when="id_cadence=ONCE">
+                        {% bootstrap_field form.conference_date %}
+                        {% bootstrap_field form.end_date %}
+                    </div>
+                    <div data-show-when="id_cadence=SERIES">
+                        {% bootstrap_field form.event_dates %}
+                    </div>
                     {% bootstrap_field form.venue_name %}
                     {% bootstrap_field form.venue_address %}
                     {% bootstrap_field form.venue_url %}
@@ -74,7 +79,7 @@
                     {% bootstrap_field form.reply_to_email %}
                 </div>
             </fieldset>
-            {% bootstrap_form form exclude="year,name,slug,is_active,speaker_module_enabled,volunteer_application_open,sponsorship_open,accepting_donations,event_format,recordings,conference_date,start_date,end_date,event_dates,venue_name,venue_address,venue_url,chat_platform,chat_name,chat_url,reply_to_email" %}
+            {% bootstrap_form form exclude="year,name,slug,is_active,speaker_module_enabled,volunteer_application_open,sponsorship_open,accepting_donations,event_format,recordings,cadence,conference_date,end_date,event_dates,venue_name,venue_address,venue_url,chat_platform,chat_name,chat_url,reply_to_email" %}
             <button type="submit" class="btn btn-primary">
                 {% trans "Save" %}
             </button>
@@ -85,4 +90,5 @@
             <a href="{% url 'conference_list' %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
         </form>
     </div>
+    <script src="{% static 'js/show-when.js' %}" defer></script>
 {% endblock content %}

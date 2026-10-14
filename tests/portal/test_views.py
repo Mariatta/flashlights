@@ -356,6 +356,8 @@ class TestStartNewYear:
                 "year": 2026,
                 "name": "Flashlights 2026",
                 "slug": "2026",
+                "cadence": "ONCE",
+                "conference_date": "2027-05-01",
                 "clone_teams": "on",
                 "copy_tiers": "on",
                 "copy_goals": "on",
@@ -388,6 +390,8 @@ class TestStartNewYear:
                 "year": 2027,
                 "name": "PyLadiesCon 2027",
                 "slug": "2027",
+                "cadence": "ONCE",
+                "conference_date": "2027-05-01",
                 "clone_teams": "on",
                 "copy_tiers": "on",
                 "copy_goals": "on",
@@ -409,15 +413,16 @@ class TestStartNewYear:
                 "year": 2028,
                 "name": "Flashlights 2028",
                 "slug": "2028",
-                "start_date": "2028-12-01",
-                "end_date": "2028-12-03",
+                "cadence": "ONCE",
                 "conference_date": "2028-12-02",
+                "end_date": "2028-12-03",
                 "pretix_event_slug": "2028",
             },
             follow=True,
         )
         new = Conference.objects.get(year=2028)
-        assert str(new.start_date) == "2028-12-01"
+        # The start date mirrors the event date: the schedule offers the run.
+        assert str(new.start_date) == "2028-12-02"
         assert str(new.end_date) == "2028-12-03"
         assert str(new.conference_date) == "2028-12-02"
         # The event slug lands on the edition's ticketing row.
@@ -428,7 +433,14 @@ class TestStartNewYear:
         client.force_login(admin_user)
         client.post(
             reverse("start_new_year"),
-            {"year": 2029, "name": "Next", "slug": "2029", "pretix_event_slug": "2029"},
+            {
+                "year": 2029,
+                "name": "Next",
+                "slug": "2029",
+                "cadence": "ONCE",
+                "conference_date": "2027-05-01",
+                "pretix_event_slug": "2029",
+            },
         )
         row = Conference.objects.get(year=2029).ticketing
         assert row.event_id == "2029" and row.organizer == "flashlights"
@@ -437,7 +449,14 @@ class TestStartNewYear:
     def test_new_year_without_ticketing_has_none(self, client, admin_user, conference):
         client.force_login(admin_user)
         client.post(
-            reverse("start_new_year"), {"year": 2030, "name": "N", "slug": "2030"}
+            reverse("start_new_year"),
+            {
+                "year": 2030,
+                "name": "N",
+                "slug": "2030",
+                "cadence": "ONCE",
+                "conference_date": "2027-05-01",
+            },
         )
         assert not TicketingSettings.objects.filter(conference__year=2030).exists()
 
@@ -445,7 +464,13 @@ class TestStartNewYear:
         client.force_login(admin_user)
         response = client.post(
             reverse("start_new_year"),
-            {"year": conference.year, "name": "Dup", "slug": "dup"},
+            {
+                "year": conference.year,
+                "name": "Dup",
+                "slug": "dup",
+                "cadence": "ONCE",
+                "conference_date": "2027-05-01",
+            },
         )
         assert response.status_code == 200  # re-renders with errors
         assert not Conference.objects.filter(slug="dup").exists()
@@ -571,6 +596,7 @@ class TestConferenceCRUD:
                 "year": conference.year,
                 "name": "Renamed Edition",
                 "slug": conference.slug,
+                "cadence": "ONCE",
                 "sponsorship_goal": "15000",
                 "donation_goal": "2500",
                 "proposals_count": "0",
@@ -596,6 +622,8 @@ class TestConferenceCRUD:
             "year": conference.year,
             "name": conference.name,
             "slug": conference.slug,
+            "cadence": "ONCE",
+            "conference_date": "2027-05-01",
             "sponsorship_goal": "0",
             "donation_goal": "0",
             "proposals_count": "0",
@@ -625,6 +653,7 @@ class TestConferenceCRUD:
                 "year": conference.year,
                 "name": conference.name,
                 "slug": conference.slug,
+                "cadence": "ONCE",
                 "sponsorship_goal": "0",
                 "donation_goal": "0",
                 "proposals_count": "0",
@@ -657,6 +686,8 @@ class TestConferenceCRUD:
                 "year": conference.year,
                 "name": conference.name,
                 "slug": conference.slug,
+                "cadence": "ONCE",
+                "conference_date": "2027-05-01",
                 "sponsorship_goal": "0",
                 "donation_goal": "0",
                 "proposals_count": "0",
@@ -677,6 +708,8 @@ class TestConferenceCRUD:
                 "year": conference.year,
                 "name": conference.name,
                 "slug": conference.slug,
+                "cadence": "ONCE",
+                "conference_date": "2027-05-01",
                 "sponsorship_goal": "0",
                 "donation_goal": "0",
                 "proposals_count": "0",
@@ -700,6 +733,8 @@ class TestConferenceCRUD:
                 "year": conference.year,
                 "name": conference.name,
                 "slug": conference.slug,
+                "cadence": "ONCE",
+                "conference_date": "2027-05-01",
                 "sponsorship_goal": "0",
                 "donation_goal": "0",
                 "proposals_count": "0",
@@ -965,6 +1000,8 @@ class TestConferenceUrls:
                 "year": conference.year,
                 "name": conference.name,
                 "slug": conference.slug,
+                "cadence": "ONCE",
+                "conference_date": "2027-05-01",
                 "sponsorship_goal": "15000",
                 "donation_goal": "2500",
                 "proposals_count": "0",

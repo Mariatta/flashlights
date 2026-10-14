@@ -116,6 +116,7 @@ class TestFlagOnConferenceForm:
             "proposals_count": "0",
             "chat_platform": "DISCORD",
             "accepting_donations": "on",
+            "cadence": "ONCE",
             "conference_date": conference.conference_date.isoformat(),
         }
         data.update(overrides)
@@ -186,6 +187,8 @@ class TestFormWithoutTheSpeakersApp:
                 "year": conference.year,
                 "name": conference.name,
                 "slug": conference.slug,
+                "cadence": "ONCE",
+                "conference_date": "2027-05-01",
                 "sponsorship_goal": "0",
                 "donation_goal": "0",
                 "proposals_count": "0",

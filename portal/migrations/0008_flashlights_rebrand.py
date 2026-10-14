@@ -54,6 +54,20 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name="conference",
+            name="cadence",
+            field=models.CharField(
+                choices=[
+                    ("ONCE", "One event a year: a conference or a summit"),
+                    ("SERIES", "A series of separate dates: a year of meetups"),
+                ],
+                db_default="ONCE",
+                default="ONCE",
+                help_text="Once a year: the event date and, for a run of days, the last day. A series: the dates it meets on, listed one by one.",
+                max_length=8,
+            ),
+        ),
+        migrations.AddField(
+            model_name="conference",
             name="chat_name",
             field=models.CharField(
                 blank=True,

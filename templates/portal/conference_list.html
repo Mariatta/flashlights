@@ -56,7 +56,19 @@
                             {% endif %}
                         </td>
                         <td>
-                            {{ conference.conference_date|default:"" }}
+                            {% if conference.cadence == "SERIES" %}
+                                {% blocktrans count counter=conference.listed_dates %}{{ counter }} date{% plural %}{{ counter }} dates{% endblocktrans %}
+                                {% if conference.conference_date %}
+                                    <div class="small text-secondary">
+                                        {{ conference.conference_date|date:"j M" }} to {{ conference.end_date|date:"j M Y" }}
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                {{ conference.conference_date|default:"" }}
+                                {% if conference.end_date and conference.end_date != conference.conference_date %}
+                                    to {{ conference.end_date }}
+                                {% endif %}
+                            {% endif %}
                             {% if conference.venue_name %}
                                 <div class="small text-secondary">
                                     {{ conference.venue_name }}

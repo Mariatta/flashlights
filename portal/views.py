@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user
 from django.contrib.auth.mixins import PermissionRequiredMixin, UserPassesTestMixin
-from django.db.models import ProtectedError
+from django.db.models import Count, ProtectedError
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
@@ -271,15 +271,14 @@ class StartNewYearView(UserPassesTestMixin, FormView):
         source = self._previous_edition()
 
         conference = Conference(year=data["year"], name=data["name"], slug=data["slug"])
-        conference.start_date = data.get("start_date")
-        conference.end_date = data.get("end_date")
-        conference.conference_date = data.get("conference_date")
+        form.apply_dates(conference)
         if source and data["copy_goals"]:
             conference.sponsorship_goal = source.sponsorship_goal
             conference.donation_goal = source.donation_goal
         if data["activate"]:
             conference.is_active = True
         conference.save()
+        form.save_event_dates(conference)
 
         carried = []
         if carry_forward(conference, source, data.get("pretix_event_slug") or ""):
@@ -327,6 +326,10 @@ class ConferenceList(ConferenceAdminRequiredMixin, ListView):
     model = Conference
     template_name = "portal/conference_list.html"
     context_object_name = "conferences"
+
+    def get_queryset(self):
+        # A series shows how many dates it lists.
+        return super().get_queryset().annotate(listed_dates=Count("event_dates"))
 
 
 class ConferenceUpdate(ConferenceAdminRequiredMixin, UpdateView):

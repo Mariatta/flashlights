@@ -8,7 +8,7 @@ from django import forms
 from django.apps import apps
 from django.utils.module_loading import import_string
 
-from portal.models import Conference
+from portal.models import Cadence, Conference
 
 
 class PortalCaptchaTextInput(CaptchaTextInput):
@@ -70,27 +70,114 @@ class CustomSignupForm(SignupForm):
         return user
 
 
-class StartNewYearForm(forms.Form):
-    """Create a new conference edition and carry over from the previous one."""
+class EditionDatesForm(forms.Form):
+    """What kind of event an edition is, and the dates that answer asks
+    for. The edition form and the form that starts the next edition both
+    build on it, so they ask the same and save the same way.
 
-    year = forms.IntegerField(min_value=2000, label="Year")
-    name = forms.CharField(max_length=100, label="Name")
-    slug = forms.SlugField(label="Slug")
-    start_date = forms.DateField(
-        required=False,
-        widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
-        label="Start date",
-    )
-    end_date = forms.DateField(
-        required=False,
-        widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
-        label="End date",
+    Once a year: the event date, and the last day when it runs over
+    several; the start date mirrors the event date, so the schedule offers
+    that run. A series: the dates it meets on, one per line, and the
+    edition's date and span follow them (``Conference.span_from_dates``).
+    Either way an edition without a date is refused, which is what used to
+    leave the schedule offering every day of a year.
+    """
+
+    cadence = forms.ChoiceField(
+        choices=Cadence.choices,
+        initial=Cadence.ONCE,
+        label="What kind of event",
+        help_text="Decides which dates are asked for. The dates can be "
+        "changed any time.",
     )
     conference_date = forms.DateField(
         required=False,
         widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
         label="Event date",
+        help_text="The day it happens, or the first day of a run of days.",
     )
+    end_date = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+        label="Last day",
+        help_text="Only when it runs over several days.",
+    )
+    # The edition's EventDate rows, one per line. Lines rather than a
+    # formset: a meetup year is a dozen dates, pasted from a calendar.
+    event_dates = forms.CharField(
+        required=False,
+        label="Event dates",
+        widget=forms.Textarea(attrs={"rows": 4}),
+        help_text="One date per line, a label after it if you like "
+        "(2027-02-13 February workshop). The schedule offers these days "
+        "and the landing page shows the next one.",
+    )
+
+    def clean_event_dates(self):
+        """The lines as {date: label}, refusing what is not a date and a
+        date listed twice."""
+        dates = {}
+        for line in self.cleaned_data["event_dates"].splitlines():
+            first, _, label = line.strip().partition(" ")
+            if not first:
+                continue
+            try:
+                day = date.fromisoformat(first)
+            except ValueError:
+                raise forms.ValidationError(
+                    f"“{first}” is not a date: write it as YYYY-MM-DD."
+                )
+            if day in dates:
+                raise forms.ValidationError(f"{day.isoformat()} is listed twice.")
+            dates[day] = label.strip()
+        return dates
+
+    def clean(self):
+        cleaned = super().clean()
+        cadence = cleaned.get("cadence")
+        if cadence == Cadence.ONCE:
+            # The list is not asked for: whatever is in it is ignored.
+            self.errors.pop("event_dates", None)
+            cleaned["event_dates"] = {}
+            day, last = cleaned.get("conference_date"), cleaned.get("end_date")
+            if not day and "conference_date" not in self.errors:
+                self.add_error("conference_date", "When does it happen?")
+            elif day and last and last < day:
+                self.add_error("end_date", "The last day is before the event date.")
+        elif cadence == Cadence.SERIES:
+            if "event_dates" in cleaned and not cleaned["event_dates"]:
+                self.add_error("event_dates", "List at least one date it meets on.")
+        return cleaned
+
+    def apply_dates(self, conference):
+        """Before the edition is saved: its cadence and, once a year, its
+        date and span from the answers."""
+        data = self.cleaned_data
+        conference.cadence = data["cadence"]
+        if conference.cadence == Cadence.ONCE:
+            day = data["conference_date"]
+            conference.conference_date = conference.start_date = day
+            conference.end_date = data.get("end_date") or day
+
+    def save_event_dates(self, conference):
+        """After the edition is saved: its EventDate rows match the list. A
+        date still listed keeps its row, so the rooms tied to it stay
+        tied; once a year lists nothing, so rows from before go. A series
+        takes its date and span from the rows."""
+        listed = self.cleaned_data.get("event_dates") or {}
+        conference.event_dates.exclude(date__in=listed).delete()
+        for day, label in listed.items():
+            conference.event_dates.update_or_create(date=day, defaults={"label": label})
+        if conference.cadence == Cadence.SERIES:
+            conference.span_from_dates()
+
+
+class StartNewYearForm(EditionDatesForm):
+    """Create a new conference edition and carry over from the previous one."""
+
+    year = forms.IntegerField(min_value=2000, label="Year")
+    name = forms.CharField(max_length=100, label="Name")
+    slug = forms.SlugField(label="Slug")
     pretix_event_slug = forms.CharField(
         required=False, max_length=100, label="Pretix event slug"
     )
@@ -154,13 +241,14 @@ class LoginForm(AllauthLoginForm):
             self.fields["remember"].label = "Remember me"
 
 
-class ConferenceForm(forms.ModelForm):
+class ConferenceForm(EditionDatesForm, forms.ModelForm):
     """Edit an existing conference edition through the portal.
 
     ``speaker_module_enabled`` is not a Conference field: it lives on the
     edition's ``speakers.SpeakerSettings`` row, which this form reads and
     writes so the switch sits with the other per-edition flags. The field
-    disappears when the speakers app is not installed.
+    disappears when the speakers app is not installed. The dates come
+    from ``EditionDatesForm``, whose fields stand in for the model's.
     """
 
     speaker_module_enabled = forms.BooleanField(
@@ -185,17 +273,6 @@ class ConferenceForm(forms.ModelForm):
         "the team uploads each session's recording after the event. Speakers "
         "pre-record: they upload before the event (online and hybrid only).",
     )
-    # The edition's EventDate rows, one per line. Lines rather than a
-    # formset: a meetup year is a dozen dates, pasted from a calendar.
-    event_dates = forms.CharField(
-        required=False,
-        label="Event dates",
-        widget=forms.Textarea(attrs={"rows": 4}),
-        help_text="For an event that meets on separate days, such as a year "
-        "of meetups: one date per line, a label after it if you like "
-        "(2027-02-13 February workshop). The schedule then offers these "
-        "days. Leave empty and it offers every day from start to end.",
-    )
 
     class Meta:
         model = Conference
@@ -211,9 +288,9 @@ class ConferenceForm(forms.ModelForm):
             "sponsorship_goal",
             "donation_goal",
             "proposals_count",
-            "start_date",
-            "end_date",
+            "cadence",
             "conference_date",
+            "end_date",
             "venue_name",
             "venue_address",
             "venue_url",
@@ -246,14 +323,7 @@ class ConferenceForm(forms.ModelForm):
             "chat_url": "The invite link speakers and volunteers are pointed "
             "to. Leave blank to point them at the guide instead.",
         }
-        widgets = {
-            "start_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
-            "end_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
-            "conference_date": forms.DateInput(
-                attrs={"type": "date"}, format="%Y-%m-%d"
-            ),
-            "venue_address": forms.Textarea(attrs={"rows": 3}),
-        }
+        widgets = {"venue_address": forms.Textarea(attrs={"rows": 3})}
 
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -293,38 +363,8 @@ class ConferenceForm(forms.ModelForm):
             for row in self.instance.event_dates.all()
         )
 
-    def clean_event_dates(self):
-        """The lines as {date: label}, refusing what is not a date and a
-        date listed twice."""
-        dates = {}
-        for line in self.cleaned_data["event_dates"].splitlines():
-            first, _, label = line.strip().partition(" ")
-            if not first:
-                continue
-            try:
-                day = date.fromisoformat(first)
-            except ValueError:
-                raise forms.ValidationError(
-                    f"“{first}” is not a date: write it as YYYY-MM-DD."
-                )
-            if day in dates:
-                raise forms.ValidationError(f"{day.isoformat()} is listed twice.")
-            dates[day] = label.strip()
-        return dates
-
     def clean(self):
         cleaned = super().clean()
-        start, end = cleaned.get("start_date"), cleaned.get("end_date")
-        outside = [
-            day
-            for day in cleaned.get("event_dates") or {}
-            if (start and day < start) or (end and day > end)
-        ]
-        if outside:
-            self.add_error(
-                "event_dates",
-                f"{outside[0].isoformat()} is outside the start and end dates.",
-            )
         model = _speaker_settings_model()
         if model is None:
             return cleaned
@@ -342,9 +382,10 @@ class ConferenceForm(forms.ModelForm):
         return cleaned
 
     def save(self, commit=True):
+        self.apply_dates(self.instance)
         conference = super().save(commit=commit)
         if commit:
-            self._save_event_dates(conference)
+            self.save_event_dates(conference)
         model = _speaker_settings_model()
         if model is None:
             return conference
@@ -370,11 +411,3 @@ class ConferenceForm(forms.ModelForm):
             # Its checklists, on the format and recordings just saved.
             import_string("speakers.seeds.seed_new_edition")(conference)
         return conference
-
-    def _save_event_dates(self, conference):
-        """Make the edition's EventDate rows match the lines. A date still
-        listed keeps its row, so the rooms tied to it stay tied."""
-        listed = self.cleaned_data.get("event_dates") or {}
-        conference.event_dates.exclude(date__in=listed).delete()
-        for day, label in listed.items():
-            conference.event_dates.update_or_create(date=day, defaults={"label": label})

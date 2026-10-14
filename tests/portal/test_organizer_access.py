@@ -53,6 +53,8 @@ class TestEditions:
                 "year": 2024,
                 "name": "Past",
                 "slug": "past",
+                "cadence": "ONCE",
+                "conference_date": "2027-05-01",
                 "is_active": "on",
                 "sponsorship_goal": "0",
                 "donation_goal": "0",

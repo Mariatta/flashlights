@@ -1,6 +1,7 @@
 {% extends "portal/base_sidebar.html" %}
 {% load i18n %}
 {% load django_bootstrap5 %}
+{% load static %}
 {% comment %}
 An Organize page: it is reached from the Organize rail and the organizer
 dashboard, so it keeps that shell. Without one the top nav has no section
@@ -31,11 +32,23 @@ to follow and falls back to Home, in the middle of an organizer flow.
         </p>
         <form method="post" class="col-md-8">
             {% csrf_token %}
-            {% bootstrap_form form %}
+            {% bootstrap_field form.year %}
+            {% bootstrap_field form.name %}
+            {% bootstrap_field form.slug %}
+            {% bootstrap_field form.cadence %}
+            <div data-show-when="id_cadence=ONCE">
+                {% bootstrap_field form.conference_date %}
+                {% bootstrap_field form.end_date %}
+            </div>
+            <div data-show-when="id_cadence=SERIES">
+                {% bootstrap_field form.event_dates %}
+            </div>
+            {% bootstrap_form form exclude="year,name,slug,cadence,conference_date,end_date,event_dates" %}
             <button type="submit" class="btn btn-primary">
                 {% trans "Create" %}
             </button>
             <a href="{% url 'index' %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
         </form>
     </div>
+    <script src="{% static 'js/show-when.js' %}" defer></script>
 {% endblock content %}
