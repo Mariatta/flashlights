@@ -21,7 +21,7 @@ const ctxRef = {};
   await clock.at(12.8, "caption 2");
   await cap("2. You already have an account from volunteering last year: sign in with it");
   await clock.at(18.0, "click sign in link");
-  await L.click(page, 'a:has-text("Sign in to the one I have")', { pause: 300 });
+  await L.click(page, 'a.btn-outline-primary:has-text("Sign in")', { pause: 300 });
   await clock.at(21.5, "type username");
   await clock.type(page, 'input[name="login"]', "vol_maya", 24.0);
   await clock.type(page, 'input[name="password"]', L.CONFIG.password, 26.5);
