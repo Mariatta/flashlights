@@ -57,7 +57,9 @@
                         </td>
                         <td>
                             {% if conference.cadence == "SERIES" %}
-                                {% blocktrans count counter=conference.listed_dates %}{{ counter }} date{% plural %}{{ counter }} dates{% endblocktrans %}
+                                <a href="{% url 'conference_dates' conference.pk %}">
+                                    {% blocktrans count counter=conference.listed_dates %}{{ counter }} date{% plural %}{{ counter }} dates{% endblocktrans %}
+                                </a>
                                 {% if conference.conference_date %}
                                     <div class="small text-secondary">
                                         {{ conference.conference_date|date:"j M" }} to {{ conference.end_date|date:"j M Y" }}
@@ -70,8 +72,9 @@
                                 {% endif %}
                             {% endif %}
                             {% if conference.venue %}
-                                <div class="small text-secondary">
-                                    {{ conference.venue.name }}
+                                <div class="small">
+                                    <a href="{% url 'venue_edit' conference.venue.pk %}"
+                                       class="text-secondary">{{ conference.venue.name }}</a>
                                 </div>
                             {% endif %}
                         </td>

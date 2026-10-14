@@ -165,6 +165,21 @@ urlpatterns = [
         name="conference_edit",
     ),
     path(
+        "events/<int:pk>/dates/",
+        views.EventDateList.as_view(),
+        name="conference_dates",
+    ),
+    path(
+        "events/<int:pk>/dates/<int:date_pk>/edit/",
+        views.EventDateUpdate.as_view(),
+        name="conference_date_edit",
+    ),
+    path(
+        "events/<int:pk>/dates/<int:date_pk>/delete/",
+        views.EventDateDelete.as_view(),
+        name="conference_date_delete",
+    ),
+    path(
         "events/<int:pk>/delete/",
         views.ConferenceDelete.as_view(),
         name="conference_delete",

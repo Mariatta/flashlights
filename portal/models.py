@@ -3,6 +3,7 @@ from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils import dateformat
+from django.utils.functional import cached_property
 from django.utils.timezone import now
 
 
@@ -252,6 +253,28 @@ class Conference(BaseModel):
         edition lists none still to come."""
         return self.event_dates.filter(date__gte=now().date()).first()
 
+    def next_venue(self):
+        """Where the landing page says the edition is: the next listed
+        date's own venue when it has one, else the edition's."""
+        next_date = self.next_event_date
+        if next_date is not None and next_date.venue_id:
+            return next_date.venue
+        return self.venue
+
+    @cached_property
+    def venues_by_day(self):
+        """The listed dates' own venues, by day, read once per instance."""
+        return {
+            row.date: row.venue
+            for row in self.event_dates.select_related("venue")
+            if row.venue_id
+        }
+
+    def venue_for(self, day):
+        """Where the edition is on ``day``: the listed date's own venue when
+        it has one, else the edition's. None online."""
+        return self.venues_by_day.get(day) or self.venue
+
     def span_from_dates(self):
         """A series takes its date and span from its listed dates, first
         to last, so what counts days from the start (checklists) and what
@@ -269,8 +292,9 @@ class EventDate(models.Model):
     """A day the edition happens on, for an edition whose days are not a
     run from its start to its end date: a year of meetup nights.
 
-    Listed, the schedule editor offers these days rather than the span,
-    and a room may be limited to some of them (``speakers.Room``).
+    Listed, the schedule editor offers these days rather than the span.
+    A date may be somewhere other than the edition's venue; that day's
+    lanes are the rooms of its venue (``speakers.schedule``).
     """
 
     conference = models.ForeignKey(
@@ -281,6 +305,14 @@ class EventDate(models.Model):
     )
     date = models.DateField()
     label = models.CharField(max_length=100, blank=True)
+    venue = models.ForeignKey(
+        Venue,
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+        related_name="event_dates",
+        help_text="Leave blank when it is at the event's venue.",
+    )
 
     class Meta:
         ordering = ["date"]

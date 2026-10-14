@@ -16,6 +16,9 @@ The buttons are wired in static/js/schedule-editor.js.
                 <option value="{{ lane.pk }}"
                         {% if lane.pk|stringformat:"s" == sel_room|stringformat:"s" %}selected{% endif %}>
                     {{ lane.name }}
+                    {% if lane.venue %}
+                        , {{ lane.venue }}
+                    {% endif %}
                 </option>
             {% endfor %}
         </select>

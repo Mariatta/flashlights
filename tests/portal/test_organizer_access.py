@@ -80,7 +80,7 @@ class TestRooms:
             reverse("speakers:room_create"),
             {"name": "room 201a", "kind": "ROOM", "url": "", "is_active": "on"},
         )
-        assert "already has a room" in duplicate.content.decode()
+        assert "already has an online room" in duplicate.content.decode()
         client.post(
             reverse("speakers:room_edit", args=[room.pk]),
             {"name": "Room 201B", "kind": "ROOM", "url": ""},

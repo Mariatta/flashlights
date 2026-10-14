@@ -3,11 +3,11 @@
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from django.utils import timezone as dj_timezone
 from django.contrib.auth.models import User
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
+from django.utils import timezone as dj_timezone
 from pytest_django.asserts import assertRedirects
 
 from speakers.schedule import presenter_schedule

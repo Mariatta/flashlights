@@ -102,12 +102,14 @@ Each is added once (name, address, a map or website link, notes for the
 team) and reused by every edition, so a community returning to the same
 building names it once. An edition picks its venue on its edit page.
 
-The moment an edition picks a venue it has no room at, one room named
-after the venue is made, so the place can be scheduled right away: a
-meetup's single room, or a conference's first lane to rename and add to.
+The moment an edition picks a venue it has no room at, or lists a date
+there, one room named after the venue is made, so the place can be
+scheduled right away: a meetup's single room, or a conference's first
+lane to rename and add to.
 Every other room picks its venue on its own form (under Schedule, Rooms),
 where a new room on an in-person edition starts at the edition's venue;
-blank means an online room. The Rooms list shows each room's venue.
+blank means an online room. The Rooms list shows each room's venue. A Venues row counts the events,
+dates and rooms using it.
 Starting the next edition carries the previous one's active rooms along,
 with their venues. A venue an event or a room still uses cannot be
 deleted.
@@ -122,15 +124,21 @@ so the schedule editor never offers a whole year of days.
   when it runs over several days, the **last day**. The schedule editor
   offers every day of that run.
 - **A series of separate dates**, such as a chapter running a year of
-  meetups as one edition: the **event dates**, one row each with a date
-  picker and an optional label ("February workshop"), added one at a
-  time with **Add a date** and dropped with **Remove**. The schedule
+  meetups as one edition: the dates live on the event's **Dates** page,
+  one of the tabs under the event's name (Event, Dates, Tickets, and
+  Rooms for the active edition once the program is on). Each date has a
+  date picker, an optional label ("February workshop") and a venue, and
+  is added one at a time, edited and removed per row. The schedule
   editor offers only those days, the landing page shows the next one,
   and the edition's span runs from the first to the last. Dates can be
   added or changed any time, so a chapter lists what it knows and comes
-  back.
+  back. A new series goes to its Dates page as soon as it is created or
+  switched to one.
 
-Each date can have several rooms, as a conference day can. A room is there
-on every date unless it is tied to some of them on its edit page: a meetup
-that moves between venues ties each venue's rooms to the nights it hosts,
-so other nights do not show them as empty columns.
+A date's venue is the event's unless the row names another: a meetup that
+moves between buildings picks the building per night. The schedule editor
+lanes a day by its venue: the rooms there, plus the rooms without a venue
+(online ones). Each lane shows the room and its venue, so two venues'
+"Ballroom A" read apart, and the calendar feeds, the schedule emails and
+the public program say "Ballroom A, Hyatt" the same way. A room's name is
+unique within its venue, not across the event.

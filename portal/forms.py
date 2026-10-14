@@ -4,7 +4,6 @@ from captcha.conf import settings as captcha_settings
 from captcha.fields import CaptchaField, CaptchaTextInput
 from django import forms
 from django.apps import apps
-from django.forms import inlineformset_factory
 from django.utils.module_loading import import_string
 
 from portal.models import Cadence, Conference, EventDate, Venue
@@ -70,61 +69,41 @@ class CustomSignupForm(SignupForm):
 
 
 class EventDateForm(forms.ModelForm):
-    """One listed date of a series: the day and an optional label."""
+    """One listed date of a series: the day, an optional label and, when
+    that night is somewhere other than the event's venue, its venue."""
 
     class Meta:
         model = EventDate
-        fields = ["date", "label"]
+        fields = ["date", "label", "venue"]
         widgets = {
-            "date": forms.DateInput(
-                attrs={"type": "date", "class": "form-control"}, format="%Y-%m-%d"
-            ),
+            "date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
             "label": forms.TextInput(
-                attrs={
-                    "placeholder": "Label, if you like: February workshop",
-                    "class": "form-control",
-                }
+                attrs={"placeholder": "If you like: February workshop"}
             ),
         }
 
-
-class BaseEventDateFormSet(forms.BaseInlineFormSet):
-    """The listed dates of a series, one row each, added one at a time.
-    ``require`` is on when the edition is a series, which needs at least
-    one; once a year the rows are not read at all."""
-
-    def __init__(self, *args, require=False, **kwargs):
+    def __init__(self, *args, conference, **kwargs):
         super().__init__(*args, **kwargs)
-        self.require = require
+        self.conference = conference
+        self.instance.conference = conference
+        # Blank means the event's venue, named so the choice reads plainly.
+        venue = self.fields["venue"]
+        venue.empty_label = (
+            f"The event's venue, {conference.venue.name}"
+            if conference.venue_id
+            else "The event's venue, when it picks one"
+        )
+        venue.help_text = "Choose one when this date is somewhere else."
 
-    def add_fields(self, form, index):
-        super().add_fields(form, index)
-        form.fields["DELETE"].widget.attrs["class"] = "form-check-input"
-
-    def listed(self):
-        """The dates of the rows that stay, once every row is valid."""
-        return [
-            form.cleaned_data["date"]
-            for form in self.forms
-            if form.cleaned_data.get("date") and not form.cleaned_data.get("DELETE")
-        ]
-
-    def clean(self):
-        # A date listed twice is the inline formset's own unique check.
-        super().clean()
-        if self.require and not any(self.errors) and not self.listed():
-            raise forms.ValidationError("List at least one date it meets on.")
-
-
-#: One blank row to start with; the page adds more without a round trip.
-EventDateFormSet = inlineformset_factory(
-    Conference,
-    EventDate,
-    form=EventDateForm,
-    formset=BaseEventDateFormSet,
-    extra=1,
-    can_delete=True,
-)
+    def clean_date(self):
+        # The model's rule, checked here because the event is not a field.
+        day = self.cleaned_data["date"]
+        clash = EventDate.objects.filter(conference=self.conference, date=day)
+        if self.instance.pk:
+            clash = clash.exclude(pk=self.instance.pk)
+        if clash.exists():
+            raise forms.ValidationError("This event already lists that date.")
+        return day
 
 
 class EditionDatesForm(forms.Form):
@@ -134,11 +113,9 @@ class EditionDatesForm(forms.Form):
 
     Once a year: the event date, and the last day when it runs over
     several; the start date mirrors the event date, so the schedule offers
-    that run. A series: the dates it meets on, one row each in an
-    ``EventDateFormSet`` beside this form, and the edition's date and span
-    follow them (``Conference.span_from_dates``). Either way an edition
-    without a date is refused, which is what used to leave the schedule
-    offering every day of a year.
+    that run. A series lists the dates it meets on, one at a time, on its
+    own Dates page, and its date and span follow them
+    (``Conference.span_from_dates``).
     """
 
     cadence = forms.ChoiceField(
@@ -171,10 +148,6 @@ class EditionDatesForm(forms.Form):
                 self.add_error("end_date", "The last day is before the event date.")
         return cleaned
 
-    def dates_valid(self, formset):
-        """Once a year does not read the rows; a series needs them valid."""
-        return self.cleaned_data.get("cadence") == Cadence.ONCE or formset.is_valid()
-
     def apply_dates(self, conference):
         """Before the edition is saved: its cadence and, once a year, its
         date and span from the answers."""
@@ -185,17 +158,14 @@ class EditionDatesForm(forms.Form):
             conference.conference_date = conference.start_date = day
             conference.end_date = data.get("end_date") or day
 
-    def save_dates(self, conference, formset):
+    def save_dates(self, conference):
         """After the edition is saved: once a year keeps no listed dates,
-        so rows from before go; a series saves its rows (a row edited in
-        place keeps its id, so the rooms tied to it stay tied) and takes
-        its date and span from them."""
+        so a series' dates go when it becomes one; a series keeps its
+        Dates page's rows and takes its date and span from them."""
         if conference.cadence == Cadence.ONCE:
             conference.event_dates.all().delete()
-            return
-        formset.instance = conference
-        formset.save()
-        conference.span_from_dates()
+        else:
+            conference.span_from_dates()
 
 
 class StartNewYearForm(EditionDatesForm):

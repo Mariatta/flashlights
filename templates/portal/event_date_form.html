@@ -1,0 +1,33 @@
+{% extends "portal/base_sidebar.html" %}
+{% load i18n %}
+{% load django_bootstrap5 %}
+{% block head_title %}
+    {{ object }}
+{% endblock head_title %}
+{% block breadcrumb %}
+    {% url 'conference_dates' conference.pk as bc_url %}
+    {% trans "Dates" as bc_section %}
+    {% include "portal/_breadcrumbs.html" with section=bc_section section_url=bc_url page=object %}
+{% endblock breadcrumb %}
+{% block sidebar_title %}
+    {% trans "Organize" %}
+{% endblock sidebar_title %}
+{% block sidebar %}
+    {% include "portal/_organize_rail.html" with active="conferences" %}
+{% endblock sidebar %}
+{% block content %}
+    <div class="container px-4 py-3">
+        <h1 class="h3 pb-2 mb-3 border-bottom">
+            {{ conference.name }}: {{ object }}
+        </h1>
+        <form method="post" class="col-md-8">
+            {% csrf_token %}
+            {% bootstrap_form form %}
+            <button type="submit" class="btn btn-primary">
+                {% trans "Save" %}
+            </button>
+            <a href="{% url 'conference_dates' conference.pk %}"
+               class="btn btn-secondary">{% trans "Cancel" %}</a>
+        </form>
+    </div>
+{% endblock content %}

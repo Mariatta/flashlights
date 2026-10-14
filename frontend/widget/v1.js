@@ -208,7 +208,7 @@
     else this.renderSchedule();
   };
 
-  Widget.prototype.zones = function () {
+  Widget.prototype.zones = function (dayVenues) {
     var self = this;
     var own = this.data.conference.timezone;
     var list = [this.browserTz, own, "UTC", this.tz];
@@ -225,8 +225,12 @@
       var label = z + (z === self.browserTz ? " (yours)" : z === own ? " (event)" : "");
       return h("option", { value: z, selected: z === self.tz, text: label });
     }));
+    /* The shown day's venues when its rooms name them (a series may be
+     * somewhere else each night), else the event's own. */
     var venue = this.data.conference.venue;
-    var where = !venue ? null : venue.url
+    var where = dayVenues && dayVenues.length
+      ? h("span", { "class": "fl-venue", text: dayVenues.join(" · ") })
+      : !venue ? null : venue.url
       ? h("a", { "class": "fl-venue", href: venue.url, target: "_blank", rel: "noopener", text: venue.name })
       : h("span", { "class": "fl-venue", text: venue.name });
     return h("div", { "class": "fl-bar" }, [where, h("label", { "class": "fl-meta", text: "Times in" }), select]);
@@ -272,6 +276,11 @@
       });
     }));
     var columns = this.room ? [this.room] : rooms.length ? rooms : [""];
+    var dayVenues = [];
+    days[this.day].forEach(function (s) {
+      var name = s.slot.room && s.slot.room.venue;
+      if (name && dayVenues.indexOf(name) < 0) dayVenues.push(name);
+    });
     var shown = days[this.day].filter(function (s) {
       return !s.slot.room || columns.indexOf(s.slot.room.name) >= 0;
     }).sort(function (a, b) {
@@ -323,7 +332,7 @@
       "class": "fl-grid", role: "tabpanel",
       style: "grid-template-columns:auto repeat(" + columns.length + ",minmax(0,1fr))"
     }, cells);
-    var top = this.zones();
+    var top = this.zones(dayVenues);
     if (rooms.length > 1) {
       var picker = h("select", {
         "aria-label": "Room",

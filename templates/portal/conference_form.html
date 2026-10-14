@@ -17,8 +17,9 @@
 {% block content %}
     <div class="container px-4 py-3">
         <h1 class="h3 pb-2 mb-3 border-bottom">
-            {% trans "Edit event" %}: {{ object.name }}
+            {{ object.name }}
         </h1>
+        {% include "portal/_event_subnav.html" with conference=object active="event" %}
         <form method="post" class="col-md-8">
             {% csrf_token %}
             {% bootstrap_field form.year %}
@@ -53,8 +54,24 @@
                         {% bootstrap_field form.conference_date %}
                         {% bootstrap_field form.end_date %}
                     </div>
-                    <div data-show-when="id_cadence=SERIES">
-                        {% include "portal/_event_dates.html" %}
+                    <div class="mb-3" data-show-when="id_cadence=SERIES">
+                        <label class="form-label">
+                            {% trans "Event dates" %}
+                        </label>
+                        <div>
+                            {% for row in event_dates %}
+                                <span class="text-nowrap me-2">{{ row }}</span>
+                            {% empty %}
+                                <span class="text-secondary">{% trans "None listed yet." %}</span>
+                            {% endfor %}
+                        </div>
+                        <div class="form-text">
+                            {% if object.cadence == "SERIES" %}
+                                <a href="{% url 'conference_dates' object.pk %}">{% trans "Add or change the dates" %}</a>
+                            {% else %}
+                                {% trans "Save, then list the dates on the Dates page." %}
+                            {% endif %}
+                        </div>
                     </div>
                     {% bootstrap_field form.venue %}
                     <p class="form-text mt-n2">
@@ -84,13 +101,8 @@
             <button type="submit" class="btn btn-primary">
                 {% trans "Save" %}
             </button>
-            {% if perms.ticketing.change_ticketingsettings %}
-                <a href="{% url 'conference_tickets' object.pk %}"
-                   class="btn btn-outline-primary"><i class="icon-ticket" aria-hidden="true"></i> {% trans "Tickets" %}</a>
-            {% endif %}
             <a href="{% url 'conference_list' %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
         </form>
     </div>
     <script src="{% static 'js/show-when.js' %}" defer></script>
-    <script src="{% static 'js/formset-rows.js' %}" defer></script>
 {% endblock content %}

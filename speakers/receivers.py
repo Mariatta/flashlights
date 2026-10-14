@@ -12,7 +12,7 @@ from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
 from attendee.models import PretixOrder
-from portal.models import Conference
+from portal.models import Conference, EventDate, Venue
 from ticketing.models import TicketingSettings
 from volunteer.models import VolunteerProfile
 
@@ -335,6 +335,24 @@ def venue_chosen(sender, instance, **kwargs):
         room_for_venue(instance, instance.venue)
 
 
+@receiver(post_save, sender=EventDate, dispatch_uid="speakers.rooms.date_venue")
+def date_venue_chosen(sender, instance, **kwargs):
+    """A date somewhere else gets the edition a room there, the same way."""
+    if instance.venue_id and _touches(kwargs, "venue"):
+        room_for_venue(instance.conference, instance.venue)
+
+
+@receiver(post_save, sender=Venue, dispatch_uid="speakers.public_api.Venue")
+def venue_changed(sender, instance, **kwargs):
+    """A venue's name or address is in the payloads of every edition that
+    uses it, by itself, through a date or through a room."""
+    editions = Conference.objects.filter(
+        Q(venue=instance) | Q(event_dates__venue=instance) | Q(rooms__venue=instance)
+    ).distinct()
+    for edition in editions:
+        public_api_changed(Conference, edition)
+
+
 def public_api_changed(sender, instance, **kwargs):
     """Anything a public payload reads changed: the edition's cached API
     responses go (design §11.1), once, after the transaction commits, so a
@@ -364,6 +382,7 @@ def public_api_changed(sender, instance, **kwargs):
 # request, never cached, so a change to the list needs no invalidation.
 for _model in (
     Conference,
+    EventDate,
     Session,
     Presenter,
     SessionPresenter,

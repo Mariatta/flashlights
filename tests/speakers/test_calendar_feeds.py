@@ -129,6 +129,16 @@ class TestPublicFeed:
         text = client.get(FEED).content.decode()
         assert "LOCATION:main-stage\\, Long Beach Convention Center\\, CA" in text
         assert "UID:session-" in text and "@2025.flashlights" in text
+        # A date listed somewhere else puts that day's sessions there, and
+        # a room that names its own venue is there whatever the day.
+        hyatt = Venue.objects.create(name="Hyatt")
+        conference.event_dates.create(date=T0.date(), venue=hyatt)
+        text = client.get(FEED).content.decode()
+        assert "LOCATION:main-stage\\, Hyatt" in text
+        room.venue = Venue.objects.create(name="Annex")
+        room.save()
+        text = client.get(FEED).content.decode()
+        assert "LOCATION:main-stage\\, Annex" in text
 
     def test_filters(self, client, enabled, conference):
         room = make_room(conference)

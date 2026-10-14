@@ -48,9 +48,8 @@ def program_state(conference, previewing):
     return "published" if program_is_published(conference) else "internal"
 
 
-def venue_block(conference):
-    """Where the edition happens, or None online."""
-    venue = conference.venue
+def venue_block(venue):
+    """A place, or None online."""
     if venue is None:
         return None
     return {
@@ -69,7 +68,7 @@ def conference_block(conference):
         "timezone": conference.speaker_settings.conference_timezone,
         # An in-person program is read in the event's own time.
         "in_person": conference.speaker_settings.event_format == EventFormat.IN_PERSON,
-        "venue": venue_block(conference),
+        "venue": venue_block(conference.venue),
     }
 
 
@@ -87,11 +86,21 @@ def sessions_queryset(conference, preview=None):
     )
     sessions = (
         public_program(conference, preview)
-        .select_related("kind", "published_slot", "published_slot__room")
+        .select_related("kind", "published_slot", "published_slot__room__venue")
         .prefetch_related(links)
         .order_by("published_slot__start_utc", "title")
     )
     return sessions, public_ids
+
+
+def room_block(room):
+    """A room, with the venue it is in: two venues may both have a
+    "Ballroom A"."""
+    return {
+        "name": room.name,
+        "url": room.url or None,
+        "venue": room.venue.name if room.venue_id else None,
+    }
 
 
 def slot_block(session):
@@ -99,11 +108,7 @@ def slot_block(session):
     return {
         "start": _stamp(row.start_utc),
         "end": _stamp(row.end_utc),
-        "room": (
-            {"name": row.room.name, "url": row.room.url or None}
-            if row.room_id
-            else None
-        ),
+        "room": room_block(row.room) if row.room_id else None,
     }
 
 
@@ -206,7 +211,7 @@ def schedule_data(conference, preview=None):
     days = {}
     for session in sessions:
         start = session.published_slot.start_utc
-        days.setdefault(start.astimezone(tz).date().isoformat(), []).append(
+        days.setdefault(start.astimezone(tz).date(), []).append(
             {
                 **slot_block(session),
                 "session": {
@@ -220,10 +225,20 @@ def schedule_data(conference, preview=None):
     return {
         "timezone": settings.conference_timezone,
         "rooms": [
-            {"name": room.name, "url": room.url or None}
-            for room in Room.objects.filter(conference=conference, is_active=True)
+            room_block(room)
+            for room in Room.objects.filter(
+                conference=conference, is_active=True
+            ).select_related("venue")
         ],
-        "days": [{"date": date, "slots": slots} for date, slots in days.items()],
+        # A series may be somewhere else each day: the day says where.
+        "days": [
+            {
+                "date": day.isoformat(),
+                "venue": venue_block(conference.venue_for(day)),
+                "slots": slots,
+            }
+            for day, slots in days.items()
+        ],
     }
 
 

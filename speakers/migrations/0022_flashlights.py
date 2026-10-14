@@ -538,17 +538,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name="room",
-            name="event_dates",
-            field=models.ManyToManyField(
-                blank=True,
-                help_text="Leave empty if the room is there on every date.",
-                related_name="rooms",
-                to="portal.eventdate",
-                verbose_name="dates",
-            ),
-        ),
-        migrations.AddField(
-            model_name="room",
             name="venue",
             field=models.ForeignKey(
                 blank=True,
@@ -557,6 +546,25 @@ class Migration(migrations.Migration):
                 on_delete=django.db.models.deletion.PROTECT,
                 related_name="rooms",
                 to="portal.venue",
+            ),
+        ),
+        migrations.RemoveConstraint(
+            model_name="room",
+            name="speakers_room_name_per_edition",
+        ),
+        migrations.AddConstraint(
+            model_name="room",
+            constraint=models.UniqueConstraint(
+                fields=("conference", "venue", "name"),
+                name="speakers_room_name_per_venue",
+            ),
+        ),
+        migrations.AddConstraint(
+            model_name="room",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(("venue", None)),
+                fields=("conference", "name"),
+                name="speakers_room_name_online",
             ),
         ),
     ]

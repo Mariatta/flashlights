@@ -12,8 +12,9 @@
 {% block content %}
     <div class="container py-4">
         <h1 class="h3 pb-2 mb-3 border-bottom">
-            {% trans "Tickets" %}: {{ conference.name }}
+            {{ conference.name }}
         </h1>
+        {% include "portal/_event_subnav.html" with conference=conference active="tickets" %}
         <p class="text-secondary col-md-8">
             {% blocktranslate %}Where this edition's registrations come from. They give the attendee numbers and tick the speakers' "Register for the event" line.{% endblocktranslate %}
         </p>

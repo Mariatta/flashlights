@@ -1,7 +1,10 @@
 """Venues: places kept once and picked by editions and rooms."""
 
+from datetime import date
+
 import pytest
 from django.contrib.auth.models import User
+from django.db import IntegrityError, transaction
 from django.urls import reverse
 
 from portal.models import Conference, Venue
@@ -39,7 +42,8 @@ class TestVenuePages:
         venue.refresh_from_db()
         assert venue.url == "https://maps.example.org/sap"
         content = client.get(reverse("venue_list")).content.decode()
-        assert "910 Mainland St" in content and "0 events" in content
+        assert "910 Mainland St" in content
+        assert "0 events" in content and "0 dates" in content
         # The rail offers Venues next to Events.
         assert (
             reverse("venue_list") in content and reverse("conference_list") in content
@@ -56,6 +60,12 @@ class TestVenuePages:
         conference.venue = None
         conference.save()
         conference.rooms.all().delete()
+        # A date there holds it too.
+        night = conference.event_dates.create(date=date(2027, 2, 13), venue=venue)
+        conference.rooms.all().delete()
+        client.post(reverse("venue_delete", args=[venue.pk]), follow=True)
+        assert Venue.objects.filter(pk=venue.pk).exists()
+        night.delete()
         client.post(reverse("venue_delete", args=[venue.pk]))
         assert not Venue.objects.filter(pk=venue.pk).exists()
 
@@ -90,6 +100,71 @@ class TestRoomForVenue:
         existing.refresh_from_db()
         assert existing.venue == conference.venue
         assert Room.objects.filter(conference=conference).count() == 1
+        # Only a room with no venue yet: one at another venue keeps its
+        # own, and the new venue gets its own room.
+        other = Venue.objects.create(name="Annex")
+        conference.event_dates.create(date=date(2027, 2, 13), venue=other)
+        twin = Room.objects.create(conference=conference, name="Hyatt", venue=other)
+        hyatt = Venue.objects.create(name="Hyatt")
+        conference.event_dates.create(date=date(2027, 3, 13), venue=hyatt)
+        assert set(
+            Room.objects.filter(conference=conference).values_list(
+                "name", "venue__name"
+            )
+        ) == {
+            ("SAP", "SAP"),
+            ("Annex", "Annex"),
+            ("Hyatt", "Annex"),
+            ("Hyatt", "Hyatt"),
+        }
+        twin.refresh_from_db()
+        assert twin.venue == other
+
+    def test_a_name_is_unique_within_its_venue(self, client, organizer, conference):
+        make_settings(conference)
+        client.force_login(organizer)
+        hyatt = Venue.objects.create(name="Hyatt")
+        annex = Venue.objects.create(name="Annex")
+        Room.objects.create(conference=conference, name="Ballroom A", venue=hyatt)
+        Room.objects.create(conference=conference, name="Stream")
+        with pytest.raises(IntegrityError):
+            with transaction.atomic():
+                Room.objects.create(conference=conference, name="Stream")
+        with pytest.raises(IntegrityError):
+            with transaction.atomic():
+                Room.objects.create(
+                    conference=conference, name="Ballroom A", venue=hyatt
+                )
+        # Another venue's Ballroom A is fine; the form says which rule bit.
+        client.post(
+            reverse("speakers:room_create"),
+            {
+                "name": "Ballroom A",
+                "kind": "ROOM",
+                "venue": annex.pk,
+                "is_active": "on",
+            },
+        )
+        assert (
+            Room.objects.filter(conference=conference, name="Ballroom A").count() == 2
+        )
+        refused = client.post(
+            reverse("speakers:room_create"),
+            {
+                "name": "ballroom a",
+                "kind": "ROOM",
+                "venue": annex.pk,
+                "is_active": "on",
+            },
+        ).content.decode()
+        assert "This venue already has a room by that name." in refused
+        refused = client.post(
+            reverse("speakers:room_create"), {"name": "Stream", "kind": "STAGE"}
+        ).content.decode()
+        assert "already has an online room by that name" in refused
+        room = Room.objects.get(conference=conference, name="Ballroom A", venue=annex)
+        assert room.label == "Ballroom A, Annex"
+        assert Room.objects.get(name="Stream").label == "Stream"
 
     def test_rooms_are_carried_to_the_next_edition(self, conference):
         venue = Venue.objects.create(name="Convention Center")

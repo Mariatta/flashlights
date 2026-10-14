@@ -15,6 +15,7 @@ from django.core import signing
 from .constants import PremiereLocation, SessionStatus
 from .models import PublishedSlot
 from .public import public_program
+from .rooms import location as where
 
 FEED_SALT = "speakers.presenter-feed"
 
@@ -114,13 +115,10 @@ def event_lines(row):
         and session.youtube_url
     ):
         location = session.youtube_url
-    elif row.room_id:
-        location = row.room.name
     else:
-        location = "All rooms"
-    # The venue after the room, so a calendar can map it.
-    if conference.venue_id and location is not session.youtube_url:
-        location = f"{location}, {conference.venue.name}"
+        # The room with its venue, so a calendar can map the place; the
+        # venue is the room's own, else that day's (a series may move).
+        location = where(conference, row.start_utc, row.room if row.room_id else None)
     lines = [
         "BEGIN:VEVENT",
         f"UID:session-{session.pk}@{conference.slug}.flashlights",
@@ -158,7 +156,7 @@ def render_calendar(name, rows):
 def feed_rows(conference):
     """Everything a feed may draw from, ready for one-pass rendering."""
     return PublishedSlot.objects.filter(conference=conference).select_related(
-        "session", "session__kind", "room", "conference"
+        "session", "session__kind", "room__venue", "conference__venue"
     )
 
 

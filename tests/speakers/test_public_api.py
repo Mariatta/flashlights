@@ -1,7 +1,7 @@
 """The public JSON API (task 6.2, design §11.1)."""
 
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import pytest
 from django.contrib.auth.models import User
@@ -11,9 +11,9 @@ from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
-from portal.models import Venue
+from portal.models import EventDate, Venue
 from speakers.constants import ProgramVisibility
-from speakers.models import AllowedOrigin, Presenter, Session, SpeakerSettings
+from speakers.models import AllowedOrigin, Presenter, Room, Session, SpeakerSettings
 from speakers.public import preview_token
 
 from .factories import (
@@ -186,6 +186,7 @@ class TestSnapshots:
                         "room": {
                             "name": "Main stage",
                             "url": "https://discord.example/1",
+                            "venue": None,
                         },
                     },
                     "presenters": [
@@ -274,6 +275,7 @@ class TestSnapshots:
                         "room": {
                             "name": "Main stage",
                             "url": "https://discord.example/1",
+                            "venue": None,
                         },
                     }
                 ],
@@ -296,10 +298,17 @@ class TestSnapshots:
             },
             "program": "published",
             "timezone": "America/Vancouver",
-            "rooms": [{"name": "Main stage", "url": "https://discord.example/1"}],
+            "rooms": [
+                {
+                    "name": "Main stage",
+                    "url": "https://discord.example/1",
+                    "venue": None,
+                }
+            ],
             "days": [
                 {
                     "date": "2026-12-05",
+                    "venue": None,
                     "slots": [
                         {
                             "start": "2026-12-05T14:00:00Z",
@@ -307,6 +316,7 @@ class TestSnapshots:
                             "room": {
                                 "name": "Main stage",
                                 "url": "https://discord.example/1",
+                                "venue": None,
                             },
                             "session": {
                                 "slug": talk.slug,
@@ -624,6 +634,44 @@ class TestVenue:
             "address": "300 E Ocean Blvd, Long Beach, CA",
             "url": "https://maps.example.org/lbcc",
         }
+
+    def test_a_day_says_where(
+        self, client, program, conference, django_capture_on_commit_callbacks
+    ):
+        # A series that moves: the day's venue is the listed date's.
+        hyatt = Venue.objects.create(name="Hyatt", url="https://maps.example.org/h")
+        with django_capture_on_commit_callbacks(execute=True):
+            conference.event_dates.create(date=date(2026, 12, 5), venue=hyatt)
+        _, data = get(client, url("schedule"))
+        assert data["days"][0]["venue"] == {
+            "name": "Hyatt",
+            "address": None,
+            "url": "https://maps.example.org/h",
+        }
+
+    def test_a_room_names_its_venue(self, client, program, conference):
+        # So "Ballroom A" at two venues read apart.
+        room = Room.objects.get(conference=conference, name="Main stage")
+        room.venue = Venue.objects.create(name="Hyatt")
+        room.save()
+        _, data = get(client, url("schedule"))
+        assert data["days"][0]["slots"][0]["room"]["venue"] == "Hyatt"
+        assert data["rooms"][0]["venue"] == "Hyatt"
+
+    def test_renaming_a_venue_busts_the_cache(
+        self, client, program, conference, django_capture_on_commit_callbacks
+    ):
+        hyatt = Venue.objects.create(name="Hyatt")
+        # bulk_create: no signal, so the rename below is the one bump.
+        EventDate.objects.bulk_create(
+            [EventDate(conference=conference, date=date(2026, 12, 5), venue=hyatt)]
+        )
+        assert get(client, url("schedule"))[1]["days"][0]["venue"]["name"] == "Hyatt"
+        hyatt.name = "Hyatt Regency"
+        with django_capture_on_commit_callbacks(execute=True):
+            hyatt.save()
+        _, data = get(client, url("schedule"))
+        assert data["days"][0]["venue"]["name"] == "Hyatt Regency"
 
     def test_editing_the_edition_busts_the_cache(
         self, client, program, conference, django_capture_on_commit_callbacks

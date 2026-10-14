@@ -1,0 +1,32 @@
+{% load i18n %}
+{% comment %}
+The pages of one event, as tabs under its name: Event (the edit form),
+Dates (a series), Tickets, and Rooms for the active edition once the
+program is on. Expects `conference` and `active` (event, dates, tickets).
+{% endcomment %}
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+        <a class="nav-link {% if active == "event" %}active{% endif %}"
+           {% if active == "event" %}aria-current="page"{% endif %}
+           href="{% url 'conference_edit' conference.pk %}">{% trans "Event" %}</a>
+    </li>
+    {% if conference.cadence == "SERIES" %}
+        <li class="nav-item">
+            <a class="nav-link {% if active == "dates" %}active{% endif %}"
+               {% if active == "dates" %}aria-current="page"{% endif %}
+               href="{% url 'conference_dates' conference.pk %}">{% trans "Dates" %}</a>
+        </li>
+    {% endif %}
+    {% if perms.ticketing.change_ticketingsettings %}
+        <li class="nav-item">
+            <a class="nav-link {% if active == "tickets" %}active{% endif %}"
+               {% if active == "tickets" %}aria-current="page"{% endif %}
+               href="{% url 'conference_tickets' conference.pk %}">{% trans "Tickets" %}</a>
+        </li>
+    {% endif %}
+    {% if conference.is_active and speaker_module_enabled and perms.speakers.manage_program %}
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'speakers:room_list' %}">{% trans "Rooms" %}</a>
+        </li>
+    {% endif %}
+</ul>

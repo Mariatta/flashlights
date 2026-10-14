@@ -1,0 +1,109 @@
+{% extends "portal/base_sidebar.html" %}
+{% load i18n %}
+{% load django_bootstrap5 %}
+{% block head_title %}
+    {% trans "Dates" %}
+{% endblock head_title %}
+{% block breadcrumb %}
+    {% url 'conference_list' as bc_url %}
+    {% trans "Events" as bc_section %}
+    {% trans "Dates" as bc_page %}
+    {% include "portal/_breadcrumbs.html" with section=bc_section section_url=bc_url page=bc_page %}
+{% endblock breadcrumb %}
+{% block sidebar_title %}
+    {% trans "Organize" %}
+{% endblock sidebar_title %}
+{% block sidebar %}
+    {% include "portal/_organize_rail.html" with active="conferences" %}
+{% endblock sidebar %}
+{% block content %}
+    <div class="container px-4 py-3">
+        <h1 class="h3 pb-2 mb-3 border-bottom">
+            {{ conference.name }}
+        </h1>
+        {% include "portal/_event_subnav.html" with conference=conference active="dates" %}
+        <p class="text-secondary col-md-8">
+            {% trans "The dates this event meets on, one at a time. The schedule editor offers these days, the landing page shows the next one, and the event runs from the first to the last. A date somewhere other than the event's venue names its own; that day's lanes are the rooms there." %}
+        </p>
+        {% if event_dates %}
+            <div class="table-responsive col-md-8">
+                <table class="table table-sm align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>
+                                {% trans "Date" %}
+                            </th>
+                            <th>
+                                {% trans "Label" %}
+                            </th>
+                            <th>
+                                {% trans "Venue" %}
+                            </th>
+                            <th>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in event_dates %}
+                            <tr>
+                                <td class="text-nowrap">
+                                    {{ row.date|date:"D j M Y" }}
+                                </td>
+                                <td>
+                                    {{ row.label }}
+                                </td>
+                                <td>
+                                    {% if row.venue %}
+                                        {{ row.venue.name }}
+                                    {% elif conference.venue %}
+                                        <span class="text-secondary">{{ conference.venue.name }}</span>
+                                    {% else %}
+                                        <span class="text-secondary">{% trans "Online" %}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-nowrap text-end">
+                                    <a href="{% url 'conference_date_edit' conference.pk row.pk %}"
+                                       class="btn btn-sm btn-outline-primary"
+                                       title="Edit"
+                                       aria-label="Edit"><i class="icon-pencil"></i></a>
+                                    <form method="post"
+                                          action="{% url 'conference_date_delete' conference.pk row.pk %}"
+                                          class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-danger"
+                                                title="Remove"
+                                                aria-label="Remove">
+                                            <i class="icon-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-secondary">
+                {% trans "No dates listed yet." %}
+            </p>
+        {% endif %}
+        <div class="card col-md-8 mt-3">
+            <div class="card-header h6 mb-0">
+                {% trans "Add a date" %}
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {% bootstrap_form form %}
+                    <p class="form-text mt-n2">
+                        <a href="{% url 'venue_create' %}">{% trans "Add a venue" %}</a>
+                    </p>
+                    <button type="submit" class="btn btn-primary">
+                        {% trans "Add" %}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

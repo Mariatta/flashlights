@@ -15,6 +15,7 @@ sit on top with inline grid positions computed in speakers/schedule.py.
         {% for lane in lanes %}
             <div class="schedule-head" style="grid-column: {{ lane.column }}">
                 {{ lane.name }}
+                {% if lane.venue %}<small class="d-block fw-normal text-secondary">{{ lane.venue }}</small>{% endif %}
             </div>
         {% endfor %}
         {% for row in rows %}
@@ -29,7 +30,7 @@ sit on top with inline grid positions computed in speakers/schedule.py.
                 <div class="schedule-cell {% if row.is_hour %}schedule-cell-hour{% endif %}"
                      data-time="{{ row.utc.isoformat }}"
                      data-room="{{ lane.pk }}"
-                     data-room-name="{{ lane.name }}"
+                     data-room-name="{{ lane.name }}{% if lane.venue %}, {{ lane.venue }}{% endif %}"
                      style="grid-row: {{ row.index }};
                             grid-column: {{ lane.column }}">
                 </div>

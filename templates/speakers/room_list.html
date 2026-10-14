@@ -16,7 +16,7 @@
                 {% trans "Rooms" %}
             </h1>
             <p class="text-secondary mb-0">
-                {% trans "Where sessions happen. Each room in use is a lane in the schedule editor; the all-rooms lane is always there for the opening, breaks and the social." %}
+                {% trans "Where sessions happen. Each room in use is a lane in the schedule editor on the days its venue hosts; the all-rooms lane is always there for the opening, breaks and the social." %}
             </p>
         </div>
         <a class="btn btn-primary" href="{% url 'speakers:room_create' %}">
@@ -37,11 +37,6 @@
                         {% if has_venues %}
                             <th>
                                 {% trans "Venue" %}
-                            </th>
-                        {% endif %}
-                        {% if has_event_dates %}
-                            <th>
-                                {% trans "Dates" %}
                             </th>
                         {% endif %}
                         <th>
@@ -65,15 +60,6 @@
                                     {% else %}
                                         <span class="text-secondary">{% trans "Online" %}</span>
                                     {% endif %}
-                                </td>
-                            {% endif %}
-                            {% if has_event_dates %}
-                                <td>
-                                    {% for event_date in room.event_dates.all %}
-                                        <span class="text-nowrap me-2">{{ event_date.date|date:"j M Y" }}</span>
-                                    {% empty %}
-                                        <span class="text-secondary">{% trans "Every date" %}</span>
-                                    {% endfor %}
                                 </td>
                             {% endif %}
                             <td>

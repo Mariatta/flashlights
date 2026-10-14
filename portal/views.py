@@ -4,8 +4,8 @@ from django.contrib.auth import get_user
 from django.contrib.auth.mixins import PermissionRequiredMixin, UserPassesTestMixin
 from django.db.models import Count, ProtectedError
 from django.http import JsonResponse
-from django.shortcuts import redirect, render
-from django.urls import reverse_lazy
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse, reverse_lazy
 from django.views.generic import ListView, TemplateView
 from django.views.generic.edit import CreateView, DeleteView, FormView, UpdateView
 
@@ -27,13 +27,8 @@ from portal.constants import (
     CACHE_KEY_VOLUNTEER_ONBOARDED_COUNT,
     SPONSORSHIP_GOAL,
 )
-from portal.forms import (
-    ConferenceForm,
-    EventDateFormSet,
-    StartNewYearForm,
-    VenueForm,
-)
-from portal.models import Cadence, Conference, Venue
+from portal.forms import ConferenceForm, EventDateForm, StartNewYearForm, VenueForm
+from portal.models import Cadence, Conference, EventDate, Venue
 from portal.permissions import can_start_next_year, is_organizer
 from portal.services import (
     bring_forward_volunteers,
@@ -236,25 +231,13 @@ class OrganizerDashboardView(AdminRequiredMixin, TemplateView):
         return context
 
 
-class EditionDatesMixin:
-    """A view whose form is an ``EditionDatesForm``: the listed dates of a
-    series come as a formset beside it, one row per date."""
-
-    def get_formset(self, conference):
-        """Bound to the POST on a post; built once per request, so the
-        page re-rendered with errors shows the rows as posted."""
-        if not hasattr(self, "_formset"):
-            data = self.request.POST if self.request.method == "POST" else None
-            self._formset = EventDateFormSet(
-                data,
-                instance=conference,
-                prefix="dates",
-                require=self.request.POST.get("cadence") == Cadence.SERIES,
-            )
-        return self._formset
+def _to_dates_page(request, conference):
+    """A series with no dates listed: the Dates page is where to go next."""
+    messages.info(request, f"Now list the dates {conference.name} meets on.")
+    return reverse("conference_dates", kwargs={"pk": conference.pk})
 
 
-class StartNewYearView(EditionDatesMixin, UserPassesTestMixin, FormView):
+class StartNewYearView(UserPassesTestMixin, FormView):
     """Guided flow for organizers to stand up the next conference edition
     (``portal.start_next_year``, the Organizers leads' permission).
 
@@ -287,17 +270,18 @@ class StartNewYearView(EditionDatesMixin, UserPassesTestMixin, FormView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["source"] = self._previous_edition()
-        context["formset"] = self.get_formset(Conference())
         return context
+
+    def get_success_url(self):
+        if self.created.cadence == Cadence.SERIES:
+            return _to_dates_page(self.request, self.created)
+        return super().get_success_url()
 
     def form_valid(self, form):
         data = form.cleaned_data
         source = self._previous_edition()
 
         conference = Conference(year=data["year"], name=data["name"], slug=data["slug"])
-        formset = self.get_formset(conference)
-        if not form.dates_valid(formset):
-            return self.form_invalid(form)
         form.apply_dates(conference)
         if source and data["copy_goals"]:
             conference.sponsorship_goal = source.sponsorship_goal
@@ -305,7 +289,7 @@ class StartNewYearView(EditionDatesMixin, UserPassesTestMixin, FormView):
         if data["activate"]:
             conference.is_active = True
         conference.save()
-        form.save_dates(conference, formset)
+        self.created = conference
 
         carried = []
         if carry_forward(conference, source, data.get("pretix_event_slug") or ""):
@@ -364,7 +348,7 @@ class ConferenceList(ConferenceAdminRequiredMixin, ListView):
         )
 
 
-class ConferenceUpdate(EditionDatesMixin, ConferenceAdminRequiredMixin, UpdateView):
+class ConferenceUpdate(ConferenceAdminRequiredMixin, UpdateView):
     model = Conference
     form_class = ConferenceForm
     template_name = "portal/conference_form.html"
@@ -377,15 +361,110 @@ class ConferenceUpdate(EditionDatesMixin, ConferenceAdminRequiredMixin, UpdateVi
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["formset"] = self.get_formset(self.object)
+        context["event_dates"] = self.object.event_dates.select_related("venue")
+        return context
+
+    def get_success_url(self):
+        if self.needs_dates:
+            return _to_dates_page(self.request, self.object)
+        return super().get_success_url()
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        form.save_dates(self.object)
+        return response
+
+    def post(self, request, *args, **kwargs):
+        # Read before the save, which may just have made it a series.
+        self.needs_dates = (
+            request.POST.get("cadence") == Cadence.SERIES
+            and not self.get_object().event_dates.exists()
+        )
+        return super().post(request, *args, **kwargs)
+
+
+class EventDateMixin(ConferenceAdminRequiredMixin):
+    """The Dates pages of one event, a series: its listed dates, each with
+    a label and, when it is somewhere else, its own venue."""
+
+    model = EventDate
+    pk_url_kwarg = "date_pk"
+
+    def dispatch(self, request, *args, **kwargs):
+        self.conference = get_object_or_404(Conference, pk=kwargs["pk"])
+        if (
+            self.conference.cadence != Cadence.SERIES
+            and request.user.is_authenticated
+            and self.get_test_func()()
+        ):
+            messages.info(request, "A once-a-year event's dates are on its edit page.")
+            return redirect("conference_edit", pk=self.conference.pk)
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return EventDate.objects.filter(conference=self.conference).select_related(
+            "venue"
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["conference"] = self.conference
+        return context
+
+    def get_success_url(self):
+        return reverse("conference_dates", kwargs={"pk": self.conference.pk})
+
+    def changed(self, verb, row):
+        # The event's date and span follow the list.
+        self.conference.span_from_dates()
+        messages.success(self.request, f"{verb} {row}.")
+
+
+class EventDateFormMixin(EventDateMixin):
+    """Adding and editing: the form knows its event."""
+
+    form_class = EventDateForm
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["conference"] = self.conference
+        return kwargs
+
+
+class EventDateList(EventDateFormMixin, CreateView):
+    """The dates, and the form that adds one."""
+
+    template_name = "portal/event_dates.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["event_dates"] = self.get_queryset()
         return context
 
     def form_valid(self, form):
-        formset = self.get_formset(self.object)
-        if not form.dates_valid(formset):
-            return self.form_invalid(form)
         response = super().form_valid(form)
-        form.save_dates(self.object, formset)
+        self.changed("Added", self.object)
+        return response
+
+
+class EventDateUpdate(EventDateFormMixin, UpdateView):
+    template_name = "portal/event_date_form.html"
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        self.changed("Saved", self.object)
+        return response
+
+
+class EventDateDelete(EventDateMixin, DeleteView):
+    """Removes a date; the button on the Dates page posts here. A session
+    scheduled on it stays reachable in the editor, on its day."""
+
+    http_method_names = ["post"]
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        self.changed("Removed", self.object)
         return response
 
 
@@ -402,6 +481,7 @@ class VenueList(ConferenceAdminRequiredMixin, ListView):
             .get_queryset()
             .annotate(
                 editions_count=Count("editions", distinct=True),
+                dates_count=Count("event_dates", distinct=True),
                 rooms_count=Count("rooms", distinct=True),
             )
         )
@@ -434,8 +514,8 @@ class VenueDelete(ConferenceAdminRequiredMixin, DeleteView):
         except ProtectedError:
             messages.error(
                 self.request,
-                f"Cannot delete {self.object}: an edition or a room still uses "
-                "it. Point those elsewhere first.",
+                f"Cannot delete {self.object}: an event, a date or a room still "
+                "uses it. Point those elsewhere first.",
             )
             return redirect("venue_list")
 

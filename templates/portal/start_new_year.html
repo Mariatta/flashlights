@@ -40,8 +40,8 @@ to follow and falls back to Home, in the middle of an organizer flow.
                 {% bootstrap_field form.conference_date %}
                 {% bootstrap_field form.end_date %}
             </div>
-            <div data-show-when="id_cadence=SERIES">
-                {% include "portal/_event_dates.html" %}
+            <div class="mb-3 form-text" data-show-when="id_cadence=SERIES">
+                {% trans "The dates it meets on are listed next, on its Dates page, one at a time." %}
             </div>
             {% bootstrap_form form exclude="year,name,slug,cadence,conference_date,end_date" %}
             <button type="submit" class="btn btn-primary">
@@ -51,5 +51,4 @@ to follow and falls back to Home, in the middle of an organizer flow.
         </form>
     </div>
     <script src="{% static 'js/show-when.js' %}" defer></script>
-    <script src="{% static 'js/formset-rows.js' %}" defer></script>
 {% endblock content %}

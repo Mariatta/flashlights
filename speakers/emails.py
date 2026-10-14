@@ -21,6 +21,7 @@ from common.send_emails import send_email
 from .constants import MANAGE_PROGRAM, SessionStatus
 from .models import MediaAsset, SpeakerSettings
 from .people import user_label
+from .rooms import location
 
 INVITATION_SALT = "speakers.invitation"
 INVITATION_TEMPLATE = "emails/speakers/invitation.md"
@@ -394,9 +395,10 @@ def send_schedule_update_email(presenter, session_changes, published_at):
             continue
         start = row.start_utc.astimezone(presenter.tzinfo)
         end = row.end_utc.astimezone(presenter.tzinfo)
-        where = row.room.name if row.room_id else "all rooms"
-        if session.conference.venue_id:
-            where = f"{where}, {session.conference.venue.name}"
+        # The room with its venue, else the venue of the slot's day.
+        where = location(
+            session.conference, row.start_utc, row.room if row.room_id else None
+        ).replace("All rooms", "all rooms")
         lines.append(
             {
                 "title": session.title,

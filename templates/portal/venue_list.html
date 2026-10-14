@@ -60,6 +60,7 @@
                             </td>
                             <td class="small">
                                 {% blocktrans count counter=venue.editions_count %}{{ counter }} event{% plural %}{{ counter }} events{% endblocktrans %},
+                                {% blocktrans count counter=venue.dates_count %}{{ counter }} date{% plural %}{{ counter }} dates{% endblocktrans %},
                                 {% blocktrans count counter=venue.rooms_count %}{{ counter }} room{% plural %}{{ counter }} rooms{% endblocktrans %}
                             </td>
                             <td class="text-nowrap">

@@ -8,7 +8,6 @@ default (``static/js/schedule-editor.js`` reads the ``data-utc``
 attributes this module's cards carry).
 """
 
-import zoneinfo
 from datetime import datetime, timedelta, timezone
 
 from django.db import transaction
@@ -27,6 +26,7 @@ from .models import (
     Session,
     SessionPresenter,
     SpeakerSettings,
+    event_tz,
 )
 from .readiness import refresh_readiness
 from .tasks import send_schedule_update_task
@@ -42,17 +42,6 @@ FIRST_ROOM_COLUMN = 3
 
 # The header row is row 1; the day's first quarter hour is row 2.
 FIRST_TIME_ROW = 2
-
-
-def event_tz(conference):
-    """The event's own timezone: the speaker settings' display timezone,
-    UTC without a row."""
-    name = (
-        SpeakerSettings.objects.filter(conference=conference)
-        .values_list("conference_timezone", flat=True)
-        .first()
-    )
-    return zoneinfo.ZoneInfo(name or "UTC")
 
 
 def schedule_days(conference):
@@ -132,32 +121,44 @@ def _window(day_start, day_end, slots, full_day):
 def grid_for_day(conference, day, full_day=False):
     """Everything the grid template needs for one day, in flat queries."""
     day_start, day_end = day_bounds(day, event_tz(conference))
-    # A room tied to some event dates is a lane on those only.
-    rooms = list(
-        Room.objects.filter(conference=conference, is_active=True)
-        .filter(Q(event_dates=None) | Q(event_dates__date=day))
-        .distinct()
+    # The day's lanes are the rooms of its venue, plus the rooms without
+    # one (online). A day with no venue shows every room.
+    venue = conference.venue_for(day)
+    rooms = Room.objects.filter(conference=conference, is_active=True).select_related(
+        "venue"
     )
+    if venue:
+        rooms = rooms.filter(Q(venue=None) | Q(venue=venue))
+    rooms = list(rooms)
     slots = list(
         ScheduleSlot.objects.filter(
             conference=conference, start_utc__lt=day_end, end_utc__gt=day_start
         )
         .exclude(session__status__in=OFF_SCHEDULE_STATUSES)
-        .select_related("session__kind", "room")
+        .select_related("session__kind", "room__venue")
         .order_by("start_utc")
     )
     # A deactivated room that still holds a slot stays a lane, marked
     # retired, rather than its card being misdrawn in the all-rooms lane;
-    # so does a room whose slot sits on a date it is not tied to.
+    # so does a room at another venue whose slot sits on this day.
     known = {room.pk for room in rooms}
     for slot in slots:
         if slot.room_id and slot.room_id not in known:
             known.add(slot.room_id)
             rooms.append(slot.room)
-    lanes = [{"pk": "", "name": "All rooms", "column": ALL_ROOMS_COLUMN}] + [
+    # Each lane names its venue, so two venues' "Ballroom A" read apart.
+    lanes = [
+        {
+            "pk": "",
+            "name": "All rooms",
+            "venue": venue.name if venue else "",
+            "column": ALL_ROOMS_COLUMN,
+        }
+    ] + [
         {
             "pk": room.pk,
             "name": room.name if room.is_active else f"{room.name} (retired)",
+            "venue": room.venue.name if room.venue_id else "",
             "column": FIRST_ROOM_COLUMN + i,
         }
         for i, room in enumerate(rooms)
@@ -296,7 +297,7 @@ def presenter_schedule(conference, presenter):
                 )
             )
         )
-        .select_related("session__kind", "room")
+        .select_related("session__kind", "room__venue")
         .order_by("start_utc")
     )
     tz = presenter.tzinfo

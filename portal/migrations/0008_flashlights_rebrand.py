@@ -180,6 +180,17 @@ class Migration(migrations.Migration):
                         verbose_name="event",
                     ),
                 ),
+                (
+                    "venue",
+                    models.ForeignKey(
+                        blank=True,
+                        help_text="Leave blank when it is at the event's venue.",
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="event_dates",
+                        to="portal.venue",
+                    ),
+                ),
             ],
             options={
                 "ordering": ["date"],

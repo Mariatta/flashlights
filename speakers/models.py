@@ -444,6 +444,17 @@ def edition_clock(conference_id):
     return EditionClock(row[0] != EventFormat.IN_PERSON, row[1] or "UTC")
 
 
+def event_tz(conference):
+    """The event's own timezone: the speaker settings' display timezone,
+    UTC without a row."""
+    name = (
+        SpeakerSettings.objects.filter(conference=conference)
+        .values_list("conference_timezone", flat=True)
+        .first()
+    )
+    return zoneinfo.ZoneInfo(name or "UTC")
+
+
 def is_in_person(conference):
     """Whether the edition leaves out the online-only parts of the module:
     pre-recorded delivery, premieres, the tech check and the upload gate."""
@@ -536,7 +547,7 @@ class ActivityLog(TimestampedModel):
 
 
 class Room(TimestampedModel):
-    """A room of the venue the schedule can place sessions in (design §8.5).
+    """A room of a venue the schedule can place sessions in (design §8.5).
 
     Deliberately generic: for an online edition a room is typically a
     Discord channel (``url`` and ``discord_id`` record which one, both
@@ -570,26 +581,31 @@ class Room(TimestampedModel):
         related_name="rooms",
         help_text="Blank for an online room.",
     )
-    # Blank: the room is there on every date. A meetup that moves between
-    # venues ties each venue's rooms to the nights it hosts.
-    event_dates = models.ManyToManyField(
-        "portal.EventDate",
-        blank=True,
-        related_name="rooms",
-        verbose_name="dates",
-        help_text="Leave empty if the room is there on every date.",
-    )
 
     class Meta:
         ordering = ["name"]
+        # Two venues may each have a "Ballroom A"; the online rooms (no
+        # venue) are unique among themselves.
         constraints = [
             models.UniqueConstraint(
-                fields=["conference", "name"], name="speakers_room_name_per_edition"
-            )
+                fields=["conference", "venue", "name"],
+                name="speakers_room_name_per_venue",
+            ),
+            models.UniqueConstraint(
+                fields=["conference", "name"],
+                condition=models.Q(venue=None),
+                name="speakers_room_name_online",
+            ),
         ]
 
     def __str__(self):
         return self.name
+
+    @property
+    def label(self):
+        """The room with its venue, "Ballroom A, Hyatt", so two venues'
+        same-named rooms read apart; the name alone without a venue."""
+        return f"{self.name}, {self.venue.name}" if self.venue_id else self.name
 
 
 def volunteer_discord_username(user_id):
