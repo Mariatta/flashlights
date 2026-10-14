@@ -12,18 +12,19 @@ mode (spreadsheet view): header controls, day tabs, alerts, the board.
             {% trans "Drag a session onto the grid, drag it to move it, pull the bottom edge to change its length. The pencil on a card does the same with a form. Days run midnight to midnight in the event's timezone." %}
         </p>
     </div>
-    <div class="d-flex align-items-center gap-2">
+    <div class="schedule-toolbar d-flex flex-wrap align-items-center gap-2">
         {% if wide %}
-            <a class="btn btn-outline-secondary btn-sm" href="?{{ base_query }}">
+            <a class="btn btn-outline-secondary btn-sm text-nowrap"
+               href="?{{ base_query }}">
                 <i class="icon-minimize" aria-hidden="true"></i> {% trans "Exit wide" %}
             </a>
         {% else %}
-            <a class="btn btn-outline-secondary btn-sm"
+            <a class="btn btn-outline-secondary btn-sm text-nowrap"
                href="?{{ base_query }}&amp;wide=1">
                 <i class="icon-expand" aria-hidden="true"></i> {% trans "Wide" %}
             </a>
         {% endif %}
-        <label class="form-label small mb-0 d-flex align-items-center gap-1">
+        <label class="form-label small mb-0 d-flex align-items-center gap-1 text-nowrap">
             {% trans "Density" %}
             <select class="form-select form-select-sm w-auto" id="schedule-density">
                 <option value="comfortable">
@@ -37,7 +38,7 @@ mode (spreadsheet view): header controls, day tabs, alerts, the board.
                 </option>
             </select>
         </label>
-        <label class="form-label small mb-0 d-flex align-items-center gap-1">
+        <label class="form-label small mb-0 d-flex align-items-center gap-1 text-nowrap">
             {% trans "Show times in" %}
             <select class="form-select form-select-sm w-auto"
                     id="schedule-timezone"
@@ -52,7 +53,7 @@ mode (spreadsheet view): header controls, day tabs, alerts, the board.
                 {% endfor %}
             </select>
         </label>
-        <a class="btn btn-outline-secondary btn-sm"
+        <a class="btn btn-outline-secondary btn-sm text-nowrap"
            href="{% url 'speakers:program_preview' %}"
            target="_blank"
            rel="noopener">

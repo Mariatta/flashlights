@@ -1816,6 +1816,14 @@ details.card[open] > summary.card-header::before {
     font-size: 0.7rem;
     line-height: 1.3;
 }
+/* The pencil lives inside a card as short as a quarter hour: no button
+   minimum height, a 1px border and a little air from the card's edge. */
+.schedule-card-menu > summary.schedule-card-edit {
+    --bs-btn-border-width: 1px;
+    --bs-btn-border-radius: var(--radius-sm);
+    min-height: 0;
+    margin: 0.1rem 0;
+}
 /* A quarter-hour card has one row of pixels: title only, on one line,
    with the full text and times in the tooltip. */
 .schedule-card-tight {
@@ -1851,8 +1859,20 @@ details.card[open] > summary.card-header::before {
 }
 .schedule-card-menu > summary {
     list-style: none;
-    padding: 0 0.3rem;
-    line-height: 1.2;
+}
+.schedule-card-menu > summary::-webkit-details-marker {
+    display: none;
+}
+/* A link or a summary is not a button, so the label of one styled as a
+   button sat at the top of the button's minimum height; centre it and
+   keep it on one line, as a real button does. */
+.schedule-toolbar a.btn,
+.schedule-card-menu > summary.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    white-space: nowrap;
 }
 .schedule-card-popover {
     position: absolute;

@@ -8,22 +8,24 @@
         <label for="working-edition" class="form-label small text-secondary mb-1">
             {% trans "Program for" %}
         </label>
-        <div class="input-group input-group-sm">
-            <select id="working-edition" name="edition" class="form-select">
-                {% for edition in editions %}
-                    <option value="{{ edition.pk }}"
-                            {% if edition.pk == working.pk %}selected{% endif %}>
-                        {{ edition.name }}
-                        {% if edition.pk == active.pk %}
-                            {% trans "(active)" %}
-                        {% endif %}
-                    </option>
-                {% endfor %}
-            </select>
-            <button type="submit" class="btn btn-outline-secondary">
-                {% trans "Switch" %}
-            </button>
-        </div>
+        {# The rail is narrow: the select takes its full width so the year shows. #}
+        <select id="working-edition"
+                name="edition"
+                class="form-select form-select-sm"
+                title="{{ working.name }}">
+            {% for edition in editions %}
+                <option value="{{ edition.pk }}"
+                        {% if edition.pk == working.pk %}selected{% endif %}>
+                    {{ edition.name }}
+                    {% if edition.pk == active.pk %}
+                        {% trans "(active)" %}
+                    {% endif %}
+                </option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-outline-secondary btn-sm w-100 mt-2">
+            {% trans "Switch" %}
+        </button>
         {% if working.pk != active.pk %}
             <p class="small text-secondary mt-2 mb-0">
                 {% blocktrans with planning=working.name public=active.name %}You are planning {{ planning }}. The public site still shows {{ public }}.{% endblocktrans %}
