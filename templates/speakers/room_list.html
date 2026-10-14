@@ -34,6 +34,11 @@
                         <th>
                             {% trans "Kind" %}
                         </th>
+                        {% if has_venues %}
+                            <th>
+                                {% trans "Venue" %}
+                            </th>
+                        {% endif %}
                         {% if has_event_dates %}
                             <th>
                                 {% trans "Dates" %}
@@ -53,6 +58,15 @@
                             <td>
                                 {{ room.get_kind_display }}
                             </td>
+                            {% if has_venues %}
+                                <td>
+                                    {% if room.venue %}
+                                        {{ room.venue.name }}
+                                    {% else %}
+                                        <span class="text-secondary">{% trans "Online" %}</span>
+                                    {% endif %}
+                                </td>
+                            {% endif %}
                             {% if has_event_dates %}
                                 <td>
                                     {% for event_date in room.event_dates.all %}

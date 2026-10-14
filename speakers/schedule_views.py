@@ -451,6 +451,7 @@ class RoomListView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, ListView):
     def get_queryset(self):
         return (
             Room.objects.filter(conference=self.conference)
+            .select_related("venue")
             .prefetch_related("event_dates")
             .order_by("-is_active", "name")
         )
@@ -461,6 +462,8 @@ class RoomListView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, ListView):
             conference=self.conference,
             rail_active="rooms",
             has_event_dates=self.conference.event_dates.exists(),
+            # An online edition's rooms have no venue; spare it the column.
+            has_venues=any(room.venue_id for room in context["rooms"]),
         )
         return context
 

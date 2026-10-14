@@ -8,6 +8,7 @@ from portal.models import Conference, Venue
 from speakers.models import Room
 from speakers.seeds import clone_speaker_setup
 from tests.grants import on_team
+from tests.speakers.factories import make_settings
 
 
 @pytest.fixture
@@ -101,3 +102,48 @@ class TestRoomForVenue:
         assert (room.name, room.venue, room.url) == ("201A", venue, "u")
         # Again: nothing doubled.
         assert clone_speaker_setup(target, conference)["rooms"] == 0
+
+
+@pytest.mark.django_db
+class TestRoomVenue:
+    def test_a_room_picks_its_venue(self, client, organizer, conference):
+        make_settings(conference, event_format="IN_PERSON")
+        client.force_login(organizer)
+        venue = Venue.objects.create(name="Convention Center")
+        conference.venue = venue
+        conference.save()
+        Room.objects.filter(conference=conference).delete()
+        page = client.get(reverse("speakers:room_create"))
+        assert page.context["form"].fields["venue"].initial == venue.pk
+        assert reverse("venue_create") in page.content.decode()
+        other = Venue.objects.create(name="Annex")
+        client.post(
+            reverse("speakers:room_create"),
+            {"name": "201A", "kind": "ROOM", "venue": other.pk, "is_active": "on"},
+        )
+        assert Room.objects.get(name="201A").venue == other
+        # Editing keeps the room's own venue, not the edition's.
+        room = Room.objects.get(name="201A")
+        assert (
+            client.get(reverse("speakers:room_edit", args=[room.pk]))
+            .context["form"]
+            .initial["venue"]
+            == other.pk
+        )
+        Room.objects.create(conference=conference, name="Stream")
+        listing = client.get(reverse("speakers:room_list")).content.decode()
+        assert "Annex" in listing and "Online" in listing
+
+    def test_an_online_edition_has_no_venue_column(self, client, organizer, conference):
+        make_settings(conference)
+        client.force_login(organizer)
+        assert (
+            client.get(reverse("speakers:room_create"))
+            .context["form"]
+            .fields["venue"]
+            .initial
+            is None
+        )
+        Room.objects.create(conference=conference, name="Stream")
+        listing = client.get(reverse("speakers:room_list")).content.decode()
+        assert ">Venue<" not in listing

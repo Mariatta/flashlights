@@ -1277,11 +1277,19 @@ class RoomForm(forms.ModelForm):
 
     class Meta:
         model = Room
-        fields = ["name", "kind", "url", "discord_id", "event_dates", "is_active"]
+        fields = [
+            "name",
+            "kind",
+            "venue",
+            "url",
+            "discord_id",
+            "event_dates",
+            "is_active",
+        ]
         labels = {"url": "Link", "is_active": "In use"}
         widgets = {"event_dates": forms.CheckboxSelectMultiple}
         help_texts = {
-            "url": "A map of the venue, or the channel's invite link.",
+            "url": "A map of the room, or the channel's invite link.",
             "is_active": "Off keeps the room for past slots but leaves it "
             "out of the schedule editor.",
         }
@@ -1292,8 +1300,11 @@ class RoomForm(forms.ModelForm):
         if not self.instance.conference_id:
             self.instance.conference = conference
         if is_in_person(conference):
-            # Online-only kinds are noise in person; a room is a room.
+            # Online-only kinds are noise in person; a room is a room, and a
+            # new one is at the edition's venue until told otherwise.
             self.fields["kind"].initial = RoomKind.ROOM
+            if not self.instance.pk:
+                self.fields["venue"].initial = conference.venue_id
         if not conference.uses_discord:
             del self.fields["discord_id"]
         dates = conference.event_dates.all()

@@ -28,7 +28,13 @@
     </h1>
     <form method="post" class="col-lg-7">
         {% csrf_token %}
-        {% bootstrap_form form %}
+        {% bootstrap_field form.name %}
+        {% bootstrap_field form.kind %}
+        {% bootstrap_field form.venue %}
+        <p class="form-text mt-n2">
+            <a href="{% url 'venue_create' %}">{% trans "Add a venue" %}</a>
+        </p>
+        {% bootstrap_form form exclude="name,kind,venue" %}
         {% bootstrap_button "Save" button_type="submit" %}
         <a href="{% url 'speakers:room_list' %}" class="btn btn-link">{% trans "Cancel" %}</a>
     </form>

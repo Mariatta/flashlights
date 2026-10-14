@@ -105,6 +105,9 @@ building names it once. An edition picks its venue on its edit page.
 The moment an edition picks a venue it has no room at, one room named
 after the venue is made, so the place can be scheduled right away: a
 meetup's single room, or a conference's first lane to rename and add to.
+Every other room picks its venue on its own form (under Schedule, Rooms),
+where a new room on an in-person edition starts at the edition's venue;
+blank means an online room. The Rooms list shows each room's venue.
 Starting the next edition carries the previous one's active rooms along,
 with their venues. A venue an event or a room still uses cannot be
 deleted.
