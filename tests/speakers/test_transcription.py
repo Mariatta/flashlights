@@ -650,14 +650,14 @@ class TestOnThePage:
         html = client.get(
             reverse("speakers:my_session_detail", args=[session.slug])
         ).content.decode()
-        assert "transcribed by the portal's own tooling" in html
+        assert "transcribed by our own self-hosted tooling" in html
         SpeakerSettings.objects.filter(conference=conference).update(
             auto_transcribe=False
         )
         html = client.get(
             reverse("speakers:my_session_detail", args=[session.slug])
         ).content.decode()
-        assert "transcribed by the portal's own tooling" not in html
+        assert "transcribed by our own self-hosted tooling" not in html
 
     def test_admin_form_offers_the_switch(self, client, world, conference):
         admin = User.objects.create_superuser("root", "root@x.org", "pw")

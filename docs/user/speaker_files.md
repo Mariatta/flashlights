@@ -153,7 +153,7 @@ your session, and may include:
 | File | What it is for |
 |---|---|
 | **Promo material** (square, landscape, vertical, a short video or a gif) | The poster and social cards for your session. Share them! |
-| **Transcript**, **Translation** | The text of your video, for you to check, and in the languages we publish in. A transcript made by the portal's own tooling carries a **machine draft** badge until a person has reviewed it. |
+| **Transcript**, **Translation** | The text of your video, for you to check, and in the languages we publish in. A transcript made by our own self-hosted tooling carries a **machine draft** badge until a person has reviewed it. |
 | **Final cut** (processed video) | Your video with the title card, intro and outro, as it will go out. |
 | **Title card**, **Thumbnail** | The still images used in and around the video. |
 | **Other** | Anything else, with a title that says what it is. |

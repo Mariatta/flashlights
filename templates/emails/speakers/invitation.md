@@ -37,7 +37,7 @@ address. Keep them.
 If the button does not work, copy this address into your browser: <{{ accept_url }}>
 {% endif %}
 
-This link is personal to you and works until {{ expires_at|date:"j F Y" }}. Accepting creates your speaker account on the portal, where you can fill in your bio and session details and see what happens next.
+This link is personal to you and works until {{ expires_at|date:"j F Y" }}. Accept to create your speaker account, where you can fill in your bio and session details.
 
 If you have any questions, just reply to this email.
 

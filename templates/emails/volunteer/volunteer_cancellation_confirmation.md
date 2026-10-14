@@ -24,7 +24,7 @@ Your access to volunteer resources will be revoked within the next 24 hours.
 We understand that circumstances can change, and we appreciate the time you were willing to dedicate to {{ current_site.name }}.
 
 If you change your mind in the future and would like to volunteer again,
-you're welcome to submit a new volunteer application through our portal.
+you're welcome to submit a new volunteer application.
 
 If this was a mistake, or you do not wish to cancel your application, please contact us so that we
 can rectify the situation.
