@@ -1,0 +1,32 @@
+{% load i18n %}
+{% comment %}
+The listed dates of a series, one row each, added one at a time. Include
+inside the <form> with `formset` in context (EditionDatesMixin).
+{% endcomment %}
+<div class="mb-3" data-formset>
+    <label class="form-label">
+        {% trans "Event dates" %}
+    </label>
+    <div class="form-text mb-2">
+        {% trans "One row per date, with a label if you like. The schedule offers these days and the landing page shows the next one." %}
+    </div>
+    {{ formset.management_form }}
+    {% if formset.non_form_errors %}
+        <div class="alert alert-danger">
+            {{ formset.non_form_errors }}
+        </div>
+    {% endif %}
+    <div data-formset-rows>
+        {% for row in formset %}
+            {% include "portal/_event_date_row.html" with row=row %}
+        {% endfor %}
+    </div>
+    <template data-formset-empty>
+        {% include "portal/_event_date_row.html" with row=formset.empty_form %}
+    </template>
+    <button type="button"
+            class="btn btn-outline-secondary btn-sm"
+            data-formset-add>
+        <i class="icon-plus"></i> {% trans "Add a date" %}
+    </button>
+</div>

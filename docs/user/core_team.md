@@ -104,11 +104,13 @@ so the schedule editor never offers a whole year of days.
   when it runs over several days, the **last day**. The schedule editor
   offers every day of that run.
 - **A series of separate dates**, such as a chapter running a year of
-  meetups as one edition: the **event dates**, one per line with an
-  optional label (`2027-02-13 February workshop`). The schedule editor
-  offers only those days, the landing page shows the next one, and the
-  edition's span runs from the first to the last. Dates can be added or
-  changed any time, so a chapter lists what it knows and comes back.
+  meetups as one edition: the **event dates**, one row each with a date
+  picker and an optional label ("February workshop"), added one at a
+  time with **Add a date** and dropped with **Remove**. The schedule
+  editor offers only those days, the landing page shows the next one,
+  and the edition's span runs from the first to the last. Dates can be
+  added or changed any time, so a chapter lists what it knows and comes
+  back.
 
 Each date can have several rooms, as a conference day can. A room is there
 on every date unless it is tied to some of them on its edit page: a meetup

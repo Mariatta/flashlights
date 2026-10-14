@@ -45,8 +45,29 @@ def edition_data(conference, **extra):
     return data
 
 
-def series_data(conference, **extra):
-    return edition_data(conference, cadence="SERIES", **extra)
+def rows(*items):
+    """Formset data for the dates block. An item is (date, label), or
+    (date, label, row) for an existing row, which may end with "delete".
+    Existing rows come first, as the page posts them."""
+    items = sorted(items, key=lambda item: len(item) < 3)
+    data = {
+        "dates-TOTAL_FORMS": str(len(items)),
+        "dates-INITIAL_FORMS": str(sum(1 for item in items if len(item) > 2)),
+        "dates-MIN_NUM_FORMS": "0",
+        "dates-MAX_NUM_FORMS": "1000",
+    }
+    for i, item in enumerate(items):
+        data[f"dates-{i}-date"] = item[0]
+        data[f"dates-{i}-label"] = item[1]
+        if len(item) > 2:
+            data[f"dates-{i}-id"] = str(item[2].pk)
+        if item[-1] == "delete":
+            data[f"dates-{i}-DELETE"] = "on"
+    return data
+
+
+def series_data(conference, *items, **extra):
+    return edition_data(conference, cadence="SERIES", **rows(*items), **extra)
 
 
 def lanes(conference, day):
@@ -60,10 +81,7 @@ class TestEditionForm:
         url = reverse("conference_edit", kwargs={"pk": conference.pk})
         client.post(
             url,
-            series_data(
-                conference,
-                event_dates="2027-03-13\n\n2027-02-13 February workshop\n",
-            ),
+            series_data(conference, ("2027-03-13", ""), (FEB, "February workshop")),
         )
         assert [(d.date, d.label) for d in conference.event_dates.all()] == [
             (FEB, "February workshop"),
@@ -75,38 +93,46 @@ class TestEditionForm:
         assert (conference.conference_date, conference.start_date) == (FEB, FEB)
         assert conference.end_date == MAR
         feb = conference.event_dates.get(date=FEB)
+        mar = conference.event_dates.get(date=MAR)
         room = make_room(conference, name="Improving")
         room.event_dates.add(feb)
-        form = client.get(url).context["form"]
-        assert form["event_dates"].value() == "2027-02-13 February workshop\n2027-03-13"
-        # A date still listed keeps its row, and the room tied to it.
-        client.post(url, series_data(conference, event_dates="2027-02-13 Workshop"))
-        assert list(conference.event_dates.values_list("date", "label")) == [
-            (FEB, "Workshop")
+        # The page shows the rows, and a blank one to add to.
+        formset = client.get(url).context["formset"]
+        assert [form.instance for form in formset.initial_forms] == [feb, mar]
+        assert len(formset.extra_forms) == 1
+        # A row edited in place keeps its id, and the room tied to it;
+        # a removed row goes.
+        client.post(
+            url,
+            series_data(conference, (FEB, "Workshop", feb), (MAR, "", mar, "delete")),
+        )
+        assert list(conference.event_dates.values_list("pk", "label")) == [
+            (feb.pk, "Workshop")
         ]
         assert list(room.event_dates.all()) == [feb]
         conference.refresh_from_db()
         assert conference.end_date == FEB
-        # Once a year lists nothing: the rows go, whatever the textarea says.
-        client.post(url, edition_data(conference, event_dates="2027-02-13\njunk"))
+        # Once a year lists nothing: the rows go, whatever was posted.
+        client.post(url, edition_data(conference, **rows((FEB, "Workshop", feb))))
         assert not conference.event_dates.exists()
         conference.refresh_from_db()
         assert conference.cadence == Cadence.ONCE
         assert str(conference.conference_date) == "2027-05-01"
 
     @pytest.mark.parametrize(
-        "lines, error",
+        "items, error",
         [
-            ("13/02/2027", "is not a date"),
-            ("2027-02-13\n2027-02-13 again", "listed twice"),
-            ("", "List at least one date"),
+            ((("13/02/2027", ""),), "Enter a valid date"),
+            (((FEB, ""), (FEB, "again")), "duplicate data"),
+            ((), "List at least one date"),
+            ((("", "a label without a date"),), "This field is required"),
         ],
     )
-    def test_bad_lines_are_refused(self, client, admin_user, conference, lines, error):
+    def test_bad_rows_are_refused(self, client, admin_user, conference, items, error):
         client.force_login(admin_user)
         response = client.post(
             reverse("conference_edit", kwargs={"pk": conference.pk}),
-            series_data(conference, event_dates=lines),
+            series_data(conference, *items),
         )
         assert error in response.content.decode()
         assert not conference.event_dates.exists()
@@ -141,6 +167,9 @@ class TestEditionForm:
         assert 'data-show-when="id_cadence=SERIES"' in content
         assert "js/show-when" in content
         assert "id_start_date" not in content
+        # The dates come as rows added one at a time.
+        assert "data-formset-add" in content and "js/formset-rows" in content
+        assert 'name="dates-__prefix__-date"' in content
 
     def test_the_list_counts_a_series_dates(self, client, admin_user, conference):
         client.force_login(admin_user)
@@ -267,11 +296,16 @@ class TestStartNextYear:
     def test_a_series(self, client, admin_user, conference):
         response = self.start(client, admin_user, cadence="SERIES")
         assert "List at least one date" in response.content.decode()
+        response = self.start(
+            client, admin_user, cadence="SERIES", **rows((FEB, ""), (FEB, "again"))
+        )
+        assert "duplicate data" in response.content.decode()
+        assert not Conference.objects.filter(year=2027).exists()
         self.start(
             client,
             admin_user,
             cadence="SERIES",
-            event_dates="2027-03-13\n2027-02-13 February workshop",
+            **rows(("2027-03-13", ""), (FEB, "February workshop")),
         )
         new = Conference.objects.get(year=2027)
         assert new.cadence == Cadence.SERIES
@@ -284,6 +318,15 @@ class TestStartNextYear:
         assert "What kind of event" in content
         assert 'data-show-when="id_cadence=SERIES"' in content
         assert "id_start_date" not in content
+        assert 'name="dates-__prefix__-date"' in content
+
+
+@pytest.mark.django_db
+def test_the_pages_say_events(client, admin_user, conference):
+    assert reverse("conference_list") == "/events/"
+    assert reverse("start_new_year") == "/events/start-next/"
+    assert reverse("conference_edit", args=[conference.pk]).startswith("/events/")
+    assert reverse("conference_tickets", args=[conference.pk]).startswith("/events/")
 
 
 @pytest.mark.django_db

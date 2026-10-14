@@ -150,22 +150,22 @@ urlpatterns = [
         name="portal_stats_comparison",
     ),
     path(
-        "conference/start-new-year/",
+        "events/start-next/",
         views.StartNewYearView.as_view(),
         name="start_new_year",
     ),
     path(
-        "conferences/",
+        "events/",
         views.ConferenceList.as_view(),
         name="conference_list",
     ),
     path(
-        "conferences/<int:pk>/edit/",
+        "events/<int:pk>/edit/",
         views.ConferenceUpdate.as_view(),
         name="conference_edit",
     ),
     path(
-        "conferences/<int:pk>/delete/",
+        "events/<int:pk>/delete/",
         views.ConferenceDelete.as_view(),
         name="conference_delete",
     ),

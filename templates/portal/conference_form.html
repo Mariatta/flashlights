@@ -54,7 +54,7 @@
                         {% bootstrap_field form.end_date %}
                     </div>
                     <div data-show-when="id_cadence=SERIES">
-                        {% bootstrap_field form.event_dates %}
+                        {% include "portal/_event_dates.html" %}
                     </div>
                     {% bootstrap_field form.venue_name %}
                     {% bootstrap_field form.venue_address %}
@@ -79,7 +79,7 @@
                     {% bootstrap_field form.reply_to_email %}
                 </div>
             </fieldset>
-            {% bootstrap_form form exclude="year,name,slug,is_active,speaker_module_enabled,volunteer_application_open,sponsorship_open,accepting_donations,event_format,recordings,cadence,conference_date,end_date,event_dates,venue_name,venue_address,venue_url,chat_platform,chat_name,chat_url,reply_to_email" %}
+            {% bootstrap_form form exclude="year,name,slug,is_active,speaker_module_enabled,volunteer_application_open,sponsorship_open,accepting_donations,event_format,recordings,cadence,conference_date,end_date,venue_name,venue_address,venue_url,chat_platform,chat_name,chat_url,reply_to_email" %}
             <button type="submit" class="btn btn-primary">
                 {% trans "Save" %}
             </button>
@@ -91,4 +91,5 @@
         </form>
     </div>
     <script src="{% static 'js/show-when.js' %}" defer></script>
+    <script src="{% static 'js/formset-rows.js' %}" defer></script>
 {% endblock content %}

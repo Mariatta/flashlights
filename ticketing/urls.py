@@ -4,12 +4,12 @@ from . import views
 
 urlpatterns = [
     path(
-        "conferences/<int:pk>/tickets/",
+        "events/<int:pk>/tickets/",
         views.TicketingSettingsView.as_view(),
         name="conference_tickets",
     ),
     path(
-        "conferences/<int:pk>/tickets/import/",
+        "events/<int:pk>/tickets/import/",
         views.CsvImportView.as_view(),
         name="conference_tickets_import",
     ),

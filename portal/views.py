@@ -27,8 +27,8 @@ from portal.constants import (
     CACHE_KEY_VOLUNTEER_ONBOARDED_COUNT,
     SPONSORSHIP_GOAL,
 )
-from portal.forms import ConferenceForm, StartNewYearForm
-from portal.models import Conference
+from portal.forms import ConferenceForm, EventDateFormSet, StartNewYearForm
+from portal.models import Cadence, Conference
 from portal.permissions import can_start_next_year, is_organizer
 from portal.services import (
     bring_forward_volunteers,
@@ -231,7 +231,25 @@ class OrganizerDashboardView(AdminRequiredMixin, TemplateView):
         return context
 
 
-class StartNewYearView(UserPassesTestMixin, FormView):
+class EditionDatesMixin:
+    """A view whose form is an ``EditionDatesForm``: the listed dates of a
+    series come as a formset beside it, one row per date."""
+
+    def get_formset(self, conference):
+        """Bound to the POST on a post; built once per request, so the
+        page re-rendered with errors shows the rows as posted."""
+        if not hasattr(self, "_formset"):
+            data = self.request.POST if self.request.method == "POST" else None
+            self._formset = EventDateFormSet(
+                data,
+                instance=conference,
+                prefix="dates",
+                require=self.request.POST.get("cadence") == Cadence.SERIES,
+            )
+        return self._formset
+
+
+class StartNewYearView(EditionDatesMixin, UserPassesTestMixin, FormView):
     """Guided flow for organizers to stand up the next conference edition
     (``portal.start_next_year``, the Organizers leads' permission).
 
@@ -264,6 +282,7 @@ class StartNewYearView(UserPassesTestMixin, FormView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["source"] = self._previous_edition()
+        context["formset"] = self.get_formset(Conference())
         return context
 
     def form_valid(self, form):
@@ -271,6 +290,9 @@ class StartNewYearView(UserPassesTestMixin, FormView):
         source = self._previous_edition()
 
         conference = Conference(year=data["year"], name=data["name"], slug=data["slug"])
+        formset = self.get_formset(conference)
+        if not form.dates_valid(formset):
+            return self.form_invalid(form)
         form.apply_dates(conference)
         if source and data["copy_goals"]:
             conference.sponsorship_goal = source.sponsorship_goal
@@ -278,7 +300,7 @@ class StartNewYearView(UserPassesTestMixin, FormView):
         if data["activate"]:
             conference.is_active = True
         conference.save()
-        form.save_event_dates(conference)
+        form.save_dates(conference, formset)
 
         carried = []
         if carry_forward(conference, source, data.get("pretix_event_slug") or ""):
@@ -332,7 +354,7 @@ class ConferenceList(ConferenceAdminRequiredMixin, ListView):
         return super().get_queryset().annotate(listed_dates=Count("event_dates"))
 
 
-class ConferenceUpdate(ConferenceAdminRequiredMixin, UpdateView):
+class ConferenceUpdate(EditionDatesMixin, ConferenceAdminRequiredMixin, UpdateView):
     model = Conference
     form_class = ConferenceForm
     template_name = "portal/conference_form.html"
@@ -342,6 +364,19 @@ class ConferenceUpdate(ConferenceAdminRequiredMixin, UpdateView):
         kwargs = super().get_form_kwargs()
         kwargs["user"] = self.request.user
         return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["formset"] = self.get_formset(self.object)
+        return context
+
+    def form_valid(self, form):
+        formset = self.get_formset(self.object)
+        if not form.dates_valid(formset):
+            return self.form_invalid(form)
+        response = super().form_valid(form)
+        form.save_dates(self.object, formset)
+        return response
 
 
 class ConferenceDelete(PermissionRequiredMixin, DeleteView):

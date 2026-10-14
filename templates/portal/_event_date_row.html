@@ -1,0 +1,26 @@
+{% load i18n %}
+<div class="row g-2 align-items-start mb-2">
+    {{ row.id }}
+    <div class="col-md-4">
+        {{ row.date }}
+        {% for error in row.date.errors %}
+            <div class="invalid-feedback d-block">
+                {{ error }}
+            </div>
+        {% endfor %}
+    </div>
+    <div class="col-md-6">
+        {{ row.label }}
+        {% for error in row.label.errors %}
+            <div class="invalid-feedback d-block">
+                {{ error }}
+            </div>
+        {% endfor %}
+    </div>
+    <div class="col-md-2 form-check pt-2">
+        {{ row.DELETE }}
+        <label class="form-check-label small" for="{{ row.DELETE.id_for_label }}">
+            {% trans "Remove" %}
+        </label>
+    </div>
+</div>
