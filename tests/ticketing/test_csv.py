@@ -237,6 +237,22 @@ class TestPages:
         assert "email = Email" in content
         assert self.url(conference) in content
 
+    def test_each_provider_card_shows_for_its_choice(
+        self, client, admin_user, conference, csv_ticketing
+    ):
+        client.force_login(admin_user)
+        url = reverse("conference_tickets", args=[conference.pk])
+        content = client.get(url).content.decode()
+        assert 'data-show-when="id_provider=PRETIX"' in content
+        assert 'data-show-when="id_provider=CSV"' in content
+        assert "js/show-when" in content
+        button = f'href="{self.url(conference)}"><i class="icon-upload"'
+        assert button in content
+        # A Pretix edition with a leftover column map offers no CSV import.
+        csv_ticketing.provider = "PRETIX"
+        csv_ticketing.save()
+        assert button not in client.get(url).content.decode()
+
     def test_upload(self, client, admin_user, conference, csv_ticketing):
         client.force_login(admin_user)
         assert (

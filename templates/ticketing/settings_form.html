@@ -1,5 +1,5 @@
 {% extends "portal/base_sidebar.html" %}
-{% load i18n django_bootstrap5 %}
+{% load i18n static django_bootstrap5 %}
 {% block head_title %}
     {% trans "Tickets" %}
 {% endblock head_title %}
@@ -20,7 +20,7 @@
         <form method="post" class="col-md-8">
             {% csrf_token %}
             {% bootstrap_field form.provider %}
-            <fieldset class="card mb-4">
+            <fieldset class="card mb-4" data-show-when="id_provider=PRETIX">
                 <legend class="card-header h6 mb-0">
                     {% trans "Pretix" %}
                 </legend>
@@ -39,13 +39,13 @@
                     </p>
                 </div>
             </fieldset>
-            <fieldset class="card mb-4">
+            <fieldset class="card mb-4" data-show-when="id_provider=CSV">
                 <legend class="card-header h6 mb-0">
                     {% trans "CSV export" %}
                 </legend>
                 <div class="card-body">
                     {% bootstrap_field form.csv_lines %}
-                    {% if form.instance.csv_columns.email %}
+                    {% if form.instance.provider == "CSV" and form.instance.csv_columns.email %}
                         <a class="btn btn-outline-primary btn-sm"
                            href="{% url 'conference_tickets_import' conference.pk %}"><i class="icon-upload" aria-hidden="true"></i> {% trans "Import registrations" %}</a>
                     {% endif %}
@@ -70,4 +70,5 @@
                class="btn btn-secondary">{% trans "Cancel" %}</a>
         </form>
     </div>
+    <script src="{% static 'js/show-when.js' %}" defer></script>
 {% endblock content %}
