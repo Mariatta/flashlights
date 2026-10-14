@@ -61,13 +61,12 @@ volunteered with us in a previous year.
 
 1. Open the portal and choose **Propose a session**, or open
    `/speakers/propose/` on it directly.
-2. If you are not signed in, you land on a page that asks you to sign in.
-    - **You volunteered before, or have used the portal for anything else:**
-      choose **Sign in to the one I have** and sign in with your username and
-      password. If you cannot remember your password, choose **Send me a
-      sign-in code** and we will email you a one-time code instead.
-    - **You have never used the portal:** choose **Create an account**. You
-      will be asked to confirm your email address.
+2. If you are not signed in, the page asks you to create an account first.
+    - **You already have an account** (for example from volunteering):
+      choose **Sign in**. If you cannot remember your password, choose
+      **Send me a sign-in code** and we will email you a one-time code instead.
+    - **You do not have one yet:** choose **Create an account**. You will be
+      asked to confirm your email address.
 3. After signing in, the proposal form opens. Fill in the **About you** part:
     - **Display name** (required): how your name should appear on the schedule.
     - **Pronouns** and **Location** are optional. **Timezone** is required: we
