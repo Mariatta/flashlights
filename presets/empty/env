@@ -1,0 +1,4 @@
+# The empty preset: no edition, nothing but one superuser, for walking
+# through setting up an instance from the very first screen.
+# KEY=value lines, read by scripts/preset.py on top of the dev defaults.
+SITE_TITLE=Flashlights

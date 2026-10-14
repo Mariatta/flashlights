@@ -481,7 +481,10 @@ A preset is a directory holding:
 - `env`, optional `KEY=value` lines for the branding (`SITE_TITLE`,
   `BRAND_PRESET`, `DOCS_URL`, the feature switches).
 
-`presets/bare` ships here: one empty edition and an `admin` account. A
+`presets/bare` ships here: one empty edition and an `admin` account.
+`presets/empty` has only the `admin` superuser, not even an edition, and no
+accepted agreements, for walking through setting up an instance from its
+first screen. A
 preset built from a real community's data (its organizers, speakers and
 program) belongs outside this repository; add its folder with
 `PRESETS_PATH`. Local settings go in two git-ignored files at the root:

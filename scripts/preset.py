@@ -15,7 +15,7 @@ Or through make: ``make preset PRESET=summit``, ``make preset-reset ...``.
 
 A preset is a directory holding ``seed.py`` (``run(stdout)``, loaded by
 ``manage.py load_preset``) and an optional ``env`` file of KEY=value lines
-for the branding. ``presets/`` in this repository ships the bare one; more
+for the branding. ``presets/`` in this repository ships bare and empty; more
 directories, such as private presets with a real community's data, join
 through ``PRESETS_PATH`` (paths separated by ``:``).
 

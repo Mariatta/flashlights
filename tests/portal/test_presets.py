@@ -16,6 +16,7 @@ from portal.models import Conference
 from volunteer.models import Team
 
 BARE = Path(__file__).resolve().parents[2] / "presets" / "bare"
+EMPTY = BARE.parent / "empty"
 drop = importlib.import_module(
     "portal.migrations.0008_flashlights_rebrand"
 ).drop_untouched
@@ -48,6 +49,16 @@ class TestLoadPreset:
         assert app.conf.task_always_eager == eager  # put back afterwards
         # Preset accounts sign in without the verification email.
         assert EmailAddress.objects.get(user__username="admin").verified
+
+    def test_loads_the_empty_preset(self, settings):
+        settings.DEBUG = True
+        Conference.objects.all().delete()
+        call_command("load_preset", str(EMPTY), stdout=StringIO())
+        assert not Conference.objects.exists()
+        admin = User.objects.get(username="admin")
+        assert admin.is_superuser and admin.check_password("password123")
+        # The agreements are left for the first sign-in.
+        assert not hasattr(admin, "portalprofile")
 
     def test_verifies_every_address_once(self, settings, tmp_path):
         """New addresses are added verified, unverified ones are marked,
