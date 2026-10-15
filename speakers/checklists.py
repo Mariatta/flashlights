@@ -9,6 +9,7 @@ every completion lands in the ActivityLog with its actor.
 from django.db.models import Q
 from django.utils import timezone
 
+from portal.models import Cadence
 from volunteer.models import Team
 
 from .constants import (
@@ -16,6 +17,7 @@ from .constants import (
     SESSION_LANGUAGE,
     AssigneeDefault,
     ChecklistScope,
+    DueAnchor,
     ItemOwner,
     ItemStatus,
     NoticeKind,
@@ -28,9 +30,11 @@ from .models import (
     ChecklistTemplate,
     ChecklistTemplateItem,
     Presenter,
+    ScheduleSlot,
     Session,
     SessionPresenter,
     SpeakerSettings,
+    event_tz,
 )
 from .readiness import apply_readiness, refresh_dependents, refresh_readiness
 
@@ -40,14 +44,78 @@ class ChecklistError(ValueError):
 
 
 def _anchors(session, presenter=None, accepted_at=None):
-    """Due-date anchors; ``session`` is None for items not tied to one."""
+    """Due-date anchors; ``session`` is None for items not tied to one.
+
+    Days are the event's own: a slot at 7 pm in Vancouver is on that
+    day, not on the next UTC one. For a series (a year of meetup nights)
+    "before the event starts" means before the speaker's own night, the
+    session's day, or for an item not tied to a session the first day the
+    presenter is scheduled on; unknown until then.
+    """
     conference = session.conference if session is not None else presenter.conference
     slot = getattr(session, "slot", None) if session is not None else None
+    session_start = _event_day(conference, slot.start_utc) if slot else None
+    if conference.cadence != Cadence.SERIES:
+        event_start = conference.start_date or conference.conference_date
+    elif session is not None:
+        event_start = session_start
+    else:
+        event_start = _first_day_scheduled(conference, presenter)
     return {
         "invitation_accepted": accepted_at,
-        "conference_start": conference.start_date or conference.conference_date,
-        "session_start": slot.start_utc if slot is not None else None,
+        "conference_start": event_start,
+        "session_start": session_start,
     }
+
+
+def _event_day(conference, moment):
+    return moment.astimezone(event_tz(conference)).date()
+
+
+def _first_day_scheduled(conference, presenter):
+    """The day of the presenter's earliest slot in the edition, or None."""
+    slot = (
+        ScheduleSlot.objects.filter(
+            conference=conference, session__session_presenters__presenter=presenter
+        )
+        .order_by("start_utc")
+        .first()
+    )
+    return _event_day(conference, slot.start_utc) if slot else None
+
+
+def reanchor_session(session):
+    """A slot placed, moved or taken off: the due dates counted from the
+    session's day follow it. That is the session's items and its
+    presenters' once-per-presenter items whose line is due before the
+    session starts, or before the event starts when the edition is a
+    series. A date that can no longer be worked out (the slot is gone)
+    stands. Returns the number of items changed; each is flagged for the
+    daily update email."""
+    anchored = Q(template_item__due_anchor=DueAnchor.SESSION_START)
+    if session.conference.cadence == Cadence.SERIES:
+        anchored |= Q(template_item__due_anchor=DueAnchor.CONFERENCE_START)
+    presenters = session.session_presenters.values_list("presenter_id", flat=True)
+    items = (
+        ChecklistItem.objects.filter(anchored)
+        .filter(Q(session=session) | Q(session=None, presenter_id__in=presenters))
+        .select_related("template_item", "session", "presenter")
+    )
+    changed = 0
+    for item in items:
+        anchors = _anchors(
+            item.session,
+            item.presenter,
+            _accepted_at(item.presenter) if item.presenter_id else None,
+        )
+        due = item.template_item.due_date(**anchors)
+        if due is None or due == item.due_date:
+            continue
+        item.due_date = due
+        item.flag_notice(NoticeKind.CHANGED)
+        item.save()
+        changed += 1
+    return changed
 
 
 def _accepted_at(presenter):

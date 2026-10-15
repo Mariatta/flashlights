@@ -21,6 +21,7 @@ from .checklists import (
     instantiate_general_checklist,
     instantiate_presenter_checklist,
     instantiate_session_checklist,
+    reanchor_session,
 )
 from .constants import VIDEO_KINDS, AutoRule, ReadyRule
 from .media import MediaBucket, MediaStorageNotConfigured, uploading_presenter
@@ -35,6 +36,7 @@ from .models import (
     PresenterRole,
     PublishedSlot,
     Room,
+    ScheduleSlot,
     Session,
     SessionPresenter,
     SessionType,
@@ -155,6 +157,15 @@ def session_presenter_changed(sender, instance, **kwargs):
     evaluate_items(
         items_for_presenter(instance.presenter, [AutoRule.INVITATION_ACCEPTED])
     )
+
+
+@receiver(post_save, sender=ScheduleSlot, dispatch_uid="speakers.checklists.slot")
+@receiver(post_delete, sender=ScheduleSlot, dispatch_uid="speakers.checklists.unslot")
+def slot_moved(sender, instance, **kwargs):
+    """Due dates counted from the session's day follow its slot."""
+    session = Session.objects.filter(pk=instance.session_id).first()
+    if session is not None:
+        reanchor_session(session)
 
 
 @receiver(post_save, sender=PublishedSlot, dispatch_uid="speakers.rules.slot_saved")

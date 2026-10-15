@@ -831,6 +831,8 @@ class ChecklistTemplateItemForm(forms.ModelForm):
             "description_md": MARKDOWN_HELP
             + " Speakers see this under the title on their to-do list.",
             "auto_complete_rule": "Pick a rule and the portal ticks the item itself.",
+            "due_anchor": 'For a series of dates, "before the event starts" counts '
+            "from the speaker's own date, once their session is scheduled.",
         }
 
     def __init__(self, *args, conference, **kwargs):

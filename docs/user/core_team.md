@@ -135,6 +135,13 @@ so the schedule editor never offers a whole year of days.
   back. A new series goes to its Dates page as soon as it is created or
   switched to one.
 
+Checklist lines due "days before the event starts" count, in a series,
+from the speaker's own date: the day their session is scheduled on, or
+for a line asked once per speaker the first day they are scheduled. Until
+then the line has no due date. A due date counted from a session's day
+follows the slot when it is placed, moved or taken off, and the change
+goes out in the daily update email.
+
 A date's venue is the event's unless the row names another: a meetup that
 moves between buildings picks the building per night. The schedule editor
 lanes a day by its venue: the rooms there, plus the rooms without a venue
