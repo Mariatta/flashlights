@@ -6,6 +6,7 @@ from .editions import speaker_edition, working_edition
 from .models import Presenter, speaker_module_enabled
 from .permissions import (
     can_publish_program,
+    can_publish_session_video,
     can_review_proposals,
     can_view_media,
     can_work_queue,
@@ -59,6 +60,15 @@ class SpeakerOrganizerRequiredMixin(SpeakerModuleRequiredMixin, UserPassesTestMi
 
     def test_func(self):
         return is_speaker_organizer(self.request.user)
+
+
+class SessionVideoRequiredMixin(SpeakerModuleRequiredMixin, UserPassesTestMixin):
+    """A session's video link, publish time and premiere
+    (``speakers.publish_session_video``): the Recordings team's, whether or
+    not they run the program."""
+
+    def test_func(self):
+        return can_publish_session_video(self.request.user)
 
 
 class ProposalReviewRequiredMixin(SpeakerModuleRequiredMixin, UserPassesTestMixin):

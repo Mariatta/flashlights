@@ -109,6 +109,11 @@ urlpatterns = [
         name="session_edit",
     ),
     path(
+        "sessions/<slug:slug>/video/",
+        views.SessionVideoView.as_view(),
+        name="session_video",
+    ),
+    path(
         "sessions/<slug:slug>/items/add/",
         views.SessionAddItemView.as_view(),
         name="session_add_item",

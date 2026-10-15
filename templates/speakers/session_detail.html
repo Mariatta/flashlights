@@ -1,5 +1,5 @@
 {% extends "speakers/_organize_shell.html" %}
-{% load i18n static %}
+{% load i18n static tz %}
 {% load portal_extras speakers_extras %}
 {% comment %}
 The organizer's session page is a workbench: a strip of what needs a
@@ -496,6 +496,57 @@ open the tab their target lives in.
                             </div>
                         {% endif %}
                     </div>
+                    {% if video_link %}
+                        <div class="card mb-3" id="video-link">
+                            <div class="card-header">
+                                <i class="icon-youtube"></i> {% trans "Published video" %}
+                            </div>
+                            {% if video_form %}
+                                <form method="post"
+                                      class="card-body small"
+                                      action="{% url 'speakers:session_video' session.slug %}">
+                                    {% csrf_token %}
+                                    {% for field in video_form %}
+                                        <div class="mb-2">
+                                            <label class="form-label mb-1" for="{{ field.id_for_label }}">
+                                                {{ field.label }}
+                                            </label>
+                                            {{ field }}
+                                            {% if field.help_text %}
+                                                <div class="form-text">
+                                                    {{ field.help_text }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                    <button class="btn btn-sm btn-outline-primary" type="submit">
+                                        {% trans "Save" %}
+                                    </button>
+                                </form>
+                            {% else %}
+                                <div class="card-body small">
+                                    <div>
+                                        <strong>{% trans "YouTube link" %}:</strong>
+                                        {% if session.youtube_url %}
+                                            <a href="{{ session.youtube_url }}">{{ session.youtube_url }}</a>
+                                        {% else %}
+                                            {% trans "not yet" %}
+                                        {% endif %}
+                                    </div>
+                                    {% if session.youtube_publish_at %}
+                                        <div>
+                                            <strong>{% trans "Publish time" %}:</strong> {{ session.youtube_publish_at|timezone:event_timezone|date:"j M Y H:i" }} {{ event_timezone }}
+                                        </div>
+                                    {% endif %}
+                                    {% if session.is_pre_recorded %}
+                                        <div>
+                                            <strong>{% trans "Premiere" %}:</strong> {{ session.effective_premiere_location }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
                     {% if video and can_download_media %}
                         <div class="card mb-3" id="video-card">
                             <div class="card-header">

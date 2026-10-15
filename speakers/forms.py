@@ -6,6 +6,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError
 from django.db.models import Q
+from django.utils import timezone
 from django.utils.text import slugify
 from text_unidecode import unidecode
 
@@ -38,6 +39,7 @@ from .models import (
     SessionPresenter,
     SessionType,
     SpeakerSettings,
+    event_tz,
     is_in_person,
     recordings,
     volunteer_discord_username,
@@ -115,7 +117,31 @@ VIDEO_FIELDS = ("video_length_limit_minutes", "youtube_url", "youtube_publish_at
 VIDEO_PUBLISHING_FIELDS = ("youtube_url", "youtube_publish_at", "premiere_location")
 
 
-class SessionForm(forms.ModelForm):
+class EventTimeMixin:
+    """A video's publish time is read and shown in the event's own
+    timezone, not the server's: a form fills ``youtube_publish_at`` with the
+    stored moment in that zone and reads what is typed back in it."""
+
+    EVENT_TIME_FIELD = "youtube_publish_at"
+
+    def use_event_tz(self, conference):
+        self.event_tz = event_tz(conference)
+        field = self.fields.get(self.EVENT_TIME_FIELD)
+        if field is None:
+            return
+        field.help_text = f"In {self.event_tz.key}."
+        stored = getattr(self.instance, self.EVENT_TIME_FIELD, None)
+        if stored is not None:
+            self.initial[self.EVENT_TIME_FIELD] = stored.astimezone(
+                self.event_tz
+            ).replace(tzinfo=None)
+
+    def full_clean(self):
+        with timezone.override(self.event_tz):
+            return super().full_clean()
+
+
+class SessionForm(EventTimeMixin, forms.ModelForm):
     """Create or edit a session. Every content field is optional markdown."""
 
     # Free text, normalised to a slug in clean_slug; a SlugField would refuse
@@ -194,6 +220,7 @@ class SessionForm(forms.ModelForm):
         elif self.recordings == Recordings.TEAM:
             # Nobody uploads a video to fit a limit: the team records.
             del self.fields["video_length_limit_minutes"]
+        self.use_event_tz(conference)
         self.fields["duration_minutes"].help_text = (
             "Leave blank to use the default for the type: "
             + ", ".join(
@@ -255,12 +282,62 @@ class SessionForm(forms.ModelForm):
         if not delivery and cleaned.get("kind"):
             delivery = cleaned["kind"].default_delivery
         if delivery == Delivery.LIVE:
-            pre_recorded_only = ["video_length_limit_minutes", "premiere_location"]
-            if self.recordings != Recordings.TEAM:
-                pre_recorded_only += ["youtube_url", "youtube_publish_at"]
-            for field in pre_recorded_only:
-                if cleaned.get(field):
-                    self.add_error(field, "Only applies to pre-recorded sessions.")
+            refuse_video_for_live(self, cleaned, self.recordings)
+        return cleaned
+
+
+def refuse_video_for_live(form, cleaned, recordings_mode):
+    """A live session has no video to limit or premiere; it gets a video
+    link only when the team records it. Adds the error to each offending
+    field the form has."""
+    pre_recorded_only = ["video_length_limit_minutes", "premiere_location"]
+    if recordings_mode != Recordings.TEAM:
+        pre_recorded_only += ["youtube_url", "youtube_publish_at"]
+    for field in pre_recorded_only:
+        if cleaned.get(field):
+            form.add_error(field, "Only applies to pre-recorded sessions.")
+
+
+class SessionVideoForm(EventTimeMixin, forms.ModelForm):
+    """The video's public side on the session page, for whoever may publish
+    session videos without running the program (a Recordings member).
+    Pre-recorded sessions also pick their premiere; a live one has none."""
+
+    class Meta:
+        model = Session
+        fields = list(VIDEO_PUBLISHING_FIELDS)
+        widgets = {
+            "youtube_url": forms.URLInput(
+                attrs={"class": "form-control form-control-sm"}
+            ),
+            "youtube_publish_at": forms.DateTimeInput(
+                attrs={
+                    "type": "datetime-local",
+                    "class": "form-control form-control-sm",
+                },
+                format="%Y-%m-%dT%H:%M",
+            ),
+            "premiere_location": forms.Select(
+                attrs={"class": "form-select form-select-sm"}
+            ),
+        }
+        labels = {
+            "youtube_url": "YouTube link",
+            "youtube_publish_at": "Publish time",
+            "premiere_location": "Premiere",
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.recordings = recordings(self.instance.conference)
+        self.use_event_tz(self.instance.conference)
+        if is_in_person(self.instance.conference) or not self.instance.is_pre_recorded:
+            del self.fields["premiere_location"]
+
+    def clean(self):
+        cleaned = super().clean()
+        if self.instance.delivery == Delivery.LIVE:
+            refuse_video_for_live(self, cleaned, self.recordings)
         return cleaned
 
 

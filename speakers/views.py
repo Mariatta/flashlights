@@ -84,6 +84,7 @@ from .forms import (
     SessionPresenterForm,
     SessionPresenterRoleForm,
     SessionTypeForm,
+    SessionVideoForm,
     SpeakerOnboardingForm,
     SpeakerProfileForm,
     SpeakerSessionForm,
@@ -108,6 +109,7 @@ from .mixins import (
     PresenterRequiredMixin,
     ProposalDecisionRequiredMixin,
     ProposalReviewRequiredMixin,
+    SessionVideoRequiredMixin,
     SpeakerModuleRequiredMixin,
     SpeakerOrganizerRequiredMixin,
     SpeakerQueueRequiredMixin,
@@ -132,6 +134,7 @@ from .models import (
     SessionType,
     SpeakerSettings,
     TransitionError,
+    event_tz,
     records_sessions,
     team_records,
 )
@@ -139,6 +142,7 @@ from .permissions import (
     approved_teams,
     can_add_media,
     can_assign_items,
+    can_publish_session_video,
     can_review_proposals,
     can_view_program,
     can_work_sessions,
@@ -460,6 +464,18 @@ class SessionDetailView(SessionScopedMixin, DetailView):
         context["processed"] = next(
             (a for a in assets if a.kind == MediaKind.PROCESSED_VIDEO and a.is_ready),
             None,
+        )
+        # The video's public side (its link, publish time and premiere):
+        # a card for every reader once the session will have a video, with
+        # a form on it for whoever may publish session videos. Running the
+        # program is not needed: a Recordings member sets the link here.
+        video_link = self.object.is_pre_recorded or team_records(self.conference)
+        context["video_link"] = video_link
+        context["event_timezone"] = event_tz(self.conference).key
+        context["video_form"] = (
+            SessionVideoForm(instance=self.object)
+            if video_link and can_publish_session_video(self.request.user)
+            else None
         )
         open_items = [i for i in items if i.is_open]
         unsent = [
@@ -813,6 +829,39 @@ class OrganizerSessionActionMixin(LoginRequiredMixin, SpeakerOrganizerRequiredMi
         return get_object_or_404(
             Session.objects.for_conference(self.conference), slug=self.kwargs["slug"]
         )
+
+
+class SessionVideoView(LoginRequiredMixin, SessionVideoRequiredMixin, View):
+    """The video card's form on the session page: the link, its publish
+    time and the premiere. POST only; the page shows the result."""
+
+    def post(self, request, slug):
+        session = get_object_or_404(
+            Session.objects.for_conference(self.conference), slug=slug
+        )
+        if not (session.is_pre_recorded or team_records(self.conference)):
+            raise Http404("This session has no video.")
+        form = SessionVideoForm(request.POST, instance=session)
+        if form.is_valid():
+            form.save()
+            ActivityLog.record(
+                self.conference,
+                "session.video_changed",
+                target=session,
+                actor=request.user,
+                fields=sorted(form.changed_data),
+            )
+            messages.success(request, "Saved the video details.")
+        else:
+            messages.error(
+                request,
+                "Could not save the video details: "
+                + "; ".join(
+                    f"{form.fields[field].label}: {' '.join(errors)}"
+                    for field, errors in form.errors.items()
+                ),
+            )
+        return redirect(session.get_absolute_url() + "#video-link")
 
 
 class SessionAddPresenterView(OrganizerSessionActionMixin, View):

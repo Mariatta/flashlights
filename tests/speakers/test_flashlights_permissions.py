@@ -3,14 +3,24 @@ answer proposals without running the program, publishing has its own
 permission, a Recordings team runs the media pipeline, the video fields
 need publish_session_video, and ticketing has two of its own."""
 
+from datetime import datetime, timezone
+
 import pytest
 from django.contrib.auth.models import Permission, User
 from django.urls import reverse
 
-from speakers.constants import MediaKind, ProposalDecision, SessionStatus
+from speakers.constants import (
+    Delivery,
+    EventFormat,
+    MediaKind,
+    PremiereLocation,
+    ProposalDecision,
+    Recordings,
+    SessionStatus,
+)
 from speakers.forms import SessionForm
 from speakers.media import can_delete, can_download, can_upload
-from speakers.models import MediaAsset
+from speakers.models import ActivityLog, MediaAsset
 from tests.grants import on_team
 from volunteer.models import Team, VolunteerProfile
 
@@ -132,3 +142,129 @@ class TestTicketing:
         assert client.get(settings_url).status_code == 200
         client.force_login(holding("nil"))
         assert client.get(import_url).status_code == 403
+
+
+@pytest.mark.django_db
+class TestVideoCard:
+    """The video's public side on the session page: a card for every reader
+    once the session will have a video, with a form on it for whoever may
+    publish session videos, running the program or not."""
+
+    def url(self, session):
+        return reverse("speakers:session_video", args=[session.slug])
+
+    def test_a_recordings_member_sets_the_link_on_the_session_page(
+        self, client, conference, enabled
+    ):
+        vic = account("vic", "Recordings")
+        session = make_session(conference, delivery=Delivery.PRE_RECORDED)
+        client.force_login(vic)
+        page = client.get(session.get_absolute_url())
+        assert page.status_code == 200
+        form = page.context["video_form"]
+        assert list(form.fields) == [
+            "youtube_url",
+            "youtube_publish_at",
+            "premiere_location",
+        ]
+        response = client.post(
+            self.url(session),
+            {
+                "youtube_url": "https://youtu.be/abc",
+                "youtube_publish_at": "2026-11-18T18:30",
+                "premiere_location": PremiereLocation.YOUTUBE,
+            },
+            follow=True,
+        )
+        assert "Saved the video details." in response.content.decode()
+        session.refresh_from_db()
+        assert session.youtube_url == "https://youtu.be/abc"
+        assert session.youtube_publish_at is not None
+        assert session.premiere_location == PremiereLocation.YOUTUBE
+        entry = ActivityLog.objects.get(action="session.video_changed")
+        assert entry.actor == vic and entry.data["fields"] == [
+            "premiere_location",
+            "youtube_publish_at",
+            "youtube_url",
+        ]
+        assert not vic.has_perm("speakers.manage_program")
+
+    def test_readers_see_the_link_without_the_form(self, client, conference, enabled):
+        session = make_session(
+            conference, delivery=Delivery.PRE_RECORDED, youtube_url="https://y/t"
+        )
+        client.force_login(holding("val", "view_program"))
+        page = client.get(session.get_absolute_url())
+        assert page.context["video_form"] is None
+        html = page.content.decode()
+        assert 'id="video-link"' in html and 'href="https://y/t"' in html
+        assert client.post(self.url(session), {"youtube_url": "x"}).status_code == 403
+
+    def test_a_live_session_gets_a_link_only_when_the_team_records(
+        self, client, conference, enabled
+    ):
+        client.force_login(account("vic", "Recordings"))
+        session = make_session(conference, delivery=Delivery.LIVE)
+        page = client.get(session.get_absolute_url())
+        assert page.context["video_form"] is None
+        assert 'id="video-link"' not in page.content.decode()
+        assert client.post(self.url(session), {}).status_code == 404
+        enabled.recordings = Recordings.TEAM
+        enabled.save()
+        page = client.get(session.get_absolute_url())
+        assert list(page.context["video_form"].fields) == [
+            "youtube_url",
+            "youtube_publish_at",
+        ]
+        response = client.post(
+            self.url(session), {"youtube_url": "https://youtu.be/live"}, follow=True
+        )
+        assert "Saved the video details." in response.content.decode()
+
+    def test_the_publish_time_is_in_the_event_timezone(
+        self, client, conference, enabled
+    ):
+        enabled.conference_timezone = "America/Los_Angeles"
+        enabled.save()
+        client.force_login(account("vic", "Recordings"))
+        session = make_session(conference, delivery=Delivery.PRE_RECORDED)
+        client.post(
+            self.url(session),
+            {
+                "youtube_url": "https://youtu.be/t",
+                "youtube_publish_at": "2026-06-01T09:00",
+            },
+        )
+        session.refresh_from_db()
+        assert session.youtube_publish_at == datetime(
+            2026, 6, 1, 16, 0, tzinfo=timezone.utc
+        )
+        page = client.get(session.get_absolute_url())
+        html = page.content.decode()
+        assert 'value="2026-06-01T09:00"' in html and "In America/Los_Angeles." in html
+        client.force_login(holding("val", "view_program"))
+        html = client.get(session.get_absolute_url()).content.decode()
+        assert "1 Jun 2026 09:00 America/Los_Angeles" in html
+        # The session form reads the same field the same way.
+        client.force_login(account("ora", "Organizers"))
+        form = client.get(reverse("speakers:session_edit", args=[session.slug]))
+        assert 'value="2026-06-01T09:00"' in form.content.decode()
+
+    def test_a_refused_value_is_reported(self, client, conference, enabled):
+        client.force_login(account("vic", "Recordings"))
+        session = make_session(conference, delivery=Delivery.PRE_RECORDED)
+        response = client.post(
+            self.url(session), {"youtube_url": "not a link"}, follow=True
+        )
+        assert "Could not save the video details: YouTube link: Enter a valid URL." in (
+            response.content.decode()
+        )
+        # Pre-recorded delivery came from the type; a live session in an
+        # edition where speakers pre-record has no video to link.
+        session.delivery = Delivery.LIVE
+        session.save()
+        enabled.event_format = EventFormat.IN_PERSON
+        enabled.recordings = Recordings.TEAM
+        enabled.save()
+        page = client.get(session.get_absolute_url())
+        assert "premiere_location" not in page.context["video_form"].fields

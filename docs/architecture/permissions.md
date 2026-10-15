@@ -57,7 +57,7 @@ the pages show.
 | | `speakers.review_proposal` | the proposal queue and its decisions, without the rest of the program |
 | | `speakers.publish_program` | the Publishing tabs: visibility, each session's tick, the preview link, the websites allowed to show the program |
 | Recordings | `speakers.view/add/change/delete_mediaasset` | session files: seeing and downloading, uploading, editing, sharing and transcribing, deleting; the bulk downloads and the post-production board |
-| | `speakers.publish_session_video` | a session's YouTube link, publish time and premiere |
+| | `speakers.publish_session_video` | a session's YouTube link, publish time and premiere: the fields on the session form, and the Published video card on the session page for a holder who does not run the program |
 | Registrations | `ticketing.change_ticketingsettings` | the Tickets page, which holds the provider's token |
 | | `ticketing.import_registrations` | the import page, for a registration desk that should not see the token |
 | Maintenance | `portal_account.view_maintenance` | the Maintenance section (granted by a group, not a team) |

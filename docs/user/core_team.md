@@ -86,6 +86,11 @@ year and online the next changes nothing but the form.
   and publishing; speakers get a line to review their recording. With none,
   there are no files, no video fields and no post-production. Speakers
   pre-recording is the online pipeline, and is not offered in person.
+  Once a session will have a video, its page carries a **Published video**
+  card with the YouTube link, the publish time and, for a pre-recorded
+  session, the premiere; whoever may publish session videos (the
+  Recordings team, without running the program) fills it in there, and
+  everyone else on the team reads it.
 - **Community chat**: Discord, another platform (with a name and an invite
   link), or none. Only a Discord edition asks speakers and volunteers for a
   Discord username and seeds the Discord checklist lines; another platform
