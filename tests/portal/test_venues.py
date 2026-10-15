@@ -41,6 +41,10 @@ class TestVenuePages:
         )
         venue.refresh_from_db()
         assert venue.url == "https://maps.example.org/sap"
+        # Kept once, whatever the case.
+        refused = client.post(reverse("venue_create"), venue_data(name="sap"))
+        assert "A venue by that name is already listed." in refused.content.decode()
+        assert Venue.objects.count() == 1
         content = client.get(reverse("venue_list")).content.decode()
         assert "910 Mainland St" in content
         assert "0 events" in content and "0 dates" in content
@@ -165,6 +169,11 @@ class TestRoomForVenue:
         room = Room.objects.get(conference=conference, name="Ballroom A", venue=annex)
         assert room.label == "Ballroom A, Annex"
         assert Room.objects.get(name="Stream").label == "Stream"
+        # The room named after its venue, a meetup's one room, reads once.
+        assert (
+            Room.objects.create(conference=conference, name="Annex", venue=annex).label
+            == "Annex"
+        )
 
     def test_rooms_are_carried_to_the_next_edition(self, conference):
         venue = Venue.objects.create(name="Convention Center")

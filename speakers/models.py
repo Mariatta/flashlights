@@ -602,10 +602,20 @@ class Room(TimestampedModel):
         return self.name
 
     @property
+    def venue_label(self):
+        """The venue's name when it adds something: blank for an online
+        room, and for the room named after its venue (a meetup's one
+        room), which would otherwise read "SAP, SAP"."""
+        if not self.venue_id or self.venue.name == self.name:
+            return ""
+        return self.venue.name
+
+    @property
     def label(self):
         """The room with its venue, "Ballroom A, Hyatt", so two venues'
-        same-named rooms read apart; the name alone without a venue."""
-        return f"{self.name}, {self.venue.name}" if self.venue_id else self.name
+        same-named rooms read apart; the name alone when that adds nothing."""
+        venue = self.venue_label
+        return f"{self.name}, {venue}" if venue else self.name
 
 
 def volunteer_discord_username(user_id):

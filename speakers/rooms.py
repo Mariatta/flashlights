@@ -30,7 +30,7 @@ def location(conference, start_utc, room=None):
     slot's day (the event's own day, where a series lists its dates). A
     room without a venue is at the day's, which is nothing online."""
     if room and room.venue_id:
-        return room.label
+        return room.label  # its own venue, whatever the day
     where = room.name if room else "All rooms"
     venue = conference.venue_for(start_utc.astimezone(event_tz(conference)).date())
     return f"{where}, {venue.name}" if venue else where

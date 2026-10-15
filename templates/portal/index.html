@@ -30,9 +30,10 @@
                             {% if next_date %}
                                 <span>
                                     <i class="icon-calendar" aria-hidden="true"></i>
-                                    {% blocktrans with when=next_date.date|date:"D j F Y" %}Next: {{ when }}{% endblocktrans %}
                                     {% if next_date.label %}
-                                        , {{ next_date.label }}
+                                        {% blocktrans with when=next_date.date|date:"D j F Y" label=next_date.label %}Next: {{ when }}, {{ label }}{% endblocktrans %}
+                                    {% else %}
+                                        {% blocktrans with when=next_date.date|date:"D j F Y" %}Next: {{ when }}{% endblocktrans %}
                                     {% endif %}
                                 </span>
                             {% elif active_conference.conference_date %}

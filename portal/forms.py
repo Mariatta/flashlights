@@ -248,6 +248,16 @@ class VenueForm(forms.ModelForm):
             "notes": forms.Textarea(attrs={"rows": 3}),
         }
 
+    def clean_name(self):
+        # Kept once: "SAP" and "sap" are the same place.
+        name = self.cleaned_data["name"].strip()
+        clash = Venue.objects.filter(name__iexact=name)
+        if self.instance.pk:
+            clash = clash.exclude(pk=self.instance.pk)
+        if clash.exists():
+            raise forms.ValidationError("A venue by that name is already listed.")
+        return name
+
 
 class ConferenceForm(EditionDatesForm, forms.ModelForm):
     """Edit an existing conference edition through the portal.

@@ -158,7 +158,7 @@ def grid_for_day(conference, day, full_day=False):
         {
             "pk": room.pk,
             "name": room.name if room.is_active else f"{room.name} (retired)",
-            "venue": room.venue.name if room.venue_id else "",
+            "venue": room.venue_label,
             "column": FIRST_ROOM_COLUMN + i,
         }
         for i, room in enumerate(rooms)

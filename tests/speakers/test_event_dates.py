@@ -343,7 +343,7 @@ class TestLanesByVenue:
             ("All rooms", "SAP"),
             ("Ballroom A", "SAP"),
             ("Online", ""),
-            ("SAP", "SAP"),
+            ("SAP", ""),  # named after its venue: once is enough
         ]
 
     def test_the_event_venue_is_the_default(self, conference, enabled):
@@ -458,7 +458,7 @@ class TestLanding:
         )
         content = client.get(reverse("index")).content.decode()
         assert f"Next: {upcoming.date:%a} {upcoming.date.day} " in content
-        assert "Next meetup" in content
+        assert f"{upcoming.date.year}, Next meetup" in content
         # With the next date's own venue, else the event's.
         conference.venue = Venue.objects.create(name="Home Base")
         conference.save()
