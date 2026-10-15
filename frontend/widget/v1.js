@@ -1,4 +1,6 @@
 /* Flashlights program widget, v1 (design §11.2). No dependencies.
+ * SPDX-License-Identifier: MIT (see LICENSE-MIT), unlike the AGPL portal,
+ * so it can run on any website.
  *
  * This is the readable source. The portal serves the minified build in
  * portal/static/widget/v1.js; run `npm run build:widget` after any change.

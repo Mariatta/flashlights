@@ -15,7 +15,7 @@ const result = await minify(source, {
   format: { comments: false },
 });
 const banner =
-  `/*! Flashlights program widget v1. Source: frontend/widget/v1.js ` +
+  `/*! Flashlights program widget v1. MIT License. Source: frontend/widget/v1.js ` +
   `(sha256 ${digest}); rebuild with npm run build:widget. */\n`;
 writeFileSync("portal/static/widget/v1.js", banner + result.code + "\n");
 console.log(`portal/static/widget/v1.js: ${Buffer.byteLength(banner + result.code)} bytes`);

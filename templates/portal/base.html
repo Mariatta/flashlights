@@ -251,7 +251,10 @@
             <div class="container py-3 d-flex align-items-center justify-content-between">
                 <span class="d-inline-flex align-items-center flex-wrap gap-2">
                     {% include "portal/_flashlights_mark.html" with href="https://github.com/mariatta/flashlights" %}
-                    <span>{% trans "Problems with this site? File an issue in the repository, or open a pull request." %}</span>
+                    <span>
+                        {% trans "Free software under the GNU AGPL." %}
+                        <a href="https://github.com/mariatta/flashlights">{% trans "Source code" %}</a>
+                    </span>
                 </span>
                 {% block footer_text %}
                 {% endblock footer_text %}

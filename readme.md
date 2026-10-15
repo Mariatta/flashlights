@@ -10,9 +10,23 @@ logo and policy links from the environment (see `portal/branding.py`).
 
 Flashlights is derived from the
 [PyLadiesCon portal](https://github.com/pyladies/pyladiescon-portal), which
-remains the portal built for PyLadiesCon. Improvements flow in both
-directions through ordinary pull requests. The name is a nod to the Darren
+remains the portal built for PyLadiesCon. The name is a nod to the Darren
 Hayes song.
+
+## Licence and contributions
+
+Flashlights is free software under the GNU Affero General Public License
+version 3, with one additional permission: an organisation may run a
+modified Flashlights for its own events, including its chapters, departments
+and member groups, without publishing its changes. Hosting Flashlights as a
+service for others is not covered by that permission. Code from the
+PyLadiesCon portal stays under the MIT License, and so does the embeddable
+program widget. The details are in `LICENSE` and `LICENSE-MIT`.
+
+Flashlights is published for use and study, and does not take code
+contributions. Bug reports and ideas are welcome as issues; a suggestion may
+be implemented, but code from pull requests is not merged. Report security
+problems privately, as described in `SECURITY.md`.
 
 ## What an instance needs
 

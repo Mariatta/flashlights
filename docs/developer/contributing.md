@@ -1,19 +1,23 @@
 ---
-title: Contributing
-description: Contributing to Flashlights
+title: Working on the code
+description: Running the tests and the linters on your own copy of Flashlights
 ---
 
-# Contributing Guide
+# Working on the code
 
-## Where and How to get started
+Flashlights is published for use and study, and does not take code
+contributions. Bug reports and ideas are welcome as
+[issues](https://github.com/mariatta/flashlights/issues); report security
+problems privately, as `SECURITY.md` in the repository describes.
 
-Find an issue in our [repo](https://github.com/mariatta/flashlights) to get started. You can also create a new issue or [start a discussion item](https://github.com/mariatta/flashlights/discussions) on GitHub.
+You are free to run and change your own copy under the licence: the GNU
+AGPL version 3, with an additional permission to run a modified copy for
+your own organisation's events without publishing the changes. See
+`LICENSE` in the repository.
 
 ## Setup
 
-To start working with the code, refer to our [setup guide](/developer/setup/).
-
-Ask questions in a [discussion](https://github.com/mariatta/flashlights/discussions) on GitHub.
+To start working with the code, refer to the [setup guide](/developer/setup/).
 
 ## Running Tests
 
@@ -27,16 +31,10 @@ make test
 
 ## Test coverage
 
-We aim for 100% test coverage. The coverage report is generated after running the tests, and can be viewed in the `htmlcov` directory.
+Flashlights keeps 100% test coverage. The coverage report is generated after
+running the tests, and can be viewed in the `htmlcov` directory.
 
 ## Code style and linting
 
-Run ``make reformat`` and ``make check`` prior to committing your code.
-There is a CI that checks for code style and linting issues.
-
-PRs will not be merged if there is any CI failures.
-
-## Documentation Preview on Pull Requests
-
-A documentation preview is generated for each pull request using Netlify. This allows us to preview
-the docs changes before merging the PR.
+Run `make reformat` and `make check` before committing. CI runs the same
+checks.

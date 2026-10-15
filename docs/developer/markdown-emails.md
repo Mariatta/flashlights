@@ -431,9 +431,9 @@ Please review the application in the [admin dashboard](https://{{ current_site.d
 {% endblock content %}
 ```
 
-## Contributing
+## Adding templates
 
-When contributing new email templates:
+When adding new email templates:
 
 1. **Use Markdown format** for new templates (`.md` files)
 2. **Follow the style guide** in this documentation  

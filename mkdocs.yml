@@ -36,7 +36,7 @@ nav:
   - Home: index.md
   - Developer Guide:
     - Setup Guide: developer/setup.md
-    - Contributing: developer/contributing.md
+    - Working on the code: developer/contributing.md
     - How Tos: developer/howto.md
     - Markdown Emails: developer/markdown-emails.md
     - Deployment: developer/deployment.md

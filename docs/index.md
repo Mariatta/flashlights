@@ -22,10 +22,14 @@ The name is a nod to a Darren Hayes song.
 - **Hosting**: [Deployment](developer/deployment.md) is the boot contract:
   the services an instance needs and the variables that configure it.
 
-## Contributing
+## Licence and contributions
 
-All forms of contribution are welcome: code, testing, documentation,
-reports of what confused you. See [Contributing](developer/contributing.md).
+Flashlights is free software under the GNU AGPL version 3, with an
+additional permission to run a modified copy for your own organisation's
+events without publishing the changes. It is published for use and study
+and does not take code contributions; bug reports, ideas and reports of what
+confused you are welcome as issues. See
+[Working on the code](developer/contributing.md).
 
 - Repository: <https://github.com/mariatta/flashlights>
 - Issues: <https://github.com/mariatta/flashlights/issues>

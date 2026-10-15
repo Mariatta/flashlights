@@ -24,7 +24,10 @@ def test_footer_carries_the_lockup(client, conference):
     content = client.get(reverse("portal_stats")).content.decode()
     assert 'class="flashlights-lockup"' in content
     assert 'class="flashlights-name">Flashlights</span>' in content
-    assert "File an issue in the repository" in content
+    assert "Free software under the GNU AGPL." in content
+    assert (
+        '<a href="https://github.com/mariatta/flashlights">Source code</a>' in content
+    )
 
 
 def test_share_card_draws_the_mark():
