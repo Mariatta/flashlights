@@ -30,8 +30,8 @@ your account.
 
 ## Your handles
 
-Your account page keeps your handles: website, GitHub, Discord, Mastodon,
-Bluesky, LinkedIn, Instagram and X. They are stored once and shared with
+Your account page keeps your pronouns and your handles: website, GitHub,
+Discord, Mastodon, Bluesky, LinkedIn, Instagram and X. They are stored once and shared with
 your volunteer profile and your speaker profile, so whichever form you
 meet first, the next one arrives filled in, and a change on any of them
 follows everywhere. All are optional on the account page; the volunteer

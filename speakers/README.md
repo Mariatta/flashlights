@@ -767,6 +767,10 @@ newest rows say, the volunteer side first.
 channel on the conference Discord) and never public; an edition not on
 Discord drops the field from every form (`drop_discord_without_chat`).
 
+Pronouns follow the same rule: the account's (`PortalProfile.pronouns`)
+are the record, the presenter forms start from them and write them back
+(`save_pronouns`), and every presenter row of the person copies them.
+
 The presenter field and the volunteer form validate with
 `portal.validators.validate_discord_username`; `VolunteerProfile.clean()` still
 carries its own copy of the rule.

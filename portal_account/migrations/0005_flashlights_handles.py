@@ -1,5 +1,6 @@
 """A person's handles kept once on the account (``portal_account.handles``),
-filled from the volunteer and presenter rows they already typed them into.
+filled from the volunteer and presenter rows they already typed them into;
+an account with no pronouns takes its newest presenter row's.
 
 The newest volunteer profile is read first (it was the canonical copy of
 the Discord username), then the newest presenter; blanks come from older
@@ -31,6 +32,7 @@ PRESENTER_COLUMNS = {
 
 def fill_from_roles(apps, schema_editor):
     Handle = apps.get_model("portal_account", "Handle")
+    PortalProfile = apps.get_model("portal_account", "PortalProfile")
     VolunteerProfile = apps.get_model("volunteer", "VolunteerProfile")
     Presenter = apps.get_model("speakers", "Presenter")
     found = {}
@@ -56,6 +58,18 @@ def fill_from_roles(apps, schema_editor):
         for user_id, handles in found.items()
         for code, value in handles.items()
     )
+    pronouns = {}
+    for row in (
+        Presenter.objects.exclude(user=None)
+        .exclude(pronouns="")
+        .order_by("-conference__year", "-id")
+    ):
+        pronouns.setdefault(row.user_id, row.pronouns)
+    for profile in PortalProfile.objects.filter(user_id__in=pronouns).filter(
+        models.Q(pronouns="") | models.Q(pronouns=None)
+    ):
+        profile.pronouns = pronouns[profile.user_id]
+        profile.save(update_fields=["pronouns"])
 
 
 class Migration(migrations.Migration):

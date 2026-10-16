@@ -296,7 +296,7 @@ The person, independent of any session. One presenter can run a workshop and sit
 | Field | Notes |
 |---|---|
 | `user` | nullable. Linked when the invitation is accepted; a presenter can be added and scheduled before they ever log in |
-| `display_name`, `pronouns`, `bio_md`, `headshot`, `location`, `timezone` | `timezone` drives reminder timing and the speaker's own schedule view |
+| `display_name`, `pronouns`, `bio_md`, `headshot`, `location`, `timezone` | `pronouns` is a copy of the account's (`portal_account.handles`); `timezone` drives reminder timing and the speaker's own schedule view |
 | `email` | invitation and reminder target; unique per conference |
 | `website_url`, `github_username`, `mastodon_url`, `linkedin_url`, `bluesky_username` | the links shown on a public presenter card |
 | `discord_username` | for the speaker role and channel on the conference Discord; organizer-facing, never public. One of the person's handles (`portal_account.Handle`), as are the links above: every form that asks reads and writes the person's record, and the presenter and volunteer rows are copies of it |

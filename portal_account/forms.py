@@ -13,6 +13,7 @@ class PortalProfileForm(HandleFieldsMixin, ModelForm):
     which the volunteer and speaker forms share."""
 
     HANDLE_COLUMNS = {channel.code: channel.code for channel in CHANNELS}
+    PRONOUNS_FIELD = "pronouns"
 
     username = forms.CharField(disabled=True)
     first_name = forms.CharField()

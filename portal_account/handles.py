@@ -223,6 +223,53 @@ def _handle_model():
     return apps.get_model("portal_account", "Handle")
 
 
+def _profiles():
+    return apps.get_model("portal_account", "PortalProfile").objects
+
+
+def _presenters():
+    return apps.get_model("speakers", "Presenter").objects
+
+
+#: ``Presenter.pronouns`` is shorter than the account's.
+PRESENTER_PRONOUNS_LENGTH = 50
+
+
+def pronouns_of(user):
+    """The person's pronouns: the account's, else what their newest
+    presenter row says (an account not yet onboarded has no profile)."""
+    user_id = getattr(user, "pk", user)
+    if user_id is None:
+        return ""
+    stored = _profiles().filter(user_id=user_id).values_list("pronouns", flat=True)
+    return (
+        stored.first()
+        or _presenters()
+        .filter(user_id=user_id)
+        .exclude(pronouns="")
+        .order_by("-conference__year", "-id")
+        .values_list("pronouns", flat=True)
+        .first()
+        or ""
+    )
+
+
+def save_pronouns(user, value):
+    """Write the person's pronouns to their account, when they have one,
+    and to every presenter row of theirs. A presenter linked but not yet
+    onboarded has no account; onboarding creates it from the row."""
+    value = (value or "").strip()
+    _profiles().filter(user=user).update(pronouns=value)
+    _push_pronouns(user, value)
+
+
+def _push_pronouns(user, value):
+    value = value[:PRESENTER_PRONOUNS_LENGTH]
+    for presenter in _presenters().filter(user=user).exclude(pronouns=value):
+        presenter.pronouns = value
+        presenter.save(update_fields=["pronouns", "modified_date"])
+
+
 def _role_rows(user_id):
     """The person's volunteer profiles then presenters, newest edition
     first, each with its column map."""
@@ -293,6 +340,9 @@ def adopt_role_handles(user):
     for code, value in handles_from_roles(user.pk).items():
         if code not in have:
             Handle.objects.create(user=user, channel=code, value=value)
+    profile = _profiles().filter(user=user).first()
+    if profile is not None and not profile.pronouns:
+        _profiles().filter(pk=profile.pk).update(pronouns=pronouns_of(user))
     push_handles(user)
 
 
@@ -305,17 +355,28 @@ def push_handles(user):
     stored = dict(
         _handle_model().objects.filter(user_id=user_id).values_list("channel", "value")
     )
-    if not stored:
-        return
-    volunteers = apps.get_model("volunteer", "VolunteerProfile").objects
-    volunteers.filter(user_id=user_id).update(
-        **{column: stored.get(code, "") for code, column in VOLUNTEER_COLUMNS.items()}
+    # Pronouns ride along: the account's, once there is an account.
+    found = list(
+        _profiles().filter(user_id=user_id).values_list("pronouns", flat=True)[:1]
     )
-    presenters = apps.get_model("speakers", "Presenter").objects
-    for presenter in presenters.filter(user_id=user_id):
+    pronouns = found[0] if found else None
+    if not stored and pronouns is None:
+        return
+    if stored:
+        volunteers = apps.get_model("volunteer", "VolunteerProfile").objects
+        volunteers.filter(user_id=user_id).update(
+            **{
+                column: stored.get(code, "")
+                for code, column in VOLUNTEER_COLUMNS.items()
+            }
+        )
+    for presenter in _presenters().filter(user_id=user_id):
         changed = []
-        for code, column in PRESENTER_COLUMNS.items():
-            value = stored.get(code, "")
+        columns = PRESENTER_COLUMNS.items() if stored else []
+        wanted = [(column, stored.get(code, "")) for code, column in columns]
+        if pronouns is not None:
+            wanted.append(("pronouns", (pronouns or "")[:PRESENTER_PRONOUNS_LENGTH]))
+        for column, value in wanted:
             if getattr(presenter, column) != value:
                 setattr(presenter, column, value)
                 changed.append(column)
@@ -328,12 +389,15 @@ class HandleFieldsMixin:
     columns: the fields start from the person's record, each value is
     checked by its channel, and saving writes the record back.
 
-    ``HANDLE_COLUMNS`` maps channel codes to the form's field names.
-    ``handle_user`` names the person; ``None`` (a presenter with no
-    account yet) leaves the record alone and the row keeps what was typed.
+    ``HANDLE_COLUMNS`` maps channel codes to the form's field names;
+    ``PRONOUNS_FIELD`` names the pronouns field, which follows the same
+    rule (the account's pronouns are the record). ``handle_user`` names
+    the person; ``None`` (a presenter with no account yet) leaves the
+    record alone and the row keeps what was typed.
     """
 
     HANDLE_COLUMNS = {}
+    PRONOUNS_FIELD = None
 
     def init_handles(self, user):
         # Every handle field is plain text: the catalogue checks it and
@@ -358,6 +422,10 @@ class HandleFieldsMixin:
             field = self.HANDLE_COLUMNS.get(code)
             if field in self.fields:
                 self.initial[field] = value
+        if self.PRONOUNS_FIELD in self.fields:
+            pronouns = pronouns_of(self.handle_user)
+            if pronouns:
+                self.initial[self.PRONOUNS_FIELD] = pronouns
 
     def clean(self):
         cleaned = super().clean()
@@ -389,8 +457,11 @@ class HandleFieldsMixin:
         row of theirs). Called by ``save``; a view that saves with
         ``commit=False`` calls it once the row has its user."""
         user = user or self.handle_user
-        if user is not None:
-            save_handles(user, self.handle_values())
+        if user is None:
+            return
+        save_handles(user, self.handle_values())
+        if self.PRONOUNS_FIELD in self.fields:
+            save_pronouns(user, self.cleaned_data.get(self.PRONOUNS_FIELD))
 
     def save(self, commit=True):
         instance = super().save(commit)

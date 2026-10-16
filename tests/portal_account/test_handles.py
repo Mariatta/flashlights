@@ -16,8 +16,10 @@ from portal_account.handles import (
     clean_handle,
     handles_from_roles,
     handles_of,
+    pronouns_of,
     push_handles,
     save_handles,
+    save_pronouns,
 )
 from portal_account.models import Handle, PortalProfile
 from speakers.models import Presenter
@@ -146,9 +148,9 @@ class TestTheRecord:
         self, ada, rows, django_assert_num_queries
     ):
         save_handles(ada, {"github": "ada-same"})
-        # A second push: the record, the volunteer update, the presenter
-        # read; no presenter save.
-        with django_assert_num_queries(3):
+        # A second push: the record, the account's pronouns, the volunteer
+        # update, the presenter read; no presenter save.
+        with django_assert_num_queries(4):
             push_handles(ada)
 
     def test_adopting_fills_the_blanks_then_rules(self, ada, rows):
@@ -241,3 +243,54 @@ def test_the_admin_lists_handles(client, admin_user, ada):
     response = client.get(reverse("admin:portal_account_handle_changelist"))
     assert response.status_code == 200 and "ada-gh" in response.content.decode()
     assert str(Handle.objects.get()) == "ada: GitHub username ada-gh"
+
+
+@pytest.mark.django_db
+class TestPronouns:
+    def test_the_account_is_the_record_and_the_rows_copy_it(self, ada, rows):
+        profile, presenter = rows
+        presenter.pronouns = "she/her"
+        presenter.save()
+        # No account yet: the newest presenter row speaks.
+        assert pronouns_of(ada) == "she/her"
+        assert pronouns_of(None) == ""
+        account = PortalProfile.objects.create(user=ada)
+        # A blank account is still the record: adopting fills it first.
+        adopt_role_handles(ada)
+        account.refresh_from_db()
+        assert account.pronouns == "she/her"
+        save_pronouns(ada, " they/them ")
+        account.refresh_from_db()
+        presenter.refresh_from_db()
+        assert account.pronouns == presenter.pronouns == "they/them"
+        # A push with no handle rows still carries the pronouns.
+        Handle.objects.filter(user=ada).delete()
+        account.pronouns = "xe/xem"
+        account.save()
+        push_handles(ada)
+        presenter.refresh_from_db()
+        assert presenter.pronouns == "xe/xem"
+
+    def test_the_migration_fills_a_blank_account(self, ada, rows):
+        profile, presenter = rows
+        presenter.pronouns = "she/her"
+        presenter.save()
+        account = PortalProfile.objects.create(user=ada, pronouns="")
+        other = User.objects.create_user("bo", email="bo@example.com")
+        PortalProfile.objects.create(user=other, pronouns="he/him")
+        migration.fill_from_roles(apps, None)
+        account.refresh_from_db()
+        assert account.pronouns == "she/her"
+        assert PortalProfile.objects.get(user=other).pronouns == "he/him"
+
+    def test_the_account_page_pushes_pronouns(self, client, ada, rows):
+        profile, presenter = rows
+        account = PortalProfile.objects.create(user=ada)
+        client.force_login(ada)
+        url = reverse("portal_account:portal_profile_edit", args=[account.pk])
+        response = client.post(
+            url, {"first_name": "Ada", "last_name": "L", "pronouns": "she/her"}
+        )
+        assert response.status_code == 302
+        presenter.refresh_from_db()
+        assert presenter.pronouns == "she/her"

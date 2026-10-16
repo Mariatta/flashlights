@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 from text_unidecode import unidecode
 
-from portal_account.handles import PRESENTER_COLUMNS, HandleFieldsMixin
+from portal_account.handles import PRESENTER_COLUMNS, HandleFieldsMixin, push_handles
 from portal_account.models import PortalProfile
 from volunteer.models import Team
 
@@ -378,6 +378,7 @@ class PresenterForm(HandleFieldsMixin, forms.ModelForm):
     then they are the row's own."""
 
     HANDLE_COLUMNS = PRESENTER_COLUMNS
+    PRONOUNS_FIELD = "pronouns"
 
     timezone = optional_timezone(
         "Leave as the event's unless they will join from elsewhere."
@@ -520,6 +521,7 @@ class SpeakerProfileForm(HandleFieldsMixin, IdentityLockMixin, forms.ModelForm):
 
     IDENTITY_FIELDS = (("display_name", "Name"), ("slug", "Web address"))
     HANDLE_COLUMNS = PRESENTER_COLUMNS
+    PRONOUNS_FIELD = "pronouns"
 
     class Meta:
         model = Presenter
@@ -1142,6 +1144,8 @@ class SpeakerOnboardingForm(forms.Form):
         profile.coc_agreement = True
         profile.tos_agreement = True
         profile.save()
+        # The account's pronouns are the record from here on.
+        push_handles(user)
         return profile
 
 
@@ -1255,6 +1259,7 @@ class ProposalProfileForm(HandleFieldsMixin, forms.ModelForm):
     """
 
     HANDLE_COLUMNS = PRESENTER_COLUMNS
+    PRONOUNS_FIELD = "pronouns"
 
     timezone = optional_timezone(
         "Optional: so we show you times in yours, and know when to reach you."

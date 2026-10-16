@@ -134,6 +134,22 @@ class TestSpeakerProfile:
         profile.refresh_from_db()
         assert presenter.discord_username == profile.discord_username == "org_set"
 
+    def test_pronouns_come_from_the_account_and_go_back_to_it(
+        self, client, speaker, presenter
+    ):
+        account = speaker.portalprofile
+        account.pronouns = "she/her"
+        account.save()
+        client.force_login(speaker)
+        assert 'value="she/her"' in client.get(PROFILE).content.decode()
+        response = client.post(
+            PROFILE, {"display_name": "Ada", "timezone": "UTC", "pronouns": "they"}
+        )
+        assertRedirects(response, PROFILE)
+        account.refresh_from_db()
+        presenter.refresh_from_db()
+        assert account.pronouns == presenter.pronouns == "they"
+
     def test_a_mastodon_handle_is_stored_as_its_url(
         self, client, conference, speaker, presenter
     ):
