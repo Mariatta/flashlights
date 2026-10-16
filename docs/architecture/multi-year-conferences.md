@@ -136,7 +136,7 @@ auto-created `VolunteerProfile` is removed.
 ### Returning volunteers
 
 When a returning user applies for a new year, the form pre-fills from their
-most recent prior `VolunteerProfile` (social handles, languages, region,
+most recent prior `VolunteerProfile` (languages, region,
 chapter, availability). They review, adjust, submit. `application_status`
 resets to `PENDING` for the new year.
 

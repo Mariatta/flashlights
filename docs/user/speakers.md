@@ -75,7 +75,8 @@ volunteered with us in a previous year.
       supported.
     - **Headshot**: optional now, and you can add one later.
     - Links to your website, GitHub, Mastodon, LinkedIn and Bluesky, all
-      optional.
+      optional. They are your account's handles: if you have a volunteer
+      profile, they arrive filled in, and a change here follows there.
 4. Fill in the **Your session** part:
     - **What kind of session** (required): only the kinds we are currently
       accepting are listed, each with its length and, for an online event,
@@ -164,7 +165,8 @@ Once you are on the program, the **Speaking** menu opens your speaker area.
 - **My speaker checklist:** everything we need from you, and everything we are
   doing for you. See below.
 - **My speaker profile:** your display name, bio, headshot, location, timezone
-  and links. You can untick **Show my bio, photo and links on the public site**;
+  and links. The links are your account's handles, shared with your volunteer
+  profile. You can untick **Show my bio, photo and links on the public site**;
   your name still appears on your sessions.
 - **My sessions:** your sessions, where you can check and edit the title,
   summary and other details. Once your session is scheduled, the title, its web

@@ -22,6 +22,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from portal.models import Conference
+from portal_account.handles import adopt_role_handles, handles_of
 from portal_account.models import PortalProfile
 from speakers.checklists import (
     add_adhoc_item,
@@ -53,7 +54,6 @@ from speakers.models import (
     SessionPresenter,
     SessionType,
     SpeakerSettings,
-    volunteer_discord_username,
 )
 from speakers.program_types import PROPOSABLE_CODES, presenter_role, session_type
 from speakers.readiness import refresh_for_conference
@@ -295,6 +295,10 @@ class Command(BaseCommand):
         self._schedule()
         self._checklist_states()
         self._performer_video()
+        # The handles typed on the rows above become each person's own
+        # record, as the migration does for a live database.
+        for user in self.users.values():
+            adopt_role_handles(user)
         reevaluate_all(self.conference)
         refresh_for_conference(self.conference)
         self.stdout.write(
@@ -532,7 +536,7 @@ class Command(BaseCommand):
                     "display_name": name,
                     "timezone": "UTC",
                     "user": user,
-                    "discord_username": volunteer_discord_username(user.pk),
+                    "discord_username": handles_of(user).get("discord", ""),
                 },
             )
             if Proposal.objects.filter(

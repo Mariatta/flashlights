@@ -4,6 +4,8 @@ from django.urls import reverse
 
 from portal.models import BaseModel
 
+from .handles import CHANNEL_CHOICES
+
 
 class PortalProfile(BaseModel):
 
@@ -25,3 +27,27 @@ class PortalProfile(BaseModel):
 
     def __str__(self):
         return self.user.username
+
+
+class Handle(models.Model):
+    """One of a person's handles (GitHub, Discord, Mastodon, ...): the
+    record every form that asks reads and writes. The volunteer and
+    presenter rows carry copies of it; see ``portal_account.handles``.
+    A plain model with its own timestamps: ``BaseModel`` is concrete."""
+
+    creation_date = models.DateTimeField(auto_now_add=True)
+    modified_date = models.DateTimeField(auto_now=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="handles")
+    channel = models.CharField(max_length=20, choices=CHANNEL_CHOICES)
+    value = models.CharField(max_length=200)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "channel"], name="portal_account_handle_per_channel"
+            )
+        ]
+        ordering = ["user_id", "channel"]
+
+    def __str__(self):
+        return f"{self.user.username}: {self.get_channel_display()} {self.value}"

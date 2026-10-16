@@ -15,6 +15,7 @@ from django.db.models import Q
 from django.utils import timezone
 
 from common.tasks import enqueue
+from portal_account.handles import adopt_role_handles
 
 from .checklists import instantiate_presenter_checklist
 from .constants import (
@@ -37,7 +38,6 @@ from .models import (
     SessionPresenter,
     SessionType,
     SpeakerSettings,
-    volunteer_discord_username,
 )
 from .rules import evaluate_items
 from .signals import invitation_accepted
@@ -202,12 +202,11 @@ def link_presenter_user(presenter, email=None):
         address.verified = True
         address.save(update_fields=["verified"])
     presenter.user = user
-    # A volunteer who is invited to speak has given their Discord username
-    # already; the presenter row takes it rather than asking again.
-    presenter.discord_username = (
-        presenter.discord_username or volunteer_discord_username(user.pk)
-    )
-    presenter.save(update_fields=["user", "discord_username", "modified_date"])
+    presenter.save(update_fields=["user", "modified_date"])
+    # Handles the organizer typed on the row fill the blanks of the
+    # person's record, which then rules the row (a volunteer who is
+    # invited to speak is not asked for their Discord username again).
+    adopt_role_handles(user)
     return user
 
 

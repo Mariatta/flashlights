@@ -574,9 +574,9 @@ class TestVolunteerProfileForm:
         github_field = form.fields["github_username"]
 
         assert github_field.required is True
-        assert github_field.max_length == 50
+        assert github_field.max_length == 39
         assert "Required - Your GitHub username" in github_field.help_text
-        assert "organisers' repositories" in github_field.help_text
+        assert "team's repositories" in github_field.help_text
         assert github_field.label == "GitHub Username"
 
     def test_github_username_valid_with_required_value(self, portal_user):
@@ -593,8 +593,8 @@ class TestVolunteerProfileForm:
 
         assert "Required" in help_text
         assert "GitHub username" in help_text
-        assert "organisers' repositories" in help_text
-        assert "volunteers" in help_text
+        assert "team's repositories" in help_text
+        assert "Organizers use it" in help_text
 
     def test_form_save_with_github_username(self, portal_user):
         """Test that form saves correctly with required GitHub username."""
@@ -605,22 +605,6 @@ class TestVolunteerProfileForm:
         profile = form.save()
         assert profile.github_username == "testuser123"
         assert profile.user == portal_user
-
-    def test_github_username_clean_method_coverage(self, portal_user):
-        """Test clean_github_username method for complete coverage."""
-        # Test with None value (should not raise ValidationError since required validation is handled by field)
-        form = VolunteerProfileForm(user=portal_user, data={**self._base_valid_data})
-        form.cleaned_data = {**self._base_valid_data}
-        form.cleaned_data["github_username"] = None
-
-        # Should not raise ValidationError - None values are handled by required field validation
-        result = form.clean_github_username()
-        assert result is None
-
-        # Test with empty string (should not raise ValidationError since required validation is handled by field)
-        form.cleaned_data["github_username"] = ""
-        result = form.clean_github_username()
-        assert result == ""
 
     def test_github_username_validation_and_cleaning(self, portal_user):
         """Test the complete validation flow for GitHub username."""

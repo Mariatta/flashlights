@@ -3059,6 +3059,7 @@ class ProposeSessionView(ProposalsOpenMixin, TemplateView):
             presenter.user = self.request.user
             presenter.email = self.request.user.email
             presenter.save()
+            profile_form.write_handles(self.request.user)
         session = session_form.save(commit=False)
         session.conference = self.conference
         # ``submit_proposal`` moves it to PROPOSED once the rows exist.

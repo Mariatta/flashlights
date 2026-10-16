@@ -407,7 +407,6 @@ class TestCommunityChat:
             SpeakerProfileForm(instance=make_presenter(conference)),
         ):
             assert "discord_username" not in form.fields
-            assert form.shared_discord_username == ""
         assert "Discord" not in [h for h, _ in data_columns(conference)]
         out = write_presenters_csv([], io.StringIO(), conference).getvalue()
         assert "Discord" not in out

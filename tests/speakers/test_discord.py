@@ -1,4 +1,5 @@
-"""The Discord username on a presenter, asked once of a volunteer who speaks."""
+"""The Discord username on a presenter: one of the person's handles, kept
+on the account and shared with the volunteer side."""
 
 import pytest
 from allauth.account.models import EmailAddress
@@ -9,11 +10,11 @@ from pytest_django.asserts import assertRedirects
 
 from portal.models import Conference
 from portal.validators import validate_discord_username
-from speakers.models import Presenter, volunteer_discord_username
+from portal_account.handles import handles_of
+from speakers.models import Presenter
 from speakers.program_types import session_type
 from speakers.seeds import seed_checklists
 from speakers.services import link_presenter_user
-from speakers.shared import presenter_discord_username
 from tests.grants import on_team
 from volunteer.forms import VolunteerProfileForm
 from volunteer.models import VolunteerProfile
@@ -23,7 +24,6 @@ from .factories import add_presenter, make_presenter, make_session, make_setting
 PROFILE = reverse("speakers:my_profile")
 PROPOSE = reverse("speakers:propose")
 FIELD = 'name="discord_username"'
-NOTE = "from your volunteer profile"
 
 
 @pytest.fixture
@@ -80,7 +80,7 @@ def test_the_validator_is_the_volunteer_forms_rule(value, message):
 
 @pytest.mark.django_db
 class TestSpeakerProfile:
-    def test_asked_once_on_the_profile_form(self, client, speaker, presenter):
+    def test_asked_on_the_profile_form(self, client, speaker, presenter):
         client.force_login(speaker)
         assert FIELD in client.get(PROFILE).content.decode()
         response = client.post(
@@ -95,38 +95,31 @@ class TestSpeakerProfile:
         assertRedirects(response, PROFILE)
         presenter.refresh_from_db()
         assert presenter.discord_username == "ada_l"
+        assert handles_of(speaker) == {"discord": "ada_l"}
 
-    def test_not_asked_again_when_the_volunteer_profile_has_one(
+    def test_the_volunteers_value_is_there_and_a_change_follows_everywhere(
         self, client, conference, speaker, presenter
     ):
-        volunteer(speaker, conference, "ada_vol")
-        # The row already follows the volunteer profile; blank it to show
-        # that saving the form restores it rather than asking.
-        Presenter.objects.filter(pk=presenter.pk).update(discord_username="")
+        profile = volunteer(speaker, conference, "ada_vol")
         client.force_login(speaker)
         page = client.get(PROFILE).content.decode()
-        assert FIELD not in page
-        assert "Change it there and it follows here" in page and "ada_vol" in page
-        assert reverse("volunteer:index") in page
+        assert FIELD in page and 'value="ada_vol"' in page
         response = client.post(
             PROFILE,
-            {"display_name": "Ada", "timezone": "UTC", "discord_username": "other"},
+            {"display_name": "Ada", "timezone": "UTC", "discord_username": "ada_new"},
         )
         assertRedirects(response, PROFILE)
         presenter.refresh_from_db()
-        assert presenter.discord_username == "ada_vol"
+        profile.refresh_from_db()
+        assert presenter.discord_username == profile.discord_username == "ada_new"
 
-    def test_the_organizer_form_shows_the_volunteers_value_read_only(
+    def test_the_organizer_form_edits_the_persons_handle(
         self, client, conference, organizer, speaker, presenter
     ):
-        """An organizer cannot set what the next volunteer profile save
-        would overwrite; the form says where the value comes from."""
-        volunteer(speaker, conference, "ada_vol")
+        profile = volunteer(speaker, conference, "ada_vol")
         client.force_login(organizer)
         url = reverse("speakers:presenter_edit", args=[presenter.slug])
-        page = client.get(url).content.decode()
-        assert FIELD not in page
-        assert "from their volunteer profile" in page and "ada_vol" in page
+        assert 'value="ada_vol"' in client.get(url).content.decode()
         response = client.post(
             url,
             {
@@ -138,7 +131,58 @@ class TestSpeakerProfile:
         )
         assert response.status_code == 302
         presenter.refresh_from_db()
-        assert presenter.discord_username == "ada_vol"
+        profile.refresh_from_db()
+        assert presenter.discord_username == profile.discord_username == "org_set"
+
+    def test_a_mastodon_handle_is_stored_as_its_url(
+        self, client, conference, speaker, presenter
+    ):
+        """The model's URL field would refuse ``@ada@fosstodon.org``; the
+        handle fields are plain text so the catalogue gets to normalise."""
+        client.force_login(speaker)
+        response = client.post(
+            PROFILE,
+            {
+                "display_name": "Ada",
+                "timezone": "UTC",
+                "mastodon_url": "@ada@fosstodon.org",
+                "website_url": "ada.example.org",
+                "linkedin_url": "not-linkedin.example.org/ada",
+            },
+        )
+        assert "LinkedIn" in response.content.decode()
+        response = client.post(
+            PROFILE,
+            {
+                "display_name": "Ada",
+                "timezone": "UTC",
+                "mastodon_url": "@ada@fosstodon.org",
+                "website_url": "ada.example.org",
+            },
+        )
+        assertRedirects(response, PROFILE)
+        presenter.refresh_from_db()
+        assert presenter.mastodon_url == "https://fosstodon.org/@ada"
+        assert presenter.website_url == "https://ada.example.org"
+
+    def test_the_organizer_form_for_a_row_with_no_account_writes_the_row(
+        self, client, conference, organizer, enabled
+    ):
+        invited = make_presenter(conference, email="sam@example.com")
+        client.force_login(organizer)
+        url = reverse("speakers:presenter_edit", args=[invited.slug])
+        response = client.post(
+            url,
+            {
+                "display_name": "Sam",
+                "email": "sam@example.com",
+                "timezone": "UTC",
+                "discord_username": "sam_own",
+            },
+        )
+        assert response.status_code == 302
+        invited.refresh_from_db()
+        assert invited.discord_username == "sam_own"
 
     def test_the_organizer_page_lists_every_handle(self, client, organizer, presenter):
         """Blank ones show as blank, so an organizer can see what is missing."""
@@ -165,9 +209,9 @@ class TestSpeakerProfile:
 
 
 @pytest.mark.django_db
-class TestFollowsTheVolunteerProfile:
-    def test_saving_the_volunteer_profile_updates_the_presenter_rows(
-        self, conference, speaker, presenter
+class TestFollowsThePerson:
+    def test_saving_the_volunteer_form_updates_the_presenter_rows(
+        self, conference, speaker, presenter, language
     ):
         other = make_presenter(
             conference,
@@ -176,30 +220,38 @@ class TestFollowsTheVolunteerProfile:
         )
         presenter.discord_username = "old"
         presenter.save()
-        profile = volunteer(speaker, conference, "ada_vol")
+        data = {
+            "language": [language.id],
+            "github_username": "ada",
+            "discord_username": "ada_vol",
+            "availability_hours_per_week": 2,
+        }
+        form = VolunteerProfileForm(user=speaker, data=data)
+        assert form.is_valid(), form.errors
+        profile = form.save()
         presenter.refresh_from_db()
         assert presenter.discord_username == "ada_vol"
-        profile.discord_username = "ada_newer"
-        profile.save()
+        assert presenter.github_username == "ada"
+        form = VolunteerProfileForm(
+            user=speaker, instance=profile, data={**data, "discord_username": "newer"}
+        )
+        assert form.is_valid(), form.errors
+        form.save()
         presenter.refresh_from_db()
-        assert presenter.discord_username == "ada_newer"
-        # A blank one is nothing to follow.
-        profile.discord_username = ""
-        profile.save()
-        presenter.refresh_from_db()
-        assert presenter.discord_username == "ada_newer"
+        assert presenter.discord_username == "newer"
         other.refresh_from_db()
         assert other.discord_username == "grace_h"
 
-    def test_the_newest_edition_wins(self, conference, speaker, presenter):
+    def test_the_newest_volunteer_profile_speaks_for_a_person_with_no_record(
+        self, conference, speaker, presenter
+    ):
         past = Conference.objects.create(
             year=2024, name="Flashlights 2024", slug="2024"
         )
         volunteer(speaker, past, "ada_2024")
         volunteer(speaker, conference, "ada_now")
-        assert presenter.volunteer_discord_username == "ada_now"
-        assert make_presenter(conference).volunteer_discord_username == ""
-        assert volunteer_discord_username(None) == ""
+        assert handles_of(speaker)["discord"] == "ada_now"
+        assert handles_of(None) == {}
 
     def test_accepting_an_invitation_takes_the_volunteers_username(
         self, conference, enabled
@@ -213,21 +265,27 @@ class TestFollowsTheVolunteerProfile:
         assert link_presenter_user(invited) == user
         invited.refresh_from_db()
         assert invited.discord_username == "sam_vol"
+        assert handles_of(user) == {"discord": "sam_vol"}
 
-    def test_a_username_the_presenter_gave_is_kept(self, conference, enabled):
+    def test_the_person_wins_over_what_an_organizer_typed(self, conference, enabled):
+        """The volunteer profile is the person's own word; a handle the
+        organizer typed on the row fills only what the person left blank."""
         user = User.objects.create_user("sam", email="sam@example.com")
         EmailAddress.objects.create(
             user=user, email="sam@example.com", verified=True, primary=True
         )
         volunteer(user, conference, "sam_vol")
         invited = make_presenter(
-            conference, email="sam@example.com", discord_username="sam_own"
+            conference,
+            email="sam@example.com",
+            discord_username="sam_own",
+            github_username="sam-gh",
         )
-        # The volunteer profile was saved before the row existed, so this
-        # is the one path where the two can differ.
         link_presenter_user(invited)
         invited.refresh_from_db()
-        assert invited.discord_username == "sam_own"
+        assert invited.discord_username == "sam_vol"
+        assert invited.github_username == "sam-gh"
+        assert handles_of(user) == {"discord": "sam_vol", "github": "sam-gh"}
 
 
 def propose(client, conference, **extra):
@@ -257,15 +315,19 @@ class TestProposing:
         assert 'name="you-discord_username"' in client.get(PROPOSE).content.decode()
         propose(client, conference, **{"you-discord_username": "sam_d"})
         assert Presenter.objects.get(user=stranger).discord_username == "sam_d"
+        assert handles_of(stranger) == {"discord": "sam_d"}
 
-    def test_a_volunteer_is_not_asked(self, client, conference, enabled, stranger):
-        volunteer(stranger, conference, "sam_vol")
+    def test_a_volunteer_finds_theirs_filled_in(
+        self, client, conference, enabled, stranger
+    ):
+        profile = volunteer(stranger, conference, "sam_vol")
         client.force_login(stranger)
         page = client.get(PROPOSE).content.decode()
-        assert 'name="you-discord_username"' not in page
-        assert NOTE in page and "sam_vol" in page
+        assert 'name="you-discord_username"' in page and 'value="sam_vol"' in page
         propose(client, conference, **{"you-discord_username": "other"})
-        assert Presenter.objects.get(user=stranger).discord_username == "sam_vol"
+        assert Presenter.objects.get(user=stranger).discord_username == "other"
+        profile.refresh_from_db()
+        assert profile.discord_username == "other"
 
 
 @pytest.mark.django_db
@@ -290,10 +352,3 @@ class TestVolunteerForm:
 
     def test_nothing_to_prefill(self, speaker, presenter):
         assert "discord_username" not in VolunteerProfileForm(user=speaker).initial
-
-    def test_the_accessor_without_the_module(self, monkeypatch, speaker, presenter):
-        presenter.discord_username = "ada_spk"
-        presenter.save()
-        assert presenter_discord_username(None) == ""
-        monkeypatch.setattr("speakers.shared.apps.is_installed", lambda label: False)
-        assert presenter_discord_username(speaker) == ""

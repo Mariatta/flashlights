@@ -10,6 +10,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 from text_unidecode import unidecode
 
+from portal_account.handles import PRESENTER_COLUMNS, HandleFieldsMixin
 from portal_account.models import PortalProfile
 from volunteer.models import Team
 
@@ -42,7 +43,6 @@ from .models import (
     event_tz,
     is_in_person,
     recordings,
-    volunteer_discord_username,
 )
 from .people import assignee_candidates, liaison_candidates, picker_label
 from .permissions import can_publish_session_video
@@ -72,23 +72,10 @@ DISCORD_HELP = (
 )
 
 
-def _adopt_volunteer_discord(form, user_id, conference=None):
-    """A volunteer who also speaks is asked for their Discord username once.
-
-    When their volunteer profile has one, the field leaves the form, the
-    instance takes that value (so saving the form keeps the presenter row
-    in step) and the value is returned for the template to show read-only.
-    An edition that is not on Discord asks nobody: the
-    field leaves the form and nothing is shown.
-    """
+def drop_discord_without_chat(form, conference):
+    """An edition that is not on Discord asks nobody for a username."""
     if conference is not None and not conference.uses_discord:
         form.fields.pop("discord_username", None)
-        return ""
-    shared = volunteer_discord_username(user_id)
-    if shared:
-        form.fields.pop("discord_username")
-        form.instance.discord_username = shared
-    return shared
 
 
 class IdentityLockMixin:
@@ -385,8 +372,12 @@ def drop_timezone_in_person(form, conference):
         form.fields.pop("timezone", None)
 
 
-class PresenterForm(forms.ModelForm):
-    """Organizer-side presenter create/edit, including the liaison."""
+class PresenterForm(HandleFieldsMixin, forms.ModelForm):
+    """Organizer-side presenter create/edit, including the liaison. The
+    handles are the person's once the presenter has an account; until
+    then they are the row's own."""
+
+    HANDLE_COLUMNS = PRESENTER_COLUMNS
 
     timezone = optional_timezone(
         "Leave as the event's unless they will join from elsewhere."
@@ -416,8 +407,9 @@ class PresenterForm(forms.ModelForm):
         widgets = {"bio_md": forms.Textarea(attrs={"rows": 5})}
         help_texts = {
             "bio_md": MARKDOWN_HELP,
-            "discord_username": "For the speaker role and channel. If they volunteer "
-            "too, their volunteer profile's username takes over.",
+            "discord_username": "For the speaker role and channel. Once they have "
+            "an account, this is their own handle, shared with their volunteer "
+            "profile.",
         }
 
     def __init__(self, *args, conference, **kwargs):
@@ -425,10 +417,9 @@ class PresenterForm(forms.ModelForm):
         self.conference = conference
         self.fields["liaison"].queryset = liaison_candidates(conference)
         self.fields["liaison"].label_from_instance = picker_label
-        self.shared_discord_username = _adopt_volunteer_discord(
-            self, self.instance.user_id, conference
-        )
+        drop_discord_without_chat(self, conference)
         drop_timezone_in_person(self, conference)
+        self.init_handles(self.instance.user)
 
     def clean_slug(self):
         return _clean_slug(self, Presenter, "presenter")
@@ -512,8 +503,9 @@ class InviteForm(forms.Form):
     )
 
 
-class SpeakerProfileForm(IdentityLockMixin, forms.ModelForm):
-    """What a presenter edits about themselves (design §2.3).
+class SpeakerProfileForm(HandleFieldsMixin, IdentityLockMixin, forms.ModelForm):
+    """What a presenter edits about themselves (design §2.3). The handles
+    are the person's: the same ones their volunteer profile shows.
 
     The display name and the web address are theirs until one of their
     sessions is scheduled (``locked``); then both are dropped from the form
@@ -527,6 +519,7 @@ class SpeakerProfileForm(IdentityLockMixin, forms.ModelForm):
     slug = _slug_field("/speakers/presenters/ada-lovelace/", "name", "your")
 
     IDENTITY_FIELDS = (("display_name", "Name"), ("slug", "Web address"))
+    HANDLE_COLUMNS = PRESENTER_COLUMNS
 
     class Meta:
         model = Presenter
@@ -557,10 +550,9 @@ class SpeakerProfileForm(IdentityLockMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.shared_discord_username = _adopt_volunteer_discord(
-            self, self.instance.user_id, self.instance.conference
-        )
+        drop_discord_without_chat(self, self.instance.conference)
         drop_timezone_in_person(self, self.instance.conference)
+        self.init_handles(self.instance.user)
 
     def clean_slug(self):
         return _clean_slug(self, Presenter, "presenter")
@@ -1253,12 +1245,16 @@ class ProposalSessionForm(forms.ModelForm):
         return kind
 
 
-class ProposalProfileForm(forms.ModelForm):
+class ProposalProfileForm(HandleFieldsMixin, forms.ModelForm):
     """The "about you" half, for someone the portal has never met.
 
     A speaker who already has a presenter row does not see this: they
-    filled it in when they accepted.
+    filled it in when they accepted. The handles come from the person's
+    record (a volunteer finds theirs filled in); the view writes them
+    back once the row has its user.
     """
+
+    HANDLE_COLUMNS = PRESENTER_COLUMNS
 
     timezone = optional_timezone(
         "Optional: so we show you times in yours, and know when to reach you."
@@ -1295,10 +1291,9 @@ class ProposalProfileForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["display_name"].required = True
         self.fields["bio_md"].required = True
-        self.shared_discord_username = _adopt_volunteer_discord(
-            self, user.pk if user is not None else None, conference
-        )
+        drop_discord_without_chat(self, conference)
         drop_timezone_in_person(self, conference)
+        self.init_handles(user)
 
 
 class SpeakerSettingsForm(forms.ModelForm):

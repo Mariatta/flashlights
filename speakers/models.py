@@ -27,7 +27,6 @@ from text_unidecode import unidecode
 
 from portal.constants import BASE_PRETIX_URL
 from portal.validators import validate_discord_username
-from volunteer.models import VolunteerProfile
 
 from .clock import today
 from .constants import (
@@ -618,26 +617,6 @@ class Room(TimestampedModel):
         return f"{self.name}, {venue}" if venue else self.name
 
 
-def volunteer_discord_username(user_id):
-    """The Discord username this person gave as a volunteer, newest edition
-    first, or "" when they never did.
-
-    A volunteer who also speaks is asked once: the volunteer profile is the
-    copy they maintain (it is required there), and their presenter rows
-    follow it (``speakers.receivers.follow_volunteer_discord``).
-    """
-    if user_id is None:
-        return ""
-    return (
-        VolunteerProfile.objects.filter(user=user_id)
-        .exclude(discord_username="")
-        .order_by("-conference__year")
-        .values_list("discord_username", flat=True)
-        .first()
-        or ""
-    )
-
-
 class Presenter(TimestampedModel):
     """A person, independent of any session (design §8.2).
 
@@ -776,12 +755,6 @@ class Presenter(TimestampedModel):
 
     def get_absolute_url(self):
         return reverse("speakers:presenter_detail", kwargs={"slug": self.slug})
-
-    @property
-    def volunteer_discord_username(self):
-        """The Discord username from this person's volunteer profile, or ""
-        (see ``volunteer_discord_username``)."""
-        return volunteer_discord_username(self.user_id)
 
     @property
     def identity_locked(self):

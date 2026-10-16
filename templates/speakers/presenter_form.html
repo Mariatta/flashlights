@@ -28,12 +28,6 @@
     </h1>
     <form method="post" enctype="multipart/form-data" class="col-lg-8">
         {% csrf_token %}
-        {% if form.shared_discord_username %}
-            <div class="alert alert-secondary small" role="note">
-                <i class="icon-message-circle"></i>
-                {% blocktranslate with username=form.shared_discord_username %}Discord username: <strong>{{ username }}</strong>, from their volunteer profile; it follows that profile.{% endblocktranslate %}
-            </div>
-        {% endif %}
         {% bootstrap_form form %}
         {% bootstrap_button "Save" button_type="submit" %}
         {% if object.pk %}

@@ -16,7 +16,10 @@ them.
 3. Fill in the required fields: the hours you can give, how to reach
    you, and the teams you are interested in. Add what you are good
    at and where you work or what you build, so we can match you to a team
-   that fits.
+   that fits. Your GitHub username and, when the event uses Discord, your
+   Discord username are required; the other handles are optional. They are
+   your account's handles, shared with your speaker profile if you have
+   one, so a change here follows there and back.
 
 You get an email saying your application was received. When an edition is
 not taking applications, the page says so and the form is closed.

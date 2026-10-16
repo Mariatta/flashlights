@@ -28,6 +28,15 @@ of your event, "the portal" is your instance of Flashlights.
 If we invited you to speak, skip this: accepting the invitation creates
 your account.
 
+## Your handles
+
+Your account page keeps your handles: website, GitHub, Discord, Mastodon,
+Bluesky, LinkedIn, Instagram and X. They are stored once and shared with
+your volunteer profile and your speaker profile, so whichever form you
+meet first, the next one arrives filled in, and a change on any of them
+follows everywhere. All are optional on the account page; the volunteer
+application asks for GitHub, and for Discord when the event uses it.
+
 ## Signing in
 
 Sign in with your password, or ask for a one-time code by email: no

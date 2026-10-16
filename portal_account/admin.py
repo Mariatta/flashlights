@@ -14,7 +14,7 @@ from portal.models import Conference
 from volunteer.constants import ApplicationStatus
 from volunteer.models import VolunteerProfile
 
-from .models import PortalProfile
+from .models import Handle, PortalProfile
 
 
 def with_account_context(queryset):
@@ -102,6 +102,17 @@ class PortalProfileAdmin(ImportExportModelAdmin):
 
 
 admin.site.register(PortalProfile, PortalProfileAdmin)
+
+
+@admin.register(Handle)
+class HandleAdmin(admin.ModelAdmin):
+    """A person's handles, one row per channel; the volunteer and presenter
+    rows are copies written from here."""
+
+    list_display = ("user", "channel", "value", "modified_date")
+    list_filter = ("channel",)
+    search_fields = ("user__username", "user__email", "value")
+    raw_id_fields = ("user",)
 
 
 # ---- Groups: who is in them, from the group's side -------------------------

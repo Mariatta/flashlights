@@ -46,6 +46,15 @@
                 {% bootstrap_field form.email %}
                 {% bootstrap_field form.pronouns %}
                 {% bootstrap_field form.coc_agreement %}
+                <h2 class="h5 mt-4">
+                    {% trans "Your handles" %}
+                </h2>
+                <p class="text-secondary small">
+                    {% trans "Kept once here and shared with your volunteer profile and your speaker profile, so you are never asked twice. All optional." %}
+                </p>
+                {% for field in form.handle_fields %}
+                    {% bootstrap_field field %}
+                {% endfor %}
                 <div class="mt-4">
                     <input type="submit"
                            value="{% if object.pk %}Update Profile{% else %}Create Profile{% endif %}"

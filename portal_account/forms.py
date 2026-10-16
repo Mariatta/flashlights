@@ -1,13 +1,18 @@
 from django import forms
 from django.forms import ModelForm
 
+from .handles import CHANNELS, HandleFieldsMixin
 from .models import PortalProfile
 
 
-class PortalProfileForm(ModelForm):
+class PortalProfileForm(HandleFieldsMixin, ModelForm):
     """Edit a profile. The two agreement boxes are disabled on purpose: they
     show what was accepted, and accepting happens once, at the gate
-    (``portal_account.agreements``), not here."""
+    (``portal_account.agreements``), not here. The handles (website,
+    GitHub, Discord and the rest) are the person's one record of them,
+    which the volunteer and speaker forms share."""
+
+    HANDLE_COLUMNS = {channel.code: channel.code for channel in CHANNELS}
 
     username = forms.CharField(disabled=True)
     first_name = forms.CharField()
@@ -34,6 +39,14 @@ class PortalProfileForm(ModelForm):
             self.fields["email"].initial = self.user.email
             self.fields["first_name"].initial = self.user.first_name
             self.fields["last_name"].initial = self.user.last_name
+        for channel in CHANNELS:
+            self.fields[channel.code] = forms.CharField(
+                required=False,
+                label=channel.label,
+                help_text=channel.help_text,
+                max_length=200,
+            )
+        self.init_handles(self.user)
 
         # fix field order
         self.order_fields(
@@ -46,8 +59,13 @@ class PortalProfileForm(ModelForm):
                 "profile_picture",
                 "coc_agreement",
                 "tos_agreement",
+                *[channel.code for channel in CHANNELS],
             ]
         )
+
+    def handle_fields(self):
+        """The handle fields, bound, for the template to list."""
+        return [self[channel.code] for channel in CHANNELS]
 
     def save(self, commit=True):
         """ """

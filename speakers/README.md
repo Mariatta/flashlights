@@ -741,28 +741,31 @@ exception: the conference edit form carries the speaker-portal switch,
 which lives on `SpeakerSettings`. `portal/forms.py` reaches it through
 `apps.get_model` behind an `apps.is_installed("speakers")` guard rather
 than importing this app, so the core form still loads without the feature
-module and there is no import cycle waiting to happen. The second edge is
-`speakers/shared.py`: the volunteer form asks it for the Discord username
-a presenter row already holds, through the same registry lookup and guard.
-Any further one goes in that module too.
+module and there is no import cycle waiting to happen. Any further one goes
+through the same registry lookup.
 
-### Discord username, asked once
+### Handles: the person's, shared with the volunteer side
+
+A presenter's website, GitHub, Mastodon, LinkedIn, Bluesky and Discord
+columns are copies of the person's own record of them
+(`portal_account.Handle`, one row per channel, see
+`portal_account.handles`). The volunteer profile carries the same copies.
+Every form that asks (the speaker profile, the proposal's "about you"
+half, the organizer's presenter form, the volunteer application and the
+account page) starts from the record and writes it back, and the record
+is then pushed to every presenter and volunteer row of that person
+(`push_handles`), so a handle is typed once and follows everywhere. The
+public program and API keep reading the presenter columns.
+
+The organizer's presenter form for someone with no account yet writes the
+row only; when the account is linked (`link_presenter_user`), the row's
+handles fill the blanks of the person's record (`adopt_role_handles`) and
+the record then rules the row. A person with no record yet reads as their
+newest rows say, the volunteer side first.
 
 `Presenter.discord_username` is organizer-facing (the speaker role and
-channel on the conference Discord) and never public. The volunteer profile
-has the same field, required there, and a volunteer who also speaks is
-asked once:
-
-- The speaker profile, proposal and organizer presenter forms drop the
-  field when the account has a volunteer profile with a username, show that
-  value read-only, and write it to the presenter row on save
-  (`_adopt_volunteer_discord`).
-- Accepting an invitation copies it in (`link_presenter_user`), and saving
-  a volunteer profile pushes it to the person's presenter rows
-  (`receivers.follow_volunteer_discord`), so the organizer side never shows
-  a stale one.
-- The volunteer form prefills from the presenter row when there is no prior
-  volunteer profile (`speakers/shared.py`).
+channel on the conference Discord) and never public; an edition not on
+Discord drops the field from every form (`drop_discord_without_chat`).
 
 The presenter field and the volunteer form validate with
 `portal.validators.validate_discord_username`; `VolunteerProfile.clean()` still

@@ -1,15 +1,11 @@
-import re
-
 from django import forms
-from django.core.exceptions import ValidationError
 from django.forms import ModelForm
 from django.forms.widgets import SelectMultiple
 from django.utils.safestring import mark_safe
 
 from common.tasks import enqueue
 from portal.models import Conference
-from portal.validators import validate_discord_username, validate_linked_in_pattern
-from speakers.shared import presenter_discord_username
+from portal_account.handles import VOLUNTEER_COLUMNS, HandleFieldsMixin
 
 from .constants import ApplicationStatus
 from .models import Language, Team, VolunteerProfile
@@ -35,12 +31,17 @@ class SelectMultipleWidget(SelectMultiple):
         super().__init__(default_attrs, choices)
 
 
-class VolunteerProfileForm(ModelForm):
+class VolunteerProfileForm(HandleFieldsMixin, ModelForm):
+    """The application and the volunteer's own edit form. The handles
+    (GitHub, Discord and the rest) are the person's, kept on the account
+    and shared with the speaker side (``portal_account.handles``)."""
+
+    HANDLE_COLUMNS = VOLUNTEER_COLUMNS
 
     github_username = forms.CharField(
         required=True,
-        max_length=50,
-        help_text="Required - Your GitHub username (e.g., username). We grant volunteers read access to the organisers' repositories.",
+        max_length=39,
+        help_text="Required - Your GitHub username (e.g., username). Organizers use it to give you access to the team's repositories.",
         label="GitHub Username",
         error_messages={"required": "GitHub username is required."},
     )
@@ -72,7 +73,7 @@ class VolunteerProfileForm(ModelForm):
             "region",
         ]
         help_texts = {
-            "github_username": "Required - Your GitHub username (e.g., username). We grant volunteers read access to the organisers' repositories.",
+            "github_username": "Required - Your GitHub username (e.g., username). Organizers use it to give you access to the team's repositories.",
             "discord_username": "Required - Your Discord username for team communication (e.g., username or username#1234)",
             "instagram_username": "Instagram username without @ (e.g., username)",
             "bluesky_username": "Bluesky username (e.g., username or username.bsky.social)",
@@ -85,102 +86,6 @@ class VolunteerProfileForm(ModelForm):
         labels = {
             "availability_hours_per_week": "What is your volunteering availability?",
         }
-
-    def clean_github_username(self):
-        github_username = self.cleaned_data.get("github_username")
-        if github_username:  # Only validate format if field has value
-            self.validate_github_username(github_username)
-        return github_username
-
-    def validate_github_username(self, value):
-        if not re.match(r"^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$", value):
-            raise ValidationError(
-                "GitHub username can only contain alphanumeric characters and hyphens, "
-                "cannot start or end with a hyphen, and must be between 1-39 characters."
-            )
-
-    def clean_discord_username(self):
-        discord_username = self.cleaned_data.get("discord_username")
-        if discord_username:
-            validate_discord_username(discord_username)
-        return discord_username
-
-    def clean_instagram_username(self):
-        instagram_username = self.cleaned_data.get("instagram_username")
-        if instagram_username:
-            self.validate_instagram_username(instagram_username)
-        return instagram_username
-
-    def validate_instagram_username(self, value):
-        if not re.match(r"^[a-zA-Z0-9._]{1,30}$", value):
-            raise ValidationError(
-                "Instagram username can only contain alphanumeric characters, "
-                "periods, and underscores, and must be between 1-30 characters."
-            )
-
-    def clean_bluesky_username(self):
-        bluesky_username = self.cleaned_data.get("bluesky_username")
-        if bluesky_username:
-            self.validate_bluesky_username(bluesky_username)
-        return bluesky_username
-
-    def validate_bluesky_username(self, value):
-        if not re.match(
-            r"^[a-zA-Z0-9][a-zA-Z0-9.-]{0,28}[a-zA-Z0-9](\.[a-zA-Z0-9][\w.-]*\.[a-zA-Z]{2,})?$",
-            value,
-        ):
-            raise ValidationError(
-                "Invalid Bluesky username format. "
-                "Should be either a simple username or a full handle (e.g., username.bsky.social)."
-            )
-
-    def clean_mastodon_url(self):
-        mastodon_url = self.cleaned_data.get("mastodon_url")
-        if mastodon_url:
-            self.validate_mastodon_url(mastodon_url)
-        return mastodon_url
-
-    def validate_mastodon_url(self, value):
-        mastodon_pattern1 = r"^@[a-zA-Z0-9_]+@[a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-        mastodon_pattern2 = (
-            r"^https?://[a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/@[a-zA-Z0-9_]+$"
-        )
-
-        if not (
-            re.match(mastodon_pattern1, value) or re.match(mastodon_pattern2, value)
-        ):
-            raise ValidationError(
-                "Invalid Mastodon URL format. "
-                "Should be either @username@instance.tld or https://instance.tld/@username."
-            )
-
-    def clean_x_username(self):
-        x_username = self.cleaned_data.get("x_username")
-        if x_username:
-            self.validate_x_username(x_username)
-        return x_username
-
-    def validate_x_username(self, value):
-        if not re.match(r"^[a-zA-Z0-9_]{1,15}$", value):
-            raise ValidationError(
-                "X/Twitter username can only contain alphanumeric characters and underscores, "
-                "and must be between 1-15 characters."
-            )
-
-    def clean_linkedin_url(self):
-        linkedin_url = self.cleaned_data.get("linkedin_url")
-        if linkedin_url:
-            if not linkedin_url.startswith(("http://", "https://")):
-                linkedin_url = "https://" + linkedin_url
-            self.validate_linkedin_url(linkedin_url)
-        return linkedin_url
-
-    def validate_linkedin_url(self, value):
-        if not validate_linked_in_pattern(value):
-            raise ValidationError(
-                "Invalid LinkedIn URL format. "
-                "Example: linkedin.com/in/username or https://www.linkedin.com/in/username."
-            )
 
     def clean(self):
         cleaned_data = super().clean()
@@ -212,22 +117,14 @@ class VolunteerProfileForm(ModelForm):
             open_to_new_members=True, conference=Conference.get_active()
         )
 
-        # Returning volunteers: pre-fill a brand-new application from their most
-        # recent prior profile so they only review and adjust. The new row still
-        # goes through the form and resets application_status to PENDING.
+        # The handles come from the person's record, whichever form they
+        # gave them on; a brand-new application also brings forward the
+        # availability and languages of the most recent prior profile.
+        self.init_handles(self.user)
         if self.user and not (self.instance and self.instance.pk):
             self._prefill_from_prior_profile()
 
-    PREFILL_FIELDS = (
-        "github_username",
-        "discord_username",
-        "instagram_username",
-        "bluesky_username",
-        "mastodon_url",
-        "x_username",
-        "linkedin_url",
-        "availability_hours_per_week",
-    )
+    PREFILL_FIELDS = ("availability_hours_per_week",)
 
     def _prefill_from_prior_profile(self):
         prior = (
@@ -240,11 +137,6 @@ class VolunteerProfileForm(ModelForm):
             for field in self.PREFILL_FIELDS:
                 self.initial.setdefault(field, getattr(prior, field))
             self.initial.setdefault("language", list(prior.language.all()))
-        # Someone who spoke before volunteering gave their Discord username
-        # on the speaker side; a prior volunteer profile still wins.
-        from_speaking = presenter_discord_username(self.user)
-        if from_speaking:
-            self.initial.setdefault("discord_username", from_speaking)
 
     def save(self, commit=True):
         if self.user:
