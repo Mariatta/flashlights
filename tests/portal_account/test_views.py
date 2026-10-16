@@ -176,3 +176,17 @@ class TestPortalProfile:
         client.force_login(portal_user)
         response = client.get(reverse("portal_account:portal_profile_new"))
         assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_a_failed_sign_in_says_so(client, portal_user):
+    """The error belongs to the form as a whole; the page prints it above
+    the fields and ticks neither field as valid."""
+    response = client.post(
+        reverse("account_login"), {"login": "nobody", "password": "wrong"}
+    )
+    assert response.status_code == 200
+    html = response.content.decode()
+    assert "The username and/or password you specified are not correct." in html
+    assert 'class="alert alert-danger"' in html
+    assert "is-valid" not in html

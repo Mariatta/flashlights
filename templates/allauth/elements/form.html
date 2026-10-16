@@ -1,5 +1,19 @@
 {% load allauth %}
+{% comment %}
+allauth's form element. Errors that belong to the form as a whole (a wrong
+username or password, a code that expired) are printed above the fields;
+allauth's own element leaves them out, and the page then shows nothing.
+{% endcomment %}
 <form method="{{ attrs.method }}" action="{{ attrs.action }}">
+    {% if attrs.form.non_field_errors %}
+        <div class="alert alert-danger" role="alert">
+            {% for error in attrs.form.non_field_errors %}
+                <div>
+                    {{ error }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
     {% slot body %}
 {% endslot %}
 {% slot actions %}

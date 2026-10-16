@@ -3,8 +3,14 @@
 allauth's fields element: every field through django-bootstrap5, so the
 sign-in, sign-up, code and password pages share the portal's form classes
 (Input and Checkbox specs): block labels, form-controls, form-check pairs,
-help text and errors in place.
+help text and errors in place. When the form failed as a whole (a wrong
+username or password), no field is ticked as valid: the renderer would
+tick both, since neither field has an error of its own.
 {% endcomment %}
 {% for field in attrs.form %}
-    {% bootstrap_field field %}
+    {% if attrs.form.non_field_errors %}
+        {% bootstrap_field field server_side_validation=False %}
+    {% else %}
+        {% bootstrap_field field %}
+    {% endif %}
 {% endfor %}
