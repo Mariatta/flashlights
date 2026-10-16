@@ -407,8 +407,8 @@ For the maintainer who needs the answer before any of this exists:
   for `Failed to enqueue Celery task`.
 - **Is the worker restarting?** The platform's events for the worker
   process: restarts and out-of-memory kills at the same times.
-- **Which process's logs?** Cabotage runs each `Procfile` line as its own
-  deployment (`docs/developer/deployment.md`, "Processes"), so `worker`,
+- **Which process's logs?** Every host keeps each `Procfile` line's logs
+  apart (`docs/developer/deployment.md`, the host examples), so `worker`,
   `worker-beat` and `worker-media` each have their own logs and replica
   count, separate from `web`. The web log holds only gunicorn's request and
   error lines, since the project sets no `LOGGING` and the app's own INFO

@@ -131,8 +131,8 @@ class TestEncryptedField:
     def test_no_key_at_all_degrades_the_same_way(
         self, conference, pretix_settings, caplog
     ):
-        """The env var missing on a deploy (the cabotage config-copy case):
-        the read must not raise either."""
+        """The env var missing on a deploy (a configuration copied from
+        another instance): the read must not raise either."""
         with override_settings(FERNET_KEY=None, FERNET_KEYS=""):
             encryption._warned = False
             with caplog.at_level("ERROR"):

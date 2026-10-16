@@ -294,11 +294,12 @@ the job row and in the activity log; a job still queued after
 transcription jobs" task, which is how a missing media worker shows on
 the page. The library is in `requirements-media.txt` and the model in
 `/opt/whisper`, both baked into any image built with a non-empty
-`WHISPER_MODEL`, which the Dockerfile defaults to `small` so cabotage, which
-passes no build arguments, still gets an engine. `compose.yml` holds it empty
-for the dev images, which is what keeps local builds and CI free of the
-library and model; a plain `docker build` or the platform's build carries them,
-in the web and beat processes too, since one image serves every process (a
+`WHISPER_MODEL`. The Dockerfile's default is empty, the slim flavour, so a
+host that passes no build arguments (cabotage, for one) gets no engine
+unless it deploys a prebuilt full image by tag. `compose.yml` holds it
+empty too, which keeps local builds and CI free of the library and model;
+a full build carries them in the web and beat processes too, since one
+image serves every process (a
 separate media-worker target would avoid that, and is the alternative if the
 size matters). Tests never import the library (`_load_model` is patched). Thumbnails (task 5.8) are
 `speakers/thumbnails.py`: `on_asset_ready` queues `make_thumbnail_task`
@@ -852,8 +853,9 @@ a staff edit, and is worth knowing before making one. The Maintenance page
 shows a failed send's backend error; the personal page says only that it
 failed. Bodies render through the email's own bleach allowlist with image
 sources dropped (`SentEmail.body_html`), so reading a trail never fetches
-from a third party. The sponsorship contract request to the PSF goes
-through `send_email` too, so account emails are the only exception.
+from a third party. The sponsorship contract request to the accounting
+and sponsorship addresses goes through `send_email` too, so account emails
+are the only exception.
 
 **Invitations marked sent with no email record.** `Invitation.sent_at` is
 stamped by the web process when the email is queued; the `SentEmail` row is
@@ -892,8 +894,9 @@ SMTP connection. Settings and variables are in `docs/developer/deployment.md`.
 gunicorn's request lines. `enqueue` logs the id of a queued task, and
 `send_invitation_email_task` logs its start, end and failure with the same
 id, which is what the worker's own `received` and `succeeded` lines carry.
-Each Procfile process is a separate deployment in cabotage with its own logs,
-so the worker's lines are under `worker`, not `web`.
+Hosts keep each Procfile process's logs apart (the host examples in
+`docs/developer/deployment.md` say where), so the worker's lines are under
+`worker`, not `web`.
 
 ### Previewing an invitation
 
@@ -1111,12 +1114,12 @@ installed; this app keeps small factory functions in `tests/speakers/factories.p
   grow several steps, but before the PR branch is pushed they are squashed
   into a single regenerated file (delete them, `makemigrations speakers`,
   check with `makemigrations --check` and a `migrate` on a fresh database).
-  A migration is frozen the moment it is **merged**: the cabotage release
-  step runs `migrate` against production on every deploy of `main`, so a
+  A migration is frozen the moment it is **merged**: the release step runs
+  `migrate` against production on every deploy of `main`, so a
   merged file is never edited, deleted or renumbered again, and later
-  changes are always new files. Pull request deployments used to apply
-  migrations from open branches too; they are disabled for exactly that
-  reason (`0002_repair_invitation_sent_to` is the cost of learning it).
+  changes are always new files. A preview environment that shares the
+  production database applies migrations from open branches too; never
+  run one (`0002_repair_invitation_sent_to` is the cost of learning it).
   See the deployment docs, "Release step and migrations".
 - Every model: `conference` FK, admin registration, factory function,
   isolation test. (`Proposal`, `ReadinessGate` and `HandbookReadReceipt`
