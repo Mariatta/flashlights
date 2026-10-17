@@ -36,7 +36,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(os.environ.get("DEBUG", default=0))
+# Parsed like the other switches: "0", "false", "no", "off" and blank are off.
+DEBUG = boot.switch(os.environ, "DEBUG")
 
 # The boot contract (portal/boot.py): in production every
 # missing mandatory variable stops the boot here, by name, all at once.
@@ -533,7 +534,7 @@ elif "DJANGO_EMAIL_HOST" in os.environ:
     # that accepts the connection and then says nothing holds the worker's
     # process for ever.
     EMAIL_TIMEOUT = int(os.getenv("DJANGO_EMAIL_TIMEOUT", "30"))
-    EMAIL_USE_TLS = os.getenv("DJANGO_EMAIL_USE_TLS")
+    EMAIL_USE_TLS = boot.switch(os.environ, "DJANGO_EMAIL_USE_TLS")
     # A sender is required by every SMTP server; an unset one used to reach
     # the server as the string "None" and be refused at the first email.
     DEFAULT_FROM_EMAIL = (

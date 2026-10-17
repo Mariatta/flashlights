@@ -12,9 +12,9 @@ one of them is enough. With `DEBUG` on, or under the test suite, only
 `SECRET_KEY` is checked. Everything else is optional and has the default
 shown.
 
-Switches (`VOLUNTEERING_ENABLED`, `USE_OBJECT_STORAGE` and the like) read
-`0`, `false`, `no` and `off` as off, in any case; any other value is on.
-Two older variables do not follow that rule, and say so below.
+Switches (`DEBUG`, `VOLUNTEERING_ENABLED`, `USE_OBJECT_STORAGE` and the
+like) read `0`, `false`, `no` and `off` as off, in any case; any other value
+is on.
 
 Change a variable, then restart every process: settings are read once, at
 boot.
@@ -25,7 +25,7 @@ boot.
 |---|---|---|---|
 | `SECRET_KEY` | Always | none | Django's secret key; any long random string |
 | `DJANGO_ALLOWED_HOSTS` | Yes | none | The hostnames the portal answers on, comma-separated |
-| `DEBUG` | No | off | Django's debug mode, for local development only. Any non-empty value turns it on, `DEBUG=0` included, so leave it unset in production |
+| `DEBUG` | No | off | Django's debug mode, for local development only. Leave it unset or off in production |
 | `BOOT_CHECK` | No | on | `0` turns the required-variable check off, for a one-off shell on a half-configured environment |
 | `PORT` | No | `8000` | The port the `web` process serves on; managed hosts set it |
 | `SESSION_COOKIE_NAME` | No | `flashlights_sessionid` | The session cookie's name. Browsers scope cookies by host, not port, so two Django apps on one host need different names |
@@ -54,7 +54,7 @@ email prints to the console, which only development allows.
 | `DJANGO_EMAIL_PORT` | No | 25 | The SMTP port, with `DJANGO_EMAIL_HOST` |
 | `DJANGO_EMAIL_HOST_USER` | No | none | The SMTP user, with `DJANGO_EMAIL_HOST` |
 | `DJANGO_EMAIL_HOST_PASSWORD` | No | none | The SMTP password, with `DJANGO_EMAIL_HOST` |
-| `DJANGO_EMAIL_USE_TLS` | No | off | STARTTLS, with `DJANGO_EMAIL_HOST`. Any non-empty value turns it on, `false` included, so leave it unset for no TLS |
+| `DJANGO_EMAIL_USE_TLS` | No | off | STARTTLS, with `DJANGO_EMAIL_HOST` |
 | `DJANGO_EMAIL_TIMEOUT` | No | 30 | Seconds a connection to the mail server may wait before the task gives up |
 | `EMAIL_RECORD_RETENTION_DAYS` | No | 365 | How long the record of a sent email outlives its edition; a nightly task deletes older ones |
 

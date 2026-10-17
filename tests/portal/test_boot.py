@@ -110,7 +110,8 @@ def settings_in_a_fresh_interpreter(**env):
     code = (
         "import json; from django.conf import settings as s;"
         "print(json.dumps({k: getattr(s, k, None) for k in ("
-        "'EMAIL_HOST','EMAIL_PORT','EMAIL_USE_TLS','USE_OBJECT_STORAGE','USE_SPACES')}))"
+        "'DEBUG','EMAIL_HOST','EMAIL_PORT','EMAIL_USE_TLS','USE_OBJECT_STORAGE',"
+        "'USE_SPACES')}))"
     )
     base = {
         "PATH": os.environ.get("PATH", ""),
@@ -146,3 +147,26 @@ class TestAtBoot:
             SECRET_KEY="s", DEBUG="1", USE_SPACES="true", AWS_STORAGE_BUCKET_NAME="b"
         )
         assert found["USE_OBJECT_STORAGE"] is True and found["USE_SPACES"] == "true"
+        assert found["DEBUG"] is True
+
+    @pytest.mark.parametrize("value", ["0", "false", "False", "off", ""])
+    def test_debug_written_as_off_is_off(self, value):
+        found = settings_in_a_fresh_interpreter(**FULL, DEBUG=value)
+        assert found["DEBUG"] is False
+
+    def test_debug_zero_still_runs_the_production_check(self):
+        found = settings_in_a_fresh_interpreter(SECRET_KEY="s", DEBUG="0")
+        assert "cannot start" in found["error"]
+
+    @pytest.mark.parametrize(
+        "value, expected", [("true", True), ("1", True), ("false", False), ("", False)]
+    )
+    def test_email_use_tls_is_parsed(self, value, expected):
+        env = {k: v for k, v in FULL.items() if k != "EMAIL_URL"}
+        found = settings_in_a_fresh_interpreter(
+            **env,
+            DJANGO_EMAIL_HOST="mail.example.org",
+            DJANGO_EMAIL_USE_TLS=value,
+        )
+        assert found["EMAIL_HOST"] == "mail.example.org"
+        assert found["EMAIL_USE_TLS"] is expected
