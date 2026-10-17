@@ -126,8 +126,8 @@ A community app depends on parts of the core, so those parts are a
 contract. Until 1.0 every upgrade deserves a real test pass, not only a
 tag bump; from 1.0 the changelog marks any change to these as breaking:
 
-- the environment variables, as the [deployment guide](deployment.md) and
-  the README list them;
+- the environment variables, as the
+  [environment reference](environment.md) lists them;
 - `EXTRA_APPS`: that the apps go first in `INSTALLED_APPS`, that their
   `templates/` and `static/` win over the core's, and how their `urls`
   module is included (the `prefix` attribute, the default prefix, the

@@ -20,7 +20,11 @@ The name is a nod to a Darren Hayes song.
   instance running with sample data in a few commands; the
   [Design System](developer/design.md) page explains the look.
 - **Hosting**: [Deployment](developer/deployment.md) is the boot contract:
-  the services an instance needs and the variables that configure it.
+  the services an instance needs and the variables that configure it;
+  the [environment reference](developer/environment.md) lists every one.
+- **Your own community**: [Adapting Flashlights](user/adapting.md) is
+  what you can change without code, and what to do when that is not
+  enough.
 - **Your own code**: [Community apps](developer/community_apps.md) is how
   a community adds a Django app to the core image, and which parts of the
   core it may rely on.

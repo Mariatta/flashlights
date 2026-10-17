@@ -47,7 +47,7 @@ naming every missing variable, when one of these is unset:
 
 With `DEBUG` on, email prints to the console and files stay on disk, so
 only `SECRET_KEY` is required. The full list, with every optional variable,
-is in `docs/developer/deployment.md`.
+is in `docs/developer/environment.md`.
 
 ## Instance identity
 

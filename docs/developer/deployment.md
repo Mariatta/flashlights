@@ -28,7 +28,8 @@ variable, when one of these is unset:
 | `DJANGO_DEFAULT_FROM_EMAIL` | The address the portal's email comes from. Keep it on a domain you send from (SPF and DKIM); replies go to each edition's reply-to address, set on the edition form, so a team with only a Google Group can still receive them |
 | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_STORAGE_BUCKET_NAME`, `AWS_S3_ENDPOINT_URL` | The bucket, through the S3 API: DigitalOcean Spaces, AWS S3, Cloudflare R2, Backblaze B2 or MinIO. `USE_OBJECT_STORAGE=true` turns it on; the upstream name `USE_SPACES` still works |
 
-Everything else has a default. With `DEBUG` on, and under the test suite,
+Everything else has a default; the [environment reference](environment.md)
+lists every variable. With `DEBUG` on, and under the test suite,
 nothing but `SECRET_KEY` is checked: email prints to the console and files
 stay on disk. `BOOT_CHECK=0` turns the check off for a one-off shell on a
 half-configured environment.
