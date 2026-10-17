@@ -29,80 +29,85 @@
 {% endblock sidebar %}
 {% block content %}
     <div>
-        <h1 class="h3 d-flex align-items-center flex-wrap gap-2">
-            {{ team.short_name }}
-            <span class="badge bg-secondary fs-6 align-middle">{{ team.conference.year }}</span>
-            {% if team.open_to_new_members %}
-                <span class="badge bg-success fs-6 align-middle">{% trans "Open" %}</span>
-            {% else %}
-                <span class="badge bg-secondary fs-6 align-middle">{% trans "Closed" %}</span>
-            {% endif %}
-        </h1>
-        {% if team.description %}
-            <div class="text-secondary mb-3">
-                {{ team.description|markdownify }}
-            </div>
-        {% endif %}
-        {% if can_manage_members %}
-            <div class="mb-3">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-2">
+            <h1 class="h3 mb-0 d-flex align-items-center flex-wrap gap-2">
+                {{ team.short_name }}
+                <span class="badge bg-secondary fs-6 align-middle">{{ team.conference.year }}</span>
+                {% if team.open_to_new_members %}
+                    <span class="badge bg-success fs-6 align-middle">{% trans "Open" %}</span>
+                {% else %}
+                    <span class="badge bg-secondary fs-6 align-middle">{% trans "Closed" %}</span>
+                {% endif %}
+            </h1>
+            {% if can_manage_members %}
                 <a href="{% url 'team_edit' team.id %}"
                    class="btn btn-sm btn-outline-secondary">
                     <i class="icon-pencil"></i> {% trans "Edit team" %}
                 </a>
+            {% endif %}
+        </div>
+        {% if team.description %}
+            <div class="text-secondary mb-4">
+                {{ team.description|markdownify }}
             </div>
         {% endif %}
-        {# Stat header — same pattern as sponsorship/sponsorship_stats.html. #}
-        <div class="container border rounded-3 p-3 mb-4">
-            <div class="row text-center text-sm-start">
-                <div class="col-sm-3">
-                    <div class="card border-0">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                {% trans "Approved members" %}
-                            </h5>
-                            <p class="display-4 text-primary mb-0">
-                                {{ approved.count }}
-                            </p>
-                            <span class="text-muted">{% trans "active roster" %}</span>
+        <div class="row row-cols-2 row-cols-md-4 g-3 mb-4 mt-0">
+            <div class="col">
+                <div class="card h-100 stat-card">
+                    <div class="card-body">
+                        <div class="stat-label">
+                            <i class="icon-user-check"></i> {% trans "Approved members" %}
+                        </div>
+                        <div class="stat-value">
+                            {{ approved.count }}
+                        </div>
+                        <div class="stat-detail">
+                            {% trans "active roster" %}
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-3">
-                    <div class="card border-0">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                {% trans "Pending review" %}
-                            </h5>
-                            <p class="display-4 text-warning mb-0">
-                                {{ pending.count }}
-                            </p>
-                            <span class="text-muted">{% trans "awaiting decision" %}</span>
+            </div>
+            <div class="col">
+                <div class="card h-100 stat-card">
+                    <div class="card-body">
+                        <div class="stat-label">
+                            <i class="icon-clipboard-list"></i> {% trans "Pending review" %}
+                        </div>
+                        <div class="stat-value">
+                            {{ pending.count }}
+                        </div>
+                        <div class="stat-detail">
+                            {% trans "awaiting decision" %}
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-3">
-                    <div class="card border-0">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                {% trans "Waitlisted" %}
-                            </h5>
-                            <p class="display-4 text-secondary mb-0">
-                                {{ waitlisted.count }}
-                            </p>
-                            <span class="text-muted">{% trans "if spots open" %}</span>
+            </div>
+            <div class="col">
+                <div class="card h-100 stat-card">
+                    <div class="card-body">
+                        <div class="stat-label">
+                            <i class="icon-hourglass"></i> {% trans "Waitlisted" %}
+                        </div>
+                        <div class="stat-value">
+                            {{ waitlisted.count }}
+                        </div>
+                        <div class="stat-detail">
+                            {% trans "if spots open" %}
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-3">
-                    <div class="card border-0">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                {% trans "Team leads" %}
-                            </h5>
-                            <p class="display-4 mb-0">
-                                {{ team.team_leads.count }}
-                            </p>
-                            <span class="text-muted">{% trans "managing this team" %}</span>
+            </div>
+            <div class="col">
+                <div class="card h-100 stat-card">
+                    <div class="card-body">
+                        <div class="stat-label">
+                            <i class="icon-crown"></i> {% trans "Team leads" %}
+                        </div>
+                        <div class="stat-value">
+                            {{ team.team_leads.count }}
+                        </div>
+                        <div class="stat-detail">
+                            {% trans "managing this team" %}
                         </div>
                     </div>
                 </div>

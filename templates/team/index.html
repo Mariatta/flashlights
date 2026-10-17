@@ -12,12 +12,17 @@
 {% endblock sidebar %}
 {% block content %}
     <div id="featured-3">
-        <h1 class="h3 mb-3">
-            {% trans "Teams" %} — {{ selected_conference.year }}
-            <a class="btn btn-primary" href="{% url 'team_new' %}">{% trans "New team" %}</a>
-        </h1>
-        {% if conferences %}
-            <div class="btn-group mb-3" role="group" aria-label="Event year">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-1">
+            <h1 class="h3 mb-0">
+                {% trans "Teams" %}
+            </h1>
+            <a class="btn btn-primary btn-sm" href="{% url 'team_new' %}"><i class="icon-plus"></i> {% trans "New team" %}</a>
+        </div>
+        <p class="text-secondary mb-4">
+            {% blocktranslate with year=selected_conference.year short_name=brand.short_name %}{{ short_name }} {{ year }}: the teams, who leads them, and the applications waiting.{% endblocktranslate %}
+        </p>
+        {% if conferences|length > 1 %}
+            <div class="btn-group mb-4" role="group" aria-label="Event year">
                 {% for conference in conferences %}
                     <a href="?conference={{ conference.pk }}"
                        class="btn btn-sm {% if conference == selected_conference %}btn-primary{% else %}btn-outline-primary{% endif %}">
@@ -26,45 +31,48 @@
                 {% endfor %}
             </div>
         {% endif %}
-        {# Stat header — same pattern as the sponsorship list. #}
-        <div class="container border rounded-3 p-3 mb-4">
-            <div class="row text-center text-sm-start">
-                <div class="col-sm-3">
-                    <div class="card border-0">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                {% trans "Onboarded" %}
-                            </h5>
-                            <p class="display-4 text-primary mb-0">
-                                {{ onboarded_count }}
-                            </p>
-                            <span class="text-muted">{% trans "approved volunteers" %}</span>
+        <div class="row row-cols-2 row-cols-md-4 g-3 mb-4">
+            <div class="col">
+                <div class="card h-100 stat-card">
+                    <div class="card-body">
+                        <div class="stat-label">
+                            <i class="icon-user-check"></i> {% trans "Onboarded" %}
+                        </div>
+                        <div class="stat-value">
+                            {{ onboarded_count }}
+                        </div>
+                        <div class="stat-detail">
+                            {% trans "approved volunteers" %}
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-3">
-                    <div class="card border-0">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                {% trans "Active teams" %}
-                            </h5>
-                            <p class="display-4 mb-0">
-                                {{ teams_count }}
-                            </p>
-                            <span class="text-muted">{% blocktranslate %}{{ open_count }} open{% endblocktranslate %}</span>
+            </div>
+            <div class="col">
+                <div class="card h-100 stat-card">
+                    <div class="card-body">
+                        <div class="stat-label">
+                            <i class="icon-users-round"></i> {% trans "Active teams" %}
+                        </div>
+                        <div class="stat-value">
+                            {{ teams_count }}
+                        </div>
+                        <div class="stat-detail">
+                            {% blocktranslate %}{{ open_count }} open{% endblocktranslate %}
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-3">
-                    <div class="card border-0">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                {% trans "Pending review" %}
-                            </h5>
-                            <p class="display-4 text-warning mb-0">
-                                {{ pending_total }}
-                            </p>
-                            <span class="text-muted">{% trans "across all teams" %}</span>
+            </div>
+            <div class="col">
+                <div class="card h-100 stat-card">
+                    <div class="card-body">
+                        <div class="stat-label">
+                            <i class="icon-clipboard-list"></i> {% trans "Pending review" %}
+                        </div>
+                        <div class="stat-value">
+                            {{ pending_total }}
+                        </div>
+                        <div class="stat-detail">
+                            {% trans "across all teams" %}
                         </div>
                     </div>
                 </div>
