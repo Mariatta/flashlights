@@ -20,172 +20,179 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-from portal import branding_views, views
+from portal import branding_views, community, views
 from portal_account import views as portal_account_views
 from speakers import delivery_views as speakers_delivery_views
 from speakers import export_views as speakers_export_views
 from volunteer import views as volunteer_view
 
-urlpatterns = [
-    path("", views.index, name="index"),
-    path("theme.css", branding_views.theme_css, name="brand_theme_css"),
-    path("favicon.svg", branding_views.favicon_svg, name="brand_favicon"),
-    path("favicon.png", branding_views.favicon_png, name="brand_favicon_png"),
-    path(
-        "apple-touch-icon.png",
-        branding_views.apple_touch_icon,
-        name="brand_apple_touch_icon",
-    ),
-    path("share-card.png", branding_views.share_card, name="brand_share_card"),
-    path(
-        "organize/",
-        views.OrganizerDashboardView.as_view(),
-        name="organizer_dashboard",
-    ),
-    path(
-        "maintenance/",
-        portal_account_views.MaintenanceAccountsView.as_view(),
-        name="maintenance_accounts",
-    ),
-    path(
-        "maintenance/emails/",
-        portal_account_views.MaintenanceEmailsView.as_view(),
-        name="maintenance_emails",
-    ),
-    path(
-        "maintenance/exports/",
-        speakers_export_views.MaintenanceExportsView.as_view(),
-        name="maintenance_exports",
-    ),
-    path(
-        "maintenance/invitations/",
-        speakers_delivery_views.MaintenanceInvitationsView.as_view(),
-        name="maintenance_invitations",
-    ),
-    path(
-        "maintenance/invitations/send/",
-        speakers_delivery_views.MaintenanceInvitationsRetriggerView.as_view(),
-        name="maintenance_invitations_send",
-    ),
-    path("volunteer/", include("volunteer.urls", namespace="volunteer")),
-    path("admin/", admin.site.urls),
-    # Override two allauth views so finishing returns to the account page (the
-    # hub) instead of LOGIN_REDIRECT_URL. Must precede the allauth include.
-    path(
-        "accounts/password/change/",
-        portal_account_views.AccountPasswordChangeView.as_view(),
-        name="account_change_password",
-    ),
-    path(
-        "accounts/email/",
-        portal_account_views.AccountEmailView.as_view(),
-        name="account_email",
-    ),
-    path("accounts/", include("allauth.urls")),
-    path("captcha/", include("captcha.urls")),
-    path("sponsorship/", include("sponsorship.urls", namespace="sponsorship")),
-    path("webhooks/", include("webhooks.urls", namespace="webhooks")),
-    path("", include("ticketing.urls")),
-    path("speakers/", include("speakers.urls", namespace="speakers")),
-    path("api/v1/", include("speakers.api_urls", namespace="speakers_api")),
-    path("embed/", include("speakers.embed_urls", namespace="speakers_embed")),
-    path(
-        "portal_account/",
-        include("portal_account.urls", namespace="portal_account"),
-    ),
-    path(
-        "teams/",
-        volunteer_view.TeamList.as_view(),
-        name="teams",
-    ),
-    path(
-        "teams/mine/",
-        volunteer_view.MyTeamsView.as_view(),
-        name="my_teams",
-    ),
-    path(
-        "teams/new/",
-        volunteer_view.TeamCreate.as_view(),
-        name="team_new",
-    ),
-    path(
-        "teams/<int:pk>",
-        volunteer_view.TeamView.as_view(),
-        name="team_detail",
-    ),
-    path(
-        "teams/<int:pk>/dashboard/",
-        volunteer_view.TeamDashboardView.as_view(),
-        name="team_dashboard",
-    ),
-    path(
-        "teams/<int:pk>/applicants/<int:profile_pk>/add/",
-        volunteer_view.AddApplicantToTeamView.as_view(),
-        name="team_add_applicant",
-    ),
-    path(
-        "teams/<int:pk>/edit/",
-        volunteer_view.TeamUpdate.as_view(),
-        name="team_edit",
-    ),
-    path(
-        "teams/<int:pk>/delete/",
-        volunteer_view.TeamDelete.as_view(),
-        name="team_delete",
-    ),
-    path("i18n/", include("django.conf.urls.i18n")),
-    path(
-        "stats/",
-        views.stats,
-        name="portal_stats",
-    ),
-    path(
-        "stats.json",
-        views.stats_json,
-        name="portal_stats_json",
-    ),
-    path(
-        "stats/comparison/",
-        views.stats_comparison,
-        name="portal_stats_comparison",
-    ),
-    path(
-        "events/start-next/",
-        views.StartNewYearView.as_view(),
-        name="start_new_year",
-    ),
-    path(
-        "events/",
-        views.ConferenceList.as_view(),
-        name="conference_list",
-    ),
-    path(
-        "events/<int:pk>/edit/",
-        views.ConferenceUpdate.as_view(),
-        name="conference_edit",
-    ),
-    path(
-        "events/<int:pk>/dates/",
-        views.EventDateList.as_view(),
-        name="conference_dates",
-    ),
-    path(
-        "events/<int:pk>/dates/<int:date_pk>/edit/",
-        views.EventDateUpdate.as_view(),
-        name="conference_date_edit",
-    ),
-    path(
-        "events/<int:pk>/dates/<int:date_pk>/delete/",
-        views.EventDateDelete.as_view(),
-        name="conference_date_delete",
-    ),
-    path(
-        "events/<int:pk>/delete/",
-        views.ConferenceDelete.as_view(),
-        name="conference_delete",
-    ),
-    path("venues/", views.VenueList.as_view(), name="venue_list"),
-    path("venues/new/", views.VenueCreate.as_view(), name="venue_create"),
-    path("venues/<int:pk>/edit/", views.VenueUpdate.as_view(), name="venue_edit"),
-    path("venues/<int:pk>/delete/", views.VenueDelete.as_view(), name="venue_delete"),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Community apps' URLs come first, each under its own prefix.
+urlpatterns = (
+    community.urlpatterns(settings.EXTRA_APPS)
+    + [
+        path("", views.index, name="index"),
+        path("theme.css", branding_views.theme_css, name="brand_theme_css"),
+        path("favicon.svg", branding_views.favicon_svg, name="brand_favicon"),
+        path("favicon.png", branding_views.favicon_png, name="brand_favicon_png"),
+        path(
+            "apple-touch-icon.png",
+            branding_views.apple_touch_icon,
+            name="brand_apple_touch_icon",
+        ),
+        path("share-card.png", branding_views.share_card, name="brand_share_card"),
+        path(
+            "organize/",
+            views.OrganizerDashboardView.as_view(),
+            name="organizer_dashboard",
+        ),
+        path(
+            "maintenance/",
+            portal_account_views.MaintenanceAccountsView.as_view(),
+            name="maintenance_accounts",
+        ),
+        path(
+            "maintenance/emails/",
+            portal_account_views.MaintenanceEmailsView.as_view(),
+            name="maintenance_emails",
+        ),
+        path(
+            "maintenance/exports/",
+            speakers_export_views.MaintenanceExportsView.as_view(),
+            name="maintenance_exports",
+        ),
+        path(
+            "maintenance/invitations/",
+            speakers_delivery_views.MaintenanceInvitationsView.as_view(),
+            name="maintenance_invitations",
+        ),
+        path(
+            "maintenance/invitations/send/",
+            speakers_delivery_views.MaintenanceInvitationsRetriggerView.as_view(),
+            name="maintenance_invitations_send",
+        ),
+        path("volunteer/", include("volunteer.urls", namespace="volunteer")),
+        path("admin/", admin.site.urls),
+        # Override two allauth views so finishing returns to the account page (the
+        # hub) instead of LOGIN_REDIRECT_URL. Must precede the allauth include.
+        path(
+            "accounts/password/change/",
+            portal_account_views.AccountPasswordChangeView.as_view(),
+            name="account_change_password",
+        ),
+        path(
+            "accounts/email/",
+            portal_account_views.AccountEmailView.as_view(),
+            name="account_email",
+        ),
+        path("accounts/", include("allauth.urls")),
+        path("captcha/", include("captcha.urls")),
+        path("sponsorship/", include("sponsorship.urls", namespace="sponsorship")),
+        path("webhooks/", include("webhooks.urls", namespace="webhooks")),
+        path("", include("ticketing.urls")),
+        path("speakers/", include("speakers.urls", namespace="speakers")),
+        path("api/v1/", include("speakers.api_urls", namespace="speakers_api")),
+        path("embed/", include("speakers.embed_urls", namespace="speakers_embed")),
+        path(
+            "portal_account/",
+            include("portal_account.urls", namespace="portal_account"),
+        ),
+        path(
+            "teams/",
+            volunteer_view.TeamList.as_view(),
+            name="teams",
+        ),
+        path(
+            "teams/mine/",
+            volunteer_view.MyTeamsView.as_view(),
+            name="my_teams",
+        ),
+        path(
+            "teams/new/",
+            volunteer_view.TeamCreate.as_view(),
+            name="team_new",
+        ),
+        path(
+            "teams/<int:pk>",
+            volunteer_view.TeamView.as_view(),
+            name="team_detail",
+        ),
+        path(
+            "teams/<int:pk>/dashboard/",
+            volunteer_view.TeamDashboardView.as_view(),
+            name="team_dashboard",
+        ),
+        path(
+            "teams/<int:pk>/applicants/<int:profile_pk>/add/",
+            volunteer_view.AddApplicantToTeamView.as_view(),
+            name="team_add_applicant",
+        ),
+        path(
+            "teams/<int:pk>/edit/",
+            volunteer_view.TeamUpdate.as_view(),
+            name="team_edit",
+        ),
+        path(
+            "teams/<int:pk>/delete/",
+            volunteer_view.TeamDelete.as_view(),
+            name="team_delete",
+        ),
+        path("i18n/", include("django.conf.urls.i18n")),
+        path(
+            "stats/",
+            views.stats,
+            name="portal_stats",
+        ),
+        path(
+            "stats.json",
+            views.stats_json,
+            name="portal_stats_json",
+        ),
+        path(
+            "stats/comparison/",
+            views.stats_comparison,
+            name="portal_stats_comparison",
+        ),
+        path(
+            "events/start-next/",
+            views.StartNewYearView.as_view(),
+            name="start_new_year",
+        ),
+        path(
+            "events/",
+            views.ConferenceList.as_view(),
+            name="conference_list",
+        ),
+        path(
+            "events/<int:pk>/edit/",
+            views.ConferenceUpdate.as_view(),
+            name="conference_edit",
+        ),
+        path(
+            "events/<int:pk>/dates/",
+            views.EventDateList.as_view(),
+            name="conference_dates",
+        ),
+        path(
+            "events/<int:pk>/dates/<int:date_pk>/edit/",
+            views.EventDateUpdate.as_view(),
+            name="conference_date_edit",
+        ),
+        path(
+            "events/<int:pk>/dates/<int:date_pk>/delete/",
+            views.EventDateDelete.as_view(),
+            name="conference_date_delete",
+        ),
+        path(
+            "events/<int:pk>/delete/",
+            views.ConferenceDelete.as_view(),
+            name="conference_delete",
+        ),
+        path("venues/", views.VenueList.as_view(), name="venue_list"),
+        path("venues/new/", views.VenueCreate.as_view(), name="venue_create"),
+        path("venues/<int:pk>/edit/", views.VenueUpdate.as_view(), name="venue_edit"),
+        path(
+            "venues/<int:pk>/delete/", views.VenueDelete.as_view(), name="venue_delete"
+        ),
+    ]
+    + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+)

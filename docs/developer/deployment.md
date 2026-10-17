@@ -33,6 +33,10 @@ nothing but `SECRET_KEY` is checked: email prints to the console and files
 stay on disk. `BOOT_CHECK=0` turns the check off for a one-off shell on a
 half-configured environment.
 
+`EXTRA_APPS` is the one optional variable that changes what the image
+runs: the Django apps a community adds, built into an image of its own
+from the core's. [Community apps](community_apps.md) has the contract.
+
 ### Processes and formation
 
 The `Procfile` names the processes; every host runs the same image.

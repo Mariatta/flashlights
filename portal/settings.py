@@ -22,7 +22,7 @@ import django.db.models.signals
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 
-from portal import boot, branding
+from portal import boot, branding, community
 from portal.process import process_name
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -131,7 +131,13 @@ if not FERNET_KEY and SECRET_KEY and (DEBUG or "pytest" in sys.modules):
 
 # Application definition
 
-INSTALLED_APPS = [
+# Community apps (docs/developer/community_apps.md): Django apps a
+# deployment adds to the core, named in EXTRA_APPS. They go first, so their
+# templates and static files win over the core's, and their URLs are
+# included in portal/urls.py. Empty, the core runs bare.
+EXTRA_APPS = community.names(os.environ)
+
+INSTALLED_APPS = EXTRA_APPS + [
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -187,7 +193,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": community.template_dirs(EXTRA_APPS) + [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [

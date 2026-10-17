@@ -21,6 +21,9 @@ The name is a nod to a Darren Hayes song.
   [Design System](developer/design.md) page explains the look.
 - **Hosting**: [Deployment](developer/deployment.md) is the boot contract:
   the services an instance needs and the variables that configure it.
+- **Your own code**: [Community apps](developer/community_apps.md) is how
+  a community adds a Django app to the core image, and which parts of the
+  core it may rely on.
 
 ## Licence and contributions
 

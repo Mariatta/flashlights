@@ -64,6 +64,7 @@ is in `docs/developer/deployment.md`.
 | `SPONSORSHIP_ENABLED` | `false` hides sponsors, tiers, donations, their stats and dashboard tiles; its pages answer 404 | `true` |
 | `STATS_PUBLIC` | `false` takes the public stats pages (stats, year comparison, JSON) off the site | `true` |
 | `SPONSORSHIP_EMAIL`, `ACCOUNTING_EMAIL` | Who receives a sponsorship contract request; skipped when both are unset | unset |
+| `EXTRA_APPS` | Django apps a community adds to the core, comma-separated; they go first, their templates and static files win, and their URLs are included under a prefix (`docs/developer/community_apps.md`) | unset |
 
 The Code of Conduct, sponsorship prospectus, donation and schedule links come
 from the active edition's record; a link that is not set is not shown. The
