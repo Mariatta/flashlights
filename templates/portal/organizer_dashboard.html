@@ -25,9 +25,23 @@
         {# ---- Cross-app top line ---- #}
         <div class="row row-cols-2 row-cols-md-4 g-3 mb-4">
             <div class="col">
-                <div class="card h-100" stat-card"> <div class="card-body"> <div class="stat-label"> <i class="icon-user-check"></i> {% trans "Onboarded" %} </div> <div class="stat-value"> {{ onboarded_count }} </div> <div class="stat-detail"> {% trans "approved volunteers" %} </div> </div> </div> </div>
-                {% if sponsorship_enabled %}
-                    <div class="col"> <div class="card h-100" stat-card">
+                <div class="card h-100 stat-card">
+                    <div class="card-body">
+                        <div class="stat-label">
+                            <i class="icon-user-check"></i> {% trans "Onboarded" %}
+                        </div>
+                        <div class="stat-value">
+                            {{ onboarded_count }}
+                        </div>
+                        <div class="stat-detail">
+                            {% trans "approved volunteers" %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% if sponsorship_enabled %}
+                <div class="col">
+                    <div class="card h-100 stat-card">
                         <div class="card-body">
                             <div class="stat-label">
                                 <i class="icon-hand-coins"></i> {% trans "Sponsorship" %}
@@ -47,10 +61,25 @@
                     </div>
                 </div>
                 <div class="col">
-                    <div class="card h-100" stat-card"> <div class="card-body"> <div class="stat-label"> <i class="icon-heart"></i> {% trans "Donations" %} </div> <div class="stat-value"> {{ donation_goal_percent }}% </div> <div class="text-muted small"> {{ donations_total|as_currency }} {% trans "of" %} {{ donation_goal|as_currency }} </div> {# djlint:off #} <div class="progress mt-2" role="progressbar"> <div class="progress-bar" style="width: {{ donation_bar_width }}%"></div> </div> {# djlint:on #} </div> </div> </div>
-                {% endif %}
-                {% if pretix_configured %}
-                    <div class="col"> <div class="card h-100" stat-card">
+                    <div class="card h-100 stat-card">
+                        <div class="card-body">
+                            <div class="stat-label">
+                                <i class="icon-heart"></i> {% trans "Donations" %}
+                            </div>
+                            <div class="stat-value">
+                                {{ donation_goal_percent }}%
+                            </div>
+                            <div class="text-muted small">
+                                {{ donations_total|as_currency }} {% trans "of" %} {{ donation_goal|as_currency }}
+                            </div>
+                            {# djlint:off #} <div class="progress mt-2" role="progressbar"> <div class="progress-bar" style="width: {{ donation_bar_width }}%"></div> </div> {# djlint:on #}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            {% if pretix_configured %}
+                <div class="col">
+                    <div class="card h-100 stat-card">
                         <div class="card-body">
                             <div class="stat-label">
                                 <i class="icon-ticket"></i> {% trans "Attendees" %}
