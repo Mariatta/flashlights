@@ -117,7 +117,7 @@ the activity, it may rise to the level of bullying and harassment.
 Misuse of personal information is prohibited.
 
 Any person, entity, or service collecting data from [Portal] must comply with the
-[Python Software Foundation Privacy Policy](https://www.python.org/privacy/),
+[Organisation]'s privacy policy, linked from [Portal],
 particularly in regards to the collection of personal information. If you
 collect any personal information from [Portal], you agree that you will only use
 that personal information for the purpose for which that User has authorized

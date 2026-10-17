@@ -232,7 +232,7 @@ Ticking checklist items is never a permission: the assignee, an approved member 
 |---|---|---|
 | Organizers (core) | everything above except `delete_conference` and `start_next_year` | those two |
 | Volunteer coordination | view and review volunteer profiles, manage teams, volunteer notifications | |
-| Sponsorship | sponsor add / change / delete, send invoice, unconfirmed statuses, tiers, sponsorship notifications | |
+| Sponsorship | sponsor add / change / delete, the contract request, unconfirmed statuses, tiers, sponsorship notifications | |
 | Program | manage program, view program, assign items, liaise, templates, handbook | `change_speakersettings` |
 | Speaker liaisons | liaise presenters, assign items | |
 | Design | view program, view / add / change media assets, publish session video; promo assets when they exist | delete media assets, assign items |

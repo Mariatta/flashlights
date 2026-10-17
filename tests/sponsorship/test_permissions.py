@@ -98,7 +98,7 @@ class TestSponsorshipTeamMember:
         assert client.get(detail(approved)).context["can_send_invoice"] is True
         mail.outbox.clear()
         response = client.post(
-            reverse("sponsorship:sponsorship_send_invoice", args=[approved.pk])
+            reverse("sponsorship:sponsorship_contract_request", args=[approved.pk])
         )
         assert response.status_code == 302
         assert any("contract request" in m.subject for m in mail.outbox)
@@ -154,12 +154,12 @@ class TestApprovedVolunteer:
             TIERS,
             reverse("sponsorship:sponsorship_profile_edit", args=[sponsor.pk]),
             reverse("sponsorship:sponsorship_profile_delete", args=[sponsor.pk]),
-            reverse("sponsorship:sponsorship_send_invoice", args=[sponsor.pk]),
+            reverse("sponsorship:sponsorship_contract_request", args=[sponsor.pk]),
         ):
             assert client.get(url).status_code == 403, url
         assert (
             client.post(
-                reverse("sponsorship:sponsorship_send_invoice", args=[sponsor.pk])
+                reverse("sponsorship:sponsorship_contract_request", args=[sponsor.pk])
             ).status_code
             == 403
         )

@@ -46,7 +46,7 @@ class Migration(migrations.Migration):
             name="sponsorshipprofile",
             options={
                 "permissions": [
-                    ("send_invoice", "Can send sponsor invoices"),
+                    ("send_invoice", "Can send the sponsorship contract request"),
                     ("view_unconfirmed_sponsors", "Can see sponsors not yet confirmed"),
                     (
                         "receive_sponsorship_notifications",

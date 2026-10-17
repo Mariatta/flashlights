@@ -17,7 +17,7 @@ from portal.models import Conference
 from volunteer.constants import ApplicationStatus
 from volunteer.models import VolunteerProfile
 
-from .emails import send_psf_invoice_request_email
+from .emails import send_contract_request_email
 from .forms import SponsorshipProfileForm, SponsorshipTierForm
 from .models import SponsorshipProfile, SponsorshipProgressStatus, SponsorshipTier
 from .permissions import (
@@ -346,18 +346,17 @@ class SponsorshipProfileDetail(CanViewSponsorship, DetailView):
         return context
 
 
-class SponsorshipProfileSendInvoice(PermissionRequiredMixin, View):
+class SponsorshipProfileContractRequest(PermissionRequiredMixin, View):
     permission_required = SEND_INVOICE
 
     def post(self, request, pk):
         profile = get_object_or_404(SponsorshipProfile, pk=pk)
 
-        # Ask whoever issues invoices to prepare the contract.
-        send_psf_invoice_request_email(profile)
+        send_contract_request_email(profile)
 
         messages.success(
             request,
-            f"Invoice request sent to the accounting team for {profile.organization_name}",
+            f"Contract request sent for {profile.organization_name}",
         )
 
         return redirect("sponsorship:sponsorship_profile_detail", pk=pk)

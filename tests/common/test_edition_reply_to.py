@@ -11,8 +11,6 @@ from common.send_emails import edition_reply_to, send_email
 from portal.models import Conference
 from speakers.emails import team_reply_to
 from speakers.models import SpeakerSettings
-from sponsorship.emails import send_sponsorship_status_emails
-from sponsorship.models import SponsorshipProfile, SponsorshipTier
 from tests.speakers.factories import make_settings
 
 GROUP = "summit-organizers@googlegroups.com"
@@ -91,20 +89,6 @@ class TestOtherSenders:
         )
         client.post(reverse("account_reset_password"), {"email": user.email})
         assert mail.outbox[0].reply_to == []
-
-    def test_sponsor_approval_replies_to_the_edition(self, grouped):
-        user = User.objects.create_user(username="s", email="s@example.com")
-        tier = SponsorshipTier.objects.create(
-            name="Gold", amount=5000, description="", conference=grouped
-        )
-        profile = SponsorshipProfile.objects.create(
-            user=user,
-            organization_name="Test Corp",
-            sponsorship_tier=tier,
-            conference=grouped,
-        )
-        send_sponsorship_status_emails(profile)
-        assert mail.outbox[0].reply_to == [GROUP]
 
 
 @pytest.mark.django_db

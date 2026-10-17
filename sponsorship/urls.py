@@ -60,7 +60,7 @@ urlpatterns = [
     ),
     path(
         "<int:pk>/send-invoice/",
-        views.SponsorshipProfileSendInvoice.as_view(),
-        name="sponsorship_send_invoice",
+        views.SponsorshipProfileContractRequest.as_view(),
+        name="sponsorship_contract_request",
     ),
 ]

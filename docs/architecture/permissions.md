@@ -43,7 +43,7 @@ the pages show.
 | | `volunteer.receive_volunteer_notifications` | the internal volunteer emails |
 | Sponsorship | `sponsorship.view_sponsorshipprofile` | reading sponsors (the baseline for every approved volunteer) |
 | | `sponsorship.add/change/delete_sponsorshipprofile` | managing sponsors |
-| | `sponsorship.send_invoice` | the invoice request |
+| | `sponsorship.send_invoice` | the contract request |
 | | `sponsorship.view_unconfirmed_sponsors` | sponsors whose status is not yet a commitment |
 | | `sponsorship.add/change/delete_sponsorshiptier` | the tier pages |
 | | `sponsorship.receive_sponsorship_notifications` | the internal sponsorship emails |
@@ -81,7 +81,7 @@ The presets, in `volunteer.permission_presets.PRESETS`:
 |---|---|---|
 | Organizers | every catalogue permission except the two below | `delete_conference`, `start_next_year` |
 | Volunteer coordination | view and review volunteers, manage teams, volunteer notifications | |
-| Sponsorship | sponsor add/change/delete, send invoice, unconfirmed statuses, tiers, sponsorship notifications | |
+| Sponsorship | sponsor add/change/delete, the contract request, unconfirmed statuses, tiers, sponsorship notifications | |
 | Program | manage and view the program, assign items, liaise, templates, guides, review proposals, publish the program, view, upload and edit files, publish session videos | `change_speakersettings`, delete files |
 | Proposal reviewers | view the program, review proposals | |
 | Speaker liaisons | liaise presenters, assign items | |

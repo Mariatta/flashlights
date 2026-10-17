@@ -236,7 +236,7 @@ Deferred (decided to leave for now):
 - `send_internal_email_task` notifies admin/staff volunteers from *any* edition
   (plus all `is_staff`/`is_superuser`). Left as-is intentionally — the
   `is_staff`/`is_superuser` catch-all already covers current organizers.
-- `TeamView` / `SponsorshipProfileSendInvoice` fetch by pk without an edition
+- `TeamView` / `SponsorshipProfileContractRequest` fetch by pk without an edition
   check (admin-only; low risk — a wrong-year footgun, not an access leak).
 
 ## Phase 12 — Organizer "Start a new year" wizard (issue #341)

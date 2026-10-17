@@ -150,18 +150,18 @@
                     <div class="card mb-4">
                         <div class="card-body">
                             <h5>
-                                Send Invoice Request
+                                Request the contract
                             </h5>
                             <p>
-                                Send an email to the accounting team (the accounting and sponsorship addresses in the settings) to prepare the sponsorship contract.
+                                Email the sponsorship details to whoever issues your invoices and to the sponsorship contact (the two addresses in the instance settings), so the contract and invoice can be prepared.
                             </p>
                             <form method="post"
-                                  action="{% url 'sponsorship:sponsorship_send_invoice' profile.pk %}">
+                                  action="{% url 'sponsorship:sponsorship_contract_request' profile.pk %}">
                                 {% csrf_token %}
                                 <button type="submit"
                                         class="btn btn-primary"
-                                        onclick="return confirm('Are you sure you want to send the invoice request to the accounting team?')">
-                                    <i class="fas icon-mail"></i> Send Invoice Request
+                                        onclick="return confirm('Send the contract request now?')">
+                                    <i class="fas icon-mail"></i> Send the contract request
                                 </button>
                             </form>
                         </div>

@@ -746,7 +746,9 @@ class TestSponsorshipCreateViews:
         mail.outbox = []
 
         client.force_login(admin_user)
-        url = reverse("sponsorship:sponsorship_send_invoice", kwargs={"pk": profile.pk})
+        url = reverse(
+            "sponsorship:sponsorship_contract_request", kwargs={"pk": profile.pk}
+        )
         response = client.post(url)
 
         # Should redirect back to detail view
@@ -762,7 +764,7 @@ class TestSponsorshipCreateViews:
 
         # Check that emails were sent
         assert len(mail.outbox) >= 1
-        # Find the invoice request email
+        # Find the contract request email
         psf_email = None
         for email in mail.outbox:
             if "Flashlights sponsorship contract request: Test Corp" in email.subject:
@@ -773,9 +775,7 @@ class TestSponsorshipCreateViews:
         # Check success message
         messages = list(response.wsgi_request._messages)
         assert len(messages) == 1
-        assert "Invoice request sent to the accounting team for Test Corp" in str(
-            messages[0].message
-        )
+        assert "Contract request sent for Test Corp" in str(messages[0].message)
 
 
 @pytest.mark.django_db
