@@ -90,13 +90,13 @@ class TestStatsSectionsFollowTheFeatures:
     def test_sections(self, client, conference):
         with override_settings(VOLUNTEERING_ENABLED=False, SPONSORSHIP_ENABLED=False):
             content = client.get(reverse("portal_stats")).content.decode()
-        assert "Volunteers Signed Up" not in content
-        assert "Attendee Demographic" not in content
+        assert "Volunteers signed up" not in content
+        assert "attendee_demographic" not in content
         assert "sponsorship_breakdown" not in content and "Sponsorship" not in content
         make_ticketing(conference)  # the active edition takes registrations
         content = client.get(reverse("portal_stats")).content.decode()
-        assert "Volunteers Signed Up" in content
-        assert "Attendee Demographic" in content
+        assert "Volunteers signed up" in content
+        assert "attendee_demographic" in content
 
     def test_snapshot_cards_follow_the_features(self, client, conference):
         conference.is_active = False

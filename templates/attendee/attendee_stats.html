@@ -1,59 +1,52 @@
-<h3 id="attendee_demographic">
-    Attendee Demographic
-</h3>
-<div class="container border rounded-3 p-3 mb-4">
-    <div class="row">
-        <div class="col-sm-4">
-            <div class="card border-0">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        Registered Attendees
-                    </h5>
-                    <p class="display-4 text-info mb-0">
-                        {{ stats.attendee_count }}
-                    </p>
+{% load i18n %}
+<h2 class="eyebrow mb-2" id="attendee_demographic">
+    {% trans "Attendees" %}
+</h2>
+<div class="row row-cols-2 row-cols-md-4 g-3 mb-4">
+    <div class="col">
+        <div class="card h-100 stat-card">
+            <div class="card-body">
+                <div class="stat-label">
+                    <i class="icon-ticket"></i> {% trans "Registered" %}
+                </div>
+                <div class="stat-value">
+                    {{ stats.attendee_count }}
+                </div>
+                <div class="stat-detail">
+                    {% trans "attendees" %}
                 </div>
             </div>
         </div>
-        {% if stats.attendee_first_time_on %}
-            <div class="col-sm-4">
-                <div class="card border-0">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            First Time Attendees
-                        </h5>
-                        <p class="display-4 text-success mb-0">
-                            {{ stats.attendee_first_time_count }}
-                        </p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-4">
-                <div class="card border-0 text-bg-success">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            % of First Time Attendees
-                        </h5>
-                        <p class="display-4 text-warning mb-0">
-                            {{ stats.attendee_first_time_percent |floatformat:0 }}%
-                        </p>
-                    </div>
-                </div>
-            </div>
-        {% endif %}
     </div>
+    {% if stats.attendee_first_time_on %}
+        <div class="col">
+            <div class="card h-100 stat-card">
+                <div class="card-body">
+                    <div class="stat-label">
+                        <i class="icon-sparkles"></i> {% trans "First time" %}
+                    </div>
+                    <div class="stat-value">
+                        {{ stats.attendee_first_time_count }}
+                    </div>
+                    <div class="stat-detail">
+                        {{ stats.attendee_first_time_percent|floatformat:0 }}% {% trans "of attendees" %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 </div>
 {% for breakdown in stats.attendee_breakdown %}
-    <div class="container border rounded-3 p-3 mb-4">
-        <div class="row">
-            <table class="table">
+    <div class="card mb-4">
+        <div class="card-body py-2">
+            <table class="table table-sm mb-0">
                 <thead>
                     <tr>
                         <th scope="col">
                             {{ breakdown.title }}
                         </th>
-                        <th scope="col">
-                            # attendees
+                        <th scope="col" class="text-end">
+                            {% trans "Attendees" %}
                         </th>
                     </tr>
                 </thead>
@@ -61,7 +54,7 @@
                     {% for data in breakdown.data %}
                         <tr>
                             {% for col in data %}
-                                <td>
+                                <td {% if not forloop.first %}class="text-end"{% endif %}>
                                     {{ col }}
                                 </td>
                             {% endfor %}

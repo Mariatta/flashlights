@@ -1,132 +1,68 @@
-{% load portal_extras %}
-<div class="container  border rounded-3 p-3 mb-4">
-    <div class="row">
-        <div class="col-sm-3">
-            <div class="card border-0">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        Number of Sponsors Committed
-                    </h5>
-                    <p class="display-4 text-primary mb-0">
-                        {{ stats.sponsorship_committed_count }}
-                    </p>
-                    <span class="text-muted">out of {{ stats.sponsorship_total_count }} that were contacted</span>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-3">
-            <div class="card border-0">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        Sponsorship Paid
-                    </h5>
-                    <p class="display-4 text-success text-nowrap mb-0">
-                        {{ stats.sponsorship_paid_amount| as_currency }}
-                    </p>
-                    <span class="text-muted">from {{ stats.sponsorship_paid_count }} sponsors</span>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-3">
-            <div class="card border-0">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        Pending Sponsorship Amount
-                    </h5>
-                    <p class="display-4 text-warning text-nowrap mb-0">
-                        {{ stats.sponsorship_pending_amount | as_currency }}
-                    </p>
-                    <span class="text-muted">from {{ stats.sponsorship_pending_count }} sponsors</span>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-3">
-            <div class="card border-0">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        Total Sponsorship Committed
-                    </h5>
-                    <p class="display-4 text-success text-nowrap mb-0">
-                        {{ stats.sponsorship_committed_amount| as_currency }}
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
+{% load i18n portal_extras %}
+{% comment %}
+The public stats page's sponsorship panel: the same four cards the sponsor
+list shows, then donations and the total when the edition takes donations,
+then the breakdown charts.
+{% endcomment %}
+{% include "sponsorship/_overview.html" %}
+<div class="row row-cols-2 row-cols-md-4 g-3 mb-4">
     {% if stats.donation_breakdown %}
-        <div class="row">
-            <div class="col-sm-6">
-                <div class="card border-0">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            Total Donations Received
-                        </h5>
-                        <p class="display-4 text-info text-nowrap mb-0">
-                            {{ stats.donation_breakdown.total_donations_amount | as_currency }}
-                        </p>
-                        <span class="text-muted">from {{ stats.donation_breakdown.donors_count }} individual donors</span>
+        <div class="col">
+            <div class="card h-100 stat-card">
+                <div class="card-body">
+                    <div class="stat-label">
+                        <i class="icon-heart"></i> {% trans "Donations" %}
+                    </div>
+                    <div class="stat-value text-nowrap">
+                        {{ stats.donation_breakdown.total_donations_amount|as_currency }}
+                    </div>
+                    <div class="stat-detail">
+                        {% blocktranslate count counter=stats.donation_breakdown.donors_count|default:0 %}from {{ counter }} donor{% plural %}from {{ counter }} donors{% endblocktranslate %}
                     </div>
                 </div>
             </div>
-            <div class="col-sm-6">
-                <div class="card border-0">
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            Donation Progress
-                        </h5>
-                        <p class="display-4 text-success mb-0">
-                            {{ stats.donation_breakdown.donation_towards_goal_percent|floatformat:0 }}%
-                        </p>
-                        <span class="text-muted">towards our donations goal of {{ stats.donations_goal| as_currency }}</span>
+        </div>
+        <div class="col">
+            <div class="card h-100 stat-card">
+                <div class="card-body">
+                    <div class="stat-label">
+                        <i class="icon-target"></i> {% trans "Donation goal" %}
+                    </div>
+                    <div class="stat-value">
+                        {{ stats.donation_breakdown.donation_towards_goal_percent|floatformat:0 }}%
+                    </div>
+                    <div class="stat-detail">
+                        {% trans "of" %} {{ stats.donations_goal|as_currency }}
                     </div>
                 </div>
             </div>
         </div>
     {% endif %}
-    <div class="row">
-        <div class="col-sm-6">
-            <div class="card border-0 ">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        We've raised
-                    </h5>
-                    <p class="display-4 text-success mb-0">
-                        {{ stats.sponsorship_towards_goal_percent|floatformat:0 }}%
-                    </p>
-                    <span class="text-muted">towards our sponsorship goal of {{ stats.sponsorship_goal| as_currency }}</span>
+    <div class="col">
+        <div class="card h-100 stat-card">
+            <div class="card-body">
+                <div class="stat-label">
+                    <i class="icon-piggy-bank"></i> {% trans "Raised in all" %}
                 </div>
-            </div>
-        </div>
-        <div class="col-sm-6">
-            <div class="card border-0 text-bg-warning">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        Total Funds Raised
-                    </h5>
-                    <p class="display-4 text-success text-nowrap mb-0">
-                        {{ stats.total_funds_raised| as_currency }}
-                    </p>
-                    <span class="text-muted">from sponsorships and donations</span>
+                <div class="stat-value text-nowrap">
+                    {{ stats.total_funds_raised|as_currency }}
+                </div>
+                <div class="stat-detail">
+                    {% trans "sponsorships and donations" %}
                 </div>
             </div>
         </div>
     </div>
-    <div class="row">
-        <div class="progress">
-            <div class="progress-bar bg-success"
-                 role="progressbar"
-                 style="width: {{ stats.sponsorship_paid_percent|floatformat:2 }}%"
-                 aria-valuenow="{{ stats.sponsorship_paid_percent|floatformat:2 }}"
-                 aria-valuemin="0"
-                 aria-valuemax="100">
-                {{ stats.sponsorship_paid_percent|floatformat:2 }}% paid
-            </div>
-        </div>
-    </div>
-    <div class="row">
+</div>
+{% if stats.sponsorship_breakdown %}
+    <div class="row g-3 mb-4">
         {% for breakdown in stats.sponsorship_breakdown %}
-            <div class="col-6" id="{{ breakdown.chart_id }}">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-body chart-container" id="{{ breakdown.chart_id }}">
+                    </div>
+                </div>
             </div>
         {% endfor %}
     </div>
-</div>
+{% endif %}

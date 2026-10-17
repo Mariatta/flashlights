@@ -2099,3 +2099,9 @@ details.card[open] > summary.card-header::before {
     top: 0;
     z-index: 1;
 }
+
+/* A sponsor's logo beside its name: boxed, never stretched. */
+.sponsor-logo {
+    object-fit: contain;
+    background: var(--surface-card);
+}

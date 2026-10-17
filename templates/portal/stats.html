@@ -25,134 +25,106 @@
 {% endblock body %}
 {% block content %}
     <div class="container px-4 py-3" id="featured-3">
-        <h2 class="pb-2 border-bottom">
-            {{ brand.short_name }} stats and numbers: {{ selected_conference.year }}
-        </h2>
-        <div class="row align-items-center mb-3">
-            <div class="col-md-8">
-                {% if conferences %}
-                    <div class="btn-group" role="group" aria-label="Event year">
-                        {% for conference in conferences %}
-                            <a href="?year={{ conference.year }}"
-                               class="btn btn-sm {% if conference == selected_conference %}btn-primary{% else %}btn-outline-primary{% endif %}">
-                                {{ conference.year }}
-                            </a>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
-            <div class="col-md-4 text-md-end mt-2 mt-md-0">
-                <a href="{% url 'portal_stats_comparison' %}"
-                   class="btn btn-sm btn-outline-secondary">
-                    <i class="bi bi-graph-up"></i> Year-over-Year Comparison
-                </a>
-            </div>
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-1">
+            <h1 class="h3 mb-0">
+                {{ brand.short_name }} stats and numbers: {{ selected_conference.year }}
+            </h1>
+            <a href="{% url 'portal_stats_comparison' %}"
+               class="btn btn-sm btn-outline-secondary">
+                <i class="icon-chart-line"></i> {% trans "Year-over-Year Comparison" %}
+            </a>
         </div>
-        {% if historical_snapshot %}
-            <div class="alert alert-info" role="alert">
-                <h4 class="alert-heading">
-                    Final numbers
-                </h4>
-                <p class="mb-0">
-                    Showing the final recorded numbers for {{ selected_conference }}.
-                </p>
+        <p class="text-secondary mb-3">
+            {% if historical_snapshot %}
+                {% blocktranslate with edition=selected_conference %}Final numbers, as recorded for {{ edition }}.{% endblocktranslate %}
+            {% else %}
+                {% url 'portal_stats_json' as json_url %}
+                {% blocktranslate %}Live numbers, up to five minutes behind. Also available as a <a href="{{ json_url }}">JSON endpoint</a> for your own dashboard.{% endblocktranslate %}
+            {% endif %}
+        </p>
+        {% if conferences|length > 1 %}
+            <div class="btn-group mb-4" role="group" aria-label="Event year">
+                {% for conference in conferences %}
+                    <a href="?year={{ conference.year }}"
+                       class="btn btn-sm {% if conference == selected_conference %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                        {{ conference.year }}
+                    </a>
+                {% endfor %}
             </div>
-            <div class="row g-3 mb-4 row-cols-2 row-cols-md-3">
+        {% endif %}
+        {% if historical_snapshot %}
+            <div class="row row-cols-2 row-cols-md-4 g-3 mb-4">
                 {% if historical_snapshot.registrations %}
                     <div class="col">
-                        <div class="card h-100 text-center">
+                        <div class="card h-100 stat-card">
                             <div class="card-body">
-                                <h3 class="card-title">
+                                <div class="stat-label">
+                                    <i class="icon-ticket"></i> {% trans "Registrations" %}
+                                </div>
+                                <div class="stat-value">
                                     {{ historical_snapshot.registrations }}
-                                </h3>
-                                <p class="card-text text-muted mb-0">
-                                    Registrations
-                                </p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 {% endif %}
                 <div class="col">
-                    <div class="card h-100 text-center">
+                    <div class="card h-100 stat-card">
                         <div class="card-body">
-                            <h3 class="card-title">
+                            <div class="stat-label">
+                                <i class="icon-mic"></i> {% trans "Proposals" %}
+                            </div>
+                            <div class="stat-value">
                                 {{ proposals }}
-                            </h3>
-                            <p class="card-text text-muted mb-0">
-                                Proposals
-                            </p>
+                            </div>
                         </div>
                     </div>
                 </div>
                 {% if sponsorship_enabled %}
                     <div class="col">
-                        <div class="card h-100 text-center">
+                        <div class="card h-100 stat-card">
                             <div class="card-body">
-                                <h3 class="card-title">
+                                <div class="stat-label">
+                                    <i class="icon-handshake"></i> {% trans "Sponsors" %}
+                                </div>
+                                <div class="stat-value">
                                     {{ historical_snapshot.sponsors }}
-                                </h3>
-                                <p class="card-text text-muted mb-0">
-                                    Sponsors
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="card h-100 text-center">
-                            <div class="card-body">
-                                <h3 class="card-title">
+                                </div>
+                                <div class="stat-detail text-nowrap">
                                     ${{ historical_snapshot.sponsorship_amount }}
-                                </h3>
-                                <p class="card-text text-muted mb-0">
-                                    Sponsorship Amount
-                                </p>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div class="col">
-                        <div class="card h-100 text-center">
+                        <div class="card h-100 stat-card">
                             <div class="card-body">
-                                <h3 class="card-title">
+                                <div class="stat-label">
+                                    <i class="icon-heart"></i> {% trans "Donors" %}
+                                </div>
+                                <div class="stat-value">
                                     {{ historical_snapshot.donors }}
-                                </h3>
-                                <p class="card-text text-muted mb-0">
-                                    Donors
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="card h-100 text-center">
-                            <div class="card-body">
-                                <h3 class="card-title">
+                                </div>
+                                <div class="stat-detail text-nowrap">
                                     ${{ historical_snapshot.donation_amount }}
-                                </h3>
-                                <p class="card-text text-muted mb-0">
-                                    Donations
-                                </p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 {% endif %}
             </div>
         {% else %}
-            <div class="alert alert-success" role="alert">
-                <h4 class="alert-heading">
-                    Live event stats*
-                </h4>
-                <p class="mb-0">
-                    Our stats are also available as a <a href="{% url 'portal_stats_json' %}">JSON endpoint</a> so that you can come up with your own visualization and dashboard.
-                </p>
-                <hr>
-                <p>
-                    <span class="text-muted">*Up to 5 minutes delay.</span>
-                </p>
-            </div>
             {% if sponsorship_enabled %}
+                <h2 class="eyebrow mb-2">
+                    {% trans "Sponsorship" %}
+                </h2>
                 {% include "sponsorship/sponsorship_stats.html" %}
                 {% include "portal/sponsor_donate_callout.html" %}
             {% endif %}
             {% if volunteering_enabled %}
+                <h2 class="eyebrow mb-2">
+                    {% trans "Volunteers" %}
+                </h2>
                 {% include "volunteer/volunteer_stats.html" %}
             {% endif %}
             {% comment %}

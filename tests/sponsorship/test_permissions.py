@@ -75,7 +75,7 @@ class TestSponsorshipTeamMember:
         assert "actions" in response.context["table"].columns.names()
         assert "attention_unpaid" in response.context
         content = response.content.decode()
-        assert "Manage Sponsors" in content and NEW in content
+        assert "Add sponsor" in content and NEW in content
         assert client.get(NEW).status_code == 200
         assert client.get(TIERS).status_code == 200
         assert client.get(reverse("sponsorship:tier_new")).status_code == 200
@@ -144,7 +144,7 @@ class TestApprovedVolunteer:
         assert "actions" not in response.context["table"].columns.names()
         assert "attention_unpaid" not in response.context
         content = response.content.decode()
-        assert "View Sponsors" in content and NEW not in content
+        assert "Add sponsor" not in content and NEW not in content
         page = client.get(detail(sponsor))
         assert page.status_code == 200
         assert page.context["can_send_invoice"] is False

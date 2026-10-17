@@ -267,8 +267,8 @@ class TestPortalStats:
     def test_stats_currency_figures_dont_wrap(self, client, conference):
         # Large currency amounts (e.g. $54,805) must stay on one line.
         content = client.get(reverse("portal_stats")).content.decode()
-        assert "Sponsorship Paid" in content  # the live stats panel rendered
-        assert "display-4 text-success text-nowrap" in content
+        assert "sponsors contacted" in content  # the live stats panel rendered
+        assert "stat-value text-nowrap" in content
 
     def test_stats_comparison_page_is_public(self, client, conference):
         response = client.get(reverse("portal_stats_comparison"))

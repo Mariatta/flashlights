@@ -1,0 +1,73 @@
+{% load i18n portal_extras %}
+{% comment %}
+The sponsor list's top line: four stat cards in the organizer dashboard's
+shape (StatCard spec). The public stats page keeps its own, fuller panel
+in sponsorship_stats.html; this one is for the people running the edition.
+{% endcomment %}
+<div class="row row-cols-2 row-cols-md-4 g-3 mb-4">
+    <div class="col">
+        <div class="card h-100 stat-card">
+            <div class="card-body">
+                <div class="stat-label">
+                    <i class="icon-handshake"></i> {% trans "Committed" %}
+                </div>
+                <div class="stat-value">
+                    {{ stats.sponsorship_committed_count }}
+                </div>
+                <div class="stat-detail">
+                    {% blocktranslate count counter=stats.sponsorship_total_count|default:0 %}of {{ counter }} sponsor contacted{% plural %}of {{ counter }} sponsors contacted{% endblocktranslate %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card h-100 stat-card">
+            <div class="card-body">
+                <div class="stat-label">
+                    <i class="icon-hand-coins"></i> {% trans "Sponsorship" %}
+                </div>
+                <div class="stat-value">
+                    {{ stats.sponsorship_towards_goal_percent|floatformat:0 }}%
+                </div>
+                <div class="stat-detail">
+                    {{ stats.sponsorship_committed_amount|as_currency }} {% trans "of" %} {{ stats.sponsorship_goal|as_currency }}
+                </div>
+                {# djlint:off #}
+                <div class="progress mt-2" role="progressbar" aria-valuenow="{{ stats.sponsorship_towards_goal_percent|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar" style="width: {% if stats.sponsorship_towards_goal_percent > 100 %}100{% else %}{{ stats.sponsorship_towards_goal_percent|floatformat:0 }}{% endif %}%"></div>
+                </div>
+                {# djlint:on #}
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card h-100 stat-card">
+            <div class="card-body">
+                <div class="stat-label">
+                    <i class="icon-banknote"></i> {% trans "Paid" %}
+                </div>
+                <div class="stat-value text-nowrap">
+                    {{ stats.sponsorship_paid_amount|as_currency }}
+                </div>
+                <div class="stat-detail">
+                    {% blocktranslate count counter=stats.sponsorship_paid_count|default:0 %}from {{ counter }} sponsor{% plural %}from {{ counter }} sponsors{% endblocktranslate %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card h-100 stat-card">
+            <div class="card-body">
+                <div class="stat-label">
+                    <i class="icon-receipt"></i> {% trans "Outstanding" %}
+                </div>
+                <div class="stat-value text-nowrap">
+                    {{ stats.sponsorship_pending_amount|as_currency }}
+                </div>
+                <div class="stat-detail">
+                    {% blocktranslate count counter=stats.sponsorship_pending_count|default:0 %}from {{ counter }} sponsor not yet paid{% plural %}from {{ counter }} sponsors not yet paid{% endblocktranslate %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

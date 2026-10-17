@@ -1,27 +1,31 @@
-<div class="container border rounded-3 p-3 mb-4">
-    <div class="row">
-        <div class="col-sm-3">
-            <div class="card border-0">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        Volunteers Signed Up
-                    </h5>
-                    <p class="display-4 text-primary mb-0">
-                        {{ stats.volunteer_signups_count }}
-                    </p>
-                    <span class="text-muted">for {{ stats.volunteer_teams_count }} teams</span>
+{% load i18n %}
+<div class="row row-cols-2 row-cols-md-4 g-3 mb-4">
+    <div class="col">
+        <div class="card h-100 stat-card">
+            <div class="card-body">
+                <div class="stat-label">
+                    <i class="icon-users"></i> {% trans "Volunteers signed up" %}
+                </div>
+                <div class="stat-value">
+                    {{ stats.volunteer_signups_count }}
+                </div>
+                <div class="stat-detail">
+                    {% blocktranslate count counter=stats.volunteer_teams_count|default:0 %}for {{ counter }} team{% plural %}for {{ counter }} teams{% endblocktranslate %}
                 </div>
             </div>
         </div>
-        <div class="col-sm-3">
-            <div class="card border-0">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        Volunteers Onboarded
-                    </h5>
-                    <p class="display-4 text-success mb-0">
-                        {{ stats.volunteer_onboarded_count }}
-                    </p>
+    </div>
+    <div class="col">
+        <div class="card h-100 stat-card">
+            <div class="card-body">
+                <div class="stat-label">
+                    <i class="icon-user-check"></i> {% trans "Onboarded" %}
+                </div>
+                <div class="stat-value">
+                    {{ stats.volunteer_onboarded_count }}
+                </div>
+                <div class="stat-detail">
+                    {% trans "approved volunteers" %}
                 </div>
             </div>
         </div>

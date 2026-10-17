@@ -2,6 +2,7 @@
 {% load allauth i18n %}
 {% load django_bootstrap5 %}
 {% load render_table from django_tables2 %}
+{% load portal_extras %}
 {% block body %}
 {% endblock body %}
 {% block breadcrumb %}
@@ -24,17 +25,24 @@
     {% endif %}
 {% endblock sidebar %}
 {% block content %}
-    <h1 class="h3 mb-3">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-1">
+        <h1 class="h3 mb-0">
+            {% trans "Sponsors" %}
+        </h1>
         {% if perms.sponsorship.add_sponsorshipprofile %}
-            Manage Sponsors <a class="btn btn-primary"
-    href="{% url 'sponsorship:sponsorship_profile_new' %}">Add New Sponsor</a>
-        {% else %}
-            View Sponsors
+            <a class="btn btn-primary btn-sm"
+               href="{% url 'sponsorship:sponsorship_profile_new' %}"><i class="icon-plus"></i> {% trans "Add sponsor" %}</a>
         {% endif %}
-    </h1>
-    {% include "sponsorship/sponsorship_stats.html" %}
-    {% if conferences %}
-        <div class="btn-group mb-3" role="group" aria-label="Conference year">
+    </div>
+    <p class="text-secondary mb-4">
+        {% if selected_conference %}
+            {% blocktranslate with year=selected_conference.year short_name=brand.short_name %}{{ short_name }} {{ year }}: who has committed, what is paid, and what still needs a nudge.{% endblocktranslate %}
+        {% else %}
+            {% trans "No event edition to show." %}
+        {% endif %}
+    </p>
+    {% if conferences|length > 1 %}
+        <div class="btn-group mb-4" role="group" aria-label="Event year">
             {% for conference in conferences %}
                 <a href="?conference={{ conference.pk }}"
                    class="btn btn-sm {% if conference == selected_conference %}btn-primary{% else %}btn-outline-primary{% endif %}">
@@ -43,43 +51,49 @@
             {% endfor %}
         </div>
     {% endif %}
+    {% if stats %}
+        {% include "sponsorship/_overview.html" %}
+    {% endif %}
     <div id="sponsor-results">
         {% if can_manage_sponsorship %}
-            <h2 class="h6 text-body-emphasis mb-2">
+            <h2 class="eyebrow mb-2">
                 {% trans "Needs attention" %}
             </h2>
             {% if attention_unsigned or attention_awaiting_invoice or attention_unpaid %}
-                <div class="list-group mb-3">
+                <div class="attention-list mb-4">
                     {% if attention_unsigned %}
                         <a href="{% querystring progress_status=status_agreement_sent %}"
-                           class="js-preserve-scroll list-group-item list-group-item-action list-group-item-warning d-flex align-items-center">
-                            <i class="icon-file-pen icon-fw me-3"></i>
-                            <span class="flex-grow-1">{% blocktranslate count counter=attention_unsigned %}{{ counter }} agreement awaiting signature{% plural %}{{ counter }} agreements awaiting signature{% endblocktranslate %}</span>
-                            <i class="icon-chevron-right"></i>
+                           class="js-preserve-scroll attention-item attention-warn">
+                            <span class="attention-tile" aria-hidden="true"><i class="icon-file-pen"></i></span>
+                            <span class="flex-grow-1">{% blocktranslate count counter=attention_unsigned %}<strong>{{ counter }} agreement</strong> awaiting signature.{% plural %}<strong>{{ counter }} agreements</strong> awaiting signature.{% endblocktranslate %}</span>
+                            <i class="icon-chevron-right attention-chevron" aria-hidden="true"></i>
                         </a>
                     {% endif %}
                     {% if attention_awaiting_invoice %}
                         <a href="{% querystring progress_status=status_agreement_signed %}"
-                           class="js-preserve-scroll list-group-item list-group-item-action list-group-item-warning d-flex align-items-center">
-                            <i class="icon-receipt icon-fw me-3"></i>
-                            <span class="flex-grow-1">{% blocktranslate count counter=attention_awaiting_invoice %}{{ counter }} signed sponsor awaiting invoice{% plural %}{{ counter }} signed sponsors awaiting invoice{% endblocktranslate %}</span>
-                            <i class="icon-chevron-right"></i>
+                           class="js-preserve-scroll attention-item attention-warn">
+                            <span class="attention-tile" aria-hidden="true"><i class="icon-receipt"></i></span>
+                            <span class="flex-grow-1">{% blocktranslate count counter=attention_awaiting_invoice %}<strong>{{ counter }} signed sponsor</strong> awaiting an invoice.{% plural %}<strong>{{ counter }} signed sponsors</strong> awaiting an invoice.{% endblocktranslate %}</span>
+                            <i class="icon-chevron-right attention-chevron" aria-hidden="true"></i>
                         </a>
                     {% endif %}
                     {% if attention_unpaid %}
                         <a href="{% querystring progress_status=status_invoiced %}"
-                           class="js-preserve-scroll list-group-item list-group-item-action list-group-item-warning d-flex align-items-center">
-                            <i class="icon-banknote icon-fw me-3"></i>
-                            <span class="flex-grow-1">{% blocktranslate count counter=attention_unpaid %}{{ counter }} invoiced sponsor not yet paid{% plural %}{{ counter }} invoiced sponsors not yet paid{% endblocktranslate %}</span>
-                            <i class="icon-chevron-right"></i>
+                           class="js-preserve-scroll attention-item attention-warn">
+                            <span class="attention-tile" aria-hidden="true"><i class="icon-banknote"></i></span>
+                            <span class="flex-grow-1">{% blocktranslate count counter=attention_unpaid %}<strong>{{ counter }} invoiced sponsor</strong> not yet paid.{% plural %}<strong>{{ counter }} invoiced sponsors</strong> not yet paid.{% endblocktranslate %}</span>
+                            <i class="icon-chevron-right attention-chevron" aria-hidden="true"></i>
                         </a>
                     {% endif %}
                 </div>
             {% else %}
-                <div class="alert alert-light border mb-3">
-                    <i class="icon-circle-check text-success"></i> {% trans "No sponsors need attention right now." %}
+                <div class="alert alert-success mb-4" role="status">
+                    {% trans "No sponsors need attention right now." %}
                 </div>
             {% endif %}
+            <h2 class="eyebrow mb-2">
+                {% trans "All sponsors" %}
+            </h2>
             <div class="mb-3 d-flex flex-wrap gap-1 align-items-center"
                  role="group"
                  aria-label="Filter by status">

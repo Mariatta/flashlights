@@ -1,6 +1,7 @@
 {% extends "portal/base_sidebar.html" %}
 {% load allauth i18n %}
 {% load django_bootstrap5 %}
+{% load portal_extras %}
 {% block sidebar_title %}
     {% if can_manage_sponsorship %}
         {% trans "Organize" %}
@@ -18,155 +19,141 @@
 {% endblock sidebar %}
 {% block content %}
     <div class="py-3">
-        <div class="row">
-            <div class="col-12">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item">
-                            <a href="{% url 'sponsorship:sponsorship_list' %}">Sponsors</a>
-                        </li>
-                        <li class="breadcrumb-item active" aria-current="page">
-                            {{ profile.organization_name }}
-                        </li>
-                    </ol>
-                </nav>
-                <div class="row g-0">
-                    <div class="col-md-8">
-                        <div class="card-body">
-                            <h5 class="card-title">
-                                {{ profile.organization_name }}
-                                <span class="badge bg-secondary align-middle fs-6">{{ profile.conference }}</span>
-                            </h5>
-                            {% if perms.sponsorship.change_sponsorshipprofile or perms.sponsorship.delete_sponsorshipprofile %}
-                                <div class="mb-2">
-                                    {% if perms.sponsorship.change_sponsorshipprofile %}
-                                        <a href="{% url 'sponsorship:sponsorship_profile_edit' profile.pk %}"
-                                           class="btn btn-sm btn-outline-primary"><i class="icon-pencil"></i> {% trans "Edit" %}</a>
-                                    {% endif %}
-                                    {% if perms.sponsorship.delete_sponsorshipprofile %}
-                                        <a href="{% url 'sponsorship:sponsorship_profile_delete' profile.pk %}"
-                                           class="btn btn-sm btn-outline-danger"><i class="icon-trash"></i> {% trans "Delete" %}</a>
-                                    {% endif %}
-                                </div>
-                            {% endif %}
-                            <p class="card-text">
-                                {{ profile.company_description }}
-                            </p>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        {% if profile.logo %}
-                            <a href="{{ profile.logo.url }}">
-                                <img src="{{ profile.logo.url }}"
-                                     class="img-fluid rounded-start"
-                                     alt="Logo of {{ profile.organization_name }}"
-                                     width="100"
-                                     height="100">
-                            </a>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            Sponsorship Details
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h6>
-                                    Organization Information
-                                </h6>
-                                <p>
-                                    <strong>Name:</strong> {{ profile.organization_name }}
-                                </p>
-                                {% if profile.organization_address %}
-                                    <p>
-                                        <strong>Address:</strong>
-                                        <br>
-                                        {{ profile.organization_address|linebreaks }}
-                                    </p>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-6">
-                                <h6>
-                                    Sponsorship Information
-                                </h6>
-                                {% if profile.sponsorship_tier %}
-                                    <p>
-                                        <strong>Tier:</strong> {{ profile.sponsorship_tier.name }} (${{ profile.sponsorship_tier.amount }})
-                                    </p>
-                                {% endif %}
-                                {% if profile.sponsorship_override_amount %}
-                                    <p>
-                                        <strong>Override Amount:</strong> ${{ profile.sponsorship_override_amount }}
-                                    </p>
-                                {% endif %}
-                                <p>
-                                    <strong>Status:</strong>
-                                    <span class="badge {% if profile.progress_status == 5 %}bg-success {% elif profile.progress_status == 6 %}bg-warning {% elif profile.progress_status == 7 %}bg-info {% elif profile.progress_status == 8 %}bg-primary {% elif profile.progress_status == 9 %}bg-success {% else %}bg-secondary{% endif %}">
-                                        {{ profile.get_progress_status_display }}
-                                    </span>
-                                </p>
-                            </div>
-                        </div>
-                        <div class="row mt-3">
-                            <div class="col-md-6">
-                                <h6>
-                                    Contact Information
-                                </h6>
-                                {% if profile.sponsor_contact_name %}
-                                    <p>
-                                        <strong>Contact Name:</strong> {{ profile.sponsor_contact_name }}
-                                    </p>
-                                {% endif %}
-                                {% if profile.sponsors_contact_email %}
-                                    <p>
-                                        <strong>Contact Email:</strong> {{ profile.sponsors_contact_email }}
-                                    </p>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-6">
-                                <h6>
-                                    System Information
-                                </h6>
-                                <p>
-                                    <strong>Created:</strong> {{ profile.creation_date }}
-                                </p>
-                                <p>
-                                    <strong>Last Updated:</strong> {{ profile.modified_date }}
-                                </p>
-                                <p>
-                                    <strong>GitHub Issue:</strong> <a href="{{ profile.github_issue_url }}"
-    target="_blank"
-    rel="noopener noreferrer">{{ profile.github_issue_url }}</a>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% if can_send_invoice %}
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <h5>
-                                Request the contract
-                            </h5>
-                            <p>
-                                Email the sponsorship details to whoever issues your invoices and to the sponsorship contact (the two addresses in the instance settings), so the contract and invoice can be prepared.
-                            </p>
-                            <form method="post"
-                                  action="{% url 'sponsorship:sponsorship_contract_request' profile.pk %}">
-                                {% csrf_token %}
-                                <button type="submit"
-                                        class="btn btn-primary"
-                                        onclick="return confirm('Send the contract request now?')">
-                                    <i class="fas icon-mail"></i> Send the contract request
-                                </button>
-                            </form>
-                        </div>
-                    </div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'sponsorship:sponsorship_list' %}">{% trans "Sponsors" %}</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    {{ profile.organization_name }}
+                </li>
+            </ol>
+        </nav>
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+            <div class="d-flex align-items-center gap-3">
+                {% if profile.logo %}
+                    <a href="{{ profile.logo.url }}" class="flex-shrink-0">
+                        <img src="{{ profile.logo.url }}"
+                             class="rounded border sponsor-logo"
+                             alt="Logo of {{ profile.organization_name }}"
+                             width="56"
+                             height="56">
+                    </a>
                 {% endif %}
+                <div>
+                    <h1 class="h3 mb-0">
+                        {{ profile.organization_name }}
+                    </h1>
+                    <div class="small text-secondary">
+                        {{ profile.conference }}
+                        {% if profile.sponsorship_tier %}
+                            · {{ profile.sponsorship_tier.name }}
+                        {% endif %}
+                        ·
+                        <span class="badge {% if profile.progress_status == 5 or profile.progress_status == 9 %}bg-success{% elif profile.progress_status == 6 or profile.progress_status == 7 %}bg-warning text-dark{% elif profile.progress_status == 4 or profile.progress_status == 8 %}bg-info text-dark{% elif profile.progress_status == 3 %}bg-danger{% else %}bg-secondary{% endif %}">{{ profile.get_progress_status_display }}</span>
+                    </div>
+                </div>
+            </div>
+            {% if perms.sponsorship.change_sponsorshipprofile or perms.sponsorship.delete_sponsorshipprofile %}
+                <div class="d-flex gap-2">
+                    {% if perms.sponsorship.change_sponsorshipprofile %}
+                        <a href="{% url 'sponsorship:sponsorship_profile_edit' profile.pk %}"
+                           class="btn btn-sm btn-outline-secondary"><i class="icon-pencil"></i> {% trans "Edit" %}</a>
+                    {% endif %}
+                    {% if perms.sponsorship.delete_sponsorshipprofile %}
+                        <a href="{% url 'sponsorship:sponsorship_profile_delete' profile.pk %}"
+                           class="btn btn-sm btn-outline-danger"><i class="icon-trash"></i> {% trans "Delete" %}</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+        {% if profile.company_description %}
+            <p class="mb-4">
+                {{ profile.company_description }}
+            </p>
+        {% endif %}
+        {% if can_send_invoice %}
+            <div class="card mb-4">
+                <div class="card-body d-flex flex-wrap align-items-center gap-3">
+                    <div class="flex-grow-1">
+                        <strong>{% trans "Request the contract" %}</strong>
+                        <div class="small text-secondary">
+                            {% trans "Emails the sponsorship details to whoever issues your invoices and to the sponsorship contact, the two addresses in the instance settings, so the contract and invoice can be prepared." %}
+                        </div>
+                    </div>
+                    <form method="post"
+                          action="{% url 'sponsorship:sponsorship_contract_request' profile.pk %}">
+                        {% csrf_token %}
+                        <button type="submit"
+                                class="btn btn-primary btn-sm"
+                                onclick="return confirm('Send the contract request now?')">
+                            <i class="icon-mail"></i> {% trans "Send the contract request" %}
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+        <h2 class="eyebrow mb-2">
+            {% trans "Details" %}
+        </h2>
+        <div class="card mb-4">
+            <div class="card-body py-3">
+                <dl class="row mb-0">
+                    {% if profile.sponsorship_tier %}
+                        <dt class="col-sm-3 text-secondary fw-normal">
+                            {% trans "Tier" %}
+                        </dt>
+                        <dd class="col-sm-9">
+                            {{ profile.sponsorship_tier.name }} ({{ profile.sponsorship_tier.amount|as_currency }})
+                        </dd>
+                    {% endif %}
+                    {% if profile.sponsorship_override_amount %}
+                        <dt class="col-sm-3 text-secondary fw-normal">
+                            {% trans "Agreed amount" %}
+                        </dt>
+                        <dd class="col-sm-9">
+                            {{ profile.sponsorship_override_amount|as_currency }}
+                        </dd>
+                    {% endif %}
+                    {% if profile.sponsor_contact_name or profile.sponsors_contact_email %}
+                        <dt class="col-sm-3 text-secondary fw-normal">
+                            {% trans "Contact" %}
+                        </dt>
+                        <dd class="col-sm-9">
+                            {{ profile.sponsor_contact_name }}
+                            {% if profile.sponsors_contact_email %}
+                                {% if profile.sponsor_contact_name %}
+                                    ·
+                                {% endif %}
+                                <a href="mailto:{{ profile.sponsors_contact_email }}">{{ profile.sponsors_contact_email }}</a>
+                            {% endif %}
+                        </dd>
+                    {% endif %}
+                    {% if profile.organization_address %}
+                        <dt class="col-sm-3 text-secondary fw-normal">
+                            {% trans "Address" %}
+                        </dt>
+                        <dd class="col-sm-9">
+                            {{ profile.organization_address|linebreaksbr }}
+                        </dd>
+                    {% endif %}
+                    {% if profile.github_issue_url %}
+                        <dt class="col-sm-3 text-secondary fw-normal">
+                            {% trans "Tracking issue" %}
+                        </dt>
+                        <dd class="col-sm-9">
+                            <a href="{{ profile.github_issue_url }}"
+                               target="_blank"
+                               rel="noopener noreferrer">{{ profile.github_issue_url }}</a>
+                        </dd>
+                    {% endif %}
+                    <dt class="col-sm-3 text-secondary fw-normal">
+                        {% trans "Record" %}
+                    </dt>
+                    <dd class="col-sm-9 mb-0">
+                        {% blocktranslate with added=profile.creation_date|date:"j M Y" updated=profile.modified_date|date:"j M Y" %}Added {{ added }}, last changed {{ updated }}.{% endblocktranslate %}
+                    </dd>
+                </dl>
             </div>
         </div>
     </div>
