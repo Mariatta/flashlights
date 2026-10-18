@@ -1,9 +1,8 @@
 from django import template
 from django.utils.safestring import mark_safe
 
-from portal.models import Conference
 from speakers.constants import SessionStatus
-from speakers.editions import program_editions, working_edition
+from speakers.editions import active_edition, program_editions, working_edition
 from speakers.markdown import render_md
 from speakers.people import user_label
 from speakers.permissions import can_work_sessions
@@ -59,11 +58,13 @@ def edition_switcher(context):
     plan: the active one and any newer one with the speaker portal on."""
     request = context["request"]
     user = request.user
-    editions = [one for one in program_editions() if can_work_sessions(user, one)]
+    editions = [
+        one for one in program_editions(request) if can_work_sessions(user, one)
+    ]
     return {
         "editions": editions if len(editions) > 1 else [],
         "working": working_edition(request),
-        "active": Conference.get_active(),
+        "active": active_edition(request),
         "next": request.get_full_path(),
         "csrf_token": context.get("csrf_token"),
     }

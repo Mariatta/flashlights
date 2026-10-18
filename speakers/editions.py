@@ -14,12 +14,40 @@ from portal.models import Conference
 from .models import Presenter, speaker_module_enabled
 
 SESSION_KEY = "speakers_working_edition"
+#: Where a request keeps what these helpers worked out: the rails, the
+#: switcher and the view all ask, and every page would repeat the queries.
+MEMO_ATTRIBUTE = "_speakers_editions"
 
 
-def program_editions():
+def _remembered(request, key, compute):
+    """``compute()``, once per ``request``; every time without one."""
+    if request is None:
+        return compute()
+    memo = request.__dict__.setdefault(MEMO_ATTRIBUTE, {})
+    if key not in memo:
+        memo[key] = compute()
+    return memo[key]
+
+
+def active_edition(request=None):
+    """``Conference.get_active()``, read once per request."""
+    return _remembered(request, "active", Conference.get_active)
+
+
+def module_enabled(conference, request=None):
+    """``speaker_module_enabled(conference)``, read once per request."""
+    key = ("enabled", getattr(conference, "pk", None))
+    return _remembered(request, key, lambda: speaker_module_enabled(conference))
+
+
+def program_editions(request=None):
     """The editions a program can be worked on: the active one and every
     newer one, each with the speaker portal on, oldest first."""
-    active = Conference.get_active()
+    return _remembered(request, "program", lambda: _program_editions(request))
+
+
+def _program_editions(request):
+    active = active_edition(request)
     if active is None:
         return []
     return list(
@@ -34,7 +62,11 @@ def working_edition(request):
     """The edition this person chose to plan, while it is still offered;
     otherwise the active one. When the active edition runs no program,
     the earliest newer one that does, so its organizers can reach it."""
-    active = Conference.get_active()
+    return _remembered(request, "working", lambda: _working_edition(request))
+
+
+def _working_edition(request):
+    active = active_edition(request)
     if active is None:
         return None
     newer = Conference.objects.filter(
@@ -46,16 +78,18 @@ def working_edition(request):
         planned = newer.filter(pk=chosen).first()
         if planned is not None:
             return planned
-    if speaker_module_enabled(active):
+    if module_enabled(active, request):
         return active
     return newer.order_by("year").first() or active
 
 
 def set_working_edition(request, conference):
+    """Plan ``conference`` from now on, for the rest of the login session."""
     request.session[SESSION_KEY] = conference.pk
+    request.__dict__.get(MEMO_ATTRIBUTE, {}).pop("working", None)
 
 
-def speaker_edition(user, preferred=None):
+def speaker_edition(user, preferred=None, request=None):
     """The edition ``user`` is on the program of, among the active and newer
     ones with the speaker portal on: ``preferred`` when it is one of them,
     else the active one, else the earliest. None when they are on none.
@@ -63,7 +97,7 @@ def speaker_edition(user, preferred=None):
     answered has a presenter row and no speaker pages."""
     if not user.is_authenticated:
         return None
-    editions = program_editions()
+    editions = program_editions(request)
     on = set(
         Presenter.objects.filter(
             user=user,

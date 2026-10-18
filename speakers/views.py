@@ -196,7 +196,7 @@ class SpeakerPortalIndexView(
     def get(self, request, *args, **kwargs):
         # On the program of this edition or a newer one: the dashboard
         # follows them there (``PresenterRequiredMixin``).
-        if speaker_edition(request.user, self.conference):
+        if speaker_edition(request.user, self.conference, request):
             return redirect("speakers:my_dashboard")
         if can_work_sessions(request.user, self.conference):
             return redirect("speakers:session_list")

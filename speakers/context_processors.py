@@ -1,8 +1,11 @@
-from portal.models import Conference
-
 from .constants import ProposalDecision
-from .editions import speaker_edition, working_edition
-from .models import Proposal, speaker_module_enabled
+from .editions import (
+    active_edition,
+    module_enabled,
+    speaker_edition,
+    working_edition,
+)
+from .models import Proposal
 from .permissions import (
     can_review_proposals,
     can_work_queue,
@@ -33,10 +36,9 @@ def speaker_module(request):
     """
     # A handful of queries per authenticated render: the liaison lookup is
     # skipped for organizers, who already see everything, and the queue
-    # predicate answers from the permission alone for them. Left uncached on
-    # purpose while it is this small; the moment another flag joins them,
-    # cache the result on the request rather than adding one more query to
-    # every page.
+    # predicate answers from the permission alone for them. The editions
+    # are read once per request (``speakers.editions``), shared with the
+    # view and the switcher.
     user = getattr(request, "user", None)
     if user is None or not user.is_authenticated:
         # Proposing is open to anyone, so the one flag a signed-out page
@@ -46,16 +48,16 @@ def speaker_module(request):
         # answers for members below, so the button and the form agree.
         return {
             "speaker_module_enabled": False,
-            "speaker_proposals_open": proposals_open(Conference.get_active()),
+            "speaker_proposals_open": proposals_open(active_edition(request)),
             "pending_proposal_count": None,
             "has_speaker_proposals": False,
             "is_speaker_liaison": False,
             "can_work_speaker_queue": False,
             "is_speaker_presenter": False,
         }
-    active = Conference.get_active()
+    active = active_edition(request)
     conference = working_edition(request)
-    enabled = speaker_module_enabled(conference)
+    enabled = module_enabled(conference, request)
     # The public call is the active edition's, whatever is being planned.
     taking_proposals = proposals_open(active)
     return {
@@ -88,5 +90,5 @@ def speaker_module(request):
         # proposal that has not been answered yet makes a presenter row
         # and no program. The rule lives on the queryset, shared with the
         # gate on the pages the tab opens.
-        "is_speaker_presenter": speaker_edition(user, conference) is not None,
+        "is_speaker_presenter": speaker_edition(user, conference, request) is not None,
     }

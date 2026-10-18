@@ -12,7 +12,10 @@ from portal.models import Conference
 from speakers.context_processors import speaker_module
 from speakers.editions import (
     SESSION_KEY,
+    active_edition,
+    module_enabled,
     program_editions,
+    set_working_edition,
     speaker_edition,
     working_edition,
 )
@@ -50,6 +53,14 @@ def organizer(db):
     return on_team(User.objects.create_user(username="org", email="org@x.org"))
 
 
+def request_with(session):
+    """A new request, as each page load is: what one request read about
+    the editions is not read again."""
+    request = RequestFactory().get("/")
+    request.session = session
+    return request
+
+
 def speaker_on(edition, username="ada"):
     user, _ = User.objects.get_or_create(
         username=username, defaults={"email": f"{username}@x.org"}
@@ -72,16 +83,15 @@ class TestEditions:
         conference.is_active = False
         conference.save()
         assert program_editions() == []
+        assert working_edition(request_with({})) is None
 
     def test_a_choice_no_longer_offered_falls_back(self, conference, upcoming):
-        request = RequestFactory().get("/")
-        request.session = {}
-        assert working_edition(request) == conference
-        request.session[SESSION_KEY] = upcoming.pk
-        assert working_edition(request) == upcoming
+        assert working_edition(request_with({})) == conference
+        chosen = {SESSION_KEY: upcoming.pk}
+        assert working_edition(request_with(chosen)) == upcoming
         upcoming.speaker_settings.speaker_module_enabled = False
         upcoming.speaker_settings.save()
-        assert working_edition(request) == conference
+        assert working_edition(request_with(chosen)) == conference
 
     def test_an_active_edition_without_a_program_hands_over_to_the_next(
         self, client, organizer, conference, upcoming
@@ -89,18 +99,37 @@ class TestEditions:
         conference.speaker_settings.speaker_module_enabled = False
         conference.speaker_settings.save()
         assert program_editions() == [upcoming]
-        request = RequestFactory().get("/")
-        request.session = {SESSION_KEY: conference.pk}
-        assert working_edition(request) == upcoming
+        chosen = {SESSION_KEY: conference.pk}
+        assert working_edition(request_with(chosen)) == upcoming
         upcoming.speaker_settings.speaker_module_enabled = False
         upcoming.speaker_settings.save()
-        assert working_edition(request) == conference
+        assert working_edition(request_with(chosen)) == conference
         upcoming.speaker_settings.speaker_module_enabled = True
         upcoming.speaker_settings.save()
         make_session(upcoming, title="Planned talk")
         client.force_login(organizer)
         page = client.get(reverse("speakers:session_list")).content.decode()
         assert "Planned talk" in page and "You are planning" in page
+
+
+@pytest.mark.django_db
+class TestOncePerRequest:
+    def test_the_rails_the_switcher_and_the_view_share_one_read(
+        self, organizer, conference, upcoming, django_assert_num_queries
+    ):
+        request = request_with({SESSION_KEY: upcoming.pk})
+        request.user = organizer
+        speaker_module(request)
+        with django_assert_num_queries(0):
+            assert active_edition(request) == conference
+            assert working_edition(request) == upcoming
+            assert program_editions(request) == [conference, upcoming]
+            assert module_enabled(upcoming, request)
+        # Switching forgets the working edition, and only that: the one
+        # read left is whether the active edition's portal is on.
+        set_working_edition(request, conference)
+        with django_assert_num_queries(1):
+            assert working_edition(request) == conference
 
 
 @pytest.mark.django_db

@@ -2,8 +2,8 @@ from django.contrib.auth.mixins import PermissionRequiredMixin, UserPassesTestMi
 from django.http import Http404
 
 from .constants import CHANGE_HANDBOOK, CHANGE_SETTINGS, CHANGE_TEMPLATES
-from .editions import speaker_edition, working_edition
-from .models import Presenter, speaker_module_enabled
+from .editions import module_enabled, speaker_edition, working_edition
+from .models import Presenter
 from .permissions import (
     can_publish_program,
     can_publish_session_video,
@@ -30,7 +30,7 @@ class SpeakerModuleRequiredMixin:
 
     def dispatch(self, request, *args, **kwargs):
         self.conference = self.get_edition()
-        if not speaker_module_enabled(self.conference):
+        if not module_enabled(self.conference, request):
             raise Http404("The speaker portal is not enabled for this edition.")
         return super().dispatch(request, *args, **kwargs)
 
@@ -133,7 +133,7 @@ class PresenterRequiredMixin(SpeakerModuleRequiredMixin, UserPassesTestMixin):
 
     def get_edition(self):
         working = working_edition(self.request)
-        return speaker_edition(self.request.user, working) or working
+        return speaker_edition(self.request.user, working, self.request) or working
 
     def test_func(self):
         user = self.request.user

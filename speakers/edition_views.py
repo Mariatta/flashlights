@@ -31,7 +31,9 @@ class WorkingEditionView(LoginRequiredMixin, View):
 
     def post(self, request):
         value = request.POST.get("edition", "")
-        chosen = next((one for one in program_editions() if str(one.pk) == value), None)
+        chosen = next(
+            (one for one in program_editions(request) if str(one.pk) == value), None
+        )
         if chosen is None or not can_work_sessions(request.user, chosen):
             raise Http404("No such edition to plan.")
         set_working_edition(request, chosen)
