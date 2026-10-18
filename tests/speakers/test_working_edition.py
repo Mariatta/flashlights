@@ -83,6 +83,25 @@ class TestEditions:
         upcoming.speaker_settings.save()
         assert working_edition(request) == conference
 
+    def test_an_active_edition_without_a_program_hands_over_to_the_next(
+        self, client, organizer, conference, upcoming
+    ):
+        conference.speaker_settings.speaker_module_enabled = False
+        conference.speaker_settings.save()
+        assert program_editions() == [upcoming]
+        request = RequestFactory().get("/")
+        request.session = {SESSION_KEY: conference.pk}
+        assert working_edition(request) == upcoming
+        upcoming.speaker_settings.speaker_module_enabled = False
+        upcoming.speaker_settings.save()
+        assert working_edition(request) == conference
+        upcoming.speaker_settings.speaker_module_enabled = True
+        upcoming.speaker_settings.save()
+        make_session(upcoming, title="Planned talk")
+        client.force_login(organizer)
+        page = client.get(reverse("speakers:session_list")).content.decode()
+        assert "Planned talk" in page and "You are planning" in page
+
 
 @pytest.mark.django_db
 class TestSwitching:

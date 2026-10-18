@@ -26,10 +26,11 @@
         <button type="submit" class="btn btn-outline-secondary btn-sm w-100 mt-2">
             {% trans "Switch" %}
         </button>
-        {% if working.pk != active.pk %}
-            <p class="small text-secondary mt-2 mb-0">
-                {% blocktrans with planning=working.name public=active.name %}You are planning {{ planning }}. The public site still shows {{ public }}.{% endblocktrans %}
-            </p>
-        {% endif %}
     </form>
+{% endif %}
+{# Also with nothing to switch to: the active edition may run no program. #}
+{% if working and working.pk != active.pk %}
+    <p class="small text-secondary mb-3">
+        {% blocktrans with planning=working.name public=active.name %}You are planning {{ planning }}. The public site still shows {{ public }}.{% endblocktrans %}
+    </p>
 {% endif %}

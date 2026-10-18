@@ -11,41 +11,44 @@ from django.db.models import Q
 
 from portal.models import Conference
 
-from .models import Presenter
+from .models import Presenter, speaker_module_enabled
 
 SESSION_KEY = "speakers_working_edition"
 
 
 def program_editions():
-    """The editions a program can be worked on: the active one, and every
-    newer one with the speaker portal on, oldest first."""
+    """The editions a program can be worked on: the active one and every
+    newer one, each with the speaker portal on, oldest first."""
     active = Conference.get_active()
     if active is None:
         return []
     return list(
         Conference.objects.filter(
-            Q(pk=active.pk)
-            | Q(year__gt=active.year, speaker_settings__speaker_module_enabled=True)
+            Q(pk=active.pk) | Q(year__gt=active.year),
+            speaker_settings__speaker_module_enabled=True,
         ).order_by("year")
     )
 
 
 def working_edition(request):
     """The edition this person chose to plan, while it is still offered;
-    otherwise the active one."""
+    otherwise the active one. When the active edition runs no program,
+    the earliest newer one that does, so its organizers can reach it."""
     active = Conference.get_active()
+    if active is None:
+        return None
+    newer = Conference.objects.filter(
+        year__gt=active.year, speaker_settings__speaker_module_enabled=True
+    )
     # A request built outside the middleware has no session: the active one.
     chosen = getattr(request, "session", {}).get(SESSION_KEY)
-    if active is None or chosen in (None, active.pk):
+    if chosen not in (None, active.pk):
+        planned = newer.filter(pk=chosen).first()
+        if planned is not None:
+            return planned
+    if speaker_module_enabled(active):
         return active
-    return (
-        Conference.objects.filter(
-            pk=chosen,
-            year__gt=active.year,
-            speaker_settings__speaker_module_enabled=True,
-        ).first()
-        or active
-    )
+    return newer.order_by("year").first() or active
 
 
 def set_working_edition(request, conference):
