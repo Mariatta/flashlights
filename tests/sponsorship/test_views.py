@@ -777,6 +777,25 @@ class TestSponsorshipCreateViews:
         assert len(messages) == 1
         assert "Contract request sent for Test Corp" in str(messages[0].message)
 
+    def test_send_invoice_view_says_so_when_there_is_nobody_to_send_to(
+        self, client, admin_user, conference, settings
+    ):
+        settings.ACCOUNTING_EMAIL = ""
+        settings.SPONSORSHIP_EMAIL = ""
+        profile = SponsorshipProfile.objects.create(
+            organization_name="Test Corp",
+            progress_status=SponsorshipProgressStatus.APPROVED,
+            conference=conference,
+        )
+        client.force_login(admin_user)
+        response = client.post(
+            reverse("sponsorship:sponsorship_contract_request", args=[profile.pk]),
+            follow=True,
+        )
+        content = response.content.decode()
+        assert "No contract request was sent" in content
+        assert "Contract request sent" not in content
+
 
 @pytest.mark.django_db
 class TestSponsorshipCRUD:

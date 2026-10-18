@@ -9,7 +9,7 @@ def send_contract_request_email(profile):
     Goes to ``ACCOUNTING_EMAIL`` and ``SPONSORSHIP_EMAIL`` (settings, both
     optional) and is skipped when neither is set. Through ``send_email``, so
     it is in the sent-email record like every other email the portal sends,
-    and replies go to the edition's address.
+    and replies go to the edition's address. Returns whether it was sent.
     """
     recipients = [
         address
@@ -17,7 +17,7 @@ def send_contract_request_email(profile):
         if address
     ]
     if not recipients:
-        return
+        return False
     subject = (
         f"{settings.BRAND.short_name} sponsorship contract request: "
         f"{profile.organization_name}"
@@ -30,3 +30,4 @@ def send_contract_request_email(profile):
         context={"profile": profile},
         conference=profile.conference,
     )
+    return True

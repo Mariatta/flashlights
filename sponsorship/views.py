@@ -352,12 +352,18 @@ class SponsorshipProfileContractRequest(PermissionRequiredMixin, View):
     def post(self, request, pk):
         profile = get_object_or_404(SponsorshipProfile, pk=pk)
 
-        send_contract_request_email(profile)
-
-        messages.success(
-            request,
-            f"Contract request sent for {profile.organization_name}",
-        )
+        if send_contract_request_email(profile):
+            messages.success(
+                request,
+                f"Contract request sent for {profile.organization_name}",
+            )
+        else:
+            messages.error(
+                request,
+                "No contract request was sent: this site has no address to "
+                "send it to. Whoever runs it can set ACCOUNTING_EMAIL or "
+                "SPONSORSHIP_EMAIL.",
+            )
 
         return redirect("sponsorship:sponsorship_profile_detail", pk=pk)
 
