@@ -328,7 +328,7 @@ def save_handles(user, values):
             )
         else:
             Handle.objects.filter(user=user, channel=code).delete()
-    push_handles(user)
+    push_handles(user, saved=True)
 
 
 def adopt_role_handles(user):
@@ -346,11 +346,15 @@ def adopt_role_handles(user):
     push_handles(user)
 
 
-def push_handles(user):
+def push_handles(user, saved=False):
     """Write the person's record into every volunteer profile and
     presenter row of theirs. Volunteer rows are updated in place without
     signals (a changed handle is not a new application); presenter rows
-    save through their receivers, since the public program shows them."""
+    save through their receivers, since the public program shows them.
+
+    An empty record leaves the rows alone, since a person who never saved
+    one reads as their rows say, unless ``saved``: the person just
+    cleared their last handle, and the rows are cleared with it."""
     user_id = getattr(user, "pk", user)
     stored = dict(
         _handle_model().objects.filter(user_id=user_id).values_list("channel", "value")
@@ -360,9 +364,10 @@ def push_handles(user):
         _profiles().filter(user_id=user_id).values_list("pronouns", flat=True)[:1]
     )
     pronouns = found[0] if found else None
-    if not stored and pronouns is None:
+    write_handles = bool(stored) or saved
+    if not write_handles and pronouns is None:
         return
-    if stored:
+    if write_handles:
         volunteers = apps.get_model("volunteer", "VolunteerProfile").objects
         volunteers.filter(user_id=user_id).update(
             **{
@@ -372,7 +377,7 @@ def push_handles(user):
         )
     for presenter in _presenters().filter(user_id=user_id):
         changed = []
-        columns = PRESENTER_COLUMNS.items() if stored else []
+        columns = PRESENTER_COLUMNS.items() if write_handles else []
         wanted = [(column, stored.get(code, "")) for code, column in columns]
         if pronouns is not None:
             wanted.append(("pronouns", (pronouns or "")[:PRESENTER_PRONOUNS_LENGTH]))

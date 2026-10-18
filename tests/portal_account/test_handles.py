@@ -138,6 +138,16 @@ class TestTheRecord:
         assert handles_of(ada) == {"github": "ada-new"}
         assert Handle.objects.filter(user=ada).count() == 1
 
+    def test_clearing_the_last_handle_clears_the_rows(self, ada, rows):
+        profile, presenter = rows
+        save_handles(ada, {"website": "https://ada.example.org"})
+        save_handles(ada, {"website": ""})
+        assert handles_of(ada) == {}
+        profile.refresh_from_db()
+        presenter.refresh_from_db()
+        assert presenter.website_url == "" and presenter.github_username == ""
+        assert profile.github_username == "" and profile.discord_username == ""
+
     def test_pushing_with_no_record_changes_nothing(self, ada, rows):
         profile, presenter = rows
         push_handles(ada)
