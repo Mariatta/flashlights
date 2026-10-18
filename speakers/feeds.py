@@ -15,7 +15,7 @@ from django.core import signing
 from .constants import PremiereLocation, SessionStatus
 from .models import PublishedSlot
 from .public import public_program
-from .rooms import location as where
+from .rooms import Locations
 
 FEED_SALT = "speakers.presenter-feed"
 
@@ -105,8 +105,9 @@ def _stamp(moment):
     return moment.strftime("%Y%m%dT%H%M%SZ")
 
 
-def event_lines(row):
-    """One VEVENT from a published slot."""
+def event_lines(row, where):
+    """One VEVENT from a published slot; ``where`` is the edition's
+    ``Locations``."""
     session = row.session
     conference = row.conference
     if (
@@ -118,7 +119,7 @@ def event_lines(row):
     else:
         # The room with its venue, so a calendar can map the place; the
         # venue is the room's own, else that day's (a series may move).
-        location = where(conference, row.start_utc, row.room if row.room_id else None)
+        location = where(row.start_utc, row.room if row.room_id else None)
     lines = [
         "BEGIN:VEVENT",
         f"UID:session-{session.pk}@{conference.slug}.flashlights",
@@ -144,8 +145,13 @@ def render_calendar(name, rows):
         "CALSCALE:GREGORIAN",
         f"X-WR-CALNAME:{escape_text(name)}",
     ]
+    # One Locations per edition, not per row: each row has its own copy of
+    # the edition, so its venues would be read again for every slot.
+    places = {}
     for row in rows:
-        lines.extend(event_lines(row))
+        if row.conference_id not in places:
+            places[row.conference_id] = Locations(row.conference)
+        lines.extend(event_lines(row, places[row.conference_id]))
     lines.append("END:VCALENDAR")
     folded = []
     for line in lines:

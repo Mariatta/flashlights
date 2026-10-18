@@ -4,14 +4,18 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 from django.contrib.auth.models import User
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from portal.models import Conference, Venue
 from speakers.constants import PremiereLocation, ProgramVisibility
 from speakers.feeds import (
     escape_text,
+    feed_rows,
     fold,
     presenter_feed_token,
+    render_calendar,
     subscribe_links,
 )
 from speakers.schedule import publish_schedule
@@ -44,11 +48,13 @@ def organizer(db):
     )
 
 
-def public_session(conference, title="Public panel", presenter=None, room=None):
+def public_session(
+    conference, title="Public panel", presenter=None, room=None, start_utc=T0
+):
     session = make_session(conference, title=title, kind="PANEL")
     add_presenter(session, presenter or make_presenter(conference), confirmed=True)
     session.confirm()
-    make_slot(session, room=room, start_utc=T0)
+    make_slot(session, room=room, start_utc=start_utc)
     make_published_slot(session)
     session.schedule()
     session.publish()
@@ -139,6 +145,24 @@ class TestPublicFeed:
         room.save()
         text = client.get(FEED).content.decode()
         assert "LOCATION:main-stage\\, Annex" in text
+
+    def test_queries_do_not_grow_with_the_slots(self, enabled, conference):
+        conference.event_dates.create(
+            date=T0.date(), venue=Venue.objects.create(name="Hyatt")
+        )
+
+        def queries():
+            with CaptureQueriesContext(connection) as run:
+                text = render_calendar("Feed", feed_rows(conference))
+            assert "LOCATION:All rooms\\, Hyatt" in text
+            return len(run)
+
+        for n in range(2):
+            public_session(conference, f"Talk {n}", start_utc=T0 + timedelta(hours=n))
+        two = queries()
+        for n in range(2, 6):
+            public_session(conference, f"Talk {n}", start_utc=T0 + timedelta(hours=n))
+        assert queries() == two
 
     def test_filters(self, client, enabled, conference):
         room = make_room(conference)
