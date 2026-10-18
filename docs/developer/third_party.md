@@ -14,7 +14,8 @@ means:
 - **Every page is served by the instance itself.** Scripts, stylesheets,
   fonts, icons, charts and images come from the instance's own `/static/`,
   so opening a page tells no other company who you are, what browser you
-  use or which page you are on.
+  use or which page you are on. The one exception is uploads with object
+  storage on: headshots and logos are shown from the bucket's address.
 - **No analytics, no advertising, no third-party cookies.** The only cookies
   are the instance's own, which keep you signed in and protect its forms.
 - **No hosted CAPTCHA, no embedded fonts, no CDN.** The signup challenge is
@@ -94,8 +95,9 @@ A community app follows the same rule: its scripts and styles go in its own
 
 ## Services an instance talks to
 
-These are server to server. No visitor's browser contacts them, and none
-of them sets a cookie on a visitor.
+These are server to server, with one exception: with object storage on, a
+visitor's browser loads public headshots and logos from the bucket. None of
+them sets a cookie on a visitor.
 
 | Service | When | What it receives |
 |---|---|---|
