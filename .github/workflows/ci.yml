@@ -6,6 +6,8 @@ on:
   pull_request:
   repository_dispatch:
     types: [automated-update-trigger]
+  # The release workflow runs these checks before it publishes an image.
+  workflow_call:
 jobs:
   test:
     runs-on: ubuntu-latest

@@ -1,0 +1,18 @@
+# Kept out of the image: history, build output, local state and anything
+# personal to one checkout. The vendored libraries are in portal/static/,
+# so the image needs neither Node nor node_modules.
+.git
+.github
+.idea
+.junie
+.cache
+.state
+.env*
+.preset-settings
+local.mk
+*.local.*
+node_modules
+staticroot
+htmlcov
+.coverage
+**/__pycache__

@@ -69,7 +69,9 @@ about 500 MB lighter. **Full** adds machine transcription: build with
 `--build-arg WHISPER_MODEL=small` (or another faster-whisper model) and
 the library and model go into the image, under `/opt/whisper`, in a layer
 before the code, so a code-only build reuses it. A host that cannot pass
-build arguments deploys a prebuilt full image by tag. The media worker
+build arguments deploys a prebuilt full image by tag,
+`ghcr.io/mariatta/flashlights:X.Y.Z-full` ([Releasing](releasing.md)
+lists the images each release publishes). The media worker
 section below says what to set once the full image runs.
 
 ### The lite profile

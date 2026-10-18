@@ -40,6 +40,7 @@ nav:
     - How Tos: developer/howto.md
     - Markdown Emails: developer/markdown-emails.md
     - Deployment: developer/deployment.md
+    - Releasing: developer/releasing.md
     - Environment reference: developer/environment.md
     - Community apps: developer/community_apps.md
     - Design System: developer/design.md

@@ -47,7 +47,7 @@ A plain repository, not a fork of the core, holding the app, its tests, a
 `Dockerfile` and the deployment. The `Dockerfile` is a few lines:
 
 ```dockerfile
-FROM ghcr.io/mariatta/flashlights:0.4.0
+FROM ghcr.io/mariatta/flashlights:0.1.0
 COPY . /community
 RUN pip install /community
 ENV EXTRA_APPS=flashlights_summit
@@ -65,6 +65,10 @@ deployment. Upgrading the core is a one-line change to the `FROM` tag in
 a pull request, and the repository's CI should build the image, run the
 app's tests against the new core and load the community's demo data into
 a fresh database, so a release that breaks the app fails there first.
+[Releasing](releasing.md) lists the images each release publishes; read
+the version's `CHANGELOG.md` entry before upgrading. Dependabot's `docker`
+updates in the community's repository open that pull request when a new
+core version is published.
 
 ## Replacing a page, an email or a static file
 

@@ -50,8 +50,8 @@ version and the sha256 of every copied file.
 ## How updates arrive
 
 Dependabot (`.github/dependabot.yml`) checks once a week and opens a pull
-request for each new release of a browser library, a Python package or a
-GitHub Action. GitHub's security advisories cover the same pins, so a
+request for each new release of a browser library, a Python package, a
+GitHub Action or the Python base image. GitHub's security advisories cover the same pins, so a
 known vulnerability shows up as an alert as well as a pull request.
 
 A pull request for a browser library changes `package.json` and

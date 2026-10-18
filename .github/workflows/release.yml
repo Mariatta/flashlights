@@ -1,0 +1,81 @@
+# Publishes a release when a tag vX.Y.Z is pushed: the checks, then the
+# image in both flavours on ghcr.io, then a GitHub release whose notes are
+# the version's CHANGELOG.md section. docs/developer/releasing.md has the
+# steps before the tag.
+name: Release
+on:
+  push:
+    tags: ["v*.*.*"]
+
+jobs:
+  checks:
+    uses: ./.github/workflows/ci.yml
+
+  release:
+    needs: checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: Tag, version and changelog agree
+        run: python scripts/release.py "$GITHUB_REF_NAME" > release-notes.md
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Slim, the default: X.Y.Z, X.Y and latest, for Intel and ARM hosts.
+      - id: slim
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+          labels: org.opencontainers.image.licenses=AGPL-3.0-only
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.slim.outputs.tags }}
+          labels: ${{ steps.slim.outputs.labels }}
+          cache-from: type=gha,scope=slim
+          cache-to: type=gha,mode=max,scope=slim
+
+      # Full, with machine transcription: X.Y.Z-full and X.Y-full. The model
+      # alone is several hundred MB, so Intel only, where the hosts are.
+      - id: full
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          flavor: |
+            latest=false
+            suffix=-full
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+          labels: org.opencontainers.image.licenses=AGPL-3.0-only
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          build-args: WHISPER_MODEL=small
+          push: true
+          tags: ${{ steps.full.outputs.tags }}
+          labels: ${{ steps.full.outputs.labels }}
+          cache-from: type=gha,scope=full
+          cache-to: type=gha,mode=max,scope=full
+
+      - name: GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file release-notes.md --verify-tag
