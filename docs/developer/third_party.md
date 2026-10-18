@@ -102,10 +102,10 @@ of them sets a cookie on a visitor.
 | The email provider | Always | Each email Flashlights sends: recipient, subject, body. Open and click tracking is a setting in the provider's account; keep it off |
 | Object storage | `USE_OBJECT_STORAGE` on | Uploaded files. Headshots and logos in the public bucket are served from the bucket's address, the operator's own storage rather than a tracker |
 | Pretix | An edition has a Pretix organizer | Ticket and attendee lookups for that edition |
-| Sentry | `SENTRY_SDK_DSN` set | Each error, with the request that caused it, including the signed-in person's details and IP address. Leave it unset if the instance's privacy notice does not cover that |
+| Sentry | `SENTRY_SDK_DSN` set | Each error, with the stack trace and the address of the request that caused it. The signed-in person's details, IP address, request headers and cookies only with `SENTRY_SEND_DEFAULT_PII` on, which the instance's privacy notice then has to mention |
 
 ## Saying it to the people who use the instance
 
 The [terms of service template](../policies/terms_of_use.md) has a
 paragraph on this for organisers to adapt. Keep it true: an instance that
-turns on Sentry, or an email provider's tracking, says so.
+turns on Sentry's personal data, or an email provider's tracking, says so.

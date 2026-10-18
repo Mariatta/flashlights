@@ -50,9 +50,11 @@ SENTRY_SDK_DSN = os.environ.get("SENTRY_SDK_DSN")
 if SENTRY_SDK_DSN:
     sentry_sdk.init(
         dsn=SENTRY_SDK_DSN,
-        # Add data like request headers and IP for users;
-        # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
-        send_default_pii=True,
+        # The signed-in person's details, their IP address, request headers
+        # and cookies go with each event only when the instance opts in, since
+        # its privacy notice then has to say so; see
+        # https://docs.sentry.io/platforms/python/data-management/data-collected/
+        send_default_pii=boot.switch(os.environ, "SENTRY_SEND_DEFAULT_PII"),
         integrations=[
             DjangoIntegration(
                 transaction_style="url",

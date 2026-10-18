@@ -237,7 +237,8 @@ address is logged as a short hash, not in full.
 
 ### What the code already does
 
-`sentry_sdk.init` runs in `portal/settings.py`, behind `SENTRY_SDK_DSN`.
+`sentry_sdk.init` runs in `portal/settings.py`, behind `SENTRY_SDK_DSN`,
+with personal data off unless `SENTRY_SEND_DEFAULT_PII` is on.
 Every process imports those settings (the Celery app reads them), so web,
 `worker`, `worker-media` and `worker-beat` initialise Sentry from the same
 environment variable, and the SDK enables its Celery integration on its own

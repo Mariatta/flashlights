@@ -37,7 +37,8 @@ other companies, so using it tells no one else what you do there. Your
 information leaves [Portal] only through the services that run it:
 [email provider] sends its emails and [storage provider] keeps the files
 you upload. [If the instance reports errors to Sentry: errors are reported
-to Sentry, with the request that caused them.]
+to Sentry, without your details.] [If `SENTRY_SEND_DEFAULT_PII` is on:
+errors are reported to Sentry with your account details and IP address.]
 
 ## Our side
 
