@@ -130,7 +130,7 @@ theme's, so a community sets the same values for its public site.
 | `VOLUNTEERING_ENABLED` | No | on | Off, the volunteer hub, applications and teams are gone and their pages answer 404 |
 | `SPONSORSHIP_ENABLED` | No | on | Off, sponsors, tiers, donations and their stats are gone |
 | `STATS_PUBLIC` | No | on | Off, the public stats, year comparison and JSON feed pages are gone |
-| `SPONSORSHIP_EMAIL` | No | none | Who receives a sponsorship contract request, besides the sponsor |
+| `SPONSORSHIP_EMAIL` | No | none | The organisers' sponsorship address; receives the contract request (the sponsor never does) |
 | `ACCOUNTING_EMAIL` | No | none | Who issues invoices; also receives the contract request. With neither set, the request is not sent |
 | `GDRIVE_FOLDER_ID` | No | none | A shared Google Drive folder linked from the volunteer onboarding emails; the link is left out when unset |
 | `UNVERIFIED_ACCOUNT_RETENTION_DAYS` | No | 7 | Days before an account whose email address was never verified is deleted; the verification email quotes it |

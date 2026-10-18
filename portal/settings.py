@@ -554,7 +554,7 @@ CACHES = {
 # Ticketing is per edition: the ticketing app's settings
 # row, edited on the edition's Tickets page, not the environment.
 
-# Who receives a sponsorship contract request besides the sponsor: the
+# Who receives a sponsorship contract request (never the sponsor): the
 # organisers' sponsorship contact and whoever issues invoices. Both optional;
 # the request email is skipped when neither is set.
 SPONSORSHIP_EMAIL = os.getenv("SPONSORSHIP_EMAIL", "")
