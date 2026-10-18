@@ -146,6 +146,20 @@ class TestAdminLinks:
 
 
 @pytest.mark.django_db
+class TestDashboardCards:
+    def test_the_top_line_cards_carry_the_stat_card_class(
+        self, client, conference, admin_user
+    ):
+        """A stray quote once made stat-card an attribute, and the cards
+        lost their styling with every test still passing."""
+        client.force_login(admin_user)
+        page = client.get(reverse("organizer_dashboard")).content.decode()
+        # Onboarded, sponsorship and donations; tickets only with Pretix.
+        assert page.count('class="card h-100 stat-card"') == 3
+        assert '" stat-card' not in page
+
+
+@pytest.mark.django_db
 class TestReviewersReadItems:
     def test_a_reviewer_reads_without_ticking(self, client, conference):
         make_settings(conference)
