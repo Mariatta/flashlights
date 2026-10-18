@@ -131,6 +131,19 @@ class TestSwitching:
         assert response.url == reverse("speakers:session_list")
         assert client.session[SESSION_KEY] == conference.pk
 
+    def test_switching_from_one_sessions_page_lands_on_the_sessions(
+        self, client, organizer, conference, upcoming
+    ):
+        session = make_session(conference, title="Current talk")
+        client.force_login(organizer)
+        detail = reverse("speakers:session_detail", args=[session.slug])
+        assert client.get(detail).status_code == 200
+        response = switch(client, upcoming, next=detail + "?tab=files")
+        assert response.url == reverse("speakers:session_list")
+        assert client.get(response.url).status_code == 200
+        response = switch(client, conference, next="/no/such/page/")
+        assert response.url == reverse("speakers:session_list")
+
     def test_only_offered_editions_and_only_to_program_staff(
         self, client, organizer, conference, upcoming
     ):
