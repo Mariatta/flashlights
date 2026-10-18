@@ -6,6 +6,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.exceptions import ValidationError
 from django.db.models import Q
+from django.forms.models import construct_instance
 from django.utils import timezone
 from django.utils.text import slugify
 from text_unidecode import unidecode
@@ -326,6 +327,19 @@ class SessionVideoForm(EventTimeMixin, forms.ModelForm):
         if self.instance.delivery == Delivery.LIVE:
             refuse_video_for_live(self, cleaned, self.recordings)
         return cleaned
+
+    def _post_clean(self):
+        """Check the card's own fields only. ``Session.clean`` also speaks
+        to the session's type, presenters and address, which the card does
+        not edit, and its objection would have no field here to land on."""
+        opts = self._meta
+        self.instance = construct_instance(
+            self, self.instance, opts.fields, opts.exclude
+        )
+        try:
+            self.instance.clean_fields(exclude=self._get_validation_exclusions())
+        except ValidationError as error:
+            self._update_errors(error)
 
 
 class ProgramItemForm(forms.ModelForm):

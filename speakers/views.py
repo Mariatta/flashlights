@@ -857,7 +857,8 @@ class SessionVideoView(LoginRequiredMixin, SessionVideoRequiredMixin, View):
                 request,
                 "Could not save the video details: "
                 + "; ".join(
-                    f"{form.fields[field].label}: {' '.join(errors)}"
+                    (f"{form.fields[field].label}: " if field in form.fields else "")
+                    + " ".join(errors)
                     for field, errors in form.errors.items()
                 ),
             )

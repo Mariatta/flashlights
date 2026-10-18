@@ -18,7 +18,7 @@ from speakers.constants import (
     Recordings,
     SessionStatus,
 )
-from speakers.forms import SessionForm
+from speakers.forms import SessionForm, SessionVideoForm
 from speakers.media import can_delete, can_download, can_upload
 from speakers.models import ActivityLog, MediaAsset
 from tests.grants import on_team
@@ -249,6 +249,36 @@ class TestVideoCard:
         client.force_login(account("ora", "Organizers"))
         form = client.get(reverse("speakers:session_edit", args=[session.slug]))
         assert 'value="2026-06-01T09:00"' in form.content.decode()
+
+    def test_the_card_saves_when_the_session_has_other_problems(
+        self, client, conference, enabled
+    ):
+        session = make_session(conference, delivery=Delivery.PRE_RECORDED)
+        link = add_presenter(session, make_presenter(conference))
+        # The type stopped allowing a role a presenter still holds:
+        # Session.clean objects, but not to anything the card edits.
+        session.kind.roles.remove(link.role)
+        client.force_login(account("vic", "Recordings"))
+        response = client.post(
+            self.url(session), {"youtube_url": "https://youtu.be/x"}, follow=True
+        )
+        assert "Saved the video details." in response.content.decode()
+        session.refresh_from_db()
+        assert session.youtube_url == "https://youtu.be/x"
+
+    def test_an_error_without_a_field_is_reported(
+        self, client, conference, enabled, monkeypatch
+    ):
+        def refuse(form):
+            form.add_error(None, "Not now.")
+
+        monkeypatch.setattr(SessionVideoForm, "clean", refuse)
+        client.force_login(account("vic", "Recordings"))
+        session = make_session(conference, delivery=Delivery.PRE_RECORDED)
+        response = client.post(self.url(session), {}, follow=True)
+        assert "Could not save the video details: Not now." in (
+            response.content.decode()
+        )
 
     def test_a_refused_value_is_reported(self, client, conference, enabled):
         client.force_login(account("vic", "Recordings"))
