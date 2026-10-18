@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 from django.conf import settings
+from django.contrib.staticfiles import finders
 from django.core.exceptions import ImproperlyConfigured
 from django.test import override_settings
 from django.urls import reverse
@@ -100,11 +101,21 @@ class TestServing:
         assert b"Community landing" not in page.content
 
     def test_the_apps_static_files_are_found_when_it_is_installed(self):
-        from django.contrib.staticfiles import finders
-
         with override_settings(INSTALLED_APPS=[APP] + list(settings.INSTALLED_APPS)):
             found = finders.find("community_app/hello.css")
         assert found == str(APP_DIR / "static" / "community_app" / "hello.css")
+
+    def test_the_apps_stylesheet_replaces_the_cores(self):
+        """The path the adapting guide gives for replacing the stylesheet."""
+        core = finders.find("css/portal.css")
+        assert core.endswith("portal/static/css/portal.css")
+        with override_settings(INSTALLED_APPS=[APP] + list(settings.INSTALLED_APPS)):
+            finders.get_finder.cache_clear()
+            try:
+                found = finders.find("css/portal.css")
+            finally:
+                finders.get_finder.cache_clear()
+        assert found == str(APP_DIR / "static" / "css" / "portal.css")
 
 
 def settings_in_a_fresh_interpreter(**env):

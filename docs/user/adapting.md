@@ -58,7 +58,7 @@ touching the core. Put a file at the same path inside your app:
 |---|---|
 | The landing page (`templates/portal/index.html` in the core) | `your_app/templates/portal/index.html` |
 | The speaker invitation email body | `your_app/templates/emails/speakers/invitation.md` |
-| The stylesheet | `your_app/static/styles.css` |
+| The portal stylesheet (`portal/static/css/portal.css` in the core) | `your_app/static/css/portal.css` |
 
 The core looks in your app first because `EXTRA_APPS` puts your app ahead
 of its own, for templates and static files alike.

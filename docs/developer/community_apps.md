@@ -78,7 +78,7 @@ Put a file at the same path inside the app:
 |---|---|
 | The landing page (`templates/portal/index.html` in the core) | `flashlights_summit/templates/portal/index.html` |
 | The speaker invitation email body | `flashlights_summit/templates/emails/speakers/invitation.md` |
-| The stylesheet | `flashlights_summit/static/styles.css` |
+| The portal stylesheet (`portal/static/css/portal.css` in the core) | `flashlights_summit/static/css/portal.css` |
 
 Start from the core's file at the version the image is built from and
 change only what you must. A replaced file is a copy: when a core release
