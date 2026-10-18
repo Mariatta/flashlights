@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 
 import pytest
 from django.contrib.auth.models import Permission, User
+from django.core.exceptions import ValidationError
 from django.urls import reverse
 
 from speakers.constants import (
@@ -20,7 +21,7 @@ from speakers.constants import (
 )
 from speakers.forms import SessionForm, SessionVideoForm
 from speakers.media import can_delete, can_download, can_upload
-from speakers.models import ActivityLog, MediaAsset
+from speakers.models import ActivityLog, MediaAsset, Session
 from tests.grants import on_team
 from volunteer.models import Team, VolunteerProfile
 
@@ -275,6 +276,20 @@ class TestVideoCard:
         assert "Saved the video details." in response.content.decode()
         session.refresh_from_db()
         assert session.youtube_url == "https://youtu.be/x"
+
+    def test_the_models_own_field_check_still_applies(
+        self, client, conference, enabled, monkeypatch
+    ):
+        def refuse(session, exclude=None):
+            raise ValidationError({"youtube_url": "Not that channel."})
+
+        monkeypatch.setattr(Session, "clean_fields", refuse)
+        client.force_login(account("vic", "Recordings"))
+        session = make_session(conference, delivery=Delivery.PRE_RECORDED)
+        response = client.post(
+            self.url(session), {"youtube_url": "https://youtu.be/x"}, follow=True
+        )
+        assert "YouTube link: Not that channel." in response.content.decode()
 
     def test_an_error_without_a_field_is_reported(
         self, client, conference, enabled, monkeypatch
