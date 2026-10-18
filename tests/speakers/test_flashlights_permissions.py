@@ -242,6 +242,16 @@ class TestVideoCard:
         page = client.get(session.get_absolute_url())
         html = page.content.decode()
         assert 'value="2026-06-01T09:00"' in html and "In America/Los_Angeles." in html
+        # Only the link changes: the unchanged publish time is not logged,
+        # and a save that changes nothing is not logged at all.
+        ActivityLog.objects.all().delete()
+        for link in ("https://youtu.be/u", "https://youtu.be/u"):
+            client.post(
+                self.url(session),
+                {"youtube_url": link, "youtube_publish_at": "2026-06-01T09:00"},
+            )
+        entry = ActivityLog.objects.get(action="session.video_changed")
+        assert entry.data["fields"] == ["youtube_url"]
         client.force_login(holding("val", "view_program"))
         html = client.get(session.get_absolute_url()).content.decode()
         assert "1 Jun 2026 09:00 America/Los_Angeles" in html

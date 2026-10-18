@@ -842,15 +842,24 @@ class SessionVideoView(LoginRequiredMixin, SessionVideoRequiredMixin, View):
         if not (session.is_pre_recorded or team_records(self.conference)):
             raise Http404("This session has no video.")
         form = SessionVideoForm(request.POST, instance=session)
+        # Compared as stored, not as typed: the publish time is typed in
+        # the event's timezone and would never equal the stored moment.
+        before = {field: getattr(session, field) for field in form.fields}
         if form.is_valid():
             form.save()
-            ActivityLog.record(
-                self.conference,
-                "session.video_changed",
-                target=session,
-                actor=request.user,
-                fields=sorted(form.changed_data),
+            changed = sorted(
+                field
+                for field, value in before.items()
+                if getattr(session, field) != value
             )
+            if changed:
+                ActivityLog.record(
+                    self.conference,
+                    "session.video_changed",
+                    target=session,
+                    actor=request.user,
+                    fields=changed,
+                )
             messages.success(request, "Saved the video details.")
         else:
             messages.error(
