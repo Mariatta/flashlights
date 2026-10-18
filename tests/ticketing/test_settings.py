@@ -114,6 +114,23 @@ class TestTicketsPage:
         assert "is not one of ticket or donation" in content
         assert not TicketingSettings.objects.filter(conference=conference).exists()
 
+    def test_a_refused_card_stays_in_view(self, client, admin_user, conference):
+        client.force_login(admin_user)
+        page = client.get(tickets_url(conference)).content.decode()
+        assert 'data-show-when="id_provider=CSV"' in page
+        assert 'data-show-when="id_provider=PRETIX"' in page
+        # Pretix chosen, a bad CSV map left behind: its card is not hidden.
+        content = client.post(
+            tickets_url(conference), form_data(csv_lines="not a line")
+        ).content.decode()
+        assert "write it as field = Column header" in content
+        assert 'data-show-when="id_provider=CSV"' not in content
+        assert 'data-show-when="id_provider=PRETIX"' in content
+        content = client.post(
+            tickets_url(conference), form_data(provider="CSV", base_url="nope")
+        ).content.decode()
+        assert 'data-show-when="id_provider=PRETIX"' not in content
+
     def test_csv_needs_no_shop(self, client, admin_user, conference):
         client.force_login(admin_user)
         client.post(

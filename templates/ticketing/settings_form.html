@@ -21,7 +21,9 @@
         <form method="post" class="col-md-8">
             {% csrf_token %}
             {% bootstrap_field form.provider %}
-            <fieldset class="card mb-4" data-show-when="id_provider=PRETIX">
+            {# A card whose fields were refused stays in view whichever provider is chosen. #}
+            <fieldset class="card mb-4"
+                      {% if not form.base_url.errors and not form.organizer.errors and not form.event_id.errors and not form.api_token.errors and not form.webhook_secret.errors %}data-show-when="id_provider=PRETIX"{% endif %}>
                 <legend class="card-header h6 mb-0">
                     {% trans "Pretix" %}
                 </legend>
@@ -40,7 +42,8 @@
                     </p>
                 </div>
             </fieldset>
-            <fieldset class="card mb-4" data-show-when="id_provider=CSV">
+            <fieldset class="card mb-4"
+                      {% if not form.csv_lines.errors %}data-show-when="id_provider=CSV"{% endif %}>
                 <legend class="card-header h6 mb-0">
                     {% trans "CSV export" %}
                 </legend>
