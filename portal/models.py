@@ -1,3 +1,5 @@
+import zoneinfo
+
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.postgres.fields import ArrayField
@@ -247,11 +249,19 @@ class Conference(BaseModel):
             return True
         return not cls.objects.filter(year__gt=active.year).exists()
 
+    def event_today(self):
+        """Today's date where the event happens: in the speaker settings'
+        timezone, UTC for an edition without them. A meetup night is still
+        tonight after midnight UTC."""
+        speaker_settings = getattr(self, "speaker_settings", None)
+        name = getattr(speaker_settings, "conference_timezone", "") or "UTC"
+        return now().astimezone(zoneinfo.ZoneInfo(name)).date()
+
     @property
     def next_event_date(self):
-        """The first listed event date from today on, or None when the
-        edition lists none still to come."""
-        return self.event_dates.filter(date__gte=now().date()).first()
+        """The first listed event date from the event's today on, or None
+        when the edition lists none still to come."""
+        return self.event_dates.filter(date__gte=self.event_today()).first()
 
     def next_venue(self):
         """Where the landing page says the edition is: the next listed

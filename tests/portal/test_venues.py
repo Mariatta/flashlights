@@ -1,6 +1,7 @@
 """Venues: places kept once and picked by editions and rooms."""
 
-from datetime import date
+from datetime import date, datetime, timezone
+from unittest import mock
 
 import pytest
 from django.contrib.auth.models import User
@@ -231,3 +232,19 @@ class TestRoomVenue:
         Room.objects.create(conference=conference, name="Stream")
         listing = client.get(reverse("speakers:room_list")).content.decode()
         assert ">Venue<" not in listing
+
+
+@pytest.mark.django_db
+class TestNextDate:
+    def test_tonight_is_still_tonight_after_midnight_utc(self, conference):
+        conference.event_dates.create(date=date(2026, 11, 18))
+        conference.event_dates.create(date=date(2026, 12, 16))
+        # 18:00 on 18 November in Vancouver, already the 19th in UTC.
+        evening = datetime(2026, 11, 19, 2, 0, tzinfo=timezone.utc)
+        with mock.patch("portal.models.now", return_value=evening):
+            assert conference.next_event_date.date == date(2026, 12, 16)
+            settings = make_settings(conference)
+            settings.conference_timezone = "America/Vancouver"
+            settings.save()
+            conference = Conference.objects.get(pk=conference.pk)
+            assert conference.next_event_date.date == date(2026, 11, 18)
