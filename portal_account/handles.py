@@ -293,12 +293,19 @@ def _role_rows(user_id):
 def handles_from_roles(user_id):
     """What the person's role rows say, newest first and the volunteer
     side first, blanks filled from older rows: the record a person has
-    before they ever save one, and what the migration started from."""
+    before they ever save one, and what the migration started from.
+    Each value is checked and stored as its channel says; one that fails
+    is skipped, so an older row's can fill the blank."""
     found = {}
     for row, columns in _role_rows(user_id):
         for code, column in columns.items():
-            value = getattr(row, column) or ""
-            if value and not found.get(code):
+            if found.get(code):
+                continue
+            try:
+                value = clean_handle(code, getattr(row, column))
+            except ValidationError:
+                continue
+            if value:
                 found[code] = value
     return found
 

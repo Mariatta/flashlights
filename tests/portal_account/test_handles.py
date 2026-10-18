@@ -188,6 +188,39 @@ class TestTheRecord:
             "website": "https://ada.example.org",
         }
 
+    def test_row_values_are_stored_as_the_account_page_would(self, ada, rows):
+        profile, presenter = rows
+        profile.mastodon_url = "@ada@hachyderm.io"
+        profile.github_username = "not a username!"
+        profile.save()
+        presenter.linkedin_url = "https://www.linkedin.com/in/" + "a" * 90
+        presenter.save()
+        assert handles_from_roles(ada.pk) == {
+            "discord": "ada_vol",
+            "github": "ada-old",  # the volunteer's is not a username
+            "x": "ada_x",
+            "mastodon": "https://hachyderm.io/@ada",
+            "website": "https://ada.example.org",
+        }
+        adopt_role_handles(ada)
+        presenter.refresh_from_db()
+        assert presenter.mastodon_url == "https://hachyderm.io/@ada"
+        assert presenter.linkedin_url == ""  # too long for the volunteer side
+
+    def test_the_migration_stores_values_as_the_account_page_would(self, ada, rows):
+        profile, presenter = rows
+        profile.mastodon_url = "@ada@hachyderm.io"
+        profile.save()
+        presenter.linkedin_url = "https://www.linkedin.com/in/" + "a" * 90
+        presenter.github_username = ""
+        presenter.website_url = "ada.example.org"
+        presenter.save()
+        migration.fill_from_roles(apps, None)
+        record = dict(Handle.objects.filter(user=ada).values_list("channel", "value"))
+        assert record["mastodon"] == "https://hachyderm.io/@ada"
+        assert record["website"] == "https://ada.example.org"
+        assert "linkedin" not in record
+
 
 @pytest.mark.django_db
 class TestTheAccountForm:

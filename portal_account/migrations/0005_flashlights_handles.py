@@ -4,8 +4,12 @@ an account with no pronouns takes its newest presenter row's.
 
 The newest volunteer profile is read first (it was the canonical copy of
 the Discord username), then the newest presenter; blanks come from older
-rows.
+rows. Values are stored the way the account page stores them: Mastodon
+handles and bare LinkedIn and website addresses become URLs, and a value
+too long for its channel is skipped so an older row's can fill the blank.
 """
+
+import re
 
 import django.db.models.deletion
 from django.conf import settings
@@ -29,6 +33,37 @@ PRESENTER_COLUMNS = {
     "discord": "discord_username",
 }
 
+#: Each channel's longest stored value, as in ``portal_account.handles``.
+MAX_LENGTHS = {
+    "website": 200,
+    "github": 39,
+    "discord": 32,
+    "mastodon": 100,
+    "bluesky": 100,
+    "linkedin": 100,
+    "instagram": 30,
+    "x": 15,
+}
+MASTODON_HANDLE_RE = re.compile(
+    r"^@(?P<user>[a-zA-Z0-9_]+)@(?P<host>[a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,})$"
+)
+
+
+def stored_form(code, value):
+    """``value`` as the account page would store it, or "" when it is too
+    long for the channel."""
+    if not value:
+        return ""
+    if code == "mastodon":
+        handle = MASTODON_HANDLE_RE.match(value)
+        if handle:
+            value = f"https://{handle['host']}/@{handle['user']}"
+    elif code in ("linkedin", "website") and not value.startswith(
+        ("http://", "https://")
+    ):
+        value = "https://" + value
+    return value if len(value) <= MAX_LENGTHS[code] else ""
+
 
 def fill_from_roles(apps, schema_editor):
     Handle = apps.get_model("portal_account", "Handle")
@@ -50,9 +85,11 @@ def fill_from_roles(apps, schema_editor):
     for row, columns in rows:
         person = found.setdefault(row.user_id, {})
         for code, column in columns.items():
-            value = (getattr(row, column) or "").strip()
-            if value and not person.get(code):
-                person[code] = value[:200]
+            if person.get(code):
+                continue
+            value = stored_form(code, (getattr(row, column) or "").strip())
+            if value:
+                person[code] = value
     Handle.objects.bulk_create(
         Handle(user_id=user_id, channel=code, value=value)
         for user_id, handles in found.items()
