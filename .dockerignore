@@ -1,18 +1,34 @@
 # Kept out of the image: history, build output, local state and anything
 # personal to one checkout. The vendored libraries are in portal/static/,
-# so the image needs neither Node nor node_modules.
+# so the image needs neither Node nor node_modules. Everything .gitignore
+# keeps out of the repository is kept out here too, so a local build from
+# a working copy cannot carry uploads, a virtualenv or credentials.
 .git
 .github
 .idea
 .junie
+.vscode
+.DS_Store
 .cache
 .state
 .env*
+.venv
+venv
+env
+compose.override.yml
 .preset-settings
 local.mk
 *.local.*
 node_modules
 staticroot
+site
 htmlcov
 .coverage
+media
+/*.json
+!/app.json
+!/package.json
+!/package-lock.json
+deploy/azure/params.json
 **/__pycache__
+**/*.py[cod]
