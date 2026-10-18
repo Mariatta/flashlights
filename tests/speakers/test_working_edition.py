@@ -28,6 +28,7 @@ from .factories import (
     add_presenter,
     make_invitation,
     make_presenter,
+    make_proposal,
     make_session,
     make_settings,
 )
@@ -201,6 +202,29 @@ class TestSwitching:
         request.session = client.session
         flags = speaker_module(request)
         assert flags["speaker_module_enabled"] is True
+        # Whether the call is open, and whether "My proposals" shows, read
+        # the active edition while the next one is being planned.
+        upcoming.speaker_settings.proposals_open = True
+        upcoming.speaker_settings.save()
+
+        def flags_now():
+            fresh = request_with(client.session)
+            fresh.user = organizer
+            return speaker_module(fresh)
+
+        assert flags_now()["speaker_proposals_open"] is False
+        assert flags_now()["has_speaker_proposals"] is False
+        make_proposal(make_session(upcoming), make_presenter(upcoming, user=organizer))
+        assert flags_now()["has_speaker_proposals"] is False
+        make_proposal(
+            make_session(conference), make_presenter(conference, user=organizer)
+        )
+        assert flags_now()["has_speaker_proposals"] is True
+        upcoming.speaker_settings.proposals_open = False
+        upcoming.speaker_settings.save()
+        conference.speaker_settings.proposals_open = True
+        conference.speaker_settings.save()
+        assert flags_now()["speaker_proposals_open"] is True
 
     def test_starting_the_next_edition_plans_it(self, client, admin_user, enabled):
         client.force_login(admin_user)
