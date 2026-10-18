@@ -59,7 +59,16 @@ then the breakdown charts.
         {% for breakdown in stats.sponsorship_breakdown %}
             <div class="col-md-6">
                 <div class="card h-100">
-                    <div class="card-body chart-container" id="{{ breakdown.chart_id }}">
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas data-chart="{{ breakdown.chart_id }}-data"
+                                    data-chart-type="doughnut"
+                                    role="img"
+                                    aria-label="{{ breakdown.title }}"></canvas>
+                        </div>
+                        {% with data_id=breakdown.chart_id|add:"-data" %}
+                            {{ breakdown|json_script:data_id }}
+                        {% endwith %}
                     </div>
                 </div>
             </div>

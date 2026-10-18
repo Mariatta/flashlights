@@ -354,7 +354,7 @@ class TestPresenterPageChecklists:
         assert reverse("speakers:presenter_add_item", args=[ada.slug]) in content
         assert 'name="owner"' in content and "Lena" in content
         assert '<optgroup label="Teams">' in content
-        assert "htmx.min.js" in content
+        assert "vendor/htmx/htmx.min" in content
         # Rows: an empty box on open items, a ticked one plus a struck-through
         # title on done ones; no separate reopen button.
         assert re.search(
@@ -1050,7 +1050,7 @@ class TestQueuePage:
         )
         client.force_login(liaison)
         content = client.get(QUEUE).content.decode()
-        assert "htmx.min.js" in content
+        assert "vendor/htmx/htmx.min" in content
         assert "for Ada" in content and "for Grace" in content
         assert "for the session Django 101" in content
         assert "via the Design team" in content

@@ -1,36 +1,13 @@
 {% extends "portal/base_sidebar.html" %}
-{% load i18n %}
+{% load i18n static %}
 {% block head_title %}
     {% trans "Maintenance: Accounts" %}
 {% endblock head_title %}
 {% block extra_head %}
-    {# Same library and loading pattern as the public Stats page. #}
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    {# The same vendored Chart.js and drawing script as the public Stats page. #}
+    <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
+    <script src="{% static 'js/charts.js' %}"></script>
     {{ chart_rows|json_script:"signup-chart-rows" }}
-    <script type="text/javascript">
-    google.charts.load('current', { 'packages': ['corechart'] });
-    google.charts.setOnLoadCallback(drawSignupChart);
-    function drawSignupChart() {
-        var rows = JSON.parse(document.getElementById('signup-chart-rows').textContent);
-        var data = new google.visualization.DataTable();
-        data.addColumn('string', '{{ _("Day")|escapejs }}');
-        data.addColumn('number', '{{ _("Verified")|escapejs }}');
-        data.addColumn('number', '{{ _("Unverified")|escapejs }}');
-        data.addRows(rows);
-        var options = {
-            isStacked: true,
-            colors: ['#2a78d6', '#eb6834'],
-            legend: { position: 'top' },
-            bar: { groupWidth: '80%' },
-            hAxis: { showTextEvery: {{ label_every }}, slantedText: false },
-            vAxis: { minValue: 0, format: '0', gridlines: { count: 4 } },
-            chartArea: { width: '90%', height: '70%' },
-            tooltip: { isHtml: false }
-        };
-        var chart = new google.visualization.ColumnChart(document.getElementById('signup-chart'));
-        chart.draw(data, options);
-    }
-    </script>
 {% endblock extra_head %}
 {% block sidebar_title %}
     {% trans "Maintenance" %}
@@ -171,7 +148,14 @@
             </div>
             <div class="card-body">
                 {# djlint:off #}
-                <div id="signup-chart" style="height: 300px;" aria-hidden="true"></div>
+                <div style="position: relative; height: 300px;">
+                    <canvas data-chart="signup-chart-rows"
+                            data-columns='[["string", "{{ _("Day")|escapejs }}"], ["number", "{{ _("Verified")|escapejs }}"], ["number", "{{ _("Unverified")|escapejs }}"]]'
+                            data-stacked
+                            data-legend
+                            data-label-every="{{ label_every }}"
+                            aria-hidden="true"></canvas>
+                </div>
                 {# djlint:on #}
                 <details class="mt-3">
                     <summary class="small text-secondary">

@@ -29,6 +29,16 @@ The name is a nod to a Darren Hayes song.
   a community adds a Django app to the core image, and which parts of the
   core it may rely on.
 
+## Nothing loads from anywhere else
+
+Every page is served by the instance itself: the fonts, the icons, the
+charts and every script. There are no analytics, no advertising and no
+third-party cookies, and a third-party service is used only when it is
+absolutely needed and no adequate open-source, self-hosted option exists.
+[Third-party code and services](developer/third_party.md) lists what is
+vendored, how its updates arrive, and the services an instance talks to
+on the server side.
+
 ## Licence and contributions
 
 Flashlights is free software under the GNU AGPL version 3, with an

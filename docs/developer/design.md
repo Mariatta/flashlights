@@ -17,8 +17,9 @@ onto the code.
 | Flashlights' own mark | `portal/static/img/flashlights/`, `templates/portal/_flashlights_mark.html` |
 
 `base.html` loads Bootstrap, then `flashlights.css`, then `theme.css`, then
-`portal.css`. Nothing on a page is fetched from a third party except
-Bootstrap itself.
+`portal.css`, all from the instance's own `/static/`: Bootstrap is
+vendored like every other library, and nothing on a page is fetched from a
+third party ([Third-party code and services](third_party.md)).
 
 ## Tokens and variables
 

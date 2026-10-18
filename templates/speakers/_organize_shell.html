@@ -1,5 +1,5 @@
 {% extends "portal/base_sidebar.html" %}
-{% load i18n speakers_extras %}
+{% load i18n speakers_extras static %}
 {% comment %}
 Shared shell for organizer-side speaker pages: the Organize rail with the
 Speakers group highlighted. Children set rail_active ("sessions",
@@ -9,9 +9,7 @@ fill content and get "sessions" highlighted.
 {% block extra_head %}
     {{ block.super }}
     {# htmx for inline checklist actions (assignee, status) on organizer pages. #}
-    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.4/dist/htmx.min.js"
-            integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
-            crossorigin="anonymous"></script>
+    <script src="{% static 'vendor/htmx/htmx.min.js' %}"></script>
     {# One CSRF header for every htmx request: hx-headers is inherited from <body>. #}
     <script>
         document.addEventListener("DOMContentLoaded", function () {

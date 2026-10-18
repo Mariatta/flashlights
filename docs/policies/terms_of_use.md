@@ -31,6 +31,14 @@ the organisers who need it for that. Sponsors see your email address only
 if you said they may. You can ask us at [contact address] to see or remove
 what we hold about you.
 
+[Portal] serves every page itself. It runs no analytics or advertising,
+sets no third-party cookies, and loads no scripts, fonts or images from
+other companies, so using it tells no one else what you do there. Your
+information leaves [Portal] only through the services that run it:
+[email provider] sends its emails and [storage provider] keeps the files
+you upload. [If the instance reports errors to Sentry: errors are reported
+to Sentry, with the request that caused them.]
+
 ## Our side
 
 [Organisation] may suspend or remove an account that breaks these terms or

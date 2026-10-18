@@ -1,0 +1,42 @@
+{
+  "bootstrap": {
+    "version": "5.2.0",
+    "files": {
+      "vendor/bootstrap/bootstrap.min.css": "ed959b654022f7bae48ab9380dc129e065833e45a944c70d684c971ac3578cb8",
+      "vendor/bootstrap/bootstrap.min.css.map": "1403649b6efd65c58d40205fcf0b7b02d13f26f4eb8fcc166fa504f98804a6fa",
+      "vendor/bootstrap/bootstrap.bundle.min.js": "c0c09020adb6f602b16d48374166b9e38ca92383a81650b6a9097c43cc43f31f",
+      "vendor/bootstrap/bootstrap.bundle.min.js.map": "c5c106f5b1dd2ff4b4fb60fb894fb47d31e92520b7411fdae301d6a2cd9d9ced",
+      "vendor/bootstrap/LICENSE": "53d2513c8df48a817d70537cc906b8e9c7bf2513328ff66847894773e615b37e"
+    }
+  },
+  "chart.js": {
+    "version": "4.5.1",
+    "files": {
+      "vendor/chartjs/chart.umd.min.js": "48444a82d4edcb5bec0f1965faacdde18d9c17db3063d042abada2f705c9f54a",
+      "vendor/chartjs/chart.umd.min.js.map": "8c328df49d295935c81d64d3b36d6ac1c20c385f1ba5b4df3ec12a26b3d64d9b",
+      "vendor/chartjs/LICENSE.md": "41a84aa2caba645f966a18d9c2056b73e6d3a81d80bc0046bc0011a2634d4cce"
+    }
+  },
+  "htmx.org": {
+    "version": "2.0.4",
+    "files": {
+      "vendor/htmx/htmx.min.js": "e209dda5c8235479f3166defc7750e1dbcd5a5c1808b7792fc2e6733768fb447",
+      "vendor/htmx/LICENSE": "d3d2456f76414f2456104660ebd65aff1c04cd7966b942bdabd63f3cdb316a38"
+    }
+  },
+  "jquery": {
+    "version": "3.6.0",
+    "files": {
+      "vendor/jquery/jquery.min.js": "ff1523fb7389539c84c65aba19260648793bb4f5e29329d2ee8804bc37a3fe6e",
+      "vendor/jquery/LICENSE.txt": "d4db9ebe6f29f5168eac45ad713f055623ac5d0dcd5ba92da23d650ae012020d"
+    }
+  },
+  "select2": {
+    "version": "4.1.0-rc.0",
+    "files": {
+      "vendor/select2/select2.min.css": "cda4a81c187015d95ed2c71f1841540b08203cdec5fa2a7d5d1825a3c2166f8c",
+      "vendor/select2/select2.min.js": "f7244fff610595b944f76bf3080d74e3af42b5dd234f8f079e698cc39ac966b0",
+      "vendor/select2/LICENSE.md": "4ee0cbc51370afde358652a0f977972053729ed578b6a42f5e2a037d114f0b39"
+    }
+  }
+}

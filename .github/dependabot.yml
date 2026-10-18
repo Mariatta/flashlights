@@ -1,0 +1,22 @@
+# Pull requests for new releases, once a week, and security alerts for every
+# pinned dependency. A pull request for a browser library (the npm entries)
+# also needs its files copied: check out the branch, run
+# npm ci && npm run vendor, commit and push; tests fail until then.
+# docs/developer/third_party.md has the details.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      build-tools:
+        patterns: ["terser"]
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

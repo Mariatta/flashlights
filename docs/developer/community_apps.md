@@ -22,7 +22,9 @@ each app named, the core:
 - searches the app's `templates/` folder **before the core's own**, so a
   file at the same path replaces a core template;
 - serves the app's `static/` files through the same static files pipeline,
-  collected at image build like the core's;
+  collected at image build like the core's. A library the app's pages need
+  is vendored there too, never loaded from a CDN
+  ([Third-party code and services](third_party.md));
 - includes the app's `urls` module, when it has one, under a prefix.
 
 The URL prefix is the app's `prefix` attribute in its `urls` module

@@ -72,6 +72,8 @@ django-simple-captcha, following the rule that shapes the rest of the
 portal: **a third-party service only when it is absolutely needed and no
 adequate open-source, self-hosted library exists.** Here one does, so the
 hosted options were never in the running as the default.
+[Third-party code and services](../developer/third_party.md) applies the same
+rule to every library on a page.
 
 - **No tracking script on the page.** The portal deliberately runs no
   analytics and sets no third-party cookies. A hosted CAPTCHA puts a script

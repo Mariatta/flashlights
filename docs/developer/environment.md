@@ -31,7 +31,7 @@ boot.
 | `SESSION_COOKIE_NAME` | No | `flashlights_sessionid` | The session cookie's name. Browsers scope cookies by host, not port, so two Django apps on one host need different names |
 | `CSRF_COOKIE_NAME` | No | `flashlights_csrftoken` | The CSRF cookie's name, for the same reason |
 | `PORTAL_LOG_LEVEL` | No | `INFO` | The level of the apps' own log lines |
-| `SENTRY_SDK_DSN` | No | none | Sends errors to Sentry when set. Each event is tagged with the kind of process it came from |
+| `SENTRY_SDK_DSN` | No | none | Sends errors to Sentry when set. Each event is tagged with the kind of process it came from and carries the signed-in person's details and IP address, so say so in the instance's privacy notice ([Third-party code and services](third_party.md)) |
 
 ## Database, broker and encryption
 

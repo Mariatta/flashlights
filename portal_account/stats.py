@@ -97,8 +97,8 @@ def account_signup_stats(days=DEFAULT_DAILY_RANGE):
         ],
         "days": days,
         "daily": daily,
-        # [date, verified, unverified] per day, for the Google Charts column
-        # chart on the Accounts page (same library as the public Stats page).
+        # [date, verified, unverified] per day, for the stacked column chart
+        # on the Accounts page (drawn by js/charts.js, like the Stats page).
         "chart_rows": [
             [row["date"].isoformat(), row["verified"], row["unverified"]]
             for row in daily

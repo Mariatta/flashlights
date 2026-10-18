@@ -1,11 +1,17 @@
 {
   "name": "flashlights-frontend",
   "private": true,
-  "description": "Build step for the public program widget only; the portal itself needs no Node.",
+  "description": "Build steps for the public program widget and the vendored browser libraries; the portal itself needs no Node.",
   "scripts": {
-    "build:widget": "node frontend/build-widget.mjs"
+    "build:widget": "node frontend/build-widget.mjs",
+    "vendor": "node frontend/vendor.mjs"
   },
   "devDependencies": {
+    "bootstrap": "5.2.0",
+    "chart.js": "4.5.1",
+    "htmx.org": "2.0.4",
+    "jquery": "3.6.0",
+    "select2": "4.1.0-rc.0",
     "terser": "5.51.2"
   }
 }

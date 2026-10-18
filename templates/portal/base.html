@@ -47,8 +47,10 @@
         <meta property="og:locale" content="en_US">
         {% block extra_head %}
         {% endblock extra_head %}
-        {% bootstrap_css %}
-        {% bootstrap_javascript %}
+        {# Bootstrap is vendored like every other library, so no page asks a CDN for anything. #}
+        <link rel="stylesheet"
+              href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
+        <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
         {# The design system's tokens, fonts and icons (self-hosted), then the instance's accent, then the portal's own rules. #}
         <link rel="stylesheet" href="{% static 'css/flashlights.css' %}">
         <link rel="stylesheet"
@@ -259,7 +261,7 @@
                 {% block footer_text %}
                 {% endblock footer_text %}
                 <a href="https://www.djangoproject.com/">
-                    <img src="https://www.djangoproject.com/m/img/badges/djangopowered126x54.gif"
+                    <img src="{% static 'img/djangopowered126x54.gif' %}"
                          alt="Powered by Django."
                          title="Powered by Django."
                          width="126"

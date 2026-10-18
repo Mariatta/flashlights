@@ -1,5 +1,5 @@
 {% extends "portal/base_sidebar.html" %}
-{% load i18n %}
+{% load i18n static %}
 {% comment %}
 My volunteering tasks: items assigned to me or to a team I'm on, under the
 personal "My volunteering" rail for everyone (organizers included). Same
@@ -7,9 +7,7 @@ rows as the speaker checklist; ticking swaps the row in place over htmx.
 {% endcomment %}
 {% block extra_head %}
     {{ block.super }}
-    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.4/dist/htmx.min.js"
-            integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
-            crossorigin="anonymous"></script>
+    <script src="{% static 'vendor/htmx/htmx.min.js' %}"></script>
 {% endblock extra_head %}
 {% block head_title %}
     {% trans "My volunteering tasks" %}

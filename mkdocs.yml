@@ -43,6 +43,7 @@ nav:
     - Environment reference: developer/environment.md
     - Community apps: developer/community_apps.md
     - Design System: developer/design.md
+    - Third-party code: developer/third_party.md
   - Architecture:
     - Multi-Year Conferences: architecture/multi-year-conferences.md
     - Multi-Year Progress: architecture/multi-year-progress.md

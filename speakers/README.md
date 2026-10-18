@@ -931,8 +931,8 @@ admin's **Sites** page, documented in `docs/developer/setup.md` and
 
 ### Templates and front end
 
-Repo-level `templates/<app>/`, Bootstrap 5 (`django_bootstrap5`), Font Awesome
-kit, one stylesheet `portal/static/css/portal.css` (no inline `<style>`
+Repo-level `templates/<app>/`, Bootstrap 5 (vendored, forms through
+`django_bootstrap5`), the self-hosted Lucide icon font, one stylesheet `portal/static/css/portal.css` (no inline `<style>`
 blocks; djlint enforces template formatting). Two-column pages extend
 `portal/base_sidebar.html` and fill `sidebar` with a rail partial
 (`templates/portal/_organize_rail.html` for organizers,

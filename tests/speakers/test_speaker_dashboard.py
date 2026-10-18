@@ -342,7 +342,7 @@ class TestToggle:
         )
         client.force_login(speaker)
         page = client.get(CHECKLIST).content.decode()
-        assert "htmx.min.js" in page and 'id="portal-toasts"' in page
+        assert "vendor/htmx/htmx.min" in page and 'id="portal-toasts"' in page
         assert f'hx-target="#item-{item.pk}"' in page
         response = client.post(toggle(item), HTTP_HX_REQUEST="true")
         assert response.status_code == 200

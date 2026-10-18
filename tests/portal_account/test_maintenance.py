@@ -86,9 +86,9 @@ class TestMaintenanceAccountsView:
         response = client.get(self.url)
         assertContains(response, "Pending deletion")
         assertContains(response, "Signups per day, last 30 days")
-        assertContains(response, "gstatic.com/charts/loader.js")
+        assertContains(response, "vendor/chartjs/chart.umd.min")
         assertContains(response, 'id="signup-chart-rows"')
-        assertContains(response, "showTextEvery: 7")
+        assertContains(response, 'data-label-every="7"')
         assertContains(response, "Show as table")
 
     def test_superuser_renders(self, client, admin_user):

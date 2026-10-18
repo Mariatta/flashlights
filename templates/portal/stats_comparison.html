@@ -1,18 +1,13 @@
 {% extends "portal/base.html" %}
-{% load i18n %}
+{% load i18n static %}
 {% block extra_head %}
     {{ block.super }}
-    <!--Google Charts-->
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript">
-    google.charts.load('current', { 'packages': ['corechart', 'bar'] });
-    google.charts.setOnLoadCallback(drawChart);
-    function drawChart() {
-        {% include "portal/historical_comparison_charts.html" %}
-    }
-    </script>
+    {# Chart.js is vendored; js/charts.js draws each canvas from its json_script data. #}
+    <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
+    <script src="{% static 'js/charts.js' %}"></script>
     <style>
         .chart-container {
+            position: relative;
             height: 300px;
         }
     </style>
@@ -30,8 +25,14 @@
                 <div class="col-md-6">
                     <div class="card h-100">
                         <div class="card-body">
-                            <div id="{{ comparison.chart_id }}" class="chart-container">
+                            <div class="chart-container">
+                                <canvas data-chart="{{ comparison.chart_id }}-data"
+                                        role="img"
+                                        aria-label="{{ comparison.title }}"></canvas>
                             </div>
+                            {% with data_id=comparison.chart_id|add:"-data" %}
+                                {{ comparison|json_script:data_id }}
+                            {% endwith %}
                         </div>
                     </div>
                 </div>

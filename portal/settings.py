@@ -458,21 +458,11 @@ CAPTCHA_SOX_PATH = shutil.which("sox")
 
 # Default settings
 BOOTSTRAP5 = {
-    # The complete URL to the Bootstrap CSS file.
-    # Note that a URL can be either a string
-    # ("https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css"),
-    # or a dict with keys `url`, `integrity` and `crossorigin` like the default value below.
-    "css_url": {
-        "url": "https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css",
-        "integrity": "sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx",
-        "crossorigin": "anonymous",
-    },
-    # The complete URL to the Bootstrap bundle JavaScript file.
-    "javascript_url": {
-        "url": "https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js",
-        "integrity": "sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa",
-        "crossorigin": "anonymous",
-    },
+    # Bootstrap is vendored under portal/static/vendor/ and portal/base.html
+    # links it with {% static %}; these paths only matter to a template that
+    # calls {% bootstrap_css %} or {% bootstrap_javascript %}.
+    "css_url": {"url": "/static/vendor/bootstrap/bootstrap.min.css"},
+    "javascript_url": {"url": "/static/vendor/bootstrap/bootstrap.bundle.min.js"},
     # The complete URL to the Bootstrap CSS theme file (None means no theme).
     "theme_url": None,
     # Color mode (None means do not set color mode).
