@@ -390,7 +390,7 @@ class TestStartNewYear:
             reverse("start_new_year"),
             {
                 "year": 2027,
-                "name": "PyLadiesCon 2027",
+                "name": "Flashlights 2027",
                 "slug": "2027",
                 "cadence": "ONCE",
                 "conference_date": "2027-05-01",

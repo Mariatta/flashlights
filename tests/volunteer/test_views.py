@@ -1427,7 +1427,7 @@ class TestTeamCRUD:
         self, client, admin_user, conference
     ):
         past = Conference.objects.create(
-            year=2020, name="PyLadiesCon 2020", slug="2020"
+            year=2020, name="Flashlights 2020", slug="2020"
         )
         client.force_login(admin_user)
         client.post(

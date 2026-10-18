@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json
 site_name: Tiny Little Flashlights
-# The docs site is not published yet (phase 2); this is where it will live.
+# The docs site is not published yet; this is where it will live.
 site_url: https://mariatta.github.io/flashlights/
 theme:
   name: material
