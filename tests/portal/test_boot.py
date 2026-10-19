@@ -7,6 +7,7 @@ import sys
 
 import pytest
 from django.core.exceptions import ImproperlyConfigured
+from django.middleware.csrf import CsrfViewMiddleware
 
 from portal import boot
 
@@ -170,3 +171,28 @@ class TestAtBoot:
         )
         assert found["EMAIL_HOST"] == "mail.example.org"
         assert found["EMAIL_USE_TLS"] is expected
+
+
+class TestBehindTheProxy:
+    """The host's proxy terminates TLS and forwards plain HTTP with
+    X-Forwarded-Proto; Django has to read it, or the CSRF origin check
+    refuses every form post."""
+
+    def test_a_forwarded_https_request_is_secure(self, rf):
+        request = rf.post("/", HTTP_X_FORWARDED_PROTO="https")
+        assert request.is_secure()
+        assert request.build_absolute_uri("/x").startswith("https://")
+
+    def test_a_forwarded_https_origin_passes_the_csrf_origin_check(self, rf, settings):
+        settings.ALLOWED_HOSTS = ["portal.example.org"]
+        request = rf.post(
+            "/",
+            HTTP_X_FORWARDED_PROTO="https",
+            HTTP_HOST="portal.example.org",
+            HTTP_ORIGIN="https://portal.example.org",
+        )
+        middleware = CsrfViewMiddleware(lambda request: None)
+        assert middleware._origin_verified(request)
+
+    def test_a_plain_request_stays_plain(self, rf):
+        assert not rf.post("/").is_secure()

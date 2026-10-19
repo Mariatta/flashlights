@@ -572,7 +572,10 @@ contract in an env file, and a reverse proxy with TLS in front of `web`.
 
 **Processes.** One container per `Procfile` line you run, all from the
 same image, with the line as the container's command. `web` serves on
-`$PORT` (default 8000); put the proxy in front of it.
+`$PORT` (default 8000); put the proxy in front of it. The proxy must send
+`X-Forwarded-Proto: https` (Caddy and nginx's `proxy_set_header` do), and
+`web` must not be reachable except through it: the portal trusts that
+header, and a request that reaches `web` directly can claim to be secure.
 
 **Release step.** Run the release command yourself before starting the new
 containers: `docker compose run --rm web python manage.py createcachetable

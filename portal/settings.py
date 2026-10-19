@@ -116,6 +116,14 @@ ALLOWED_HOSTS = ALLOWED_HOSTS.split(",") if ALLOWED_HOSTS else []
 SESSION_COOKIE_NAME = os.environ.get("SESSION_COOKIE_NAME", "flashlights_sessionid")
 CSRF_COOKIE_NAME = os.environ.get("CSRF_COOKIE_NAME", "flashlights_csrftoken")
 
+# Every host puts a TLS-terminating proxy in front of the web process and
+# hands it plain HTTP with X-Forwarded-Proto. gunicorn trusts that header
+# only from a loopback or socket peer, so behind a router on another machine
+# Django would see every request as http and the CSRF origin check would
+# refuse every form post. The web process is reachable only through the
+# proxy, so the header is trusted here.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 
 # Key for fields encrypted at rest (speakers.encryption.EncryptedTextField:
 # pretix API token and webhook secret). Required in production; derived from
