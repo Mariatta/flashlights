@@ -576,6 +576,29 @@ class TestVolunteerModel:
         # gdrive info not in the body. It's for admin onboarding only
         assert "super-secret-folder-id" not in str(mail.outbox[0].body)
 
+    def test_a_team_lead_gets_the_organizer_onboarding(
+        self, portal_user, conference, settings
+    ):
+        """Leads run their team: they get the organizer variant too, though
+        the team grants no Organize access."""
+        settings.GDRIVE_FOLDER_ID = "super-secret-folder-id"
+        profile = VolunteerProfile.objects.create(
+            user=portal_user,
+            conference=conference,
+            application_status=ApplicationStatus.APPROVED,
+        )
+        team = Team.objects.create(
+            short_name="Design", description="d", conference=conference
+        )
+        profile.teams.add(team)
+        mail.outbox.clear()
+        send_volunteer_onboarding_email(profile)
+        assert "super-secret-folder-id" not in str(mail.outbox[0].body)
+        team.team_leads.add(profile)
+        mail.outbox.clear()
+        send_volunteer_onboarding_email(profile)
+        assert "super-secret-folder-id" in str(mail.outbox[0].body)
+
     def test_internal_admin_onboarding_email_contains_info(
         self, portal_user, conference, settings, preset_team
     ):

@@ -399,10 +399,13 @@ def send_volunteer_notification_email(instance, updated=False):
 
 def _onboards_as_organizer(profile):
     """Whether the onboarding email is the organizer variant: the account
-    now holds the Organize surface, through the teams it was just put on.
-    Read fresh, since the instance may carry a permission cache from before
-    the review form saved."""
-    return is_organizer(User.objects.get(pk=profile.user_id))
+    now holds the Organize surface through the teams it was just put on, or
+    leads a team. Read fresh, since the instance may carry a permission
+    cache from before the review form saved."""
+    return (
+        is_organizer(User.objects.get(pk=profile.user_id))
+        or profile.team_leads.exists()
+    )
 
 
 def send_volunteer_onboarding_email(instance):
