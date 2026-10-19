@@ -493,7 +493,8 @@ program) belongs outside this repository; add its folder with
 # .preset-settings
 PRESETS_PATH=~/my-presets
 PRESET_DB=postgresql://flashlights:flashlights@localhost:5433
-DJANGO_EMAIL_HOST=localhost      # anything else is passed to the server
+# Anything else is passed to the server.
+DJANGO_EMAIL_HOST=localhost
 DJANGO_EMAIL_PORT=1025
 
 # local.mk
