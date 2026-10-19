@@ -299,28 +299,43 @@ class AllowedOriginsView(LoginRequiredMixin, PublishingRequiredMixin, View):
         settings = get_object_or_404(SpeakerSettings, conference=self.conference)
         remove = request.POST.get("remove")
         if remove:
-            AllowedOrigin.objects.filter(settings=settings, pk=remove).delete()
+            changed = self.remove(request, settings, remove)
+        else:
+            changed = self.add(request, settings, request.POST.get("url", "").strip())
+        # Logged only when the list moved: a refused or repeated post
+        # changed nothing worth recording.
+        if changed:
+            ActivityLog.record(
+                self.conference,
+                "program.allowed_origins_changed",
+                actor=request.user,
+                origins=settings.api_origins,
+            )
+        return redirect("speakers:program_share")
+
+    def remove(self, request, settings, pk):
+        deleted = 0
+        if pk.isdigit():
+            deleted, _ = AllowedOrigin.objects.filter(settings=settings, pk=pk).delete()
+        if deleted:
             messages.success(request, "Removed the website.")
         else:
-            url = request.POST.get("url", "").strip()
-            try:
-                URLValidator(schemes=["http", "https"])(url)
-            except ValidationError:
-                messages.error(
-                    request, "Give the site's address, like https://2027.example.org."
-                )
-            else:
-                _, created = AllowedOrigin.objects.get_or_create(
-                    settings=settings, url=normalize_origin(url)
-                )
-                if created:
-                    messages.success(request, "Added the website.")
-                else:
-                    messages.info(request, "That website is already on the list.")
-        ActivityLog.record(
-            self.conference,
-            "program.allowed_origins_changed",
-            actor=request.user,
-            origins=settings.api_origins,
+            messages.error(request, "That website is not on the list.")
+        return bool(deleted)
+
+    def add(self, request, settings, url):
+        try:
+            URLValidator(schemes=["http", "https"])(url)
+        except ValidationError:
+            messages.error(
+                request, "Give the site's address, like https://2027.example.org."
+            )
+            return False
+        _, created = AllowedOrigin.objects.get_or_create(
+            settings=settings, url=normalize_origin(url)
         )
-        return redirect("speakers:program_share")
+        if created:
+            messages.success(request, "Added the website.")
+        else:
+            messages.info(request, "That website is already on the list.")
+        return created

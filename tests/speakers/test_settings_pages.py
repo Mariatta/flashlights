@@ -86,6 +86,19 @@ class TestAllowedWebsites:
         client.post(ORIGINS, {"remove": AllowedOrigin.objects.get().pk})
         assert row.api_origins == []
 
+    def test_a_bad_or_stale_removal_changes_nothing(self, client, conference):
+        """A junk id was a server error, and a stale one reported "Removed"
+        and logged a change that never happened."""
+        make_settings(conference)
+        client.force_login(lead_of_program())
+        for junk in ("abc", "999999"):
+            response = client.post(ORIGINS, {"remove": junk}, follow=True)
+            assert response.status_code == 200
+            assert "That website is not on the list." in response.content.decode()
+        assert not ActivityLog.objects.filter(
+            action="program.allowed_origins_changed"
+        ).exists()
+
     def test_only_whoever_publishes(self, client, conference):
         make_settings(conference)
         reader = on_team(
