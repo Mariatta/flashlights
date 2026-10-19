@@ -571,6 +571,17 @@ class TestConferenceCRUD:
         assert response.status_code == 200
         assert conference in response.context["conferences"]
 
+    def test_list_puts_the_newest_first(self, client, admin_user, conference):
+        for year in (2021, conference.year + 2, 2019):
+            Conference.objects.create(
+                year=year, name=f"Edition {year}", slug=f"e{year}"
+            )
+        client.force_login(admin_user)
+        conferences = client.get(reverse("conference_list")).context["conferences"]
+        assert conferences.ordered
+        years = [edition.year for edition in conferences]
+        assert years == sorted(years, reverse=True)
+
     def test_list_shows_start_button_when_edition_over(
         self, client, admin_user, conference
     ):

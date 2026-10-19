@@ -355,12 +355,14 @@ class ConferenceList(ConferenceAdminRequiredMixin, ListView):
     context_object_name = "conferences"
 
     def get_queryset(self):
-        # A series shows how many dates it lists.
+        # A series shows how many dates it lists. The count groups the
+        # query, which drops the model's default order, so it is named here.
         return (
             super()
             .get_queryset()
             .select_related("venue")
             .annotate(listed_dates=Count("event_dates"))
+            .order_by("-year")
         )
 
 
