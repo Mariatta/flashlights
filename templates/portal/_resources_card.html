@@ -5,7 +5,7 @@ audience already works, not in sitewide chrome. Include with a group:
 
     {% include "portal/_resources_card.html" with group="volunteering" %}
 
-Groups: "volunteering" (the docs site, when the instance has one),
+Groups: "volunteering" (the community's own docs site, when it set one),
 "speaking" (the in-app speaker guide, for presenters), "sponsorship" (the
 edition's prospectus). A group with nothing to link renders nothing.
 Placement map (one group per surface):
@@ -14,7 +14,7 @@ Placement map (one group per surface):
     organizer dashboard            -> sponsorship (prospectus is the org-facing one)
     team dashboard (leads)         -> volunteering
 {% endcomment %}
-{% if group == "volunteering" and brand.docs_url or group == "speaking" and is_speaker_presenter or group == "sponsorship" and sponsorship_enabled and active_conference.sponsors_url %}
+{% if group == "volunteering" and brand.community_docs_url or group == "speaking" and is_speaker_presenter or group == "sponsorship" and sponsorship_enabled and active_conference.sponsors_url %}
     <div class="card mb-4">
         <div class="card-body py-3">
             <h2 class="h6 text-body-emphasis mb-2">
@@ -29,7 +29,7 @@ Placement map (one group per surface):
             <ul class="list-inline mb-0 small">
                 {% if group == "volunteering" %}
                     <li class="list-inline-item me-3 mb-1">
-                        <a href="{{ brand.docs_url }}"
+                        <a href="{{ brand.community_docs_url }}"
                            class="d-inline-flex align-items-center gap-1 text-decoration-none">
                             {% trans "Documentation" %} <i class="icon-external-link icon-xs"></i>
                         </a>

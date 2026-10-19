@@ -166,7 +166,13 @@ class Brand:
     #: The accent as text on Paper, and the text on a filled accent.
     accent_ink: str
     text_on_accent: str
+    #: Where the help links go: the community's own docs when it set
+    #: ``DOCS_URL``, else the core docs for this image's version.
     docs_url: str
+    #: ``DOCS_URL`` as set, empty when the community has no docs of its own;
+    #: what only makes sense for a community's own docs (the landing's team
+    #: descriptions, a new speaker guide's placeholder) reads this one.
+    community_docs_url: str
     terms_url: str
 
     @property
@@ -342,6 +348,7 @@ def from_env(environ=None):
         primary = _to_hex(parse_hex(custom))
         hover, active = accent_shades(primary)
     rgb = parse_hex(primary)
+    community_docs_url = env.get("DOCS_URL", "").strip()
     return Brand(
         title=title,
         short_name=short_name,
@@ -357,6 +364,7 @@ def from_env(environ=None):
         accent_ink=(PRESET_INKS.get(preset) if not custom else None)
         or ink_on_paper(rgb),
         text_on_accent=text_on(rgb),
-        docs_url=env.get("DOCS_URL", "").strip() or core_docs_url(),
+        docs_url=community_docs_url or core_docs_url(),
+        community_docs_url=community_docs_url,
         terms_url=env.get("TERMS_URL", "").strip(),
     )

@@ -65,16 +65,17 @@ changelog.
 5. Afterwards, start the next entry: bump the version and add
    `## 0.2.1 (unreleased)` (or the next minor) at the top.
 
-A failed run publishes nothing, or only some of the images; fix the
-cause and run the workflow again from the Actions tab. A tag that was
+A failed run publishes nothing, or only some of the images, or the
+images and the release but not the docs; fix the cause and run the
+workflow again from the Actions tab. A tag that was
 pushed by mistake is deleted on GitHub and locally before anything uses it.
 
 ## The docs site, once
 
 GitHub Pages serves the `gh-pages` branch: in the repository's settings,
 under Pages, choose "Deploy from a branch", branch `gh-pages`, folder `/`.
-The first release creates the branch; the setting can be made before or
-after it. To publish a version by hand, with the docs requirements
+The first release creates the branch, and the branch menu lists only
+branches that exist, so make the setting after the first release has run. To publish a version by hand, with the docs requirements
 installed and a full clone (mike reads the branch's history):
 
 ```bash

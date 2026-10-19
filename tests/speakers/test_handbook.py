@@ -292,7 +292,10 @@ class TestHandbookList:
         response = client.post(LIST, {"key": "Performer", "title": "Performer guide"})
         assertRedirects(response, editor("performer"))
         draft = Handbook.draft(conference, "performer")
-        assert draft.title == "Performer guide" and draft.url == settings.BRAND.docs_url
+        assert (
+            draft.title == "Performer guide"
+            and draft.url == settings.BRAND.community_docs_url
+        )
         response = client.post(LIST, {"key": "performer", "title": "Again"})
         assert "already exists" in response.context["new_form"].errors["key"][0]
 
@@ -312,7 +315,7 @@ class TestHandbookEditor:
         client.force_login(organizer)
         assert (
             client.get(editor()).context["form"].initial["url"]
-            == settings.BRAND.docs_url
+            == settings.BRAND.community_docs_url
         )
         response = client.post(
             editor(),

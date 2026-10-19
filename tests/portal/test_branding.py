@@ -30,7 +30,7 @@ class TestFromEnv:
         assert brand.accent_ink == "#7a5c00"
         assert brand.logo == brand.favicon == brand.og_image == ""
         assert brand.docs_url == branding.core_docs_url()
-        assert brand.terms_url == ""
+        assert brand.community_docs_url == brand.terms_url == ""
 
     def test_the_help_links_default_to_the_core_docs_for_this_version(self):
         """A blank DOCS_URL means the default too; the base is the docs
@@ -44,7 +44,8 @@ class TestFromEnv:
         assert branding.CORE_DOCS_URL == config["site_url"]
         expected = f"https://mariatta.github.io/flashlights/{version}/"
         assert branding.from_env({}).docs_url == expected
-        assert branding.from_env({"DOCS_URL": " "}).docs_url == expected
+        blank = branding.from_env({"DOCS_URL": " "})
+        assert blank.docs_url == expected and blank.community_docs_url == ""
         assert (
             branding.core_docs_url("0.9.1")
             == "https://mariatta.github.io/flashlights/0.9.1/"
@@ -73,7 +74,7 @@ class TestFromEnv:
         assert brand.primary == "#b45309"
         assert brand.text_on_accent == branding.WHITE  # a dark accent
         assert brand.accent_ink == "#b45309"  # reads on Paper as it is
-        assert brand.docs_url == "https://docs.test/"
+        assert brand.docs_url == brand.community_docs_url == "https://docs.test/"
         assert brand.terms_url == "https://x.test/terms/"
 
     def test_teal_keeps_its_shades_and_white_ink(self):

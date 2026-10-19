@@ -2821,8 +2821,8 @@ class HandbookListView(LoginRequiredMixin, HandbookEditorRequiredMixin, Template
         form = NewHandbookForm(request.POST, conference=self.conference)
         if not form.is_valid():
             return self.render_to_response(self.get_context_data(new_form=form))
-        # A new guide starts unpublished and pointed at the instance's docs
-        # site when there is one. That placeholder satisfies the editor's "a
+        # A new guide starts unpublished and pointed at the community's own
+        # docs site when it has one. That placeholder satisfies the editor's "a
         # link or a note" check, which is deliberate: an organizer may
         # publish a guide that only says "see the docs" and refine the
         # address later.
@@ -2830,7 +2830,7 @@ class HandbookListView(LoginRequiredMixin, HandbookEditorRequiredMixin, Template
             conference=self.conference,
             key=form.cleaned_data["key"],
             title=form.cleaned_data["title"],
-            url=settings.BRAND.docs_url,
+            url=settings.BRAND.community_docs_url,
         )
         messages.success(request, f"Started the {form.cleaned_data['title']} guide.")
         return redirect("speakers:handbook_editor", key=form.cleaned_data["key"])
@@ -2856,7 +2856,7 @@ class HandbookEditorView(LoginRequiredMixin, HandbookEditorRequiredMixin, Templa
         initial = (
             {"title": current.title, "url": current.url, "body_md": current.body_md}
             if current
-            else {"url": settings.BRAND.docs_url}
+            else {"url": settings.BRAND.community_docs_url}
         )
         return HandbookForm(data, initial=initial)
 

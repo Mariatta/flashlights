@@ -94,9 +94,10 @@ Watch the core's releases on GitHub. Before upgrading, read the changelog
 entries since your current version, especially anything marked breaking or
 any migration that cannot be reversed. Then change the image tag (or, with
 an app of your own, the `FROM` line of your `Dockerfile`) and deploy. The
-release step runs the migrations before the new version serves. The
-portal's help links follow the image on their own; the links in docs of
-your own move to the new version's core docs by hand.
+release step runs the migrations before the new version serves. An
+instance with no `DOCS_URL` has help links that follow the image on their
+own; a community with docs of its own moves the links in them to the new
+version's core docs by hand.
 
 Rolling back is the same change pointed at the previous tag, as long as no
 release in between has a migration that cannot be reversed.

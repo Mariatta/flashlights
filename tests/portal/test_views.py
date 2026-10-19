@@ -61,12 +61,13 @@ class TestPortalIndex:
         # to take part. Volunteering is one of them on this instance.
         assert settings.BRAND.title in content
         assert "Sign up to volunteer" in content
-        # Team descriptions live on the docs site: the instance's own when
-        # it names one, else the core docs for this version.
+        # Team descriptions live on the community's own docs site, so the
+        # link needs one; the core docs have none.
         assert 'href="https://docs.example.org/"' in content
         assert "Read the team descriptions" in content
-        by_default = client.get(reverse("index")).content.decode()
-        assert f'href="{branding.core_docs_url()}"' in by_default
+        with override_settings(BRAND=branding.from_env({})):
+            by_default = client.get(reverse("index")).content.decode()
+        assert "Read the team descriptions" not in by_default
         # No running totals on the landing: the band was a PyLadiesCon artifact.
         assert "Across all editions" not in content
         assert "landing-stats" not in content
