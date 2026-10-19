@@ -5,7 +5,6 @@ import pytest
 from attendee.models import AttendeeProfile, PretixOrder
 from tests.ticketing_ids import (
     AGE_RANGE,
-    CHAPTER,
     CITY,
     COUNTRY,
     CURRENT_POSITION,
@@ -37,7 +36,6 @@ FULL_ANSWERS = answers(
     (EXPECTATION, "Networking, Learn new things, Support community activities"),
     (HEARD_ABOUT, "Social Media, Other"),
     (PARTICIPATED_BEFORE, "No, this is my first one"),
-    (CHAPTER, "San Francisco"),
     (AGE_RANGE, "19-25"),
     (ORGANIZATION, "Umbrella Corp"),
     (CURRENT_POSITION, "Student/Intern, Other"),
@@ -129,7 +127,6 @@ class TestAttendeeProfileModel:
         assert profile.heard_about == ["Social Media", "Other"]
         # Kept whole: the first-time answer is matched exactly.
         assert profile.participated_in_previous_event == ["No, this is my first one"]
-        assert profile.pyladies_chapter == "San Francisco"
         assert profile.age_range == "19-25"
         assert profile.organization_name == "Umbrella Corp"
         assert profile.current_position == ["Student/Intern", "Other"]
@@ -145,7 +142,6 @@ class TestAttendeeProfileModel:
         assert profile.expectation_from_event == []
         assert profile.heard_about == []
         assert profile.participated_in_previous_event == []
-        assert profile.pyladies_chapter is None
         assert profile.age_range is None
         assert profile.organization_name is None
         assert profile.current_position == []

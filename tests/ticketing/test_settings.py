@@ -8,6 +8,7 @@ import pytest
 from cryptography.fernet import Fernet
 from django.apps import apps
 from django.core.management import call_command
+from django.forms import ValidationError
 from django.test import override_settings
 from django.urls import reverse
 
@@ -19,6 +20,7 @@ from tests.ticketing_ids import CITY, make_ticketing
 from ticketing.admin import TicketingSettingsAdminForm
 from ticketing.forms import parse_map
 from ticketing.models import (
+    ATTENDEE_FIELD_NAMES,
     Provider,
     TicketingSettings,
     carry_forward,
@@ -201,6 +203,13 @@ class TestTicketsPage:
         )
         row = TicketingSettings.objects.get(conference=conference)
         assert row.is_set_up and not row.has_api
+
+    def test_the_pyladies_chapter_is_not_a_field_to_map(self):
+        """The chapter was PyLadiesCon's own question; the map refuses it."""
+        with pytest.raises(ValidationError, match="'pyladies_chapter' is not one"):
+            parse_map(
+                "QCHAP = pyladies_chapter", ATTENDEE_FIELD_NAMES, "an attendee field"
+            )
 
     def test_parse_map_skips_blanks_and_comments(self):
         assert parse_map("", {"a"}, "x") == {}

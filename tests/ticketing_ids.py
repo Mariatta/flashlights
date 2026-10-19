@@ -16,7 +16,6 @@ MAY_SHARE_EMAIL = "QSHARE01"
 EXPECTATION = "QEXPCT01"
 HEARD_ABOUT = "QHEARD01"
 PARTICIPATED_BEFORE = "QPREV001"
-CHAPTER = "QCHAP001"
 AGE_RANGE = "QAGE0001"
 ORGANIZATION = "QORG0001"
 
@@ -29,7 +28,6 @@ QUESTION_MAP = {
     EXPECTATION: "expectation_from_event",
     HEARD_ABOUT: "heard_about",
     PARTICIPATED_BEFORE: "participated_in_previous_event",
-    CHAPTER: "pyladies_chapter",
     AGE_RANGE: "age_range",
     ORGANIZATION: "organization_name",
 }
