@@ -226,7 +226,7 @@ fetches.
 rclone config create do-media s3 provider=DigitalOcean \
     endpoint=nyc3.digitaloceanspaces.com \
     access_key_id=<key> secret_access_key=<secret>
-rclone sync media:flashlights-media/speaker-media/2026 ./flashlights-2026 \
+rclone sync do-media:flashlights-media/speaker-media/2026 ./flashlights-2026 \
     --progress --transfers 4
 ```
 
