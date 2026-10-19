@@ -2,15 +2,18 @@
 
 Organisers run the event from the **Organize** hub: the dashboard, the
 volunteer applications, the teams, the editions, the sponsors, the
-speaker programme and the maintenance pages. Staff accounts see it; a
-superuser also sees the admin area and can start the next edition.
+speaker programme and the maintenance pages. Members of a team whose
+permissions include it see it; a superuser also sees the admin area and
+can start the next edition.
 
 ## Onboarding a new organiser
 
 1. They create an account and verify it.
-2. An existing organiser opens the admin area, finds their account and
-   marks it as staff. A superuser flag is for the one or two people who
-   look after the instance itself.
+2. An existing organiser puts them on the Organizers team, or on the team
+   for their work, from the team's page, or approves their volunteer
+   application into it. The staff and superuser flags in the admin area
+   open only the admin area itself; the superuser flag is for the one or
+   two people who look after the instance.
 3. They sign in again and find Organize in the navigation.
 
 ## What the dashboard shows
