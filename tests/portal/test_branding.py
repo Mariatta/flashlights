@@ -1,8 +1,10 @@
 """The instance identity seam: environment in, theme, images and tags out."""
 
 import io
+import tomllib
 
 import pytest
+import yaml
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.test import override_settings
@@ -27,7 +29,26 @@ class TestFromEnv:
         assert brand.text_on_accent == branding.NIGHT
         assert brand.accent_ink == "#7a5c00"
         assert brand.logo == brand.favicon == brand.og_image == ""
-        assert brand.docs_url == brand.terms_url == ""
+        assert brand.docs_url == branding.core_docs_url()
+        assert brand.terms_url == ""
+
+    def test_the_help_links_default_to_the_core_docs_for_this_version(self):
+        """A blank DOCS_URL means the default too; the base is the docs
+        site's own address, and the version is the one pyproject.toml
+        declares, so an image's help links name its own release."""
+        with open(settings.BASE_DIR / "pyproject.toml", "rb") as f:
+            version = tomllib.load(f)["project"]["version"]
+        config = yaml.load(
+            (settings.BASE_DIR / "mkdocs.yml").read_text(), Loader=yaml.BaseLoader
+        )
+        assert branding.CORE_DOCS_URL == config["site_url"]
+        expected = f"https://mariatta.github.io/flashlights/{version}/"
+        assert branding.from_env({}).docs_url == expected
+        assert branding.from_env({"DOCS_URL": " "}).docs_url == expected
+        assert (
+            branding.core_docs_url("0.9.1")
+            == "https://mariatta.github.io/flashlights/0.9.1/"
+        )
 
     def test_every_key(self):
         brand = branding.from_env(
@@ -184,7 +205,8 @@ class TestViews:
         # No share image of its own: the generated card stands in.
         assert reverse("brand_share_card") in content
         assert "navbar-logo" not in content
-        assert "Documentation" not in content
+        # No DOCS_URL: the help link goes to the core docs for this version.
+        assert f'href="{branding.core_docs_url()}">Documentation</a>' in content
         assert reverse("brand_favicon") in content
 
 

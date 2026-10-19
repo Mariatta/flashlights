@@ -120,7 +120,7 @@ theme's, so a community sets the same values for its public site.
 | `SITE_OG_IMAGE` | No | generated | The full URL of the share image. Empty, a card is drawn from the title and the accent colour |
 | `BRAND_PRESET` | No | `beam` | The accent colour: `beam`, `teal`, `copper`, `indigo` or `raspberry`. Any other value stops the boot |
 | `BRAND_PRIMARY` | No | none | A custom `#rrggbb` accent in place of the preset; the ink on it and its hover and press shades are derived |
-| `DOCS_URL` | No | none | Where the help links point; left out when unset |
+| `DOCS_URL` | No | the core docs for this version | Where the help links point: your community's own docs when it has some ([Adapting Flashlights](../user/adapting.md), "Documenting your customizations"), else `https://mariatta.github.io/flashlights/X.Y.Z/` for the image's version |
 | `TERMS_URL` | No | none | The terms of service link; left out when unset |
 
 ## Features and contacts

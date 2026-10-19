@@ -71,13 +71,32 @@ files. Prefer the smaller tools where they exist: a setting, a template
 block you extend, or a signal. If the one you need is missing, open an
 issue; it is the kind of change the core takes.
 
+## Documenting your customizations
+
+The core's docs are published per release, at
+`https://mariatta.github.io/flashlights/X.Y.Z/`, and an instance's help
+links go to the version matching its image unless `DOCS_URL` says
+otherwise. A community that only configures needs no docs of its own.
+
+A community with an app of its own documents what is its own, in its own
+repository next to the app, published wherever it likes: its features,
+every screen it replaced, and its deployment runbook. A replaced template
+changes a page the core guide describes, so that page's guide is wrong for
+your users and yours has to cover it. For everything else, link to the
+core docs at your pinned version, `https://mariatta.github.io/flashlights/0.1.0/user/volunteer/`
+say, never to `latest/`, which moves with each release. Point `DOCS_URL`
+at your docs, and link to the core's from there; the core never links to
+a community's docs.
+
 ## Keeping up to date
 
 Watch the core's releases on GitHub. Before upgrading, read the changelog
 entries since your current version, especially anything marked breaking or
 any migration that cannot be reversed. Then change the image tag (or, with
 an app of your own, the `FROM` line of your `Dockerfile`) and deploy. The
-release step runs the migrations before the new version serves.
+release step runs the migrations before the new version serves. The
+portal's help links follow the image on their own; the links in docs of
+your own move to the new version's core docs by hand.
 
 Rolling back is the same change pointed at the previous tag, as long as no
 release in between has a migration that cannot be reversed.

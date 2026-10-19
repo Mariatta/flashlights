@@ -6,7 +6,8 @@ for its public site and its Flashlights instance:
 
 ``SITE_TITLE``, ``SITE_SHORT_NAME``, ``SITE_DESCRIPTION``, ``SITE_LOGO``,
 ``SITE_FAVICON``, ``SITE_OG_IMAGE``, ``BRAND_PRESET``, ``BRAND_PRIMARY``,
-``DOCS_URL``, ``TERMS_URL``.
+``DOCS_URL``, ``TERMS_URL``. ``DOCS_URL`` defaults to the core docs for this
+image's version; a community with docs of its own points it at them.
 
 Colours: the design system fixes the chrome (Night, Paper,
 type, spacing); the accent is the one instance colour. It comes from a
@@ -22,7 +23,9 @@ import hashlib
 import io
 import math
 import os
+import tomllib
 from dataclasses import dataclass
+from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.text import slugify
@@ -43,6 +46,23 @@ PRESETS = {
 PRESET_INKS = {"beam": "#7a5c00"}
 DEFAULT_PRESET = "beam"
 DEFAULT_TITLE = "Flashlights"
+
+#: Where the core's docs are published, one folder per release (mkdocs.yml
+#: says the same under site_url); the help links default to this image's
+#: version of them.
+CORE_DOCS_URL = "https://mariatta.github.io/flashlights/"
+
+
+def core_version():
+    """The version pyproject.toml declares, which is the image's."""
+    with open(Path(__file__).resolve().parent.parent / "pyproject.toml", "rb") as f:
+        return tomllib.load(f)["project"]["version"]
+
+
+def core_docs_url(version=None):
+    """The core docs for ``version`` (this image's by default)."""
+    return f"{CORE_DOCS_URL}{version or core_version()}/"
+
 
 #: The design system's fixed neutrals; the accent is read against them.
 NIGHT = "#0f0f0d"
@@ -337,6 +357,6 @@ def from_env(environ=None):
         accent_ink=(PRESET_INKS.get(preset) if not custom else None)
         or ink_on_paper(rgb),
         text_on_accent=text_on(rgb),
-        docs_url=env.get("DOCS_URL", "").strip(),
+        docs_url=env.get("DOCS_URL", "").strip() or core_docs_url(),
         terms_url=env.get("TERMS_URL", "").strip(),
     )
