@@ -9,7 +9,9 @@ landing page when it is set.
 An organiser records each sponsor in the portal with its tier, its contact
 and where it stands: committed, invoiced, paid. Sponsors do not need a
 portal account for this; the organisers keep the record and send the
-contract request from it.
+contract request from it. When a sponsorship is approved, the organisers
+hear of it at the event's own address, the reply-to address on the
+edition.
 
 ## Donations
 

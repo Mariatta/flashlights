@@ -31,3 +31,21 @@ def send_contract_request_email(profile):
         conference=profile.conference,
     )
     return True
+
+
+def send_sponsorship_approved_email(profile):
+    """Tell the team a sponsorship was approved, at the edition's own address
+    (its reply-to, the team's inbox or list). Skipped when the edition has
+    none. Returns whether it was sent."""
+    address = profile.conference.reply_to_email
+    if not address:
+        return False
+    send_email(
+        f"{settings.BRAND.short_name} sponsorship approved: "
+        f"{profile.organization_name}",
+        [address],
+        markdown_template="sponsorship/email/approved.md",
+        context={"profile": profile},
+        conference=profile.conference,
+    )
+    return True

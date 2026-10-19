@@ -7,6 +7,7 @@ from sponsorship.tasks import (
     send_internal_email_task,
     send_internal_sponsor_onboarding_email_task,
     send_internal_sponsor_progress_update_email_task,
+    send_sponsorship_approved_email_task,
 )
 from volunteer.models import Region, VolunteerProfile
 
@@ -100,3 +101,51 @@ class TestSponsorshipTasks:
         """Test progress update email task when profile doesn't exist."""
         result = send_internal_sponsor_progress_update_email_task(99999)
         assert "SponsorshipProfile with id 99999 not found" in result
+
+
+@pytest.mark.django_db
+class TestApprovalNotice:
+    """When a sponsorship becomes approved, the team hears at the edition's
+    own address."""
+
+    def approval_notices(self):
+        return [m for m in mail.outbox if "sponsorship approved" in m.subject]
+
+    def test_sent_once_when_the_status_becomes_approved(
+        self, sponsorship_profile, conference
+    ):
+        conference.reply_to_email = "team@example.org"
+        conference.save()
+        mail.outbox.clear()
+        sponsorship_profile.progress_status = SponsorshipProgressStatus.APPROVED
+        sponsorship_profile.save()
+        [notice] = self.approval_notices()
+        assert notice.to == ["team@example.org"]
+        assert "Test Org" in notice.subject and "is approved" in notice.body
+        # Saved again while approved: no second notice.
+        sponsorship_profile.organization_name = "Test Org Inc"
+        sponsorship_profile.save()
+        assert len(self.approval_notices()) == 1
+
+    def test_a_sponsor_added_as_approved_is_announced(self, admin_user, conference):
+        conference.reply_to_email = "team@example.org"
+        conference.save()
+        mail.outbox.clear()
+        SponsorshipProfile.objects.create(
+            main_contact_user=admin_user,
+            organization_name="Ready Org",
+            progress_status=SponsorshipProgressStatus.APPROVED,
+            conference=conference,
+        )
+        assert len(self.approval_notices()) == 1
+
+    def test_skipped_without_an_address(self, sponsorship_profile):
+        mail.outbox.clear()
+        sponsorship_profile.progress_status = SponsorshipProgressStatus.APPROVED
+        sponsorship_profile.save()
+        assert self.approval_notices() == []
+        result = send_sponsorship_approved_email_task(sponsorship_profile.id)
+        assert result.startswith("No address on")
+
+    def test_profile_not_found(self):
+        assert "not found" in send_sponsorship_approved_email_task(99999)

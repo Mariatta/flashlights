@@ -3,6 +3,7 @@ from django.conf import settings
 
 from common.send_emails import send_email
 
+from .emails import send_sponsorship_approved_email
 from .models import SponsorshipProfile
 from .permissions import sponsorship_notification_recipients
 
@@ -72,3 +73,14 @@ def send_internal_sponsor_progress_update_email_task(self, profile_id):
 
     except SponsorshipProfile.DoesNotExist:
         return f"SponsorshipProfile with id {profile_id} not found"
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=60)
+def send_sponsorship_approved_email_task(self, profile_id):
+    """The approval notice to the edition's address."""
+    profile = SponsorshipProfile.objects.filter(id=profile_id).first()
+    if profile is None:
+        return f"SponsorshipProfile with id {profile_id} not found"
+    if send_sponsorship_approved_email(profile):
+        return f"Sent the approval notice for {profile.organization_name}"
+    return f"No address on {profile.conference} for the approval notice"
