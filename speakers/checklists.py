@@ -349,15 +349,33 @@ def _matching_targets(template_item):
     confirmed = Session.objects.filter(
         conference=template.conference, status__in=CONFIRMED_ONWARDS
     ).exclude(pk__in=sessions)
-    sessions.update(
-        session.pk
-        for session in confirmed
-        if ChecklistTemplate.for_session(session) == template
-    )
+    pick = session_template_picker(template.conference_id)
+    sessions.update(session.pk for session in confirmed if pick(session) == template)
     return [
         (session, None, _anchors(session))
         for session in template.conference.sessions.filter(pk__in=sessions)
     ]
+
+
+def session_template_picker(conference_id):
+    """``ChecklistTemplate.for_session`` for many sessions of one edition,
+    from a single query: the active session templates are read once and
+    each session is matched on its delivery and ``kind_id`` in Python."""
+    active = list(
+        ChecklistTemplate.objects.filter(
+            conference_id=conference_id,
+            scope=ChecklistScope.SESSION,
+            is_active=True,
+        )
+    )
+
+    def pick(session):
+        same = [t for t in active if t.delivery == session.delivery]
+        return next((t for t in same if t.kind_id == session.kind_id), None) or next(
+            (t for t in same if t.kind_id is None), None
+        )
+
+    return pick
 
 
 def apply_new_template_item(template_item):

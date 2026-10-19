@@ -4,6 +4,8 @@ or who adds a template later, should not leave anyone without a to-do."""
 
 import pytest
 from django.contrib.auth.models import User
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from speakers.checklists import apply_new_template_item
@@ -68,3 +70,20 @@ class TestSessionLinesAddedLater:
         created = apply_new_template_item(make_item(template, title="Book the room"))
         assert [item.session for item in created] == [confirmed]
         assert not ChecklistItem.objects.filter(session=draft).exists()
+
+    def test_matching_sessions_costs_the_same_however_many_there_are(self, conference):
+        """Adding a line reads the edition's session templates once, not
+        once per confirmed session."""
+        make_settings(conference)
+        template = make_template(
+            conference, scope=ChecklistScope.SESSION, name="Workshop room"
+        )
+
+        def queries_with(count):
+            for _ in range(count):
+                make_session(conference, kind="TALK", status=SessionStatus.CONFIRMED)
+            with CaptureQueriesContext(connection) as queries:
+                apply_new_template_item(make_item(template, title=f"Line {count}"))
+            return len(queries)
+
+        assert queries_with(5) == queries_with(10)
