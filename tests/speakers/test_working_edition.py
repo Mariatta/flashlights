@@ -17,6 +17,7 @@ from speakers.editions import (
     active_edition,
     module_enabled,
     program_editions,
+    queue_editions,
     set_working_edition,
     speaker_edition,
     working_edition,
@@ -90,6 +91,17 @@ class TestEditions:
         conference.save()
         assert program_editions() == []
         assert working_edition(request_with({})) is None
+
+    def test_tasks_come_from_the_working_edition_when_none_is_offered(
+        self, conference, enabled
+    ):
+        assert queue_editions(request_with({})) == [conference]
+        enabled.speaker_module_enabled = False
+        enabled.save()
+        assert queue_editions(request_with({})) == [conference]
+        conference.is_active = False
+        conference.save()
+        assert queue_editions(request_with({})) == []
 
     def test_a_choice_no_longer_offered_falls_back(self, conference, upcoming):
         assert working_edition(request_with({})) == conference
