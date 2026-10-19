@@ -3,7 +3,6 @@ from decimal import Decimal
 import pytest
 
 from attendee.models import AttendeeProfile, PretixOrder
-from portal.models import Conference
 from tests.ticketing_ids import (
     AGE_RANGE,
     CHAPTER,
@@ -18,6 +17,32 @@ from tests.ticketing_ids import (
     PARTICIPATED_BEFORE,
     STAY_ANONYMOUS,
     make_ticketing,
+)
+from ticketing.adapters.pretix import PretixAdapter
+
+
+def normalised(ticketing, data):
+    """Pretix's order as the registration the models record."""
+    return PretixAdapter(ticketing).normalise(data)
+
+
+def answers(*pairs):
+    """``(question, answer)`` pairs as normalised answers."""
+    return [{"question": q, "answer": a, "options": []} for q, a in pairs]
+
+
+FULL_ANSWERS = answers(
+    (CITY, "Vancouver"),
+    (COUNTRY, "United States"),
+    (EXPECTATION, "Networking, Learn new things, Support community activities"),
+    (HEARD_ABOUT, "Social Media, Other"),
+    (PARTICIPATED_BEFORE, "No, this is my first one"),
+    (CHAPTER, "San Francisco"),
+    (AGE_RANGE, "19-25"),
+    (ORGANIZATION, "Umbrella Corp"),
+    (CURRENT_POSITION, "Student/Intern, Other"),
+    (EXPERIENCE_LEVEL, "Junior"),
+    (MAY_SHARE_EMAIL, "Yes, I'm interested"),
 )
 
 
@@ -36,22 +61,20 @@ class TestPretixOrderModel:
         order = PretixOrder(order_code="ORDER123")
         assert str(order) == order.order_code
 
-    def test_set_name_from_data(self, pretix_order_data):
-        """Test populating PretixOrder name from pretix data."""
-        order = PretixOrder(order_code="ORDER123")
-        order.set_name_from_data(pretix_order_data)
-        assert order.name == "Example Attendee"
-
-    def test_anonymous_from_data(self, pretix_order_data, conference):
+    def test_anonymous_from_answers(self, pretix_order_data, conference, mapped):
         """The edition's anonymity question decides."""
         order = PretixOrder(order_code="ORDER123", conference=conference)
-        order.set_is_anonymous_from_data(pretix_order_data)
+        order.set_is_anonymous_from_answers(
+            normalised(mapped, pretix_order_data).answers
+        )
         assert order.is_anonymous is False
 
         pretix_order_data["positions"][0]["answers"][1]["option_identifiers"] = [
             STAY_ANONYMOUS
         ]
-        order.set_is_anonymous_from_data(pretix_order_data)
+        order.set_is_anonymous_from_answers(
+            normalised(mapped, pretix_order_data).answers
+        )
         assert order.is_anonymous is True
 
     def test_without_an_anonymity_question_donors_stay_anonymous(
@@ -60,13 +83,14 @@ class TestPretixOrderModel:
         mapped.anonymous_question = ""
         mapped.save()
         order = PretixOrder(order_code="ORDER123", conference=conference)
-        order.set_is_anonymous_from_data(pretix_order_data)
+        order.set_is_anonymous_from_answers(
+            normalised(mapped, pretix_order_data).answers
+        )
         assert order.is_anonymous is True
 
-    def test_set_data_from_pretix(self, pretix_order_data):
-        """Test populating PretixOrder from pretix data."""
-        order = PretixOrder(order_code=pretix_order_data["code"])
-        order.from_pretix_data(pretix_order_data)
+    def test_from_a_pretix_registration(self, pretix_order_data, conference, mapped):
+        order = PretixOrder(order_code=pretix_order_data["code"], conference=conference)
+        order.from_registration(normalised(mapped, pretix_order_data))
         assert order.status == pretix_order_data["status"]
         assert order.email == pretix_order_data["email"]
         assert order.total == Decimal(pretix_order_data["total"])
@@ -90,68 +114,9 @@ class TestAttendeeProfileModel:
         profile = AttendeeProfile(order=order)
         assert str(profile) == "Profile for ORDER123"
 
-    def test_populate_from_pretix_data(self, conference):
-        """Test populating AttendeeProfile from pretix data."""
+    def test_fills_the_mapped_fields(self, conference):
         order = PretixOrder.objects.create(order_code="ORDER123", conference=conference)
-        profile = AttendeeProfile(order=order)
-
-        # Create sample pretix data with demographic answers
-        pretix_data = {
-            "code": "ORDER123",
-            "positions": [
-                {
-                    "answers": [
-                        {
-                            "answer": "Vancouver",
-                            "question_identifier": CITY,
-                        },
-                        {
-                            "answer": "United States",
-                            "question_identifier": COUNTRY,
-                        },
-                        {
-                            "answer": "Networking, Learn new things, Support community activities",
-                            "question_identifier": EXPECTATION,
-                        },
-                        {
-                            "answer": "Social Media, Other",
-                            "question_identifier": HEARD_ABOUT,
-                        },
-                        {
-                            "answer": "No, this is my first one",
-                            "question_identifier": PARTICIPATED_BEFORE,
-                        },
-                        {
-                            "answer": "San Francisco",
-                            "question_identifier": CHAPTER,
-                        },
-                        {
-                            "answer": "19-25",
-                            "question_identifier": AGE_RANGE,
-                        },
-                        {
-                            "answer": "Umbrella Corp",
-                            "question_identifier": ORGANIZATION,
-                        },
-                        {
-                            "answer": "Student/Intern, Other",
-                            "question_identifier": CURRENT_POSITION,
-                        },
-                        {
-                            "answer": "Junior",
-                            "question_identifier": EXPERIENCE_LEVEL,
-                        },
-                        {
-                            "answer": "Yes, I'm interested",
-                            "question_identifier": MAY_SHARE_EMAIL,
-                        },
-                    ],
-                }
-            ],
-        }
-
-        profile.from_pretix_data(pretix_data)
-
+        profile = AttendeeProfile(order=order).from_answers(FULL_ANSWERS)
         assert profile.city == "Vancouver"
         assert profile.country == "United States"
         assert profile.may_share_email_with_sponsor is True
@@ -168,112 +133,28 @@ class TestAttendeeProfileModel:
         assert profile.age_range == "19-25"
         assert profile.organization_name == "Umbrella Corp"
         assert profile.current_position == ["Student/Intern", "Other"]
-        assert profile.raw_answers is not None
+        assert profile.raw_answers == FULL_ANSWERS
 
-    def test_populate_from_pretix_data_handles_missing_fields(self, conference):
-        """Test that from_pretix_data handles missing fields gracefully."""
+    def test_unanswered_fields_are_cleared(self, conference):
         order = PretixOrder.objects.create(order_code="ORDER456", conference=conference)
-        profile = AttendeeProfile(order=order)
-
-        # Pretix data with minimal answers
-        pretix_data = {
-            "code": "ORDER456",
-            "positions": [{"answers": []}],
-        }
-
-        profile.from_pretix_data(pretix_data)
-
+        profile = AttendeeProfile(order=order).from_answers([])
         assert profile.city is None
         assert profile.country is None
         assert profile.may_share_email_with_sponsor is None
         assert profile.experience_level is None
-        assert len(profile.expectation_from_event) == 0
-        assert len(profile.heard_about) == 0
-        assert len(profile.participated_in_previous_event) == 0
+        assert profile.expectation_from_event == []
+        assert profile.heard_about == []
+        assert profile.participated_in_previous_event == []
         assert profile.pyladies_chapter is None
         assert profile.age_range is None
         assert profile.organization_name is None
-        assert len(profile.current_position) == 0
-        assert profile.raw_answers is not None
+        assert profile.current_position == []
+        assert profile.raw_answers == []
 
-    def test_populate_from_pretix_data_none_value_for_chapter(self, conference):
-        """Test populating AttendeeProfile with all demographic fields."""
+    def test_none_as_an_answer_is_blank(self, conference):
         order = PretixOrder.objects.create(order_code="ORDER123", conference=conference)
-        profile = AttendeeProfile(order=order)
-
-        pretix_data = {
-            "code": "ORDER123",
-            "positions": [
-                {
-                    "answers": [
-                        {
-                            "answer": "Vancouver",
-                            "question_identifier": CITY,
-                        },
-                        {
-                            "answer": "United States",
-                            "question_identifier": COUNTRY,
-                        },
-                        {
-                            "answer": "Networking, Learn new things, Support community activities",
-                            "question_identifier": EXPECTATION,
-                        },
-                        {
-                            "answer": "Social Media, Other",
-                            "question_identifier": HEARD_ABOUT,
-                        },
-                        {
-                            "answer": "No, this is my first one",
-                            "question_identifier": PARTICIPATED_BEFORE,
-                        },
-                        {
-                            "answer": "None",
-                            "question_identifier": CHAPTER,
-                        },
-                        {
-                            "answer": "19-25",
-                            "question_identifier": AGE_RANGE,
-                        },
-                        {
-                            "answer": "Umbrella Corp",
-                            "question_identifier": ORGANIZATION,
-                        },
-                        {
-                            "answer": "Student/Intern, Other",
-                            "question_identifier": CURRENT_POSITION,
-                        },
-                        {
-                            "answer": "Junior",
-                            "question_identifier": EXPERIENCE_LEVEL,
-                        },
-                        {
-                            "answer": "Yes, I'm interested",
-                            "question_identifier": MAY_SHARE_EMAIL,
-                        },
-                    ],
-                }
-            ],
-        }
-
-        profile.from_pretix_data(pretix_data)
-
-        assert profile.city == "Vancouver"
-        assert profile.country == "United States"
-        assert profile.may_share_email_with_sponsor is True
-        assert profile.experience_level == "Junior"
-        assert profile.expectation_from_event == [
-            "Networking",
-            "Learn new things",
-            "Support community activities",
-        ]
-        assert profile.heard_about == ["Social Media", "Other"]
-        # Kept whole: the first-time answer is matched exactly.
-        assert profile.participated_in_previous_event == ["No, this is my first one"]
-        assert profile.pyladies_chapter is None
-        assert profile.age_range == "19-25"
-        assert profile.organization_name == "Umbrella Corp"
-        assert profile.current_position == ["Student/Intern", "Other"]
-        assert profile.raw_answers is not None
+        profile = AttendeeProfile(order=order).from_answers(answers((CITY, "None")))
+        assert profile.city is None
 
 
 @pytest.mark.django_db
@@ -282,25 +163,10 @@ class TestQuestionMap:
         mapped.question_map = {}
         mapped.save()
         order = PretixOrder.objects.create(order_code="ORDER9", conference=conference)
-        profile = AttendeeProfile(order=order).from_pretix_data(
-            {
-                "positions": [
-                    {"answers": [{"question_identifier": CITY, "answer": "Lima"}]}
-                ]
-            }
-        )
+        given = answers((CITY, "Lima"))
+        profile = AttendeeProfile(order=order).from_answers(given)
         assert profile.city is None
-        assert profile.raw_answers == [{"question_identifier": CITY, "answer": "Lima"}]
-
-    def test_order_resolves_its_edition_from_the_ticketing_event(self, conference):
-        assert PretixOrder.resolve_conference(conference.slug) == conference
-
-    def test_an_event_no_ticketing_names_falls_back(self, conference):
-        older = Conference.objects.create(
-            year=2019, name="Old", slug="2019", pretix_event_slug="legacy"
-        )
-        assert PretixOrder.resolve_conference("legacy") == older
-        assert PretixOrder.resolve_conference("unknown") == conference  # active
+        assert profile.raw_answers == given
 
 
 @pytest.mark.django_db

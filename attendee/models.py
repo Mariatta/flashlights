@@ -4,8 +4,7 @@ from django.db import models
 
 from portal.models import BaseModel, ChoiceArrayField
 from ticketing.adapters import REGISTERED, Status
-from ticketing.adapters.pretix import PretixAdapter
-from ticketing.models import ProductKind, TicketingSettings, ticketing_for
+from ticketing.models import ProductKind, ticketing_for
 
 
 class PretixOrderstatus(StrEnum):
@@ -109,35 +108,6 @@ class PretixOrder(BaseModel):
     def is_registered(self):
         return self.state in REGISTERED
 
-    @staticmethod
-    def resolve_conference(event_slug):
-        """Map a pretix event slug to its Conference.
-
-        Matches ``Conference.pretix_event_slug`` so a future year's orders land
-        on the right edition automatically; falls back to the active conference
-        when no edition declares that slug.
-        """
-        from portal.models import Conference
-
-        row = (
-            TicketingSettings.objects.filter(event_id=event_slug)
-            .select_related("conference")
-            .first()
-        )
-        if row is not None:
-            return row.conference
-        return (
-            Conference.objects.filter(pretix_event_slug=event_slug).first()
-            or Conference.get_active()
-        )
-
-    def from_pretix_data(self, data):
-        """Populate the PretixOrder instance from pretix order data."""
-        conference = self.resolve_conference(data["event"])
-        row = ticketing_for(conference) or TicketingSettings(conference=conference)
-        self.conference = conference
-        return self.from_registration(PretixAdapter(row).normalise(data))
-
     def from_registration(self, registration):
         """Record a normalised registration. Unchanged
         since the last time (same modification stamp), nothing moves; a
@@ -164,24 +134,6 @@ class PretixOrder(BaseModel):
         self.set_is_anonymous_from_answers(registration.answers)
         self.raw_data = registration.raw
         return self
-
-    def set_name_from_data(self, data):
-        """Set the name field from pretix order data."""
-        for pos in data["positions"]:
-            if pos["attendee_name"]:
-                self.name = pos["attendee_name"]
-                return
-
-    def set_is_anonymous_from_data(self, data):
-        """Set the is_anonymous field from pretix order data."""
-        self.set_is_anonymous_from_answers(
-            {
-                "question": answer["question_identifier"],
-                "options": answer.get("option_identifiers") or [],
-            }
-            for pos in data["positions"]
-            for answer in pos["answers"]
-        )
 
     def set_is_anonymous_from_answers(self, answers):
         """The answer to the edition's anonymity question decides; with no
@@ -287,26 +239,10 @@ class AttendeeProfile(BaseModel):
     def __str__(self):
         return f"Profile for {self.order.order_code}"
 
-    def from_pretix_data(self, pretix_data):
-        """Fill the demographic fields from the order's answers, through the
-        edition's question map. A mapped field this order
-        does not answer is cleared, so a changed answer never lingers."""
-        raw = [
-            answer
-            for position in pretix_data.get("positions", [])
-            for answer in position.get("answers", [])
-        ]
-        return self.from_answers(
-            [
-                {"question": a.get("question_identifier"), "answer": a.get("answer")}
-                for a in raw
-            ],
-            raw=raw,
-        )
-
-    def from_answers(self, answers, raw=None):
+    def from_answers(self, answers):
         """Fill the fields from normalised ``{"question", "answer"}`` answers
-        through the edition's question map; ``raw`` is kept as given."""
+        through the edition's question map. A mapped field this order does
+        not answer is cleared, so a changed answer never lingers."""
         row = ticketing_for(self.order.conference)
         mapping = (row.question_map if row else None) or {}
         answered = set()
@@ -316,7 +252,6 @@ class AttendeeProfile(BaseModel):
                 continue
             answered.add(field_name)
             self._set_answer(field_name, answer.get("answer") or "")
-        all_answers = list(answers) if raw is None else raw
         for field_name in set(mapping.values()) - answered:
             field = AttendeeProfile._meta.get_field(field_name)
             setattr(
@@ -324,7 +259,7 @@ class AttendeeProfile(BaseModel):
                 field_name,
                 [] if field.get_internal_type() == "ChoiceArrayField" else None,
             )
-        self.raw_answers = all_answers
+        self.raw_answers = list(answers)
         return self
 
     def _set_answer(self, field_name, answer_value):
