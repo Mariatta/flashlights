@@ -23,3 +23,12 @@ def test_params_example_names_every_required_parameter():
     example = (ROOT / "deploy/azure/params.example.json").read_text()
     for name in required:
         assert f'"{name}"' in example, name
+
+
+def test_the_secrets_are_encoded_into_the_connection_urls():
+    """A password or key with '@' or '/' in it would otherwise be read as
+    the host; the template encodes both as URL components."""
+    bicep = (ROOT / "deploy/azure/main.bicep").read_text()
+    assert "${uriComponent(postgresPassword)}@" in bicep
+    assert "${uriComponent(redis.listKeys().primaryKey)}@" in bicep
+    assert "${postgresPassword}@" not in bicep

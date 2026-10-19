@@ -116,8 +116,10 @@ resource environment 'Microsoft.App/managedEnvironments@2024-03-01' = {
   }
 }
 
-var databaseUrl = 'postgresql://${postgresUser}:${postgresPassword}@${postgres.properties.fullyQualifiedDomainName}:5432/${postgresDb}?sslmode=require'
-var redisUrl = 'rediss://:${redis.listKeys().primaryKey}@${redis.properties.hostName}:${redis.properties.sslPort}/0'
+// The password and the key are URL components: any character is allowed in
+// them, so they are encoded, or a '@' or '/' would be read as the host.
+var databaseUrl = 'postgresql://${postgresUser}:${uriComponent(postgresPassword)}@${postgres.properties.fullyQualifiedDomainName}:5432/${postgresDb}?sslmode=require'
+var redisUrl = 'rediss://:${uriComponent(redis.listKeys().primaryKey)}@${redis.properties.hostName}:${redis.properties.sslPort}/0'
 
 // Every process gets the same environment: the boot contract (portal/boot.py).
 var secrets = [

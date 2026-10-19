@@ -11,7 +11,8 @@ does not speak the S3 API; its four values are parameters.
    public tag.
 2. Copy `params.example.json` to `params.json` and fill it in. Generate
    `secretKey` and `fernetKey`; the Fernet command is in the deployment
-   guide.
+   guide. The Postgres password may contain any character; the template
+   encodes it into `DATABASE_URL`.
 3. `az group create -n <group> -l <region>`
 4. `az deployment group create -g <group> -f main.bicep -p @params.json`
 5. `az containerapp job start -g <group> -n <name>-release`, then after
