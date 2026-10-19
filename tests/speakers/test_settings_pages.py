@@ -91,7 +91,7 @@ class TestAllowedWebsites:
         and logged a change that never happened."""
         make_settings(conference)
         client.force_login(lead_of_program())
-        for junk in ("abc", "999999"):
+        for junk in ("abc", "999999", "²"):
             response = client.post(ORIGINS, {"remove": junk}, follow=True)
             assert response.status_code == 200
             assert "That website is not on the list." in response.content.decode()

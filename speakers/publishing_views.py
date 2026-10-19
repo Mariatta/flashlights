@@ -315,7 +315,8 @@ class AllowedOriginsView(LoginRequiredMixin, PublishingRequiredMixin, View):
 
     def remove(self, request, settings, pk):
         deleted = 0
-        if pk.isdigit():
+        # isdigit alone accepts digits such as ² that int() refuses.
+        if pk.isascii() and pk.isdigit():
             deleted, _ = AllowedOrigin.objects.filter(settings=settings, pk=pk).delete()
         if deleted:
             messages.success(request, "Removed the website.")
