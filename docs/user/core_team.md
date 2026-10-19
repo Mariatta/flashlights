@@ -45,7 +45,8 @@ their sets can be adjusted afterwards on the team's edit form. Only the
 Organizers team picks what a team may do: anyone else who edits teams sees
 the sets without changing them. A reviewer adds someone to a team, or
 removes them, only when they hold everything that team grants its members,
-and nobody reviews their own volunteer application.
+and names its leads only when they hold everything its leads may do.
+Nobody reviews their own volunteer application.
 Superusers bypass all of this, and the Infra maintainers group, which outlives
 editions, is managed in the Django admin.
 

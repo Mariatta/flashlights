@@ -11,7 +11,6 @@ from .constants import ApplicationStatus
 from .models import Language, Team, VolunteerProfile
 from .organizers import holds_all, may_change_grants
 from .permission_presets import (
-    ORGANIZERS,
     PRESETS,
     grouped_choices,
     label_of,
@@ -321,10 +320,9 @@ class TeamForm(ModelForm):
                 [label_of(p) for p in self.instance.lead_permissions.all()],
             )
 
-        # What a team may do, and who leads Organizers, are the Organizers
-        # team's to change: anyone else who edits teams would otherwise grant
-        # themselves through their own team. Disabled fields keep what is
-        # stored whatever is posted.
+        # What a team may do is the Organizers team's to change: anyone else
+        # who edits teams would otherwise grant themselves through their own
+        # team. Disabled fields keep what is stored whatever is posted.
         if user is not None and not may_change_grants(user):
             del self.fields["preset"]
             for name in ("permissions", "lead_permissions"):
@@ -332,8 +330,18 @@ class TeamForm(ModelForm):
                 self.fields[name].help_text = (
                     "Only the Organizers team changes what a team may do."
                 )
-            if self.instance.short_name == ORGANIZERS:
-                self.fields["team_leads"].disabled = True
+        # Making someone a lead hands them the lead permissions: only
+        # someone who holds them all changes who leads.
+        if (
+            user is not None
+            and self.instance.pk
+            and not holds_all(user, self.instance.lead_permissions.all())
+        ):
+            self.fields["team_leads"].disabled = True
+            self.fields["team_leads"].help_text = (
+                "Only someone who holds what this team's leads may do "
+                "changes who leads it."
+            )
 
     def clean(self):
         cleaned = super().clean()

@@ -422,6 +422,35 @@ class TestOnlyOrganizersGrant:
         )
         assert not organizers.team_leads.filter(pk=mine.pk).exists()
 
+    def test_a_coordinator_cannot_lead_a_team_beyond_them(
+        self, client, coordinator, conference
+    ):
+        """Leading Program would hand over its lead permissions."""
+        program = Team.objects.create(conference=conference, short_name="Program")
+        program.lead_permissions.set(permissions_for(PRESETS["Program"].leads))
+        mine = VolunteerProfile.objects.get(user=coordinator)
+        client.force_login(coordinator)
+        client.post(
+            reverse("team_edit", kwargs={"pk": program.pk}),
+            payload(conference, short_name="Program", team_leads=[mine.pk]),
+        )
+        assert not program.team_leads.exists()
+        assert not User.objects.get(pk=coordinator.pk).has_perm(
+            "speakers.change_speakersettings"
+        )
+
+    def test_a_coordinator_still_names_leads_of_a_plain_team(
+        self, client, coordinator, conference
+    ):
+        design = Team.objects.create(conference=conference, short_name="Design")
+        mine = VolunteerProfile.objects.get(user=coordinator)
+        client.force_login(coordinator)
+        client.post(
+            reverse("team_edit", kwargs={"pk": design.pk}),
+            payload(conference, short_name="Design", team_leads=[mine.pk]),
+        )
+        assert design.team_leads.filter(pk=mine.pk).exists()
+
     def test_an_organizer_still_grants(self, client, organizer, conference):
         team = Team.objects.create(conference=conference, short_name="S")
         client.force_login(organizer)
