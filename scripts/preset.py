@@ -231,5 +231,5 @@ def main(argv=None):
     {"reset": reset, "serve": serve, "drop": drop}[args.command](config, preset)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     sys.exit(main())

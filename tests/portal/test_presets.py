@@ -1,5 +1,6 @@
-"""Demo presets (``manage.py load_preset``, ``scripts/preset.py``) and the
-migration that drops untouched backfilled PyLadiesCon editions."""
+"""Demo presets (``manage.py load_preset``; the switcher script has its own
+tests in ``tests/test_preset_script.py``) and the migration that drops
+untouched backfilled PyLadiesCon editions."""
 
 import importlib
 from io import StringIO
