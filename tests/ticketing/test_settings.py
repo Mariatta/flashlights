@@ -18,6 +18,7 @@ from tests.speakers.factories import make_settings
 from tests.ticketing_ids import CITY, make_ticketing
 from ticketing.forms import parse_map
 from ticketing.models import (
+    Provider,
     TicketingSettings,
     carry_forward,
     has_api,
@@ -157,6 +158,20 @@ class TestCarryForward:
         new = Conference.objects.create(year=2031, name="N", slug="2031")
         assert carry_forward(new, conference) is None
         assert carry_forward(new, None, "ev").event_id == "ev"
+
+    def test_csv_columns_and_first_time_answer_come_along(self, conference):
+        """A CSV edition imports next year without re-entering its columns,
+        and keeps its first-time cards."""
+        make_ticketing(
+            conference,
+            provider=Provider.CSV,
+            csv_columns={"email": "Email address", "name": "Name"},
+            first_time_answer="Yes",
+        )
+        new = Conference.objects.create(year=2033, name="N", slug="2033")
+        row = carry_forward(new, conference)
+        assert row.csv_columns == {"email": "Email address", "name": "Name"}
+        assert row.first_time_answer == "Yes"
 
     def test_unreadable_secrets_stay_behind(self, conference):
         make_ticketing(conference)

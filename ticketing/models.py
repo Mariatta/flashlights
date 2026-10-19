@@ -176,8 +176,10 @@ def carry_forward(target, source, event_id=""):
             "organizer",
             "question_map",
             "product_map",
+            "csv_columns",
             "anonymous_question",
             "anonymous_answer",
+            "first_time_answer",
         )
     }
     # Secrets only when this deploy can read them: an undecryptable value
