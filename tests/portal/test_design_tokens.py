@@ -138,3 +138,16 @@ def test_toasts_stay_put_under_reduced_motion():
     assert any(
         re.search(r"\.portal-toast \{\s*animation: none;", block) for block in blocks
     ), blocks
+
+
+def test_alerts_leave_the_status_glyph_to_the_stylesheet():
+    """portal.css draws a status glyph before every alert; an alert that
+    opens with an icon of its own would show two."""
+    root = Path(finders.find("css")).parent.parent.parent
+    doubled = []
+    for path in (root / "templates").rglob("*.html"):
+        for found in re.finditer(
+            r'<div class="alert[^"]*"[^>]*>\s*<i class="icon-', path.read_text()
+        ):
+            doubled.append(f"{path.relative_to(root)}: {found.group(0)!r}")
+    assert doubled == []

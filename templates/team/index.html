@@ -80,7 +80,6 @@
         </div>
         {% if unled_count %}
             <div class="alert alert-warning d-flex align-items-center" role="alert">
-                <i class="icon-triangle-alert icon-fw me-2"></i>
                 {% blocktranslate count counter=unled_count %}{{ counter }} team has no lead assigned.{% plural %}{{ counter }} teams have no lead assigned.{% endblocktranslate %}
             </div>
         {% endif %}

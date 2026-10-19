@@ -29,7 +29,6 @@
                 {% csrf_token %}
                 {% if form.locked_fields %}
                     <div class="alert alert-secondary small" role="note">
-                        <i class="icon-lock"></i>
                         {% trans "Locked now that the session is scheduled; ask an organizer to change these." %}
                         <dl class="row mb-0 mt-2">
                             {% for label, value in form.locked_fields %}

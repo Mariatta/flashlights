@@ -17,7 +17,6 @@
     {% if show_password_reminder %}
         <div class="alert alert-secondary d-flex flex-wrap align-items-center gap-3"
              id="password-reminder">
-            <i class="icon-key fs-4"></i>
             <div class="flex-grow-1">
                 {% trans "Finalize your account: you sign in with emailed codes right now. Set a password if you'd rather, or keep the codes." %}
             </div>
@@ -34,7 +33,6 @@
     {% endif %}
     {% if not profile_complete %}
         <div class="alert alert-info d-flex align-items-center gap-3">
-            <i class="icon-id-card fs-4"></i>
             <div class="flex-grow-1">
                 {% trans "Your bio or photo is still missing. It's what attendees will see next to your session." %}
             </div>

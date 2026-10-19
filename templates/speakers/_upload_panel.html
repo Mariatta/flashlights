@@ -20,7 +20,6 @@ static/js/media-upload.js. Params:
      data-storage-key="flashlights-upload:{{ session.conference_id }}:{{ session.slug }}:{{ request.user.pk }}"
      data-csrf="{{ csrf_token }}">
     <div class="alert alert-warning small py-2" data-role="resume" hidden>
-        <i class="icon-rotate-ccw"></i>
         {% trans "You have an unfinished upload of" %} <strong data-role="resume-name"></strong>.
         {% trans "Choose the same file again and it continues from where it stopped." %}
     </div>

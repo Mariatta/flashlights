@@ -87,7 +87,6 @@
                 </div>
                 {% if not profile.github_username %}
                     <div class="alert alert-warning" role="alert">
-                        <i class="icon-github"></i>
                         {% trans "Your GitHub username is missing — add it so we can grant repository access." %}
                         <a href="{% url 'volunteer:volunteer_profile_edit' profile.id %}"
                            class="alert-link">{% trans "Update profile" %}</a>

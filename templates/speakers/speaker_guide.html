@@ -47,7 +47,6 @@
                 {% endif %}
                 {% if guide.receipt %}
                     <div class="alert alert-success mb-0">
-                        <i class="icon-check"></i>
                         {% blocktranslate with date=guide.receipt.read_at|date:"j F Y" version=guide.handbook.version %}You confirmed on {{ date }} that you read version {{ version }}. Thank you!{% endblocktranslate %}
                     </div>
                 {% else %}

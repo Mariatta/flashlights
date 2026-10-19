@@ -116,7 +116,6 @@
         {# Promoted queue — the one thing a lead has to act on. #}
         {% if can_manage_members and pending.count %}
             <div class="alert alert-warning d-flex align-items-center" role="alert">
-                <i class="icon-clipboard-list icon-fw me-2"></i>
                 <span class="flex-grow-1">
                     {% blocktranslate count counter=pending.count %}<strong>{{ counter }} application</strong> is waiting for review.{% plural %}<strong>{{ counter }} applications</strong> are waiting for review.{% endblocktranslate %}
                 </span>
