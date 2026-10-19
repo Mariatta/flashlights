@@ -403,11 +403,11 @@ class TestGatesPage:
         open_gates(range(2))
         with CaptureQueriesContext(connection) as few:
             content = client.get(GATES).content.decode()
-        assert content.count("opened") >= 2
+        assert content.count("by organizer") == 2
         open_gates(range(2, 6))
         with CaptureQueriesContext(connection) as many:
             client.get(GATES)
-        assert len(many) == len(few)
+        assert len(many) == len(few), [query["sql"] for query in many]
 
     def test_organizer_sees_gates_and_flips_one(self, client, world, organizer):
         client.force_login(organizer)
