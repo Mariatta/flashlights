@@ -206,7 +206,7 @@ class TeamLeadChoiceField(forms.ModelMultipleChoiceField):
 class TeamForm(ModelForm):
     """Create/edit a team through the portal (instead of Django admin).
 
-    What the team grants is picked here (design §7.1): two
+    What the team grants is picked here: two
     checkbox lists grouped by app in plain words, and a preset that fills
     them, in the browser as it is chosen or on save when nothing was
     ticked. The sets are written by ``save``; the model's own fields go

@@ -1,4 +1,4 @@
-/* Flashlights program widget, v1 (design §11.2). No dependencies.
+/* Flashlights program widget, v1. No dependencies.
  * Copyright (c) 2025 PyLadies, Copyright (c) 2026 Mariatta Wijaya.
  * SPDX-License-Identifier: MIT (see LICENSE-MIT), unlike the AGPL portal,
  * so it can run on any website.

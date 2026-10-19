@@ -519,7 +519,7 @@ class InviteForm(forms.Form):
 
 
 class SpeakerProfileForm(HandleFieldsMixin, IdentityLockMixin, forms.ModelForm):
-    """What a presenter edits about themselves (design §2.3). The handles
+    """What a presenter edits about themselves. The handles
     are the person's: the same ones their volunteer profile shows.
 
     The display name and the web address are theirs until one of their

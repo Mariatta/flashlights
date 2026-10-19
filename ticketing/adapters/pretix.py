@@ -1,4 +1,4 @@
-"""The Pretix adapter (design §12.1): the REST client with
+"""The Pretix adapter: the REST client with
 pagination and retry, ported from the speakers' and the attendee app's two
 clients, and the normalisation of a Pretix order."""
 

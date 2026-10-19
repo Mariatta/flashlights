@@ -1,4 +1,4 @@
-"""Read-side predicates for the speaker module (design §7.1).
+"""Read-side predicates for the speaker module.
 
 Running the program is ``speakers.manage_program``, reading it
 ``speakers.view_program``; the Program team's set carries both, and the

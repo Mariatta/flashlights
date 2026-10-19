@@ -264,7 +264,7 @@ class SpeakerSettings(TimestampedModel):
         help_text="Where unassigned organizer reminders go; blank sends them to "
         "every staff account.",
     )
-    # Pretix (design §12.1): upstream's columns, kept so upstream merges
+    # Pretix: upstream's columns, kept so upstream merges
     # apply, but nothing reads them. Ticketing is per edition in the
     # ticketing app; its migration copied these over.
     pretix_base_url = models.URLField(
@@ -351,7 +351,7 @@ def normalize_origin(url):
 
 class AllowedOrigin(TimestampedModel):
     """A website whose pages may read an edition's public API from the
-    browser (design §11.1): the event site, its preview builds."""
+    browser: the event site, its preview builds."""
 
     settings = models.ForeignKey(
         SpeakerSettings, on_delete=models.CASCADE, related_name="allowed_origins"
@@ -546,7 +546,7 @@ class ActivityLog(TimestampedModel):
 
 
 class Room(TimestampedModel):
-    """A room of a venue the schedule can place sessions in (design §8.5).
+    """A room of a venue the schedule can place sessions in.
 
     Deliberately generic: for an online edition a room is typically a
     Discord channel (``url`` and ``discord_id`` record which one, both

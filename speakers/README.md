@@ -91,7 +91,7 @@ reverse accessor named after every child model (`basemodel.role`,
   `view_unconfirmed_sponsors`. The internal contact on the sponsor form is
   anyone who manages sponsors (`sponsor_contact_candidates`), and the
   internal notification emails go to `sponsorship_notification_recipients()`.
-- The catalogue (design §7.1) exists on the granting side. Custom
+- The catalogue exists on the granting side. Custom
   permissions are declared in `Meta.permissions` on the model that owns the
   feature (`portal.view_organizer_dashboard`, `portal.start_next_year`,
   `volunteer.review_volunteerprofile`,

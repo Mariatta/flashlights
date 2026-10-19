@@ -1,4 +1,4 @@
-"""Sponsorship on has_perm (design §7.1): a Sponsorship-team
+"""Sponsorship on has_perm: a Sponsorship-team
 member manages sponsors with no Django flag, an approved volunteer only
 reads, and the internal email reaches the team."""
 

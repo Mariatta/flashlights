@@ -1,4 +1,4 @@
-"""Permissions derived from the active edition's teams (design §7.1)."""
+"""Permissions derived from the active edition's teams."""
 
 import importlib
 
