@@ -190,6 +190,7 @@ class TestContextProcessor:
         request.user = AnonymousUser()
         assert speaker_module(request) == {
             "speaker_module_enabled": False,
+            "speaker_working_edition": None,
             "speaker_proposals_open": False,
             "pending_proposal_count": None,
             "has_speaker_proposals": False,
@@ -218,11 +219,12 @@ class TestContextProcessor:
     def test_no_request_user(self, rf):
         assert speaker_module(rf.get("/"))["speaker_module_enabled"] is False
 
-    def test_liaison_flag(self, rf, liaison, organizer, sessions):
+    def test_liaison_flag(self, rf, liaison, organizer, sessions, conference):
         request = rf.get("/")
         request.user = liaison
         assert speaker_module(request) == {
             "speaker_module_enabled": True,
+            "speaker_working_edition": conference,
             "speaker_proposals_open": False,
             "pending_proposal_count": None,
             "has_speaker_proposals": False,

@@ -20,6 +20,8 @@ def speaker_module(request):
 
     * ``speaker_module_enabled``: the edition this person works on (the
       active one, or the newer one they chose to plan) has opted in.
+    * ``speaker_working_edition``: that edition, so an edition's own pages
+      can tell whether the program pages show it.
     * ``is_speaker_liaison``: this user looks after at least one presenter, so
       the personal rail offers their sessions even though they are not an
       organizer.
@@ -48,6 +50,7 @@ def speaker_module(request):
         # answers for members below, so the button and the form agree.
         return {
             "speaker_module_enabled": False,
+            "speaker_working_edition": None,
             "speaker_proposals_open": proposals_open(active_edition(request)),
             "pending_proposal_count": None,
             "has_speaker_proposals": False,
@@ -80,6 +83,7 @@ def speaker_module(request):
             ).exists()
         ),
         "speaker_module_enabled": enabled,
+        "speaker_working_edition": conference,
         "is_speaker_liaison": enabled
         and not is_speaker_organizer(user)
         and is_speaker_liaison(user, conference),

@@ -1,8 +1,10 @@
 {% load i18n %}
 {% comment %}
 The pages of one event, as tabs under its name: Event (the edit form),
-Dates (a series), Tickets, and Rooms for the active edition once the
-program is on. Expects `conference` and `active` (event, dates, tickets).
+Dates (a series), Tickets, and Rooms once the program is on. The rooms
+page lists the edition the program pages work on, so the tab is offered
+only on that edition's pages. Expects `conference` and `active` (event,
+dates, tickets).
 {% endcomment %}
 <ul class="nav nav-tabs mb-3">
     <li class="nav-item">
@@ -24,7 +26,7 @@ program is on. Expects `conference` and `active` (event, dates, tickets).
                href="{% url 'conference_tickets' conference.pk %}">{% trans "Tickets" %}</a>
         </li>
     {% endif %}
-    {% if conference.is_active and speaker_module_enabled and perms.speakers.manage_program %}
+    {% if conference.pk == speaker_working_edition.pk and speaker_module_enabled and perms.speakers.manage_program %}
         <li class="nav-item">
             <a class="nav-link" href="{% url 'speakers:room_list' %}">{% trans "Rooms" %}</a>
         </li>

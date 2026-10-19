@@ -161,6 +161,20 @@ class TestSwitching:
         assert response.url == reverse("speakers:session_list")
         assert client.session[SESSION_KEY] == conference.pk
 
+    def test_the_rooms_tab_is_on_the_edition_the_program_pages_show(
+        self, client, admin_user, conference, upcoming
+    ):
+        rooms = f'href="{reverse("speakers:room_list")}">Rooms</a>'
+
+        def edit_page(edition):
+            url = reverse("conference_edit", kwargs={"pk": edition.pk})
+            return client.get(url).content.decode()
+
+        client.force_login(admin_user)
+        assert rooms in edit_page(conference) and rooms not in edit_page(upcoming)
+        switch(client, upcoming)
+        assert rooms not in edit_page(conference) and rooms in edit_page(upcoming)
+
     def test_switching_from_one_sessions_page_lands_on_the_sessions(
         self, client, organizer, conference, upcoming
     ):
