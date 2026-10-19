@@ -78,6 +78,14 @@ class WriteOnlySecretsMixin:
         return stored
 
     def clean_api_token(self):
+        # The token goes to the base URL: a changed URL without a new token
+        # would send the stored one to a host nobody vetted it for.
+        if (
+            self.instance.pk
+            and "base_url" in self.changed_data
+            and not self.cleaned_data.get("api_token")
+        ):
+            return ""
         return self._keep_when_blank("api_token")
 
     def clean_webhook_secret(self):
@@ -92,7 +100,8 @@ class TicketingSettingsForm(WriteOnlySecretsMixin, forms.ModelForm):
         label="API token",
         required=False,
         widget=forms.PasswordInput(render_value=False),
-        help_text="Leave blank to keep the current token.",
+        help_text="Leave blank to keep the current token. Changing the API base URL "
+        "clears it: enter it again with the new URL.",
     )
     webhook_secret = forms.CharField(
         required=False,

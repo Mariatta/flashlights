@@ -12,7 +12,8 @@ class TicketingSettingsAdminForm(WriteOnlySecretsMixin, forms.ModelForm):
     api_token = forms.CharField(
         required=False,
         widget=forms.PasswordInput(render_value=False),
-        help_text="Leave blank to keep the current token.",
+        help_text="Leave blank to keep the current token. Changing the API base URL "
+        "clears it: enter it again with the new URL.",
     )
     webhook_secret = forms.CharField(
         required=False,

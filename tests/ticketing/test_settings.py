@@ -92,7 +92,7 @@ class TestTicketsPage:
         assert row.api_token == "tok" and row.has_api
 
     def test_blank_secrets_keep_the_stored_ones(self, client, admin_user, conference):
-        make_ticketing(conference)
+        make_ticketing(conference, base_url=form_data()["base_url"])
         client.force_login(admin_user)
         client.post(tickets_url(conference), form_data(api_token="", webhook_secret=""))
         row = TicketingSettings.objects.get(conference=conference)
@@ -103,7 +103,7 @@ class TestTicketsPage:
     ):
         """A deploy without its key cannot read the token; saving the page
         must not write it empty."""
-        make_ticketing(conference)
+        make_ticketing(conference, base_url=form_data()["base_url"])
         client.force_login(admin_user)
         with override_settings(FERNET_KEY=Fernet.generate_key().decode()):
             encryption._warned = False
@@ -111,7 +111,11 @@ class TestTicketsPage:
                 tickets_url(conference), form_data(api_token="", webhook_secret="")
             )
             form = TicketingSettingsAdminForm(
-                data={"conference": conference.pk, "provider": "PRETIX"},
+                data={
+                    "conference": conference.pk,
+                    "provider": "PRETIX",
+                    "base_url": form_data()["base_url"],
+                },
                 instance=TicketingSettings.objects.get(conference=conference),
             )
             assert not form.is_valid() and "api_token" in form.errors
@@ -120,6 +124,33 @@ class TestTicketsPage:
         assert "cannot read the stored value" in response.content.decode()
         row = TicketingSettings.objects.get(conference=conference)
         assert row.api_token == "tok-secret" and row.webhook_secret == "hook-secret"
+
+    def test_a_new_base_url_clears_the_stored_token(
+        self, client, admin_user, conference
+    ):
+        """The token is never sent to a host it was not entered for."""
+        make_ticketing(conference, base_url=form_data()["base_url"])
+        client.force_login(admin_user)
+        client.post(
+            tickets_url(conference),
+            form_data(
+                api_token="",
+                webhook_secret="",
+                base_url="https://elsewhere.example/api/v1/",
+            ),
+        )
+        row = TicketingSettings.objects.get(conference=conference)
+        assert row.base_url == "https://elsewhere.example/api/v1/"
+        assert row.api_token == "" and row.webhook_secret == "hook-secret"
+        client.post(
+            tickets_url(conference),
+            form_data(
+                api_token="new-tok", base_url="https://elsewhere.example/api/v1/"
+            ),
+        )
+        assert (
+            TicketingSettings.objects.get(conference=conference).api_token == "new-tok"
+        )
 
     def test_refusals(self, client, admin_user, conference):
         client.force_login(admin_user)
