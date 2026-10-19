@@ -1,5 +1,7 @@
 import pytest
 from allauth.account.models import EmailAddress
+from django import forms
+from django.template.loader import render_to_string
 from django.urls import reverse
 from pytest_django.asserts import assertRedirects
 
@@ -190,3 +192,24 @@ def test_a_failed_sign_in_says_so(client, portal_user):
     assert "The username and/or password you specified are not correct." in html
     assert 'class="alert alert-danger"' in html
     assert "is-valid" not in html
+
+
+class BothErrorsForm(forms.Form):
+    """A form-wide error beside a field's own, as no stock allauth page
+    produces today."""
+
+    login = forms.CharField()
+    code = forms.CharField()
+
+    def clean(self):
+        raise forms.ValidationError("Something about the form as a whole.")
+
+
+def test_a_fields_own_error_shows_beside_a_form_wide_one():
+    form = BothErrorsForm({"login": "ada", "code": ""})
+    assert not form.is_valid()
+    html = render_to_string("allauth/elements/fields.html", {"attrs": {"form": form}})
+    # The field with its own error is marked, so its message shows; the
+    # other is ticked neither way.
+    assert html.count("is-invalid") == 1 and "is-valid" not in html
+    assert "This field is required." in html
