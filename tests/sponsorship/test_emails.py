@@ -79,3 +79,19 @@ class TestSponsorshipEmails:
         send_contract_request_email(profile)
         assert mail.outbox == []
         assert not SentEmail.objects.exists()
+
+    def test_the_contract_request_leaves_out_what_is_not_recorded(
+        self, conference, settings
+    ):
+        settings.ACCOUNTING_EMAIL = "accounting@example.org"
+        profile = SponsorshipProfile.objects.create(
+            organization_name="Bare Corp",
+            progress_status=SponsorshipProgressStatus.APPROVED,
+            conference=conference,
+        )
+        mail.outbox = []
+        send_contract_request_email(profile)
+        [email] = mail.outbox
+        assert "Company name: Bare Corp" in email.body
+        for missing in ("Company address", "Tier", "Amount", "Contact", "None"):
+            assert missing not in email.body
