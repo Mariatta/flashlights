@@ -42,6 +42,11 @@ class TestVolunteer:
         # The speaker card is for presenters; this volunteer is not one.
         assert "Speaker resources" not in content
         assert "footer-heading" not in content  # footer-only marker
+        # Without docs of its own the instance shows no card: the core docs
+        # it links to by default have no team descriptions.
+        with override_settings(BRAND=branding.from_env({})):
+            by_default = client.get(reverse("volunteer:index")).content.decode()
+        assert "Volunteer resources" not in by_default
 
     def test_volunteer_profile_view_with_profile(self, client, portal_user, conference):
         profile = VolunteerProfile(user=portal_user, conference=conference)

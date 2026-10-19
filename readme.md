@@ -59,7 +59,8 @@ is in `docs/developer/environment.md`.
 | `SITE_LOGO`, `SITE_FAVICON`, `SITE_OG_IMAGE` | Absolute URLs. Unset, a favicon (SVG plus PNG twins for Safari and iOS) and a share card are generated from the title and the primary colour | unset |
 | `BRAND_PRESET` | The accent: `beam`, `teal`, `copper`, `indigo` or `raspberry`. The chrome (Night, Paper, type) is fixed | `beam` |
 | `BRAND_PRIMARY` | A custom `#rrggbb` accent; the ink on it (Night or white), its text shade on Paper and the hover and press shades are derived | unset |
-| `DOCS_URL`, `TERMS_URL` | Documentation and terms of service links; left out when unset | unset |
+| `DOCS_URL` | The help links: your community's own docs when it has some, else the core docs for this image's version. The landing's team descriptions link and the volunteer resources card appear only when it is set | the core docs for this version |
+| `TERMS_URL` | The terms of service link; left out when unset | unset |
 | `VOLUNTEERING_ENABLED` | `false` hides the Volunteer hub, its nav and organizer entries and the landing section; its pages answer 404 | `true` |
 | `SPONSORSHIP_ENABLED` | `false` hides sponsors, tiers, donations, their stats and dashboard tiles; its pages answer 404 | `true` |
 | `STATS_PUBLIC` | `false` takes the public stats pages (stats, year comparison, JSON) off the site | `true` |
