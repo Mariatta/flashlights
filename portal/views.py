@@ -502,6 +502,8 @@ class VenueList(ConferenceAdminRequiredMixin, ListView):
                 dates_count=Count("event_dates", distinct=True),
                 rooms_count=Count("rooms", distinct=True),
             )
+            # The counts group the query, which drops the model's order.
+            .order_by("name")
         )
 
 

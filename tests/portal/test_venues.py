@@ -54,6 +54,18 @@ class TestVenuePages:
             reverse("venue_list") in content and reverse("conference_list") in content
         )
 
+    def test_list_is_by_name(self, client, organizer, conference):
+        for name in ("Moscone", "Arena", "Convention Centre"):
+            Venue.objects.create(name=name)
+        client.force_login(organizer)
+        venues = client.get(reverse("venue_list")).context["venues"]
+        assert venues.ordered
+        assert [venue.name for venue in venues] == [
+            "Arena",
+            "Convention Centre",
+            "Moscone",
+        ]
+
     def test_delete_refused_while_in_use(self, client, organizer, conference):
         client.force_login(organizer)
         venue = Venue.objects.create(name="SAP")
