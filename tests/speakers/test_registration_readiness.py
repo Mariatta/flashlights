@@ -2,6 +2,9 @@
 rather than at the nightly refresh."""
 
 import pytest
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
+from django.utils import timezone
 
 from speakers.constants import ReadyRule, SessionStatus
 from speakers.models import ChecklistItem
@@ -34,3 +37,17 @@ def test_ticketing_set_up_frees_the_register_line(conference):
     TicketingSettings.objects.create(conference=conference, provider=Provider.CSV)
     register.refresh_from_db()
     assert not register.is_waiting
+
+
+@pytest.mark.django_db
+def test_a_poll_saving_its_sync_time_rechecks_nothing(conference):
+    """Every edition's poll saves ``last_synced_at``; that moves no line."""
+    make_settings(conference)
+    seed_checklists(conference)
+    ticketing = TicketingSettings.objects.create(
+        conference=conference, provider=Provider.CSV
+    )
+    ticketing.last_synced_at = timezone.now()
+    with CaptureQueriesContext(connection) as queries:
+        ticketing.save(update_fields=["last_synced_at", "modified_date"])
+    assert not [q for q in queries if "speakers_checklistitem" in q["sql"]]

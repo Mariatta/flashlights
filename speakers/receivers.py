@@ -102,7 +102,10 @@ def _touches(kwargs, *fields):
 )
 def ticketing_changed(sender, instance, **kwargs):
     """Ticketing set up (or taken down) for an edition: the speakers'
-    "register" lines waiting on it move now, not at the nightly refresh."""
+    "register" lines waiting on it move now, not at the nightly refresh.
+    A poll's own ``last_synced_at`` save sets nothing up."""
+    if not _touches(kwargs, "provider", "organizer", "event_id", "api_token"):
+        return
     refresh_readiness(
         ChecklistItem.objects.filter(
             conference_id=instance.conference_id,
