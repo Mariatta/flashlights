@@ -9,7 +9,14 @@ from portal_account.handles import VOLUNTEER_COLUMNS, HandleFieldsMixin
 
 from .constants import ApplicationStatus
 from .models import Language, Team, VolunteerProfile
-from .permission_presets import PRESETS, grouped_choices, label_of, permissions_for
+from .organizers import is_on_organizers_team
+from .permission_presets import (
+    ORGANIZERS,
+    PRESETS,
+    grouped_choices,
+    label_of,
+    permissions_for,
+)
 from .tasks import (
     send_internal_volunteer_onboarding_email_task,
     send_volunteer_onboarding_email_task,
@@ -171,12 +178,19 @@ class VolunteerProfileReviewForm(ModelForm):
         super().__init__(*args, **kwargs)
         # Assign only teams belonging to the profile's own conference edition.
         if self.instance and self.instance.conference_id:
-            self.fields["teams"].queryset = Team.objects.filter(
-                conference_id=self.instance.conference_id
-            )
+            teams = Team.objects.filter(conference_id=self.instance.conference_id)
+            # Joining Organizers grants what Organizers hold: only they
+            # bring someone onto it.
+            if self.user is not None and not is_on_organizers_team(self.user):
+                teams = teams.exclude(short_name=ORGANIZERS)
+            self.fields["teams"].queryset = teams
 
     def clean(self):
         cleaned_data = super().clean()
+        if self.user is not None and self.instance.user_id == self.user.pk:
+            raise forms.ValidationError(
+                "You cannot review your own application: ask another reviewer."
+            )
         return cleaned_data
 
     def save(self, commit=True):
@@ -259,7 +273,7 @@ class TeamForm(ModelForm):
             ),
         }
 
-    def __init__(self, *args, conference=None, **kwargs):
+    def __init__(self, *args, conference=None, user=None, **kwargs):
         super().__init__(*args, **kwargs)
         # The edition the team belongs to is now chosen on the form, so it works
         # even when no edition is active. Default a new team to the caller's hint
@@ -290,6 +304,20 @@ class TeamForm(ModelForm):
                 "lead_permissions",
                 [label_of(p) for p in self.instance.lead_permissions.all()],
             )
+
+        # What a team may do, and who leads Organizers, are the Organizers
+        # team's to change: anyone else who edits teams would otherwise grant
+        # themselves through their own team. Disabled fields keep what is
+        # stored whatever is posted.
+        if user is not None and not is_on_organizers_team(user):
+            del self.fields["preset"]
+            for name in ("permissions", "lead_permissions"):
+                self.fields[name].disabled = True
+                self.fields[name].help_text = (
+                    "Only the Organizers team changes what a team may do."
+                )
+            if self.instance.short_name == ORGANIZERS:
+                self.fields["team_leads"].disabled = True
 
     def clean(self):
         cleaned = super().clean()

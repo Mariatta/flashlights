@@ -10,9 +10,11 @@ from django.contrib.auth.models import Group, User
 from django.urls import reverse
 
 from volunteer.constants import ApplicationStatus
+from volunteer.forms import VolunteerProfileReviewForm
 from volunteer.models import Team, VolunteerProfile
 from volunteer.permission_presets import (
     CATALOGUE,
+    ORGANIZERS,
     PRESETS,
     describe,
     grouped_choices,
@@ -327,3 +329,114 @@ class TestProfilePage:
         end = content.index("</script>", start)
         blob = content[begin:end]
         assert set(json.loads(blob)) == set(PRESETS)
+
+
+@pytest.fixture
+def coordinator(django_user_model, join_team):
+    """Edits teams and reviews volunteers, but is not on Organizers."""
+    return join_team(
+        django_user_model.objects.create_user(
+            username="coord", email="coord@example.com"
+        ),
+        "Volunteer coordination",
+    )
+
+
+@pytest.mark.django_db
+class TestOnlyOrganizersGrant:
+    def test_a_coordinator_cannot_grant_through_their_own_team(
+        self, client, coordinator, conference
+    ):
+        team = Team.objects.get(short_name="Volunteer coordination")
+        before = labels(team.permissions)
+        client.force_login(coordinator)
+        url = reverse("team_edit", kwargs={"pk": team.pk})
+        page = client.get(url).content.decode()
+        assert "Only the Organizers team changes what a team may do." in page
+        assert 'id="id_preset"' not in page
+        response = client.post(
+            url,
+            payload(
+                conference,
+                short_name="Volunteer coordination",
+                permissions=before + ["portal.start_next_year"],
+                lead_permissions=["ticketing.change_ticketingsettings"],
+            ),
+        )
+        assert response.status_code == 302
+        assert labels(team.permissions) == before
+        assert labels(team.lead_permissions) == []
+        coordinator = User.objects.get(pk=coordinator.pk)
+        assert not coordinator.has_perm("portal.start_next_year")
+
+    def test_a_coordinators_new_team_grants_nothing(
+        self, client, coordinator, conference
+    ):
+        client.force_login(coordinator)
+        client.post(
+            reverse("team_new"),
+            payload(conference, preset="Sponsorship", permissions=[INVOICE]),
+        )
+        team = Team.objects.get(short_name="Sponsorship")
+        assert labels(team.permissions) == [] and labels(team.lead_permissions) == []
+
+    def test_a_coordinator_cannot_lead_organizers(
+        self, client, coordinator, organizer, conference
+    ):
+        organizers = Team.objects.get(short_name=ORGANIZERS)
+        mine = VolunteerProfile.objects.get(user=coordinator)
+        client.force_login(coordinator)
+        client.post(
+            reverse("team_edit", kwargs={"pk": organizers.pk}),
+            payload(conference, short_name=ORGANIZERS, team_leads=[mine.pk]),
+        )
+        assert not organizers.team_leads.filter(pk=mine.pk).exists()
+
+    def test_an_organizer_still_grants(self, client, organizer, conference):
+        team = Team.objects.create(conference=conference, short_name="S")
+        client.force_login(organizer)
+        client.post(
+            reverse("team_edit", kwargs={"pk": team.pk}),
+            payload(conference, short_name="S", permissions=[INVOICE]),
+        )
+        assert labels(team.permissions) == [INVOICE]
+
+
+@pytest.mark.django_db
+class TestReviewingApplications:
+    def test_nobody_reviews_their_own_application(
+        self, client, coordinator, conference
+    ):
+        """A reviewer cannot move themselves onto another team."""
+        program = Team.objects.create(conference=conference, short_name="Program")
+        program.permissions.set(permissions_for(PRESETS["Program"].members))
+        mine = VolunteerProfile.objects.get(user=coordinator)
+        before = list(mine.teams.values_list("pk", flat=True))
+        client.force_login(coordinator)
+        response = client.post(
+            reverse("volunteer:volunteer_profile_manage", kwargs={"pk": mine.pk}),
+            {"teams": before + [program.pk]},
+        )
+        assert response.status_code == 200
+        assert "You cannot review your own application" in response.content.decode()
+        assert list(mine.teams.values_list("pk", flat=True)) == before
+
+    def test_only_organizers_bring_someone_onto_organizers(
+        self, coordinator, organizer, django_user_model, conference
+    ):
+        applicant = VolunteerProfile.objects.create(
+            user=django_user_model.objects.create_user(username="new"),
+            conference=conference,
+        )
+        offered = (
+            VolunteerProfileReviewForm(instance=applicant, user=coordinator)
+            .fields["teams"]
+            .queryset
+        )
+        assert not offered.filter(short_name=ORGANIZERS).exists()
+        offered = (
+            VolunteerProfileReviewForm(instance=applicant, user=organizer)
+            .fields["teams"]
+            .queryset
+        )
+        assert offered.filter(short_name=ORGANIZERS).exists()

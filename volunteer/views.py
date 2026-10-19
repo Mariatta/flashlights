@@ -644,6 +644,7 @@ class TeamCreate(TeamManagerRequiredMixin, TeamFormContextMixin, CreateView):
         kwargs = super().get_form_kwargs()
         # A hint for the form's default conference; the field is now selectable.
         kwargs["conference"] = Conference.get_active()
+        kwargs["user"] = self.request.user
         return kwargs
 
     def get_success_url(self):
@@ -658,6 +659,7 @@ class TeamUpdate(TeamManagerRequiredMixin, TeamFormContextMixin, UpdateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["conference"] = self.object.conference
+        kwargs["user"] = self.request.user
         return kwargs
 
     def get_success_url(self):
