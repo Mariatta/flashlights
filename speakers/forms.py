@@ -220,8 +220,9 @@ class SessionForm(EventTimeMixin, forms.ModelForm):
         )
 
     #: Who sees what, as the form shows it: the speaker edits the first
-    #: group on their own session page, sees the second there without
-    #: changing it, and never sees the third anywhere in the portal.
+    #: group on their own session page and sees the second there without
+    #: changing it; the video link goes public at its publish time; the
+    #: last group stays with the team.
     FIELD_GROUPS = (
         (
             "speaker_edits",
@@ -239,13 +240,18 @@ class SessionForm(EventTimeMixin, forms.ModelForm):
         ),
         (
             "speaker_sees",
-            "The speaker sees, the team sets",
+            "The speaker sees, set by the team",
             ("kind", "delivery", "duration_minutes", "video_length_limit_minutes"),
+        ),
+        (
+            "public_video",
+            "Public once published, set by the team",
+            ("youtube_url", "youtube_publish_at"),
         ),
         (
             "team_only",
             "Team only: never shown to the speaker",
-            ("premiere_location", "youtube_url", "youtube_publish_at", "notes_md"),
+            ("premiere_location", "notes_md"),
         ),
     )
 

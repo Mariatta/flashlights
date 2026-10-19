@@ -1,5 +1,6 @@
 """The organizer's session form says who sees each field: what the speaker
-edits, what they see but the team sets, and what is the team's alone."""
+edits, what they see but the team sets, the video link that goes public
+at its publish time, and what is the team's alone."""
 
 import pytest
 from django.contrib.auth.models import User
@@ -33,12 +34,11 @@ class TestFieldGroups:
         grouped = [name for names in by_key.values() for name in names]
         assert sorted(grouped) == sorted(form.fields)
 
-    def test_the_video_fields_are_the_teams(self, conference):
+    def test_the_video_link_is_public_once_published(self, conference):
         make_settings(conference)
         _, by_key = groups(conference)
-        assert {"youtube_url", "youtube_publish_at", "notes_md"} <= set(
-            by_key["team_only"]
-        )
+        assert by_key["public_video"] == ["youtube_url", "youtube_publish_at"]
+        assert {"premiere_location", "notes_md"} == set(by_key["team_only"])
         assert "title" in by_key["speaker_edits"]
         assert "video_length_limit_minutes" in by_key["speaker_sees"]
 
@@ -56,4 +56,6 @@ class TestFieldGroups:
         page = client.get(reverse("speakers:session_edit", args=[session.slug]))
         content = page.content.decode()
         assert "Team only: never shown to the speaker" in content
+        assert "The speaker sees, set by the team" in content
+        assert "Public once published, set by the team" in content
         assert "The speaker sees and can edit" in content
