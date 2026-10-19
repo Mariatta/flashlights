@@ -27,9 +27,9 @@ else.
 
 We keep the information you give us (your profile, your application, your
 proposal, the files you upload) to run [Event], and we share it only with
-the organisers who need it for that. Sponsors see your email address only
-if you said they may. You can ask us at [contact address] to see or remove
-what we hold about you.
+the organisers who need it for that. Sponsors are recorded by the
+organisers and are not shown your details. You can ask us at [contact
+address] to see or remove what we hold about you.
 
 [Portal] serves every page itself. It runs no analytics or advertising,
 sets no third-party cookies, and loads no scripts or fonts from other
