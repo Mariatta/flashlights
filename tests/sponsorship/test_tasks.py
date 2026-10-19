@@ -2,7 +2,11 @@ import pytest
 from django.contrib.auth.models import User
 from django.core import mail
 
-from sponsorship.models import SponsorshipProfile, SponsorshipProgressStatus
+from sponsorship.models import (
+    SponsorshipProfile,
+    SponsorshipProgressStatus,
+    SponsorshipTier,
+)
 from sponsorship.tasks import (
     send_internal_email_task,
     send_internal_sponsor_onboarding_email_task,
@@ -18,7 +22,7 @@ def admin_user_with_role(conference):
     admin_user = User.objects.create_superuser(
         username="testadmin",
         email="test-admin@example.com",
-        password="pyladiesadmin123",
+        password="admin-test-password",
     )
     admin_profile = VolunteerProfile(user=admin_user, conference=conference)
     admin_profile.region = Region.NORTH_AMERICA
@@ -122,6 +126,8 @@ class TestApprovalNotice:
         [notice] = self.approval_notices()
         assert notice.to == ["team@example.org"]
         assert "Test Org" in notice.subject and "is approved" in notice.body
+        # Nothing recorded yet for tier or contact: those lines are left out.
+        assert "Tier:" not in notice.body and "None" not in notice.body
         # Saved again while approved: no second notice.
         sponsorship_profile.organization_name = "Test Org Inc"
         sponsorship_profile.save()
@@ -131,13 +137,22 @@ class TestApprovalNotice:
         conference.reply_to_email = "team@example.org"
         conference.save()
         mail.outbox.clear()
+        tier = SponsorshipTier.objects.create(
+            name="Gold", amount=5000, description="d", conference=conference
+        )
         SponsorshipProfile.objects.create(
             main_contact_user=admin_user,
             organization_name="Ready Org",
+            sponsorship_tier=tier,
+            sponsor_contact_name="Rae",
+            sponsors_contact_email="rae@ready.example",
             progress_status=SponsorshipProgressStatus.APPROVED,
             conference=conference,
         )
-        assert len(self.approval_notices()) == 1
+        [notice] = self.approval_notices()
+        assert "Tier: Gold" in notice.body
+        assert "Contact name: Rae" in notice.body
+        assert "Contact email: rae@ready.example" in notice.body
 
     def test_skipped_without_an_address(self, sponsorship_profile):
         mail.outbox.clear()
