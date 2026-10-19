@@ -875,6 +875,7 @@ def clone_readiness_gates(target, source):
 # (see speakers/encryption.py) would raise on save.
 SETTINGS_TO_COPY = [
     "event_format",
+    "recordings",
     "default_premiere_location",
     "translation_languages",
     "default_video_length_limit_minutes",

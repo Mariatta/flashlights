@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from portal.models import Conference
-from speakers.constants import EventFormat
+from speakers.constants import EventFormat, Recordings
 from speakers.models import (
     ChecklistTemplate,
     Handbook,
@@ -96,6 +96,18 @@ class TestStartNextYear:
         assert guide.version == 1 and not guide.is_published
         assert guide.url == "https://example.org/w"
         assert not Handbook.objects.filter(conference=new, key="speaker").exists()
+
+    def test_copies_the_recordings_setting(self, client, admin_user, conference):
+        """In person with the team recording stays so: speakers pre-recording
+        is a combination the edition form refuses in person."""
+        make_settings(
+            conference, event_format=EventFormat.IN_PERSON, recordings=Recordings.TEAM
+        )
+        client.force_login(admin_user)
+        client.post(reverse("start_new_year"), payload(copy_speaker_setup="on"))
+        row = SpeakerSettings.objects.get(conference__year=2027)
+        assert row.event_format == EventFormat.IN_PERSON
+        assert row.recordings == Recordings.TEAM
 
     def test_copy_without_enabling(self, client, admin_user, source):
         client.force_login(admin_user)
