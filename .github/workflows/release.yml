@@ -1,7 +1,7 @@
 # Publishes a release when a tag vX.Y.Z is pushed: the checks, then the
 # image in both flavours on ghcr.io, then a GitHub release whose notes are
-# the version's CHANGELOG.md section. docs/developer/releasing.md has the
-# steps before the tag.
+# the version's CHANGELOG.md section, then this version of the docs on
+# GitHub Pages. docs/developer/releasing.md has the steps before the tag.
 name: Release
 on:
   push:
@@ -79,3 +79,28 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file release-notes.md --verify-tag
+
+  # The docs for this version, next to the image: X.Y.Z and the latest
+  # alias on the gh-pages branch, which GitHub Pages serves. mike needs the
+  # branch's history, hence the full checkout.
+  docs:
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: Libraries the social cards are drawn with
+        run: sudo apt-get install -y libcairo2-dev libfreetype6-dev libffi-dev libjpeg-dev libpng-dev libz-dev pngquant
+      - run: pip install -r requirements-docs.txt
+      - name: Publish this version of the docs and point latest at it
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mike deploy --push --update-aliases "${GITHUB_REF_NAME#v}" latest
+          mike set-default --push latest

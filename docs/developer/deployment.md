@@ -591,4 +591,6 @@ process, as above. Back up Postgres and the bucket yourself.
 
 ## Documentation deployment
 
-The docs site builds from the public repository once it exists.
+The release workflow publishes each version of this site to GitHub Pages
+next to the image; [Releasing](releasing.md) has the one-time Pages
+setting and the commands.

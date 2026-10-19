@@ -26,6 +26,15 @@ and a GitHub release whose notes are the version's section of
 `CHANGELOG.md`. Pin a deployment to `X.Y.Z`; `X.Y` and `latest` move.
 [Deployment](deployment.md) says what each flavour needs at run time.
 
+The same run publishes this version of the documentation at
+`https://mariatta.github.io/flashlights/X.Y.Z/`, and points
+`https://mariatta.github.io/flashlights/latest/` at it. A deployment's
+help links go to the version matching its image (`DOCS_URL` in the
+[environment reference](environment.md)); a community with docs of its
+own links to the core docs at its pinned version. The versions are
+folders on the `gh-pages` branch, kept by [mike](https://github.com/jimporter/mike),
+and the site's version selector lists them.
+
 ## Versions
 
 `pyproject.toml` holds the version. Before 1.0, a minor version (`0.2.0`)
@@ -59,3 +68,18 @@ changelog.
 A failed run publishes nothing, or only some of the images; fix the
 cause and run the workflow again from the Actions tab. A tag that was
 pushed by mistake is deleted on GitHub and locally before anything uses it.
+
+## The docs site, once
+
+GitHub Pages serves the `gh-pages` branch: in the repository's settings,
+under Pages, choose "Deploy from a branch", branch `gh-pages`, folder `/`.
+The first release creates the branch; the setting can be made before or
+after it. To publish a version by hand, with the docs requirements
+installed and a full clone (mike reads the branch's history):
+
+```bash
+mike deploy --push --update-aliases 0.2.0 latest
+```
+
+`mike serve` previews the versioned site locally, and `mike delete 0.2.0
+--push` removes a version published by mistake.

@@ -1,6 +1,7 @@
 # yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json
 site_name: Tiny Little Flashlights
-# The docs site is not published yet; this is where it will live.
+# Published on GitHub Pages by the release workflow, one version per release
+# plus a latest alias (mike); the version selector reads mike's versions.json.
 site_url: https://mariatta.github.io/flashlights/
 theme:
   name: material
@@ -70,10 +71,14 @@ repo_url: https://github.com/mariatta/flashlights
 repo_name: mariatta/flashlights
 edit_uri: edit/main/docs/
 extra:
+  version:
+    provider: mike
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/mariatta/flashlights
       name: The repository
+hooks:
+  - scripts/mkdocs_hooks.py
 plugins:
   - social
   - tags

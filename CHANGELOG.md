@@ -35,6 +35,9 @@ The first release of Flashlights, derived from the
   public stats.
 - **Community apps** add a Django app to the image with `EXTRA_APPS`, and
   may replace a core template or static file.
+- **Documentation per release.** Each release publishes its own version
+  of the docs at `https://mariatta.github.io/flashlights/X.Y.Z/`, and
+  `latest/` follows the newest release.
 - **Nothing loads from anywhere else.** Every script, stylesheet, font and
   chart is served by the instance itself, with Dependabot watching the
   vendored libraries. Sentry receives personal data only with

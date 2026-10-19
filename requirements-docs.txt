@@ -5,3 +5,4 @@ mkdocs-rss-plugin
 mkdocs-git-revision-date-localized-plugin
 mkdocs-git-committers-plugin-2
 mkdocstrings[python]
+mike==2.2.0
