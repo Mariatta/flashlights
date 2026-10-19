@@ -1,4 +1,7 @@
 
+# This file's own name, read before local.mk joins MAKEFILE_LIST: the
+# target listing below must read this file, not the last one included.
+THIS_MAKEFILE := $(lastword $(MAKEFILE_LIST))
 # Local overrides (git-ignored), such as PYTHON for the preset targets.
 -include local.mk
 PYTHON ?= python
@@ -6,7 +9,7 @@ PYTHON ?= python
 default:
 	@echo "Call a specific subcommand:"
 	@echo
-	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null\
+	@$(MAKE) -pRrq -f $(THIS_MAKEFILE) : 2>/dev/null\
 	| awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}'\
 	| sort\
 	| egrep -v -e '^[^[:alnum:]]' -e '^$@$$'
