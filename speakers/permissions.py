@@ -124,9 +124,10 @@ def owned_by(user, conference):
     """Filter for the organizer items this user carries: assigned to them,
     or to a team they are an approved member of.
 
-    One definition for the three places that must agree: the queue that
-    lists the items, the predicate that opens the queue, and the check that
-    lets someone act on one. They drifted apart twice; keep them here.
+    One definition for the places that must agree within an edition: the
+    predicate that opens the queue and the digest. The queue page, which
+    lists several editions at once, uses ``owned_in``, built on the same
+    rule; change both together. They drifted apart twice.
     """
     return Q(assignee=user) | Q(team__in=approved_teams(user, conference))
 

@@ -41,12 +41,15 @@ their personal rail and may only mark it done or reopen it.
     </p>
     <h1 class="h3 mb-3">
         {{ item.title }}
+        {% if not item.conference.is_active %}
+            <span class="badge text-bg-light border fs-6 align-middle">{{ item.conference.name }}</span>
+        {% endif %}
     </h1>
     <div class="row g-4">
         <div class="col-lg-8">
             <div class="card">
                 <div class="card-body">
-                    {% include "speakers/_item_facts.html" with item=item link_records=organizer_side %}
+                    {% include "speakers/_item_facts.html" with item=item link_records=link_records %}
                 </div>
             </div>
         </div>

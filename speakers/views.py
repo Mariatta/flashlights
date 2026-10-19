@@ -61,7 +61,7 @@ from .constants import (
     SessionStatus,
 )
 from .directory import build_presenters_package, write_presenters_csv
-from .editions import queue_editions, speaker_edition
+from .editions import queue_editions, speaker_edition, working_edition
 from .emails import render_invitation_preview
 from .feeds import presenter_feed_token, subscribe_links
 from .filters import PresenterFilter, SessionFilter
@@ -2039,6 +2039,9 @@ class ChecklistQueueView(LoginRequiredMixin, SpeakerQueueRequiredMixin, Template
                 # group headings name them without linking. The rows name
                 # everyone in plain text either way.
                 "can_open_pages": can_work_sessions(self.request.user, self.conference),
+                # Presenter pages show the edition being worked on; another
+                # edition's presenter is named without a link.
+                "linked_edition_id": self.conference.pk,
             }
         )
         return context
@@ -2154,8 +2157,11 @@ class ItemActionMixin(LoginRequiredMixin, SpeakerQueueRequiredMixin):
         if error:
             messages.error(request, error)
         # An assignee who is neither organizer nor liaison cannot open the
-        # presenter or session page, so their fallback is the queue.
-        if can_work_sessions(request.user, self.conference):
+        # presenter or session page, and those pages show only the edition
+        # being worked on, so the fallback is otherwise the queue.
+        if can_work_sessions(
+            request.user, self.conference
+        ) and item.conference_id == getattr(working_edition(request), "pk", None):
             fallback = (
                 item.presenter.get_absolute_url()
                 if item.presenter
@@ -2192,6 +2198,11 @@ class ItemDetailView(ItemActionMixin, TemplateView):
         item = self.get_item(read=True)
         item.overdue = item.is_overdue
         organizer_side = can_work_sessions(self.request.user, self.conference)
+        # The presenter and session pages show the edition being worked on,
+        # so a task of another edition names them without a link.
+        in_view = item.conference_id == getattr(
+            working_edition(self.request), "pk", None
+        )
         context["can_act"] = self.may_act(item)
         # Reassigning is its own permission, as it is on the presenter and
         # session pages; carrying an item only lets you change its status.
@@ -2202,6 +2213,7 @@ class ItemDetailView(ItemActionMixin, TemplateView):
                 "item": item,
                 "activity": item_activity(item),
                 "organizer_side": organizer_side,
+                "link_records": organizer_side and in_view,
                 "can_manage": can_manage,
                 "shell": (
                     "speakers/_organize_shell.html"

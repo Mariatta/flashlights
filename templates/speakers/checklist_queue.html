@@ -60,7 +60,7 @@ rows as the speaker checklist; ticking swaps the row in place over htmx.
                 <section class="mb-4" data-queue-group="{{ group.key }}">
                     <h2 class="h6 fw-bold mb-2">
                         {% if group.presenter %}
-                            {% if can_open_pages %}
+                            {% if can_open_pages and group.presenter.conference_id == linked_edition_id %}
                                 <a href="{{ group.presenter.get_absolute_url }}"
                                    class="link-body-emphasis">{{ group.presenter.display_name }}</a>
                             {% else %}

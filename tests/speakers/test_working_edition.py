@@ -92,15 +92,10 @@ class TestEditions:
         assert program_editions() == []
         assert working_edition(request_with({})) is None
 
-    def test_tasks_come_from_the_working_edition_when_none_is_offered(
-        self, conference, enabled
-    ):
+    def test_tasks_come_from_the_editions_on_offer(self, conference, enabled):
         assert queue_editions(request_with({})) == [conference]
         enabled.speaker_module_enabled = False
         enabled.save()
-        assert queue_editions(request_with({})) == [conference]
-        conference.is_active = False
-        conference.save()
         assert queue_editions(request_with({})) == []
 
     def test_a_choice_no_longer_offered_falls_back(self, conference, upcoming):
@@ -384,6 +379,34 @@ class TestVolunteeringTasksAcrossEditions:
             ).status_code
             == 404
         )
+
+    def test_another_editions_presenter_is_named_without_a_link(
+        self, client, organizer, conference, upcoming
+    ):
+        task = task_for(upcoming, "Promo for next year", assignee=organizer)
+        presenter_page = task.presenter.get_absolute_url()
+        client.force_login(organizer)
+        # Working on this year: next year's presenter page would not open.
+        page = client.get(QUEUE, {"view": "presenter"}).content.decode()
+        assert task.presenter.display_name in page
+        assert presenter_page not in page
+        detail = client.get(reverse("speakers:item_detail", args=[task.pk]))
+        html = detail.content.decode()
+        assert ">Flashlights 2026</span>" in html and presenter_page not in html
+        response = client.post(
+            reverse("speakers:item_status", args=[task.pk]), {"status": "DONE"}
+        )
+        assert response.url == QUEUE
+        # Planning next year: its presenter is linked again.
+        switch(client, upcoming)
+        response = client.post(
+            reverse("speakers:item_status", args=[task.pk]), {"status": "TODO"}
+        )
+        assert response.url == presenter_page
+        page = client.get(QUEUE, {"view": "presenter"}).content.decode()
+        assert presenter_page in page
+        html = client.get(reverse("speakers:item_detail", args=[task.pk]))
+        assert presenter_page in html.content.decode()
 
     def test_a_team_task_counts_the_teams_of_its_own_edition(
         self, client, conference, upcoming
