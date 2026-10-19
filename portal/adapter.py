@@ -17,7 +17,12 @@ class PortalAccountAdapter(DefaultAccountAdapter):
 
     def send_mail(self, template_prefix, email, context):
         days = settings.UNVERIFIED_ACCOUNT_RETENTION_DAYS
-        context = {"unverified_account_retention_days": days, **context}
+        # The instance's name for the footer, as every other email signs.
+        context = {
+            "unverified_account_retention_days": days,
+            "brand": settings.BRAND,
+            **context,
+        }
         super().send_mail(template_prefix, email, context)
 
     def render_mail(self, template_prefix, email, context, headers=None):

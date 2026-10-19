@@ -84,5 +84,15 @@ class TestVolunteerEmailTasks:
         # confirmation to the volunteer + notification to the team lead
         assert len(mail.outbox) >= 2
 
+    def test_the_cancellation_names_the_instance(
+        self, volunteer_profile, conference, settings
+    ):
+        """Not the Site row's name, which reads example.com on a fresh
+        instance."""
+        mail.outbox.clear()
+        send_volunteer_cancelled_emails_task(volunteer_profile.id, [])
+        body = mail.outbox[0].body
+        assert settings.BRAND.title in body and "example.com has" not in body
+
     def test_cancelled_emails_not_found(self):
         assert "not found" in send_volunteer_cancelled_emails_task(99999, [])

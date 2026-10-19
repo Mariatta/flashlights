@@ -1,5 +1,5 @@
 {% load i18n %}{% autoescape off %}{% block content %}{% endblock content %}
 
 --
-{{ current_site.name }} · https://{{ current_site.domain }}
+{{ brand.title }} · https://{{ current_site.domain }}
 {% endautoescape %}

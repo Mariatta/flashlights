@@ -4,7 +4,7 @@
 
 Dear {{ profile.user.first_name|default:profile.user.username }},
 
-This email confirms that your Volunteer application for {{ current_site.name }} has been cancelled.
+This email confirms that your Volunteer application for {{ brand.title }} has been cancelled.
 
 ## Changes Made
 
@@ -21,7 +21,7 @@ Team leads have been notified of your departure.
 
 Your access to volunteer resources will be revoked within the next 24 hours.
 
-We understand that circumstances can change, and we appreciate the time you were willing to dedicate to {{ current_site.name }}.
+We understand that circumstances can change, and we appreciate the time you were willing to dedicate to {{ brand.title }}.
 
 If you change your mind in the future and would like to volunteer again,
 you're welcome to submit a new volunteer application.
@@ -29,7 +29,7 @@ you're welcome to submit a new volunteer application.
 If this was a mistake, or you do not wish to cancel your application, please contact us so that we
 can rectify the situation.
 
-Thank you for your interest in {{ current_site.name }}, and we hope to see you as a participant or volunteer in future events.
+Thank you for your interest in {{ brand.title }}, and we hope to see you as a participant or volunteer in future events.
 
 Best regards.
 

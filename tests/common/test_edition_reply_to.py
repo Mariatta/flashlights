@@ -82,6 +82,19 @@ class TestOtherSenders:
         client.post(reverse("account_reset_password"), {"email": user.email})
         assert mail.outbox[0].reply_to == [GROUP]
 
+    def test_account_email_is_signed_with_the_instance_name(
+        self, client, conference, settings
+    ):
+        """The footer names the instance like every other email, not the
+        Site row (example.com on a fresh instance)."""
+        user = User.objects.create_user(username="ada", email="ada@example.com")
+        EmailAddress.objects.create(
+            user=user, email=user.email, primary=True, verified=True
+        )
+        client.post(reverse("account_reset_password"), {"email": user.email})
+        footer = mail.outbox[0].body.rsplit("--", 1)[1]
+        assert footer.strip().startswith(f"{settings.BRAND.title} · https://")
+
     def test_account_email_without_one_keeps_allauths_default(self, client, conference):
         user = User.objects.create_user(username="ada", email="ada@example.com")
         EmailAddress.objects.create(
