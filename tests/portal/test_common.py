@@ -4,6 +4,10 @@ from django.core.cache import cache
 
 from attendee.models import AttendeeProfile, PretixOrder
 from portal.common import (
+    get_attendee_breakdown,
+    get_attendee_field_breakdown,
+    get_attendee_stats_dict,
+    get_donors_count_cache,
     get_historical_comparison_data,
     get_sponsorship_committed_amount_stats_cache,
     get_sponsorship_committed_count_stats_cache,
@@ -14,6 +18,7 @@ from portal.common import (
     get_sponsorship_to_goal_percent_cache,
     get_sponsorship_total_count_stats_cache,
     get_stats_cached_values,
+    get_total_donations_amount_cache,
     get_volunteer_signup_stat_cache,
 )
 from portal.constants import (
@@ -329,7 +334,6 @@ class TestAttendeeStats:
 
     def test_attendee_breakdown_with_profiles(self, conference):
         """Test attendee breakdown with various demographic data."""
-        from portal.common import get_attendee_breakdown
 
         # Create paid orders with profiles
         order1 = PretixOrder.objects.create(
@@ -420,7 +424,6 @@ class TestAttendeeStats:
         assert ["Raccoon City", 1] in breakdown["City"]
 
     def test_field_breakdown_shapes(self, conference):
-        from portal.common import get_attendee_field_breakdown
 
         order = PretixOrder.objects.create(
             order_code="B1", state=Status.PAID, conference=conference
@@ -443,7 +446,6 @@ class TestAttendeeStats:
         )
 
     def test_first_time_needs_the_question_and_its_answer(self, conference):
-        from portal.common import get_attendee_stats_dict
 
         order = PretixOrder.objects.create(
             order_code="F1", state=Status.FREE, conference=conference
@@ -475,10 +477,6 @@ class TestAttendeeStats:
         assert stats["attendee_first_time_count"] == 1
 
     def test_a_donation_on_a_ticket_order_counts(self, conference):
-        from portal.common import (
-            get_donors_count_cache,
-            get_total_donations_amount_cache,
-        )
 
         PretixOrder.objects.create(
             order_code="T1",
@@ -495,7 +493,6 @@ class TestAttendeeStats:
 
     def test_attendee_breakdown_with_no_profiles(self, conference):
         """Test attendee breakdown returns empty when no profiles exist."""
-        from portal.common import get_attendee_breakdown
 
         make_ticketing(conference, question_map={"Q1": "experience_level"})
         assert get_attendee_breakdown(conference) == [
