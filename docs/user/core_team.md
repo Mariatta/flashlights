@@ -8,12 +8,13 @@ can start the next edition.
 
 ## Onboarding a new organiser
 
-1. They create an account and verify it.
-2. An existing organiser puts them on the Organizers team, or on the team
-   for their work, from the team's page, or approves their volunteer
-   application into it. The staff and superuser flags in the admin area
-   open only the admin area itself; the superuser flag is for the one or
-   two people who look after the instance.
+1. They create an account, verify it, and apply as a volunteer.
+2. An existing organiser reviews the application into the Organizers team,
+   or into any team whose permissions include the Organize dashboard.
+   Being on a team is what grants access; the staff flag in the admin area
+   opens only the admin area itself, and the superuser flag, which holds
+   every permission, is for the one or two people who look after the
+   instance.
 3. They sign in again and find Organize in the navigation.
 
 ## What the dashboard shows
@@ -33,7 +34,8 @@ grant them for the current edition. When the edition changes, so do the
 grants: last year's team grants nothing this year.
 
 To give someone access, put them on the right team: review their volunteer
-application and assign the team, or add them to it from the team's page.
+application into it. A team lead can also pull a pending applicant who is
+on no team yet onto their own team from the team's page.
 To see what a team grants, open the team; to see what a person holds and
 where each grant comes from, open their volunteer profile.
 
