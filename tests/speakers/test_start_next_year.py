@@ -7,10 +7,16 @@ from speakers.constants import EventFormat, Recordings
 from speakers.models import (
     ChecklistTemplate,
     Handbook,
+    ReadinessGate,
     SpeakerSettings,
     speaker_module_enabled,
 )
-from speakers.seeds import DEFAULT_TEMPLATES, clone_speaker_setup, seed_checklists
+from speakers.seeds import (
+    DEFAULT_TEMPLATES,
+    PERFORMER_NAME,
+    clone_speaker_setup,
+    seed_checklists,
+)
 from tests.ticketing_ids import make_ticketing
 from ticketing.models import TicketingSettings
 
@@ -139,6 +145,28 @@ class TestStartNextYear:
         # Nothing carried over, so the edition starts on the defaults.
         assert ChecklistTemplate.objects.filter(conference=new).exists()
         assert "checklist template" not in response.content.decode()
+
+    def test_enable_without_copy_seeds_for_the_previous_format(
+        self, client, admin_user, conference
+    ):
+        """An in-person community's new edition gets the in-person defaults:
+        no tech check, no upload gate, no Performer template."""
+        make_settings(
+            conference, event_format=EventFormat.IN_PERSON, recordings=Recordings.TEAM
+        )
+        client.force_login(admin_user)
+        client.post(reverse("start_new_year"), payload(speaker_portal="on"))
+        new = Conference.objects.get(year=2027)
+        row = SpeakerSettings.objects.get(conference=new)
+        assert row.event_format == EventFormat.IN_PERSON
+        assert row.recordings == Recordings.TEAM
+        gates = set(
+            ReadinessGate.objects.filter(conference=new).values_list("code", flat=True)
+        )
+        assert "upload-open" not in gates and "tech-check-open" not in gates
+        assert not ChecklistTemplate.objects.filter(
+            conference=new, name=PERFORMER_NAME
+        ).exists()
 
     def test_neither(self, client, admin_user, source):
         client.force_login(admin_user)

@@ -317,8 +317,16 @@ class StartNewYearView(UserPassesTestMixin, FormView):
                 f"{counts['guides']} speaker guide(s), {counts['rooms']} room(s)"
             )
         elif data["speaker_portal"]:
+            # The defaults are seeded for a format, so the previous
+            # edition's format and recordings come first: an in-person
+            # community does not get the online lines and gates.
+            defaults = {"speaker_module_enabled": True}
+            previous = SpeakerSettings.objects.filter(conference=source).first()
+            if previous is not None:
+                defaults["event_format"] = previous.event_format
+                defaults["recordings"] = previous.recordings
             SpeakerSettings.objects.update_or_create(
-                conference=conference, defaults={"speaker_module_enabled": True}
+                conference=conference, defaults=defaults
             )
             seed_new_edition(conference)
 
