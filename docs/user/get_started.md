@@ -8,7 +8,8 @@ of your event, "the portal" is your instance of Flashlights.
 
 ## Who needs an account?
 
-- **Volunteers, speakers and sponsors** need an account.
+- **Volunteers and speakers** need an account. Sponsors do not: the
+  organisers keep their record.
 - **Organisers** need an account too; an existing organiser then puts it
   on a team, which opens the Organize hub.
 - **Speakers** use the same account they would use to volunteer, so a
