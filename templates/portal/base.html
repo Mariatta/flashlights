@@ -1,6 +1,7 @@
 {% load i18n %}
 {% load django_bootstrap5 %}
 {% load static %}
+{% load portal_extras %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -8,12 +9,10 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta charset="UTF-8" />
         <title>
-            {% block head_title %}
-                {{ brand.title }}
-            {% endblock head_title %}
-            {% block head_title_suffix %}
-                | {{ brand.short_name }}
-            {% endblock head_title_suffix %}
+            {% filter page_title %}
+                {% block head_title %}
+                {% endblock head_title %}
+            {% endfilter %}
         </title>
         {% if brand.favicon %}
             <link rel="icon" href="{{ brand.favicon }}" />

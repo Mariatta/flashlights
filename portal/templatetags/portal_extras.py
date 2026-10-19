@@ -1,9 +1,26 @@
 import bleach
 import markdown as markdown_lib
 from django import template
+from django.conf import settings
+from django.utils.html import conditional_escape
 from django.utils.safestring import mark_safe
 
 register = template.Library()
+
+
+@register.filter(is_safe=True)
+def page_title(name):
+    """The page's <title>: "Name | short name" for a page that names itself,
+    the instance's title alone for one that does not (the landing, and every
+    upstream page that sets no name of its own). The instance comes from
+    the settings, so a template rendered without the context processors
+    is titled the same way."""
+    brand = settings.BRAND
+    name = " ".join(str(name).split())
+    if not name:
+        return conditional_escape(brand.title)
+    return mark_safe(f"{name} | {conditional_escape(brand.short_name)}")
+
 
 # Tags/attributes allowed in rendered descriptions. Kept tight since the output
 # is shown on public pages; everything else is stripped by bleach.

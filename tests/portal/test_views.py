@@ -131,6 +131,14 @@ class TestPortalIndex:
         content = client.get(reverse("account_login")).content.decode()
         assert title_of(content) == f"Sign in | {settings.BRAND.short_name}"
 
+    def test_a_page_without_a_name_is_titled_by_the_instance_alone(
+        self, client, conference
+    ):
+        """Most upstream pages set no name of their own; the title is then
+        the instance's, not the instance's twice."""
+        content = client.get(reverse("portal_stats")).content.decode()
+        assert title_of(content) == settings.BRAND.title
+
     def test_navbar_shows_active_conference_year(self, client, conference):
         response = client.get(reverse("index"))
         assert response.status_code == 200
