@@ -2105,3 +2105,10 @@ details.card[open] > summary.card-header::before {
     object-fit: contain;
     background: var(--surface-card);
 }
+
+/* A Chart.js canvas sizes itself to its box: the stats and maintenance
+   charts get a fixed height to fill. */
+.chart-container {
+    position: relative;
+    height: 300px;
+}

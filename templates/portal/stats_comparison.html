@@ -5,12 +5,6 @@
     {# Chart.js is vendored; js/charts.js draws each canvas from its json_script data. #}
     <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
     <script src="{% static 'js/charts.js' %}"></script>
-    <style>
-        .chart-container {
-            position: relative;
-            height: 300px;
-        }
-    </style>
 {% endblock extra_head %}
 {% block content %}
     <div class="container px-4 py-3">
