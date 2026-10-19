@@ -7,6 +7,7 @@ from django.core.management import CommandError, call_command
 from django.urls import reverse
 
 from affiliations.models import Affiliation, AffiliationKind
+from portal.models import Conference
 from volunteer.constants import Region
 from volunteer.models import VolunteerProfile
 
@@ -187,8 +188,6 @@ class TestSeedDevData:
         assert Affiliation.objects.filter(user__username="ada").count() == 2
         assert "ada" in out.getvalue() and "Speaker" in out.getvalue()
         # A past in-person edition next to the online one.
-        from portal.models import Conference
-
         past = Conference.objects.get(year=2024)
         assert past.venue.name.startswith("Vancouver") and not past.uses_discord
         assert past.speaker_settings.event_format == "IN_PERSON"
