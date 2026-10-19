@@ -192,13 +192,18 @@ class TestVideoCard:
 
     def test_readers_see_the_link_without_the_form(self, client, conference, enabled):
         session = make_session(
-            conference, delivery=Delivery.PRE_RECORDED, youtube_url="https://y/t"
+            conference,
+            delivery=Delivery.PRE_RECORDED,
+            youtube_url="https://y/t",
+            premiere_location=PremiereLocation.YOUTUBE,
         )
         client.force_login(holding("val", "view_program"))
         page = client.get(session.get_absolute_url())
         assert page.context["video_form"] is None
         html = page.content.decode()
         assert 'id="video-link"' in html and 'href="https://y/t"' in html
+        # The premiere reads as people say it, not as it is stored.
+        assert "YouTube Premiere" in html and "YOUTUBE" not in html
         assert client.post(self.url(session), {"youtube_url": "x"}).status_code == 403
 
     def test_a_live_session_gets_a_link_only_when_the_team_records(

@@ -1083,6 +1083,12 @@ class Session(TimestampedModel):
         return settings_row.default_premiere_location
 
     @property
+    def effective_premiere_label(self):
+        """``effective_premiere_location`` as people read it: "YouTube
+        Premiere", not ``YOUTUBE``."""
+        return PremiereLocation(self.effective_premiere_location).label
+
+    @property
     def has_slot(self):
         return ScheduleSlot.objects.filter(session=self).exists()
 

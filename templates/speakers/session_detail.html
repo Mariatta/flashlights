@@ -540,7 +540,7 @@ open the tab their target lives in.
                                     {% endif %}
                                     {% if session.is_pre_recorded %}
                                         <div>
-                                            <strong>{% trans "Premiere" %}:</strong> {{ session.effective_premiere_location }}
+                                            <strong>{% trans "Premiere" %}:</strong> {{ session.effective_premiere_label }}
                                         </div>
                                     {% endif %}
                                 </div>
@@ -743,7 +743,7 @@ open the tab their target lives in.
                             </div>
                             {% if session.is_pre_recorded %}
                                 <div>
-                                    <strong>{% trans "Premiere" %}:</strong> {{ session.effective_premiere_location }}
+                                    <strong>{% trans "Premiere" %}:</strong> {{ session.effective_premiere_label }}
                                 </div>
                             {% endif %}
                             {% if session.liaisons %}
