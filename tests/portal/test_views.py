@@ -139,6 +139,14 @@ class TestPortalIndex:
         content = client.get(reverse("portal_stats")).content.decode()
         assert title_of(content) == settings.BRAND.title
 
+    def test_a_portuguese_browser_still_gets_english(self, client):
+        """The switcher is off, so the browser's language must not pick the
+        upstream Portuguese catalogue, which would translate half the page."""
+        response = client.get(reverse("account_login"), HTTP_ACCEPT_LANGUAGE="pt-br")
+        assert response["Content-Language"] == "en-us"
+        content = response.content.decode()
+        assert "Password" in content and "Senha" not in content
+
     def test_navbar_shows_active_conference_year(self, client, conference):
         response = client.get(reverse("index"))
         assert response.status_code == 200

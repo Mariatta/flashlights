@@ -273,10 +273,11 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-LANGUAGES = (
-    ("pt-br", "Português"),
-    ("en-us", "English"),
-)
+# English only for now: the language switcher is off, and this list keeps
+# the browser's Accept-Language from picking the Portuguese catalogue, which
+# covers upstream's strings and none of this project's. The locale files
+# stay for the day the switcher returns.
+LANGUAGES = (("en-us", "English"),)
 
 TIME_ZONE = "UTC"
 
