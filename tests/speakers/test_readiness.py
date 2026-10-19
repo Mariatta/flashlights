@@ -380,8 +380,12 @@ class TestGatesPage:
         client.force_login(organizer)
         gates = client.get(GATES).context["gates"]
         assert gates.ordered
-        names = [gate.name for gate in gates]
-        assert names == sorted(names)
+        assert [gate.name for gate in gates] == [
+            "AV ready",
+            "Recording upload open",
+            "Tech check booking open",
+            "Venue booked",
+        ]
 
     def test_organizer_sees_gates_and_flips_one(self, client, world, organizer):
         client.force_login(organizer)
