@@ -9,6 +9,8 @@ from django.test import RequestFactory
 from django.urls import reverse
 
 from portal.models import Conference
+from speakers.checklists import add_adhoc_item
+from speakers.constants import ItemOwner, ItemStatus
 from speakers.context_processors import speaker_module
 from speakers.editions import (
     SESSION_KEY,
@@ -20,9 +22,12 @@ from speakers.editions import (
     working_edition,
 )
 from speakers.emails import signed_invitation_token
+from speakers.models import ChecklistItem
 from speakers.onboarding import welcome_url_for
 from speakers.services import invitation_edition, send_invitation
 from tests.grants import on_team
+from volunteer.constants import ApplicationStatus
+from volunteer.models import Team, VolunteerProfile
 
 from .factories import (
     add_presenter,
@@ -309,3 +314,87 @@ class TestSpeakers:
         presenter = make_presenter(past)
         invitation = make_invitation(presenter, make_session(past))
         assert invitation_edition(signed_invitation_token(invitation)) is None
+
+
+QUEUE = reverse("speakers:checklist_queue")
+
+
+def task_for(edition, title, **owner):
+    """An organizer item for a presenter of ``edition``."""
+    presenter = make_presenter(edition, display_name=f"Speaker of {title}")
+    add_presenter(make_session(edition), presenter, confirmed=True)
+    return add_adhoc_item(
+        edition, title, ItemOwner.ORGANIZER, presenter=presenter, **owner
+    )
+
+
+@pytest.mark.django_db
+class TestVolunteeringTasksAcrossEditions:
+    """My volunteering tasks lists the active edition's tasks and any newer
+    edition's, whichever one the program pages are planning."""
+
+    def test_planning_the_next_edition_hides_nothing(
+        self, client, organizer, conference, upcoming
+    ):
+        task_for(conference, "Promo for this year", assignee=organizer)
+        task_for(upcoming, "Promo for next year", assignee=organizer)
+        client.force_login(organizer)
+        for chosen in (conference, upcoming):
+            switch(client, chosen)
+            page = client.get(QUEUE).content.decode()
+            assert "Promo for this year" in page and "Promo for next year" in page
+            # Only the task of the edition that is not the active one says so.
+            assert page.count(">Flashlights 2026</span>") == 1
+            assert ">Flashlights 2025</span>" not in page
+
+    def test_a_task_is_ticked_in_its_own_edition(
+        self, client, organizer, conference, upcoming
+    ):
+        task = task_for(conference, "Promo for this year", assignee=organizer)
+        client.force_login(organizer)
+        switch(client, upcoming)
+        url = reverse("speakers:item_status", args=[task.pk])
+        response = client.post(
+            url, {"status": ItemStatus.DONE, "partial": "queue"}, HTTP_HX_REQUEST="true"
+        )
+        assert response.status_code == 200
+        task.refresh_from_db()
+        assert task.status == ItemStatus.DONE
+        detail = client.get(reverse("speakers:item_detail", args=[task.pk]))
+        assert detail.status_code == 200
+        # An edition before the active one is not on the list.
+        past = Conference.objects.create(year=2024, name="Past", slug="2024")
+        make_settings(past)
+        old = task_for(past, "Last year's", assignee=organizer)
+        assert (
+            client.post(
+                reverse("speakers:item_status", args=[old.pk]), {"status": "DONE"}
+            ).status_code
+            == 404
+        )
+
+    def test_a_team_task_counts_the_teams_of_its_own_edition(
+        self, client, conference, upcoming
+    ):
+        ada = User.objects.create_user(username="ada", email="ada@x.org")
+        next_team = Team.objects.create(
+            conference=upcoming, short_name="Promo 2026", description="d"
+        )
+        this_team = Team.objects.create(
+            conference=conference, short_name="Promo 2025", description="d"
+        )
+        task_for(upcoming, "Next year team task", team=next_team)
+        task_for(conference, "This year team task", team=this_team)
+        # Ada is on next year's team only; this year she is not on the team.
+        profile = VolunteerProfile.objects.create(
+            user=ada,
+            conference=upcoming,
+            application_status=ApplicationStatus.APPROVED,
+        )
+        profile.teams.add(next_team)
+        client.force_login(ada)
+        # Her only task is next year's, and that opens the page.
+        page = client.get(QUEUE).content.decode()
+        assert "Next year team task" in page
+        assert "This year team task" not in page
+        assert ChecklistItem.objects.count() == 2

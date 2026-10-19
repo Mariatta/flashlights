@@ -83,6 +83,18 @@ def _working_edition(request):
     return newer.order_by("year").first() or active
 
 
+def queue_editions(request):
+    """The editions a person's own volunteering tasks come from: the active
+    one and every newer one with the speaker portal on, so planning the
+    next edition hides nothing still to do on this one. The working
+    edition when none is on offer."""
+    editions = program_editions(request)
+    if editions:
+        return editions
+    working = working_edition(request)
+    return [working] if working is not None else []
+
+
 def set_working_edition(request, conference):
     """Plan ``conference`` from now on, for the rest of the login session."""
     request.session[SESSION_KEY] = conference.pk

@@ -8,7 +8,8 @@ One row on My volunteering tasks: the same shape as the speaker checklist
 row, but the second line says who the work is for. Params: item (with
 .overdue, .days_left and .due_tone set) and error (shown inline, since a
 swapped row never displays queued messages). An item that is waiting shows
-why and cannot be ticked. The tick form swaps this row in place over htmx.
+why and cannot be ticked. A task of an edition other than the active one
+names it. The tick form swaps this row in place over htmx.
 {% endcomment %}
 <li class="list-group-item checklist-row {% if item.is_automatic %}checklist-item-auto{% else %}checklist-item-manual{% endif %}{% if item.is_done %} checklist-item-done{% endif %}{% if item.is_waiting %} checklist-row-waiting{% endif %}"
     id="item-{{ item.pk }}"
@@ -66,6 +67,9 @@ why and cannot be ticked. The tick form swaps this row in place over htmx.
             <div>
                 <a href="{% url 'speakers:item_detail' item.pk %}"
                    class="link-body-emphasis text-decoration-none {% if item.is_done %}checklist-title-done{% elif item.is_waiting %}checklist-title-waiting{% endif %}">{{ item.title }}</a>
+                {% if not item.conference.is_active %}
+                    <span class="badge text-bg-light border">{{ item.conference.name }}</span>
+                {% endif %}
                 {% if item.is_automatic %}
                     <span class="small text-secondary">· {{ auto_label|lower }}</span>
                 {% endif %}

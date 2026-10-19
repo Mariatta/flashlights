@@ -131,6 +131,23 @@ def owned_by(user, conference):
     return Q(assignee=user) | Q(team__in=approved_teams(user, conference))
 
 
+def owned_in(user, editions):
+    """``owned_by`` across several editions: assigned to the user, or to a
+    team they are an approved member of in that team's own edition."""
+    teams = Team.objects.filter(
+        conference__in=editions,
+        members__user=user,
+        members__application_status=ApplicationStatus.APPROVED,
+    )
+    return Q(conference__in=editions) & (Q(assignee=user) | Q(team__in=teams))
+
+
+def can_work_queue_in(user, editions):
+    """``can_work_queue`` in any of ``editions``: whoever may work the
+    queue of one of them may open the page that lists them all."""
+    return any(can_work_queue(user, edition) for edition in editions)
+
+
 def is_speaker_assignee(user, conference):
     """Whether ``user`` carries an open organizer item in this edition.
 

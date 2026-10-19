@@ -61,7 +61,7 @@ from .constants import (
     SessionStatus,
 )
 from .directory import build_presenters_package, write_presenters_csv
-from .editions import speaker_edition
+from .editions import queue_editions, speaker_edition
 from .emails import render_invitation_preview
 from .feeds import presenter_feed_token, subscribe_links
 from .filters import PresenterFilter, SessionFilter
@@ -147,7 +147,7 @@ from .permissions import (
     can_view_program,
     can_work_sessions,
     is_speaker_organizer,
-    owned_by,
+    owned_in,
 )
 from .pretix import (
     PretixError,
@@ -1972,7 +1972,10 @@ class ChecklistQueueView(LoginRequiredMixin, SpeakerQueueRequiredMixin, Template
 
     It lives under the personal "My volunteering" rail for everyone,
     organizers included, because it is a person's own work rather than a
-    view of the edition. ``?view=all`` (default) sorts by due date;
+    view of the edition: it lists the active edition's tasks and any newer
+    edition's together, whichever one the program pages are planning, and
+    names the edition on a task that is not the active one's. ``?view=all``
+    (default) sorts by due date;
     ``?view=presenter`` groups by the presenter, or the session, the work
     is for.
     """
@@ -1982,15 +1985,17 @@ class ChecklistQueueView(LoginRequiredMixin, SpeakerQueueRequiredMixin, Template
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         as_of = today()
+        mine = owned_in(self.request.user, queue_editions(self.request))
         items = [
             annotate_due(item, as_of)
             for item in ChecklistItem.objects.filter(
-                owned_by(self.request.user, self.conference),
-                conference=self.conference,
+                mine,
                 owner=ItemOwner.ORGANIZER,
                 status__in=list(OPEN_ITEM_STATUSES),
             )
-            .select_related("presenter", "session", "team", "ready_gate", "waits_for")
+            .select_related(
+                "conference", "presenter", "session", "team", "ready_gate", "waits_for"
+            )
             .order_by(F("due_date").asc(nulls_last=True), "order", "id")
         ]
         view = "presenter" if self.request.GET.get("view") == "presenter" else "all"
@@ -2003,12 +2008,13 @@ class ChecklistQueueView(LoginRequiredMixin, SpeakerQueueRequiredMixin, Template
         done_items = [
             annotate_due(item, as_of)
             for item in ChecklistItem.objects.filter(
-                owned_by(self.request.user, self.conference),
-                conference=self.conference,
+                mine,
                 owner=ItemOwner.ORGANIZER,
                 status=ItemStatus.DONE,
             )
-            .select_related("presenter", "session", "team", "completed_by")
+            .select_related(
+                "conference", "presenter", "session", "team", "completed_by"
+            )
             .order_by(F("completed_at").desc(nulls_last=True), "-id")[
                 : None if show_all else DONE_ITEMS_SHOWN + 1
             ]
@@ -2073,9 +2079,15 @@ class ItemActionMixin(LoginRequiredMixin, SpeakerQueueRequiredMixin):
 
     def get_item(self, read=False):
         """The item, if this user may act on it; with ``read``, also for
-        someone who only reads the program (a reviewer opening a session)."""
+        someone who only reads the program (a reviewer opening a session).
+
+        The item may be in any edition the volunteering tasks list (the
+        active one or a newer one), whichever the program pages show; the
+        view then works in the item's own edition, so its teams and
+        assignees are that edition's."""
         item = get_object_or_404(
             ChecklistItem.objects.select_related(
+                "conference",
                 "presenter",
                 "presenter__liaison",
                 "session",
@@ -2084,8 +2096,9 @@ class ItemActionMixin(LoginRequiredMixin, SpeakerQueueRequiredMixin):
                 "completed_by",
             ),
             pk=self.kwargs["pk"],
-            conference=self.conference,
+            conference__in=queue_editions(self.request),
         )
+        self.conference = item.conference
         if self.may_act(item) or (read and can_view_program(self.request.user)):
             return item
         raise PermissionDenied(

@@ -2,13 +2,14 @@ from .constants import ProposalDecision
 from .editions import (
     active_edition,
     module_enabled,
+    queue_editions,
     speaker_edition,
     working_edition,
 )
 from .models import Proposal
 from .permissions import (
     can_review_proposals,
-    can_work_queue,
+    can_work_queue_in,
     is_speaker_liaison,
     is_speaker_organizer,
 )
@@ -89,7 +90,8 @@ def speaker_module(request):
         and is_speaker_liaison(user, conference),
         # Organizers included: the page is a person's own work, and it is
         # their rail entry too now that it has left the Organize rail.
-        "can_work_speaker_queue": enabled and can_work_queue(user, conference),
+        "can_work_speaker_queue": enabled
+        and can_work_queue_in(user, queue_editions(request)),
         # Being a presenter is not enough for the Speaking tab: a
         # proposal that has not been answered yet makes a presenter row
         # and no program. The rule lives on the queryset, shared with the

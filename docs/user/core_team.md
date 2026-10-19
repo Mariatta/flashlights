@@ -62,9 +62,10 @@ proposals to review, rooms, the schedule) can work on it. Choose it under
 the public site still shows the active edition. The choice is yours alone
 and lasts until you sign out. Access does not change: whoever runs the
 program this year can plan the next one. Volunteering, sponsorship, stats
-and the public proposal form stay on the active edition. When the active
-edition has the speaker portal off, the program pages open on the next
-edition that has it on.
+and the public proposal form stay on the active edition. My volunteering
+tasks lists your tasks from both, and names the edition on a task for the
+next one. When the active edition has the speaker portal off, the program
+pages open on the next edition that has it on.
 
 Speakers invited to the next edition have their speaker pages straight
 away. When it is time, make the next edition active from its edit page.

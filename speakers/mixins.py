@@ -2,14 +2,19 @@ from django.contrib.auth.mixins import PermissionRequiredMixin, UserPassesTestMi
 from django.http import Http404
 
 from .constants import CHANGE_HANDBOOK, CHANGE_SETTINGS, CHANGE_TEMPLATES
-from .editions import module_enabled, speaker_edition, working_edition
+from .editions import (
+    module_enabled,
+    queue_editions,
+    speaker_edition,
+    working_edition,
+)
 from .models import Presenter
 from .permissions import (
     can_publish_program,
     can_publish_session_video,
     can_review_proposals,
     can_view_media,
-    can_work_queue,
+    can_work_queue_in,
     can_work_sessions,
     is_speaker_organizer,
 )
@@ -51,7 +56,7 @@ class SpeakerQueueRequiredMixin(SpeakerModuleRequiredMixin, UserPassesTestMixin)
     """
 
     def test_func(self):
-        return can_work_queue(self.request.user, self.conference)
+        return can_work_queue_in(self.request.user, queue_editions(self.request))
 
 
 class SpeakerOrganizerRequiredMixin(SpeakerModuleRequiredMixin, UserPassesTestMixin):
