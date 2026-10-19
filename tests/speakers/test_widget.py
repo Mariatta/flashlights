@@ -34,6 +34,20 @@ def test_the_served_widget_is_built_from_the_current_source():
     ), "frontend/widget/v1.js changed; run `npm run build:widget`"
 
 
+def test_the_served_widget_carries_its_copyright_notice():
+    """MIT asks that the notice travel with every copy, and the widget is
+    copied onto other people's sites."""
+    banner = BUILT.read_text().splitlines()[0]
+    license_text = (SOURCE.parents[2] / "LICENSE-MIT").read_text()
+    holders = [
+        line.removeprefix("Copyright (c) ")
+        for line in license_text.splitlines()
+        if line.startswith("Copyright (c) ")
+    ]
+    assert holders and "MIT License, Copyright (c) " in banner
+    assert all(holder in banner for holder in holders)
+
+
 def test_the_widget_loads_nothing_but_the_api():
     source = SOURCE.read_text()
     assert "import(" not in source

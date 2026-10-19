@@ -14,8 +14,16 @@ const result = await minify(source, {
   mangle: true,
   format: { comments: false },
 });
+// The MIT notice travels with every copy, and this file runs on other
+// people's sites: the copyright lines come from LICENSE-MIT.
+// "Copyright (c) 2025 PyLadies, 2026 Mariatta Wijaya": one notice, kept
+// short since the banner counts against the widget's size budget.
+const holders = readFileSync("LICENSE-MIT", "utf8")
+  .split("\n")
+  .filter((line) => line.startsWith("Copyright (c) "))
+  .map((line) => line.slice("Copyright (c) ".length));
 const banner =
-  `/*! Flashlights program widget v1. MIT License. Source: frontend/widget/v1.js ` +
-  `(sha256 ${digest}); rebuild with npm run build:widget. */\n`;
+  `/*! Flashlights widget v1. MIT License, Copyright (c) ` +
+  `${holders.join(", ")}. Source: frontend/widget/v1.js (sha256 ${digest}). */\n`;
 writeFileSync("portal/static/widget/v1.js", banner + result.code + "\n");
 console.log(`portal/static/widget/v1.js: ${Buffer.byteLength(banner + result.code)} bytes`);
