@@ -4,6 +4,7 @@ import csv
 import io
 from dataclasses import dataclass, field
 
+from django.db import transaction
 from django.utils import timezone
 
 from attendee.models import AttendeeProfile, PretixOrder
@@ -88,6 +89,14 @@ def import_csv(ticketing, content):
         )
     adapter = CsvAdapter(ticketing)
     result = ImportResult()
+    with transaction.atomic():
+        _import_rows(ticketing, adapter, reader, result)
+    return result
+
+
+def _import_rows(ticketing, adapter, reader, result):
+    """One file is one import: a row that cannot be saved leaves the
+    edition as it was before the file, not half imported."""
     for line, row in enumerate(reader, start=2):
         registration = adapter.normalise(row)
         if "@" not in registration.email:
@@ -96,4 +105,3 @@ def import_csv(ticketing, content):
         upsert_registration(ticketing.conference, registration)
         result.imported += 1
         result.registered += registration.is_registered
-    return result

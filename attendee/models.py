@@ -160,7 +160,7 @@ class PretixOrder(BaseModel):
         self.last_modified = registration.modified
         self.event_slug = registration.event
         if registration.name:
-            self.name = registration.name
+            self.name = registration.name[:255]
         self.set_is_anonymous_from_answers(registration.answers)
         self.raw_data = registration.raw
         return self
@@ -343,8 +343,7 @@ class AttendeeProfile(BaseModel):
                     [part.strip() for part in answer_value.split(",")],
                 )
             case _:
-                setattr(
-                    self,
-                    field_name,
-                    None if answer_value.lower() == "none" else answer_value,
-                )
+                # Cut to the column: a spreadsheet does not limit answers
+                # the way a ticket shop does.
+                value = answer_value[: field.max_length]
+                setattr(self, field_name, None if value.lower() == "none" else value)

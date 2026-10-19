@@ -185,6 +185,19 @@ class TestImport:
         assert PretixOrder.objects.get(order_code="csv-2025-A2").state == "paid"
         assert PretixOrder.objects.filter(conference=conference).count() == 3
 
+    def test_over_long_answers_are_cut_to_their_field(self, conference, csv_ticketing):
+        """A spreadsheet's free text has no limit; the row still imports."""
+        city = "C" * 150
+        name = "N" * 300
+        export = (
+            "Order,Full name,Email,Status,Paid,Date,Ticket,City\n"
+            f"L1,{name},long@example.com,Completed,0,,Summit,{city}\n"
+        )
+        assert import_csv(csv_ticketing, export).imported == 1
+        order = PretixOrder.objects.get(order_code="csv-2025-L1")
+        assert order.name == "N" * 255
+        assert AttendeeProfile.objects.get(order=order).city == "C" * 100
+
     def test_refusals(self, conference, csv_ticketing):
         with pytest.raises(CsvImportError, match="UTF-8"):
             import_csv(csv_ticketing, "Email\nadé@x.org".encode("latin-1"))
