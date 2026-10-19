@@ -33,6 +33,9 @@ class Registration:
     email: str = ""
     name: str = ""
     amount: Decimal = Decimal("0")
+    #: The part of ``amount`` that is a donation: the whole of a donation
+    #: order, or the donation lines added to a ticket.
+    donation: Decimal = Decimal("0")
     currency: str = ""
     event: str = ""
     url: str = ""
@@ -81,3 +84,16 @@ class Adapter:
         if kinds == {ProductKind.DONATION}:
             return ProductKind.DONATION
         return ProductKind.TICKET
+
+    def donation_in(self, lines):
+        """The donated sum of an order's ``(product, price)`` lines, from
+        the edition's product map."""
+        mapping = self.ticketing.product_map or {}
+        return sum(
+            (
+                Decimal(str(price or 0))
+                for product, price in lines
+                if mapping.get(str(product)) == ProductKind.DONATION
+            ),
+            Decimal("0"),
+        )

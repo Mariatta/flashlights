@@ -83,6 +83,9 @@ class PretixOrder(BaseModel):
     total = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True, default=0
     )
+    # The donated part of ``total``: all of a donation order, or the
+    # donation lines a ticket order carries. The stats sum this.
+    donation_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     cancellation_date = models.DateTimeField(null=True, blank=True)
     datetime = models.DateTimeField(null=True, blank=True)
     last_modified = models.DateTimeField(null=True, blank=True)
@@ -125,6 +128,7 @@ class PretixOrder(BaseModel):
         self.status = registration.provider_status or None
         self.email = registration.email
         self.total = registration.amount
+        self.donation_amount = registration.donation
         self.cancellation_date = registration.cancelled_at
         self.url = registration.url
         self.datetime = registration.created

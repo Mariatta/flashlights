@@ -121,6 +121,9 @@ class PretixAdapter(Adapter):
             code=raw["code"],
             status=status,
             kind=self.kind_of(pos.get("item") for pos in positions),
+            donation=self.donation_in(
+                (pos.get("item"), pos.get("price")) for pos in positions
+            ),
             email=raw.get("email") or "",
             name=name,
             amount=amount,

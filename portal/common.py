@@ -476,8 +476,8 @@ def get_total_donations_amount_cache(conference):
         )
         donations_from_pretix = (
             PretixOrder.objects.filter(
-                state=Status.PAID, kind=ProductKind.DONATION, conference=conference
-            ).aggregate(Sum("total"))["total__sum"]
+                state=Status.PAID, conference=conference
+            ).aggregate(Sum("donation_amount"))["donation_amount__sum"]
             or 0
         )
         total_donations = individual_donations + donations_from_pretix
@@ -503,8 +503,7 @@ def get_donors_count_cache(conference):
         )
         pretix_donors_count = PretixOrder.objects.filter(
             state=Status.PAID,
-            kind=ProductKind.DONATION,
-            total__gt=0,
+            donation_amount__gt=0,
             conference=conference,
         ).count()
         donors_count = individual_donors_count + pretix_donors_count

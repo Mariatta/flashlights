@@ -145,6 +145,13 @@ class TestAdapter:
         row = {"Email": "a@b.c", "Status": word, "Paid": amount}
         assert adapter.normalise(row).status == expected
 
+    def test_a_donation_row_is_all_donation(self, csv_ticketing):
+        adapter = CsvAdapter(csv_ticketing)
+        row = {"Email": "a@b.c", "Paid": "30", "Ticket": "Donation"}
+        assert adapter.normalise(row).donation == Decimal("30")
+        row["Ticket"] = "Summit"
+        assert adapter.normalise(row).donation == Decimal("0")
+
     def test_codes_fit(self, csv_ticketing):
         adapter = CsvAdapter(csv_ticketing)
         long_code = adapter.normalise({"Email": "x" * 120 + "@example.com"}).code

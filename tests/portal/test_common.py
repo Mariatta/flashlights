@@ -477,6 +477,25 @@ class TestAttendeeStats:
         assert stats["attendee_first_time_on"] is True
         assert stats["attendee_first_time_count"] == 1
 
+    def test_a_donation_on_a_ticket_order_counts(self, conference):
+        from portal.common import (
+            get_donors_count_cache,
+            get_total_donations_amount_cache,
+        )
+
+        PretixOrder.objects.create(
+            order_code="T1",
+            state=Status.PAID,
+            total=25,
+            donation_amount=25,
+            conference=conference,
+        )
+        PretixOrder.objects.create(
+            order_code="T2", state=Status.PAID, total=40, conference=conference
+        )
+        assert get_total_donations_amount_cache(conference) == 25
+        assert get_donors_count_cache(conference) == 1
+
     def test_attendee_breakdown_with_no_profiles(self, conference):
         """Test attendee breakdown returns empty when no profiles exist."""
         from portal.common import get_attendee_breakdown

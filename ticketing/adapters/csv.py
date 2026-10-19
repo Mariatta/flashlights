@@ -14,7 +14,7 @@ from decimal import Decimal, InvalidOperation
 from django.utils import timezone
 from django.utils.dateparse import parse_date, parse_datetime
 
-from ticketing.models import Provider
+from ticketing.models import ProductKind, Provider
 
 from .base import Adapter, Registration, Status
 
@@ -120,11 +120,14 @@ class CsvAdapter(Adapter):
         status_word = value("status")
         product = value("product")
         mapped = {h for spec in columns.values() for h in headers(spec)}
+        kind = self.kind_of([product]) if product else ProductKind.TICKET
         return Registration(
             provider=self.provider,
             code=self.code_for(value("code") or email),
             status=self.status_of(status_word, amount),
-            kind=self.kind_of([product]) if product else "ticket",
+            kind=kind,
+            # One amount per row: a donation only when the row's product is.
+            donation=amount if kind == ProductKind.DONATION else Decimal("0"),
             email=email,
             name=value("name"),
             amount=amount,

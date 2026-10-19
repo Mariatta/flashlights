@@ -26,6 +26,9 @@ from ticketing.tasks import PollFailed, poll_registrations_task
 fill_state = importlib.import_module(
     "attendee.migrations.0006_flashlights_rebrand"
 ).fill_state
+fill_donation_amount = importlib.import_module(
+    "attendee.migrations.0007_pretixorder_donation_amount"
+).fill_donation_amount
 
 
 def raw(**overrides):
@@ -159,6 +162,45 @@ class TestOrders:
         order.email = "changed@example.com"
         order.from_registration(adapter.normalise(raw()))  # same stamp
         assert order.email == "changed@example.com"
+
+    def test_a_donation_added_to_a_ticket_counts(self, conference, adapter):
+        """A free ticket plus a 25.00 donation: an attendee, and a donor."""
+        adapter.ticketing.product_map = {"11": "ticket", "12": "donation"}
+        registration = adapter.normalise(
+            raw(
+                total="25.00",
+                positions=[
+                    {"item": 11, "price": "0.00", "answers": []},
+                    {"item": 12, "price": "25.00", "answers": []},
+                ],
+            )
+        )
+        assert registration.kind == "ticket"
+        assert registration.donation == Decimal("25.00")
+        order = PretixOrder(order_code="R1", conference=conference)
+        order.from_registration(registration)
+        assert order.donation_amount == Decimal("25.00")
+
+    def test_backfill_donation_amounts(self, conference):
+        make_ticketing(conference, product_map={"11": "ticket", "12": "donation"})
+        PretixOrder.objects.create(
+            order_code="D1", conference=conference, kind="donation", total=40
+        )
+        PretixOrder.objects.create(
+            order_code="T1",
+            conference=conference,
+            total=35,
+            raw_data={
+                "positions": [
+                    {"item": 11, "price": "10.00"},
+                    {"item": 12, "price": "25.00"},
+                ]
+            },
+        )
+        PretixOrder.objects.create(order_code="T2", conference=conference, total=10)
+        fill_donation_amount(apps, None)
+        amounts = dict(PretixOrder.objects.values_list("order_code", "donation_amount"))
+        assert amounts == {"D1": 40, "T1": 25, "T2": 0}
 
     def test_backfill_from_pretix_codes(self, conference):
         for code, status, total in (
