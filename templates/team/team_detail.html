@@ -64,7 +64,7 @@
         {% endif %}
         {# Member rosters live on the team dashboard (stats + tables); not #}
         {# duplicated here. #}
-        {% if is_organizer %}
+        {% if can_open_dashboard %}
             <a href="{% url 'team_dashboard' team.id %}"
                class="d-inline-flex align-items-center gap-1">
                 {% trans "Open team dashboard" %}

@@ -440,3 +440,19 @@ class TestReviewingApplications:
             .queryset
         )
         assert offered.filter(short_name=ORGANIZERS).exists()
+
+
+@pytest.mark.django_db
+class TestTeamDashboardLink:
+    def test_a_coordinator_finds_the_dashboard_from_the_team_page(
+        self, client, coordinator, conference
+    ):
+        """The team page links to the dashboard for everyone it admits."""
+        team = Team.objects.create(conference=conference, short_name="Design")
+        client.force_login(coordinator)
+        page = client.get(reverse("team_detail", kwargs={"pk": team.pk}))
+        assert reverse("team_dashboard", args=[team.pk]) in page.content.decode()
+        board = client.get(reverse("team_dashboard", args=[team.pk]))
+        content = board.content.decode()
+        assert board.status_code == 200
+        assert "My teams" not in content and "Organize" in content

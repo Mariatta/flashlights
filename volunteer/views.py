@@ -450,6 +450,10 @@ class TeamView(TeamManagerRequiredMixin, DetailView):
         # What being on this team lets a person do, in plain words.
         context["team_grants"] = describe(self.object.permissions.all())
         context["lead_grants"] = describe(self.object.lead_permissions.all())
+        # The same test the dashboard itself makes.
+        context["can_open_dashboard"] = can_view_volunteers(
+            self.request.user
+        ) or leads_team(self.request.user, self.object)
         return context
 
 
