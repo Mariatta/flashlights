@@ -739,7 +739,7 @@ running process selects a column that is already gone.
 
 This app depends on `portal`, and the core also reaches into it, since
 the speaker module is always installed in Flashlights. `portal/urls.py`
-mounts its URLs and two of its views, `portal/common.py` reads its
+mounts its URLs and three of its views, `portal/common.py` reads its
 proposals and task stats for the dashboards and stats pages, and
 `portal_account.handles` reads and writes `Presenter` rows (and
 `volunteer.VolunteerProfile` rows) to keep a person's handles and
