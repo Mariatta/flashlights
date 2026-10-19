@@ -1,9 +1,8 @@
 # Design system
 
 Flashlights has one look, fixed for every instance, and one colour an
-instance chooses. The look is the design system in the private
-architecture notes (`design/`); this page says how it maps
-onto the code.
+instance chooses. This page says how that design system maps onto the
+code.
 
 ## Where things live
 

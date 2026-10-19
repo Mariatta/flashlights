@@ -1,9 +1,9 @@
 # Permissions: Who May Do What (Architecture)
 
-This document describes how access is granted and read in the portal since
-Stage 3 of the speaker-portal work: the permission catalogue, the team
-permission sets and their presets, the authentication backend that derives
-a person's permissions from their teams, and how to add a permission. It is
+This document describes how access is granted and read in the portal: the
+permission catalogue, the team permission sets and their presets, the
+authentication backend that derives a person's permissions from their
+teams, and how to add a permission. It is
 the reference for any work that touches `volunteer/auth_backends.py`,
 `volunteer/permission_presets.py`, an app's `permissions.py`, or a
 `Meta.permissions` block. The reasoning behind the design is in the speaker

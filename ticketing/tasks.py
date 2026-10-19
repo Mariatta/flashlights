@@ -17,8 +17,8 @@ class PollFailed(Exception):
     autoretry_for=(PollFailed,), retry_backoff=60, retry_jitter=True, max_retries=3
 )
 def poll_registrations_task():
-    """Every edition with a provider API, every few minutes (decision
-    0012: polling is the baseline, webhooks an optimisation). Each edition
+    """Every edition with a provider API, every few minutes: polling is the
+    baseline, webhooks an optimisation. Each edition
     is attempted; a failure is re-raised at the end so Celery retries with
     back-off, and only the failed editions have anything left to fetch."""
     results, failed = [], []

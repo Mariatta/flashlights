@@ -1,5 +1,4 @@
-/* Flashlights design system entry (the spec lives in the
-   private notes, design/). Tokens only: colours, type, spacing, effects, the
+/* Flashlights design system entry. Tokens only: colours, type, spacing, effects, the
    self-hosted fonts and the Lucide icon font, and the base element styles.
    Loaded after Bootstrap and before the instance theme (theme.css) and
    portal.css, which build on these variables. */
