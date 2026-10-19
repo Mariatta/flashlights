@@ -9,7 +9,7 @@ from portal_account.handles import VOLUNTEER_COLUMNS, HandleFieldsMixin
 
 from .constants import ApplicationStatus
 from .models import Language, Team, VolunteerProfile
-from .organizers import is_on_organizers_team
+from .organizers import may_change_grants
 from .permission_presets import (
     ORGANIZERS,
     PRESETS,
@@ -181,7 +181,7 @@ class VolunteerProfileReviewForm(ModelForm):
             teams = Team.objects.filter(conference_id=self.instance.conference_id)
             # Joining Organizers grants what Organizers hold: only they
             # bring someone onto it.
-            if self.user is not None and not is_on_organizers_team(self.user):
+            if self.user is not None and not may_change_grants(self.user):
                 teams = teams.exclude(short_name=ORGANIZERS)
             self.fields["teams"].queryset = teams
 
@@ -309,7 +309,7 @@ class TeamForm(ModelForm):
         # team's to change: anyone else who edits teams would otherwise grant
         # themselves through their own team. Disabled fields keep what is
         # stored whatever is posted.
-        if user is not None and not is_on_organizers_team(user):
+        if user is not None and not may_change_grants(user):
             del self.fields["preset"]
             for name in ("permissions", "lead_permissions"):
                 self.fields[name].disabled = True

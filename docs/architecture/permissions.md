@@ -71,11 +71,12 @@ A `Team` carries two sets of `auth.Permission` rows: `permissions`, for
 every approved member, and `lead_permissions`, which the team leads hold on
 top. Both are edited on the team form in the portal as grouped checkbox
 lists in plain words, with a "Start from preset" select that fills them.
-Only an approved member or lead of the active edition's Organizers team (or
-a superuser) may change the sets, the Organizers team's leads, or assign
-someone to Organizers on the review form (`volunteer.organizers`); for
-anyone else holding `change_team` the pickers are disabled, since they could
-otherwise grant themselves anything through their own team. No reviewer
+Only whoever holds `portal.view_organizer_dashboard`, which only the
+Organizers preset carries (or a superuser), may change the sets
+(`volunteer.organizers.may_change_grants`); it is read as a permission, never
+from a team's name, which any team editor can set. For anyone else holding
+`change_team` the pickers are disabled, since they could otherwise grant
+themselves anything through their own team. No reviewer
 reviews their own application.
 The team page lists what the team may do, and a person's volunteer profile
 page lists what they hold and where each grant comes from. Start next year

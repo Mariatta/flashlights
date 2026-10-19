@@ -369,6 +369,36 @@ class TestOnlyOrganizersGrant:
         coordinator = User.objects.get(pk=coordinator.pk)
         assert not coordinator.has_perm("portal.start_next_year")
 
+    def test_naming_a_team_organizers_grants_nothing(
+        self, client, coordinator, conference
+    ):
+        """Who may grant is a permission, not a team's name: a coordinator
+        who renames their team, or makes a new one, called Organizers and
+        leads it still cannot tick permissions."""
+        team = Team.objects.get(short_name="Volunteer coordination")
+        mine = VolunteerProfile.objects.get(user=coordinator)
+        client.force_login(coordinator)
+        url = reverse("team_edit", kwargs={"pk": team.pk})
+        client.post(
+            url, payload(conference, short_name=ORGANIZERS, team_leads=[mine.pk])
+        )
+        team.refresh_from_db()
+        assert team.short_name == ORGANIZERS
+        before = labels(team.permissions)
+        client.post(
+            url,
+            payload(
+                conference,
+                short_name=ORGANIZERS,
+                team_leads=[mine.pk],
+                permissions=before + ["portal.start_next_year"],
+            ),
+        )
+        assert labels(team.permissions) == before
+        assert not User.objects.get(pk=coordinator.pk).has_perm(
+            "portal.start_next_year"
+        )
+
     def test_a_coordinators_new_team_grants_nothing(
         self, client, coordinator, conference
     ):
