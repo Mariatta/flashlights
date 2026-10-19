@@ -34,6 +34,10 @@ application and assign the team, or add them to it from the team's page.
 To see what a team grants, open the team; to see what a person holds and
 where each grant comes from, open their volunteer profile.
 
+An edition that switches the speaker portal on gets an Organizers team
+from its preset if it has none, so a small community with no other teams
+can be run without superusers.
+
 The usual teams start from a preset when they are created (Organizers,
 Volunteer coordination, Sponsorship, Program, Proposal reviewers, Speaker
 liaisons, Recordings) and

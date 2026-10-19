@@ -7,6 +7,7 @@ from django.apps import apps
 from django.utils.module_loading import import_string
 
 from portal.models import Cadence, Conference, EventDate, Venue
+from volunteer.organizers import ensure_organizers_team
 
 
 class PortalCaptchaTextInput(CaptchaTextInput):
@@ -414,6 +415,8 @@ class ConferenceForm(EditionDatesForm, forms.ModelForm):
             if changed:
                 settings_row.save(update_fields=changed + ["modified_date"])
         if enabled:
-            # Its checklists, on the format and recordings just saved.
+            # Its checklists, on the format and recordings just saved, and a
+            # team to run it from.
             import_string("speakers.seeds.seed_new_edition")(conference)
+            ensure_organizers_team(conference)
         return conference

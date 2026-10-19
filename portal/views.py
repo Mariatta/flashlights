@@ -43,6 +43,7 @@ from sponsorship.models import SponsorshipProfile
 from ticketing.models import carry_forward
 from volunteer.constants import ApplicationStatus
 from volunteer.models import Team, VolunteerProfile
+from volunteer.organizers import ensure_organizers_team
 
 
 def index(request):
@@ -330,6 +331,8 @@ class StartNewYearView(UserPassesTestMixin, FormView):
             )
             seed_new_edition(conference)
 
+        if data["speaker_portal"]:
+            ensure_organizers_team(conference)
         if data["speaker_portal"] and not data["activate"]:
             # Created to be planned: the program pages open on it.
             set_working_edition(self.request, conference)

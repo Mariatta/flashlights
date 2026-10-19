@@ -7,7 +7,7 @@ from portal.models import Conference
 
 from .constants import ApplicationStatus
 from .models import Team
-from .permission_presets import ORGANIZERS
+from .permission_presets import ORGANIZERS, PRESETS, permissions_for
 
 
 def is_on_organizers_team(user):
@@ -30,3 +30,19 @@ def is_on_organizers_team(user):
         )
         .exists()
     )
+
+
+def ensure_organizers_team(conference):
+    """The edition's Organizers team, made from its preset when the edition
+    has none: an edition that switches the speaker module on can then be
+    run by people who are not superusers. Returns the team."""
+    team, created = Team.objects.get_or_create(
+        conference=conference,
+        short_name=ORGANIZERS,
+        defaults={"open_to_new_members": False},
+    )
+    if created:
+        preset = PRESETS[ORGANIZERS]
+        team.permissions.set(permissions_for(preset.members))
+        team.lead_permissions.set(permissions_for(preset.leads))
+    return team

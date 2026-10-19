@@ -8,6 +8,8 @@ from pytest_django.asserts import assertRedirects
 from portal.models import Conference
 from speakers.models import SpeakerSettings, speaker_module_enabled
 from speakers.permissions import is_speaker_organizer
+from volunteer.models import Team
+from volunteer.permission_presets import ORGANIZERS, PRESETS, label_of
 
 
 @pytest.mark.django_db
@@ -143,6 +145,31 @@ class TestFlagOnConferenceForm:
         assert response.status_code == 302
         assert speaker_module_enabled(conference) is True
         assert client.get(reverse("speakers:index")).status_code == 302
+
+    def test_turning_on_makes_an_organizers_team(self, client, admin_user, conference):
+        """A small community with no teams can be run by non-superusers."""
+        client.force_login(admin_user)
+        client.post(
+            reverse("conference_edit", kwargs={"pk": conference.pk}),
+            self.payload(conference, speaker_module_enabled="on"),
+        )
+        team = Team.objects.get(conference=conference, short_name=ORGANIZERS)
+        held = {label_of(p) for p in team.permissions.all()}
+        assert held == set(PRESETS[ORGANIZERS].members)
+        leads = {label_of(p) for p in team.lead_permissions.all()}
+        assert leads == set(PRESETS[ORGANIZERS].leads)
+
+    def test_an_existing_organizers_team_is_left_as_it_is(
+        self, client, admin_user, conference
+    ):
+        team = Team.objects.create(conference=conference, short_name=ORGANIZERS)
+        client.force_login(admin_user)
+        client.post(
+            reverse("conference_edit", kwargs={"pk": conference.pk}),
+            self.payload(conference, speaker_module_enabled="on"),
+        )
+        assert Team.objects.filter(short_name=ORGANIZERS).count() == 1
+        assert not team.permissions.exists()
 
     def test_turning_off_keeps_the_row(self, client, admin_user, conference):
         SpeakerSettings.objects.create(

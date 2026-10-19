@@ -19,6 +19,8 @@ from speakers.seeds import (
 )
 from tests.ticketing_ids import make_ticketing
 from ticketing.models import TicketingSettings
+from volunteer.models import Team
+from volunteer.permission_presets import ORGANIZERS
 
 from .factories import make_settings
 
@@ -167,6 +169,17 @@ class TestStartNextYear:
         assert not ChecklistTemplate.objects.filter(
             conference=new, name=PERFORMER_NAME
         ).exists()
+
+    def test_the_new_edition_gets_an_organizers_team(self, client, admin_user, source):
+        """Without cloning last year's teams, the speaker portal still comes
+        with a team to run it from."""
+        client.force_login(admin_user)
+        client.post(
+            reverse("start_new_year"),
+            payload(copy_speaker_setup="on", speaker_portal="on"),
+        )
+        new = Conference.objects.get(year=2027)
+        assert Team.objects.filter(conference=new, short_name=ORGANIZERS).exists()
 
     def test_neither(self, client, admin_user, source):
         client.force_login(admin_user)
