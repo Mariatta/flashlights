@@ -11,6 +11,8 @@ import pytest
 from django.contrib.auth.models import User
 from django.core import mail
 from django.core.exceptions import ValidationError
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from speakers.checklists import (
@@ -386,6 +388,26 @@ class TestGatesPage:
             "Tech check booking open",
             "Venue booked",
         ]
+
+    def test_the_page_runs_the_same_queries_however_many_gates_are_open(
+        self, client, world, conference, organizer
+    ):
+        def open_gates(numbers):
+            for number in numbers:
+                gate = ReadinessGate.objects.create(
+                    conference=conference, code=f"gate-{number}", name=f"Gate {number}"
+                )
+                gate.set_open(True, organizer)
+
+        client.force_login(organizer)
+        open_gates(range(2))
+        with CaptureQueriesContext(connection) as few:
+            content = client.get(GATES).content.decode()
+        assert content.count("opened") >= 2
+        open_gates(range(2, 6))
+        with CaptureQueriesContext(connection) as many:
+            client.get(GATES)
+        assert len(many) == len(few)
 
     def test_organizer_sees_gates_and_flips_one(self, client, world, organizer):
         client.force_login(organizer)

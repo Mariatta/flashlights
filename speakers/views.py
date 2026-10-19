@@ -1807,9 +1807,11 @@ class ReadinessGatesView(LoginRequiredMixin, SpeakerSettingsRequiredMixin, ListV
     context_object_name = "gates"
 
     def get_queryset(self):
-        # The count groups the query, which drops the model's order.
+        # The count groups the query, which drops the model's order. The
+        # page names who opened each open gate, so that join comes along.
         return (
             ReadinessGate.objects.filter(conference=self.conference)
+            .select_related("opened_by")
             .annotate(waiting=Count("items", filter=Q(items__is_waiting=True)))
             .order_by("name", "id")
         )
