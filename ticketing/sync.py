@@ -11,24 +11,30 @@ from attendee.models import AttendeeProfile, PretixOrder
 
 from .adapters import CsvAdapter, adapter_for
 from .adapters.csv import headers as column_headers
+from .models import ticketing_for
 
 
-def upsert_registration(conference, registration):
+def upsert_registration(conference, registration, ticketing=None):
     """Record one normalised registration, and the attendee profile for
     anyone registered (paid or free).
 
     The edition is the one given: the order's event slug may name another
-    edition, or none, and the caller knows which shop it asked.
+    edition, or none, and the caller knows which shop it asked. Pass the
+    edition's ``ticketing`` row when looping, so it is read once. Each
+    record is filled before its one save.
     """
-    order, created = PretixOrder.objects.get_or_create(
-        order_code=registration.code, defaults={"conference": conference}
-    )
+    ticketing = ticketing or ticketing_for(conference)
+    order = PretixOrder.objects.filter(order_code=registration.code).first()
+    created = order is None
+    if created:
+        order = PretixOrder(order_code=registration.code)
     order.conference = conference
-    order.from_registration(registration)
+    order.from_registration(registration, ticketing)
     order.save()
     if order.is_registered:
-        profile, _ = AttendeeProfile.objects.get_or_create(order=order)
-        profile.from_answers(registration.answers)
+        profile = AttendeeProfile.objects.filter(order=order).first()
+        profile = profile or AttendeeProfile(order=order)
+        profile.from_answers(registration.answers, ticketing)
         profile.save()
     return order, created
 
@@ -42,7 +48,7 @@ def sync(ticketing, adapter=None):
     started = timezone.now()
     seen = 0
     for registration in adapter.iter_registrations(since=ticketing.last_synced_at):
-        upsert_registration(ticketing.conference, registration)
+        upsert_registration(ticketing.conference, registration, ticketing)
         seen += 1
     ticketing.last_synced_at = started
     ticketing.save(update_fields=["last_synced_at", "modified_date"])
@@ -102,6 +108,6 @@ def _import_rows(ticketing, adapter, reader, result):
         if "@" not in registration.email:
             result.skipped.append((line, "no email address"))
             continue
-        upsert_registration(ticketing.conference, registration)
+        upsert_registration(ticketing.conference, registration, ticketing)
         result.imported += 1
         result.registered += registration.is_registered

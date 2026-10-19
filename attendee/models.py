@@ -108,10 +108,11 @@ class PretixOrder(BaseModel):
     def is_registered(self):
         return self.state in REGISTERED
 
-    def from_registration(self, registration):
+    def from_registration(self, registration, ticketing=None):
         """Record a normalised registration. Unchanged
         since the last time (same modification stamp), nothing moves; a
-        provider with no stamp (a CSV row) always updates."""
+        provider with no stamp (a CSV row) always updates. ``ticketing`` is
+        the edition's row when the caller holds it, saving a read."""
         if (
             registration.modified is not None
             and self.last_modified == registration.modified
@@ -131,14 +132,14 @@ class PretixOrder(BaseModel):
         self.event_slug = registration.event
         if registration.name:
             self.name = registration.name[:255]
-        self.set_is_anonymous_from_answers(registration.answers)
+        self.set_is_anonymous_from_answers(registration.answers, ticketing)
         self.raw_data = registration.raw
         return self
 
-    def set_is_anonymous_from_answers(self, answers):
+    def set_is_anonymous_from_answers(self, answers, ticketing=None):
         """The answer to the edition's anonymity question decides; with no
         such question the order stays anonymous."""
-        row = ticketing_for(self.conference)
+        row = ticketing or ticketing_for(self.conference)
         if row is None or not row.anonymous_question:
             return
         for answer in answers:
@@ -239,11 +240,11 @@ class AttendeeProfile(BaseModel):
     def __str__(self):
         return f"Profile for {self.order.order_code}"
 
-    def from_answers(self, answers):
+    def from_answers(self, answers, ticketing=None):
         """Fill the fields from normalised ``{"question", "answer"}`` answers
         through the edition's question map. A mapped field this order does
         not answer is cleared, so a changed answer never lingers."""
-        row = ticketing_for(self.order.conference)
+        row = ticketing or ticketing_for(self.order.conference)
         mapping = (row.question_map if row else None) or {}
         answered = set()
         for answer in answers:

@@ -8,6 +8,8 @@ from io import StringIO
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import CommandError, call_command
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from attendee.models import AttendeeProfile, PretixOrder
@@ -197,6 +199,28 @@ class TestImport:
         order = PretixOrder.objects.get(order_code="csv-2025-L1")
         assert order.name == "N" * 255
         assert AttendeeProfile.objects.get(order=order).city == "C" * 100
+
+    def test_query_count_per_row_is_fixed(self, conference, csv_ticketing):
+        """A PyCon US-sized export runs in one request: a few queries per
+        row, and the ticketing row is never read again inside the loop."""
+
+        def export(rows):
+            lines = [
+                f"R{n},Person {n},p{n}@example.com,Completed,0,,Summit,Lima"
+                for n in range(rows)
+            ]
+            return "Order,Full name,Email,Status,Paid,Date,Ticket,City\n" + "\n".join(
+                lines
+            )
+
+        with CaptureQueriesContext(connection) as five:
+            import_csv(csv_ticketing, export(5))
+        PretixOrder.objects.all().delete()
+        with CaptureQueriesContext(connection) as ten:
+            import_csv(csv_ticketing, export(10))
+        per_row = (len(ten) - len(five)) / 5
+        assert per_row <= 7
+        assert not [q for q in ten if 'FROM "ticketing_ticketingsettings"' in q["sql"]]
 
     def test_refusals(self, conference, csv_ticketing):
         with pytest.raises(CsvImportError, match="UTF-8"):
