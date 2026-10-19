@@ -5,7 +5,7 @@ teams."""
 from portal.permissions import is_organizer
 
 from .models import Team
-from .permission_presets import ORGANIZERS, PRESETS, permissions_for
+from .permission_presets import ORGANIZERS, PRESETS, label_of, permissions_for
 
 
 def may_change_grants(user):
@@ -14,6 +14,13 @@ def may_change_grants(user):
     superusers). Read as a permission, never from a team's name, which any
     team editor can set."""
     return is_organizer(user)
+
+
+def holds_all(user, permissions):
+    """Whether ``user`` holds every one of ``permissions`` (``Permission``
+    rows): bringing someone onto a team, or making them its lead, hands
+    them these, so only someone who already holds them may."""
+    return all(user.has_perm(label_of(p)) for p in permissions)
 
 
 def ensure_organizers_team(conference):

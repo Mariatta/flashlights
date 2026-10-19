@@ -9,7 +9,7 @@ from portal_account.handles import VOLUNTEER_COLUMNS, HandleFieldsMixin
 
 from .constants import ApplicationStatus
 from .models import Language, Team, VolunteerProfile
-from .organizers import may_change_grants
+from .organizers import holds_all, may_change_grants
 from .permission_presets import (
     ORGANIZERS,
     PRESETS,
@@ -178,12 +178,9 @@ class VolunteerProfileReviewForm(ModelForm):
         super().__init__(*args, **kwargs)
         # Assign only teams belonging to the profile's own conference edition.
         if self.instance and self.instance.conference_id:
-            teams = Team.objects.filter(conference_id=self.instance.conference_id)
-            # Joining Organizers grants what Organizers hold: only they
-            # bring someone onto it.
-            if self.user is not None and not may_change_grants(self.user):
-                teams = teams.exclude(short_name=ORGANIZERS)
-            self.fields["teams"].queryset = teams
+            self.fields["teams"].queryset = Team.objects.filter(
+                conference_id=self.instance.conference_id
+            ).prefetch_related("permissions__content_type")
 
     def clean(self):
         cleaned_data = super().clean()
@@ -191,7 +188,26 @@ class VolunteerProfileReviewForm(ModelForm):
             raise forms.ValidationError(
                 "You cannot review your own application: ask another reviewer."
             )
+        if self.user is not None and "teams" in cleaned_data:
+            self._refuse_teams_beyond_the_reviewer(set(cleaned_data["teams"]))
         return cleaned_data
+
+    def _refuse_teams_beyond_the_reviewer(self, chosen):
+        """Joining a team hands its members' permissions over, and leaving
+        it takes them away: a reviewer who does not hold them all neither
+        adds nor removes anyone there."""
+        before = set(self.instance.teams.all()) if self.instance.pk else set()
+        beyond = sorted(
+            team.short_name
+            for team in chosen ^ before
+            if not holds_all(self.user, team.permissions.all())
+        )
+        if beyond:
+            raise forms.ValidationError(
+                "Only someone who holds what "
+                + ", ".join(beyond)
+                + " grants can add or remove its members."
+            )
 
     def save(self, commit=True):
         newly_approved = False

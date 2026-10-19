@@ -458,18 +458,36 @@ class TestReviewingApplications:
             user=django_user_model.objects.create_user(username="new"),
             conference=conference,
         )
-        offered = (
-            VolunteerProfileReviewForm(instance=applicant, user=coordinator)
-            .fields["teams"]
-            .queryset
+        organizers = Team.objects.get(short_name=ORGANIZERS)
+        data = {"teams": [organizers.pk]}
+        form = VolunteerProfileReviewForm(data, instance=applicant, user=coordinator)
+        assert not form.is_valid()
+        assert "Only someone who holds what Organizers grants" in str(form.errors)
+        form = VolunteerProfileReviewForm(data, instance=applicant, user=organizer)
+        assert form.is_valid(), form.errors
+
+    def test_a_coordinator_saving_an_organizer_keeps_them_on_organizers(
+        self, client, coordinator, organizer, conference
+    ):
+        """The review form offers every team, so saving someone already on
+        Organizers does not quietly drop them from it."""
+        profile = VolunteerProfile.objects.get(user=organizer)
+        program = Team.objects.create(conference=conference, short_name="Design")
+        keep = list(profile.teams.values_list("pk", flat=True))
+        client.force_login(coordinator)
+        client.post(
+            reverse("volunteer:volunteer_profile_manage", kwargs={"pk": profile.pk}),
+            {"teams": keep + [program.pk]},
         )
-        assert not offered.filter(short_name=ORGANIZERS).exists()
-        offered = (
-            VolunteerProfileReviewForm(instance=applicant, user=organizer)
-            .fields["teams"]
-            .queryset
+        names = set(profile.teams.values_list("short_name", flat=True))
+        assert names == {ORGANIZERS, "Design"}
+        # And taking them off it is refused, not done.
+        response = client.post(
+            reverse("volunteer:volunteer_profile_manage", kwargs={"pk": profile.pk}),
+            {"teams": [program.pk]},
         )
-        assert offered.filter(short_name=ORGANIZERS).exists()
+        assert "add or remove its members" in response.content.decode()
+        assert profile.teams.filter(short_name=ORGANIZERS).exists()
 
 
 @pytest.mark.django_db

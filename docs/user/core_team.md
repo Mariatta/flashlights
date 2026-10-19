@@ -42,9 +42,10 @@ The usual teams start from a preset when they are created (Organizers,
 Volunteer coordination, Sponsorship, Program, Proposal reviewers, Speaker
 liaisons, Recordings) and
 their sets can be adjusted afterwards on the team's edit form. Only the
-Organizers team picks what a team may do and who leads Organizers, and only
-Organizers bring someone onto it: anyone else who edits teams sees the sets
-without changing them. Nobody reviews their own volunteer application.
+Organizers team picks what a team may do: anyone else who edits teams sees
+the sets without changing them. A reviewer adds someone to a team, or
+removes them, only when they hold everything that team grants its members,
+and nobody reviews their own volunteer application.
 Superusers bypass all of this, and the Infra maintainers group, which outlives
 editions, is managed in the Django admin.
 

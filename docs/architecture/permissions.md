@@ -76,8 +76,10 @@ Organizers preset carries (or a superuser), may change the sets
 (`volunteer.organizers.may_change_grants`); it is read as a permission, never
 from a team's name, which any team editor can set. For anyone else holding
 `change_team` the pickers are disabled, since they could otherwise grant
-themselves anything through their own team. No reviewer
-reviews their own application.
+themselves anything through their own team. On the review form, a reviewer
+adds someone to a team or removes them only when they hold every permission
+that team grants its members (`holds_all`), and no reviewer reviews their own
+application.
 The team page lists what the team may do, and a person's volunteer profile
 page lists what they hold and where each grant comes from. Start next year
 clones both sets with the teams.
