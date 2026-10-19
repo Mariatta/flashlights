@@ -11,6 +11,7 @@ from volunteer.models import (
     Team,
     VolunteerProfile,
     send_internal_volunteer_onboarding_email,
+    send_volunteer_cancelled_emails,
     send_volunteer_onboarding_email,
 )
 
@@ -85,6 +86,71 @@ class TestOnboardingEmails:
         )
         assert "Discord" not in body
         assert "Join Slack" in body and "https://slack.example.org" in body
+
+    def test_discord(self, conference, portal_user):
+        """The default platform: the Discord lines are there."""
+        body = self.onboard(conference, portal_user, chat_platform=ChatPlatform.DISCORD)
+        assert "Grant them the Volunteer role on Discord." in body
+        assert "Their Discord username is: mydiscord" in body
+        assert "The Organizer role on Discord" in body
+
+
+@pytest.mark.django_db
+class TestTeamLeadCancellationNotice:
+    """The lead is told what to take back, following the edition's chat."""
+
+    def notice(self, conference, portal_user, django_user_model, **chat):
+        profile, _ = applicant(conference, portal_user, **chat)
+        team = Team.objects.create(
+            short_name="Program", description="d", conference=conference
+        )
+        lead = VolunteerProfile.objects.create(
+            user=django_user_model.objects.create_user(
+                username="lead", email="lead@example.com"
+            ),
+            conference=conference,
+        )
+        team.team_leads.add(lead)
+        mail.outbox.clear()
+        send_volunteer_cancelled_emails(profile, [team])
+        return next(m.body for m in mail.outbox if m.to == ["lead@example.com"])
+
+    def test_the_github_line_names_the_github_username(
+        self, conference, portal_user, django_user_model
+    ):
+        body = self.notice(
+            conference, portal_user, django_user_model, chat_platform=ChatPlatform.NONE
+        )
+        assert "GitHub: mygithub" in body
+        assert "mydiscord" not in body
+
+    def test_discord(self, conference, portal_user, django_user_model):
+        body = self.notice(
+            conference,
+            portal_user,
+            django_user_model,
+            chat_platform=ChatPlatform.DISCORD,
+        )
+        assert "Discord: mydiscord" in body
+        assert "Remove the Volunteer role on Discord." in body
+
+    def test_another_platform(self, conference, portal_user, django_user_model):
+        body = self.notice(
+            conference,
+            portal_user,
+            django_user_model,
+            chat_platform=ChatPlatform.OTHER,
+            chat_name="Zulip",
+            chat_url="https://chat.example.org/join",
+        )
+        assert "Discord" not in body
+        assert "Remove them from Zulip." in body
+
+    def test_no_chat(self, conference, portal_user, django_user_model):
+        body = self.notice(
+            conference, portal_user, django_user_model, chat_platform=ChatPlatform.NONE
+        )
+        assert "Discord" not in body and "Remove them from" not in body
 
 
 @pytest.mark.django_db
