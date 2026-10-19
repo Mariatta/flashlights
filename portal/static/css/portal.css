@@ -172,10 +172,16 @@ code, kbd, pre, samp, .font-monospace {
     --bs-border-width: var(--border-2);
     --bs-border-color: var(--border-default);
     --bs-border-radius: var(--radius-md);
-    min-height: var(--control-h-md);
-    padding: 0.5rem 0.75rem;
     color: var(--text-body);
     background-color: var(--surface-card);
+}
+
+/* The small variants (the schedule editor's switcher, the upload panel)
+   keep Bootstrap's height and padding. */
+.form-control:not(.form-control-sm),
+.form-select:not(.form-select-sm) {
+    min-height: var(--control-h-md);
+    padding: 0.5rem 0.75rem;
 }
 
 .form-control:focus,
@@ -725,8 +731,10 @@ a.card:hover {
     color: var(--status-stop-ink);
 }
 
-/* Table rows that carry people get the row spacing of the spec. */
-.table td {
+/* Table rows that carry people get the row spacing of the spec. Compact
+   tables (table-sm: the checklist and post-production boards, the room and
+   gate lists, the exports) keep Bootstrap's density. */
+.table:not(.table-sm) td {
     vertical-align: middle;
     padding: 12px 16px;
 }

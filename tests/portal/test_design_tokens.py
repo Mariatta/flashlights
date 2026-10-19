@@ -151,3 +151,17 @@ def test_alerts_leave_the_status_glyph_to_the_stylesheet():
         ):
             doubled.append(f"{path.relative_to(root)}: {found.group(0)!r}")
     assert doubled == []
+
+
+def test_compact_bootstrap_variants_keep_their_density():
+    """The people-row spacing and the 44px control height are for the
+    ordinary table and control; table-sm, form-control-sm and form-select-sm
+    tie Bootstrap's own rules on specificity and would lose to them."""
+    css = Path(finders.find("css/portal.css")).read_text()
+    assert ".table:not(.table-sm) td {" in css
+    assert ".table td {" not in css
+    assert ".form-control:not(.form-control-sm)," in css
+    assert (
+        ".form-select:not(.form-select-sm) {\n    min-height: var(--control-h-md);"
+        in css
+    )
