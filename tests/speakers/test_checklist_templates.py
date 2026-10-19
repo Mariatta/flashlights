@@ -37,7 +37,7 @@ from .factories import make_session, make_settings
 @pytest.fixture
 def other_conference(db):
     return Conference.objects.create(
-        year=2024, name="Flashlights 2024", slug="pyladiescon-2024"
+        year=2024, name="Flashlights 2024", slug="edition-2024"
     )
 
 

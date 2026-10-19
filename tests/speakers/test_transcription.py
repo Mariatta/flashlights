@@ -319,8 +319,8 @@ class TestPipeline:
         self, world, engine, bucket
     ):
         session = world["session"]
-        long_a = "PyLadiesCon-2026-keynote-recording-final-v2.mp4"
-        long_b = "PyLadiesCon-2026-keynote-recording-final-v3.mp4"
+        long_a = "Keynote-2026-recording-final-v2.mp4"
+        long_b = "Keynote-2026-recording-final-v3.mp4"
         raws = [
             video(session, original_filename=long_a),
             video(session, original_filename=long_b),

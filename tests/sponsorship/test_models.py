@@ -74,7 +74,7 @@ class TestSponsorshipModel:
         admin_user_to_notify = User.objects.create_superuser(
             username="testadmin",
             email="test-admin@example.com",
-            password="pyladiesadmin123",
+            password="admin-password-123",
         )
         admin_profile = VolunteerProfile(
             user=admin_user_to_notify, conference=conference
@@ -148,7 +148,7 @@ class TestSponsorshipModel:
         admin_user_to_notify = User.objects.create_superuser(
             username="testadmin",
             email="test-admin@example.com",
-            password="pyladiesadmin123",
+            password="admin-password-123",
         )
         admin_profile = VolunteerProfile(
             user=admin_user_to_notify, conference=conference
