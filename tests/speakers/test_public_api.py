@@ -247,6 +247,23 @@ class TestSnapshots:
         assert client.get(url("session", program["unticked"].slug)).status_code == 404
         assert client.get(url("session", "no-such-thing")).status_code == 404
 
+    def test_the_video_link_waits_for_its_publish_time(self, client, program):
+        """An unlisted link pasted ahead of the premiere is not public yet."""
+        talk = program["talk"]
+        Session.objects.filter(pk=talk.pk).update(
+            youtube_url="https://youtube.com/watch?v=early",
+            youtube_publish_at=datetime.now(timezone.utc) + timedelta(days=7),
+        )
+        cache.clear()
+        _, data = get(client, url("session", talk.slug))
+        assert data["session"]["youtube_url"] is None
+        Session.objects.filter(pk=talk.pk).update(
+            youtube_publish_at=datetime.now(timezone.utc) - timedelta(minutes=1)
+        )
+        cache.clear()
+        _, data = get(client, url("session", talk.slug))
+        assert data["session"]["youtube_url"] == "https://youtube.com/watch?v=early"
+
     def test_presenters(self, client, program):
         response, data = get(client, url("presenters"))
         ada, talk = program["ada"], program["talk"]

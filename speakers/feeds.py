@@ -113,9 +113,9 @@ def event_lines(row, where):
     if (
         session.is_pre_recorded
         and session.effective_premiere_location == PremiereLocation.YOUTUBE
-        and session.youtube_url
+        and session.published_video_url
     ):
-        location = session.youtube_url
+        location = session.published_video_url
     else:
         # The room with its venue, so a calendar can map the place; the
         # venue is the room's own, else that day's (a series may move).

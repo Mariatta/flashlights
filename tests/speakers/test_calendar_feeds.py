@@ -221,6 +221,22 @@ class TestPublicFeed:
         text = client.get(FEED).content.decode()
         assert "LOCATION:https://youtube.com/watch?v=x" in text
 
+    def test_a_link_before_its_publish_time_is_not_the_location(
+        self, client, enabled, conference
+    ):
+        session = make_session(conference, title="Performance set", kind="PERFORMANCE")
+        add_presenter(session, make_presenter(conference), confirmed=True)
+        session.confirm()
+        session.youtube_url = "https://youtube.com/watch?v=early"
+        session.youtube_publish_at = datetime.now(timezone.utc) + timedelta(days=7)
+        session.premiere_location = PremiereLocation.YOUTUBE
+        session.save()
+        make_slot(session, start_utc=T0)
+        make_published_slot(session)
+        session.schedule()
+        session.publish()
+        assert "watch?v=early" not in client.get(FEED).content.decode()
+
     def test_module_off_is_404(self, client):
         assert client.get(FEED).status_code == 404
 

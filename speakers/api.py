@@ -126,7 +126,7 @@ def session_payload(conference, session, public_ids, base):
     for name in SESSION_TEXT:
         payload.update(_text(session, name))
     payload.update(
-        youtube_url=session.youtube_url or None,
+        youtube_url=session.published_video_url or None,
         slot=slot_block(session),
         presenters=[
             presenter_link(link, link.presenter_id in public_ids, base)

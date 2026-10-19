@@ -1071,6 +1071,17 @@ class Session(TimestampedModel):
         return self.delivery == Delivery.PRE_RECORDED
 
     @property
+    def published_video_url(self):
+        """The YouTube link once its publish time has come (or when it has
+        none): what the public program and the calendar feeds may show. An
+        unlisted link pasted a week early stays with the team."""
+        if not self.youtube_url:
+            return ""
+        if self.youtube_publish_at and self.youtube_publish_at > timezone.now():
+            return ""
+        return self.youtube_url
+
+    @property
     def effective_premiere_location(self):
         """The session's own choice, else the edition's default."""
         if self.premiere_location:
