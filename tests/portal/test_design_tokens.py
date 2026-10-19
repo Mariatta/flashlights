@@ -2,6 +2,7 @@
 one entry stylesheet, every font file present, nothing fetched from a
 third party on page load."""
 
+import hashlib
 import re
 from pathlib import Path
 
@@ -165,3 +166,17 @@ def test_compact_bootstrap_variants_keep_their_density():
         ".form-select:not(.form-select-sm) {\n    min-height: var(--control-h-md);"
         in css
     )
+
+
+def test_no_font_file_ships_twice_under_another_name():
+    """The upright faces are variable fonts; Google served the same bytes
+    for each weight asked, so one file per family and subset is enough."""
+    fonts = Path(finders.find("fonts"))
+    digests = {}
+    for path in sorted(fonts.glob("*.woff2")):
+        digests.setdefault(hashlib.md5(path.read_bytes()).hexdigest(), []).append(
+            path.name
+        )
+    assert all(len(names) == 1 for names in digests.values()), digests
+    css = (TOKENS / "fonts.css").read_text()
+    assert "font-weight: 600 800;" in css and "font-weight: 400 700;" in css
