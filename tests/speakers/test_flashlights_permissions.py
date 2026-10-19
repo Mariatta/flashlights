@@ -13,6 +13,7 @@ from django.urls import reverse
 from speakers.constants import (
     Delivery,
     EventFormat,
+    ItemOwner,
     MediaKind,
     PremiereLocation,
     ProposalDecision,
@@ -21,7 +22,7 @@ from speakers.constants import (
 )
 from speakers.forms import SessionForm, SessionVideoForm
 from speakers.media import can_delete, can_download, can_upload
-from speakers.models import ActivityLog, MediaAsset, Session
+from speakers.models import ActivityLog, ChecklistItem, MediaAsset, Session
 from tests.grants import on_team
 from volunteer.models import Team, VolunteerProfile
 
@@ -328,3 +329,40 @@ class TestVideoCard:
         enabled.save()
         page = client.get(session.get_absolute_url())
         assert "premiere_location" not in page.context["video_form"].fields
+
+
+@pytest.mark.django_db
+class TestSessionPageItemBoxes:
+    """A box on the session page for each item its viewer may act on, the
+    rule the status view applies."""
+
+    def test_a_team_ticks_the_items_it_carries(self, client, conference):
+        make_settings(conference)
+        member = on_team(User.objects.create_user(username="noor"), "Recordings")
+        reviewer = on_team(
+            User.objects.create_user(username="rev"), "Proposal reviewers"
+        )
+        session = make_session(conference)
+        recordings = Team.objects.get(short_name="Recordings")
+        theirs = ChecklistItem.objects.create(
+            conference=conference,
+            session=session,
+            owner=ItemOwner.ORGANIZER,
+            title="Edit the recording",
+            team=recordings,
+        )
+        other = ChecklistItem.objects.create(
+            conference=conference,
+            session=session,
+            owner=ItemOwner.ORGANIZER,
+            title="Book the room",
+        )
+        url = reverse("speakers:session_detail", args=[session.slug])
+        status_url = "speakers:item_status"
+        client.force_login(member)
+        page = client.get(url).content.decode()
+        assert reverse(status_url, args=[theirs.pk]) in page
+        assert reverse(status_url, args=[other.pk]) not in page
+        client.force_login(reviewer)
+        page = client.get(url).content.decode()
+        assert reverse(status_url, args=[theirs.pk]) not in page

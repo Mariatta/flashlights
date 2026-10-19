@@ -414,14 +414,24 @@ class SessionDetailView(SessionScopedMixin, DetailView):
         # A liaison reaches this page but may not hand work to someone else
         # unless they hold assign_checklistitem, so offer the select on that.
         context["can_assign"] = can_assign_items(self.request.user)
-        # Someone who only reads the program (a reviewer) sees the items
-        # without the boxes that would tick them.
-        context["items_read_only"] = not (
-            is_speaker_organizer(self.request.user)
-            or self.object.session_presenters.filter(
-                presenter__liaison=self.request.user
-            ).exists()
-        )
+        # Each item has its box for whoever may act on it, the rule the
+        # status view applies: organizers, whoever carries it in person or
+        # through a team, and its presenter's liaison. Someone who only
+        # reads the program (a reviewer) sees the items without boxes.
+        user = self.request.user
+        if not is_speaker_organizer(user):
+            team_ids = set(
+                approved_teams(user, self.conference).values_list("pk", flat=True)
+            )
+            for item in items:
+                item.read_only = not (
+                    item.assignee_id == user.pk
+                    or item.team_id in team_ids
+                    or (
+                        item.presenter is not None
+                        and item.presenter.liaison_id == user.pk
+                    )
+                )
         context["adhoc_form"] = AdhocItemForm(
             initial={"owner_kind": ItemOwner.ORGANIZER}, conference=self.conference
         )
