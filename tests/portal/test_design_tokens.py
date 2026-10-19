@@ -161,11 +161,11 @@ def test_compact_bootstrap_variants_keep_their_density():
     css = Path(finders.find("css/portal.css")).read_text()
     assert ".table:not(.table-sm) td {" in css
     assert ".table td {" not in css
-    assert ".form-control:not(.form-control-sm)," in css
+    assert ".form-control:not(.form-control-sm):not(.input-group-sm > *)," in css
     assert (
-        ".form-select:not(.form-select-sm) {\n    min-height: var(--control-h-md);"
-        in css
-    )
+        ".form-select:not(.form-select-sm):not(.input-group-sm > *) {\n"
+        "    min-height: var(--control-h-md);"
+    ) in css
 
 
 def test_no_font_file_ships_twice_under_another_name():

@@ -176,10 +176,11 @@ code, kbd, pre, samp, .font-monospace {
     background-color: var(--surface-card);
 }
 
-/* The small variants (the schedule editor's switcher, the upload panel)
+/* The small variants (the schedule editor's switcher, the upload panel) and
+   the controls in a small input group (the share page, the media files)
    keep Bootstrap's height and padding. */
-.form-control:not(.form-control-sm),
-.form-select:not(.form-select-sm) {
+.form-control:not(.form-control-sm):not(.input-group-sm > *),
+.form-select:not(.form-select-sm):not(.input-group-sm > *) {
     min-height: var(--control-h-md);
     padding: 0.5rem 0.75rem;
 }
