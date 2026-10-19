@@ -1,5 +1,7 @@
 from django import forms
 
+from speakers.encryption import Undecryptable
+
 from .models import (
     ATTENDEE_FIELD_NAMES,
     CSV_FIELD_NAMES,
@@ -58,7 +60,31 @@ def map_text(mapping):
     return "\n".join(f"{key} = {value}" for key, value in (mapping or {}).items())
 
 
-class TicketingSettingsForm(forms.ModelForm):
+class WriteOnlySecretsMixin:
+    """The token and the webhook secret are write-only: a blank field keeps
+    what is stored. A stored value this deploy cannot decrypt is refused
+    rather than kept, since saving it back would write it empty."""
+
+    def _keep_when_blank(self, name):
+        value = self.cleaned_data.get(name)
+        if value:
+            return value
+        stored = getattr(self.instance, name)
+        if isinstance(stored, Undecryptable):
+            raise forms.ValidationError(
+                "This deploy cannot read the stored value: set the encryption "
+                "key, or enter it again."
+            )
+        return stored
+
+    def clean_api_token(self):
+        return self._keep_when_blank("api_token")
+
+    def clean_webhook_secret(self):
+        return self._keep_when_blank("webhook_secret")
+
+
+class TicketingSettingsForm(WriteOnlySecretsMixin, forms.ModelForm):
     """The edition's Tickets page. The token and the webhook secret are
     write-only, like in the admin; the two maps are plain lines."""
 
@@ -119,16 +145,6 @@ class TicketingSettingsForm(forms.ModelForm):
         self.fields["question_lines"].initial = map_text(self.instance.question_map)
         self.fields["product_lines"].initial = map_text(self.instance.product_map)
         self.fields["csv_lines"].initial = map_text(self.instance.csv_columns)
-
-    def _keep_when_blank(self, name):
-        value = self.cleaned_data.get(name)
-        return value if value else getattr(self.instance, name)
-
-    def clean_api_token(self):
-        return self._keep_when_blank("api_token")
-
-    def clean_webhook_secret(self):
-        return self._keep_when_blank("webhook_secret")
 
     def clean_question_lines(self):
         return parse_map(

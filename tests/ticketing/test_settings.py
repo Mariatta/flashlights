@@ -16,6 +16,7 @@ from portal.models import Conference
 from speakers import encryption
 from tests.speakers.factories import make_settings
 from tests.ticketing_ids import CITY, make_ticketing
+from ticketing.admin import TicketingSettingsAdminForm
 from ticketing.forms import parse_map
 from ticketing.models import (
     Provider,
@@ -94,6 +95,29 @@ class TestTicketsPage:
         make_ticketing(conference)
         client.force_login(admin_user)
         client.post(tickets_url(conference), form_data(api_token="", webhook_secret=""))
+        row = TicketingSettings.objects.get(conference=conference)
+        assert row.api_token == "tok-secret" and row.webhook_secret == "hook-secret"
+
+    def test_an_unreadable_secret_is_refused_not_erased(
+        self, client, admin_user, conference
+    ):
+        """A deploy without its key cannot read the token; saving the page
+        must not write it empty."""
+        make_ticketing(conference)
+        client.force_login(admin_user)
+        with override_settings(FERNET_KEY=Fernet.generate_key().decode()):
+            encryption._warned = False
+            response = client.post(
+                tickets_url(conference), form_data(api_token="", webhook_secret="")
+            )
+            form = TicketingSettingsAdminForm(
+                data={"conference": conference.pk, "provider": "PRETIX"},
+                instance=TicketingSettings.objects.get(conference=conference),
+            )
+            assert not form.is_valid() and "api_token" in form.errors
+        encryption._warned = False
+        assert response.status_code == 200
+        assert "cannot read the stored value" in response.content.decode()
         row = TicketingSettings.objects.get(conference=conference)
         assert row.api_token == "tok-secret" and row.webhook_secret == "hook-secret"
 

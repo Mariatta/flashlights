@@ -1,10 +1,11 @@
 from django import forms
 from django.contrib import admin
 
+from .forms import WriteOnlySecretsMixin
 from .models import TicketingSettings
 
 
-class TicketingSettingsAdminForm(forms.ModelForm):
+class TicketingSettingsAdminForm(WriteOnlySecretsMixin, forms.ModelForm):
     """The token and the webhook secret are write-only: encrypted at rest,
     never echoed back. Leave a field blank to keep what is stored."""
 
@@ -22,16 +23,6 @@ class TicketingSettingsAdminForm(forms.ModelForm):
     class Meta:
         model = TicketingSettings
         fields = "__all__"
-
-    def _keep_when_blank(self, name):
-        value = self.cleaned_data.get(name)
-        return value if value else getattr(self.instance, name)
-
-    def clean_api_token(self):
-        return self._keep_when_blank("api_token")
-
-    def clean_webhook_secret(self):
-        return self._keep_when_blank("webhook_secret")
 
 
 @admin.register(TicketingSettings)
