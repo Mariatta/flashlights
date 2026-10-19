@@ -5,13 +5,13 @@ Each preset gets its own database (``flashlights_<name>``), so switching is
 instant and nothing is reseeded; ``reset`` rebuilds one from scratch.
 
     python scripts/preset.py list
-    python scripts/preset.py use summit      # reset if missing, then serve
-    python scripts/preset.py reset summit    # drop, migrate, load the preset
-    python scripts/preset.py serve summit    # restart the dev server on it
-    python scripts/preset.py drop summit
+    python scripts/preset.py use bare        # reset if missing, then serve
+    python scripts/preset.py reset bare      # drop, migrate, load the preset
+    python scripts/preset.py serve bare      # restart the dev server on it
+    python scripts/preset.py drop bare
     python scripts/preset.py stop
 
-Or through make: ``make preset PRESET=summit``, ``make preset-reset ...``.
+Or through make: ``make preset PRESET=bare``, ``make preset-reset ...``.
 
 A preset is a directory holding ``seed.py`` (``run(stdout)``, loaded by
 ``manage.py load_preset``) and an optional ``env`` file of KEY=value lines
