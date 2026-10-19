@@ -1,6 +1,7 @@
 import pytest
 from allauth.account.models import EmailAddress
 from django import forms
+from django.template import Context, Origin, Template
 from django.template.loader import render_to_string
 from django.urls import reverse
 from pytest_django.asserts import assertRedirects
@@ -213,3 +214,18 @@ def test_a_fields_own_error_shows_beside_a_form_wide_one():
     # other is ticked neither way.
     assert html.count("is-invalid") == 1 and "is-valid" not in html
     assert "This field is required." in html
+
+
+@pytest.mark.parametrize("kind", ["text", "checkbox"])
+def test_the_field_element_prints_its_help_text(kind):
+    """allauth's email change and phone change pages put the "pending
+    verification" line and its Re-send button in this slot."""
+    html = Template(
+        "{% load allauth %}"
+        '{% element field type=kind name="x" id="id_x" %}'
+        "{% slot label %}Label{% endslot %}"
+        "{% slot help_text %}Still pending.{% endslot %}"
+        "{% endelement %}",
+        origin=Origin("probe.html", template_name="probe.html"),
+    ).render(Context({"kind": kind}))
+    assert "Still pending." in html and "form-text" in html

@@ -21,6 +21,12 @@ invalid-feedback in portal.css.
             {% slot label %}
         {% endslot %}
     </label>
+    {% if slots.help_text %}
+        <div class="form-text">
+            {% slot help_text %}
+        {% endslot %}
+    </div>
+{% endif %}
 </div>
 {% else %}
 <div class="mb-3">
@@ -48,6 +54,12 @@ invalid-feedback in portal.css.
            {% if attrs.autocomplete %}autocomplete="{{ attrs.autocomplete }}"{% endif %}
            {% if attrs.value is not None %}value="{{ attrs.value }}"{% endif %}
            type="{{ attrs.type }}">
+{% endif %}
+{% if slots.help_text %}
+    <div class="form-text">
+        {% slot help_text %}
+    {% endslot %}
+</div>
 {% endif %}
 </div>
 {% endif %}
