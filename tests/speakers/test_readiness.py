@@ -374,6 +374,15 @@ class TestGatesPage:
             "Tech check booking open"
         )
 
+    def test_gates_are_listed_by_name(self, client, world, conference, organizer):
+        for code, name in (("venue", "Venue booked"), ("av", "AV ready")):
+            ReadinessGate.objects.create(conference=conference, code=code, name=name)
+        client.force_login(organizer)
+        gates = client.get(GATES).context["gates"]
+        assert gates.ordered
+        names = [gate.name for gate in gates]
+        assert names == sorted(names)
+
     def test_organizer_sees_gates_and_flips_one(self, client, world, organizer):
         client.force_login(organizer)
         content = client.get(GATES).content.decode()
