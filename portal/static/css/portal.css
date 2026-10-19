@@ -1469,6 +1469,15 @@ button.checklist-box-done:hover {
     100% { opacity: 0; visibility: hidden; }
 }
 
+/* With "Reduce motion" on, base.css cuts every animation to 0.01ms, which
+   would end the fade at once and hide the toast before anyone reads it. The
+   toast then stays until it is closed. */
+@media (prefers-reduced-motion: reduce) {
+    .portal-toast {
+        animation: none;
+    }
+}
+
 /* Checklist board cells (templates/speakers/checklist_board.html). */
 .checklist-board td.cell-done { background: var(--bs-success-bg-subtle); }
 .checklist-board td.cell-todo { background: var(--bs-light); }

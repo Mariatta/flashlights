@@ -124,3 +124,17 @@ def test_pages_use_lucide_classes_only(client, conference):
     content = client.get("/").content.decode()
     assert "kit.fontawesome.com" not in content
     assert "fa-solid" not in content
+
+
+def test_toasts_stay_put_under_reduced_motion():
+    """base.css cuts every animation to 0.01ms under "Reduce motion"; the
+    toast hides itself through an animation, so without its own rule there
+    it would vanish at once."""
+    css = Path(finders.find("css/portal.css")).read_text()
+    assert "animation: portal-toast-fade" in css
+    blocks = re.findall(
+        r"@media \(prefers-reduced-motion: reduce\) \{(.*?)\n\}", css, re.S
+    )
+    assert any(
+        re.search(r"\.portal-toast \{\s*animation: none;", block) for block in blocks
+    ), blocks
