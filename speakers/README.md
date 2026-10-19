@@ -735,15 +735,19 @@ Removing a column is the same window in reverse: take it out of the model
 and deploy, then drop it from the table in a follow-up migration, so no
 running process selects a column that is already gone.
 
-### The one dependency that points outward
+### Dependencies that point outward
 
-Everything here depends on `portal`, never the reverse, with a single
-exception: the conference edit form carries the speaker-portal switch,
-which lives on `SpeakerSettings`. `portal/forms.py` reaches it through
-`apps.get_model` behind an `apps.is_installed("speakers")` guard rather
-than importing this app, so the core form still loads without the feature
-module and there is no import cycle waiting to happen. Any further one goes
-through the same registry lookup.
+This app depends on `portal`, and the core also reaches into it, since
+the speaker module is always installed in Flashlights. `portal/urls.py`
+mounts its URLs and two of its views, `portal/common.py` reads its
+proposals and task stats for the dashboards and stats pages, and
+`portal_account.handles` reads and writes `Presenter` rows (and
+`volunteer.VolunteerProfile` rows) to keep a person's handles and
+pronouns in one place; its migration 0005 depends on this app. The edition
+form reaches `SpeakerSettings` through `apps.get_model` behind an
+`apps.is_installed("speakers")` guard, a leftover from when the module
+was optional. A new edge from the core may import this app directly; keep
+it one way where it can be, so there is no import cycle waiting to happen.
 
 ### Handles: the person's, shared with the volunteer side
 
