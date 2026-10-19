@@ -283,6 +283,11 @@ class StartNewYearView(UserPassesTestMixin, FormView):
 
         conference = Conference(year=data["year"], name=data["name"], slug=data["slug"])
         form.apply_dates(conference)
+        if source:
+            # A community keeps its chat from one edition to the next.
+            conference.chat_platform = source.chat_platform
+            conference.chat_name = source.chat_name
+            conference.chat_url = source.chat_url
         if source and data["copy_goals"]:
             conference.sponsorship_goal = source.sponsorship_goal
             conference.donation_goal = source.donation_goal

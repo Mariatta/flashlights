@@ -2,7 +2,7 @@ import pytest
 from django.urls import reverse
 from django.utils import timezone
 
-from portal.models import Conference
+from portal.models import ChatPlatform, Conference
 from speakers.constants import EventFormat, Recordings
 from speakers.models import (
     ChecklistTemplate,
@@ -108,6 +108,19 @@ class TestStartNextYear:
         row = SpeakerSettings.objects.get(conference__year=2027)
         assert row.event_format == EventFormat.IN_PERSON
         assert row.recordings == Recordings.TEAM
+
+    def test_keeps_the_community_chat(self, client, admin_user, conference):
+        """A Zulip community's next edition does not go back to Discord."""
+        conference.chat_platform = ChatPlatform.OTHER
+        conference.chat_name = "Zulip"
+        conference.chat_url = "https://example.zulipchat.com/"
+        conference.save()
+        client.force_login(admin_user)
+        client.post(reverse("start_new_year"), payload())
+        new = Conference.objects.get(year=2027)
+        assert new.chat_platform == ChatPlatform.OTHER
+        assert new.chat_name == "Zulip"
+        assert new.chat_url == "https://example.zulipchat.com/"
 
     def test_copy_without_enabling(self, client, admin_user, source):
         client.force_login(admin_user)
