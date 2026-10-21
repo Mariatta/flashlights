@@ -265,8 +265,8 @@ class TestPortalStats:
     def test_stats_count_the_portals_proposals_unless_typed_in(
         self, client, conference
     ):
-        """A call for proposals run in the portal counts itself; one run
-        elsewhere keeps the number organizers typed in."""
+        """Proposals collected in the portal count themselves; a count
+        collected elsewhere keeps the number organizers typed in."""
         session = make_session(conference)
         presenter = make_presenter(conference)
         make_proposal(session, presenter)

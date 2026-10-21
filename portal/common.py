@@ -673,7 +673,7 @@ def get_attendee_field_breakdown(attendee_profiles, field_name):
 
 def proposals_received(conference):
     """How many proposals the edition received: the number organizers typed
-    in when their call for proposals ran somewhere else, else the portal's
+    in when proposals were collected somewhere else, else the portal's
     own proposals, leaving out the withdrawn ones."""
     if conference.proposals_count:
         return conference.proposals_count

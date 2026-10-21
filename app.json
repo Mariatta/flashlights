@@ -1,6 +1,6 @@
 {
   "name": "Flashlights",
-  "description": "The back-of-house portal for a volunteer-run event: volunteers, speakers, sponsors, schedule.",
+  "description": "The organizers' portal for a volunteer-run event: volunteers, speakers, sponsors, schedule.",
   "repository": "https://github.com/mariatta/flashlights",
   "keywords": [
     "django",
