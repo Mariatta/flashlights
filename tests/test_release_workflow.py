@@ -36,6 +36,7 @@ def test_the_hook_puts_the_slash_back_on_a_versioned_site_url():
     slash, and the RSS plugin joins image paths to it as text."""
     config = yaml.load((ROOT / "mkdocs.yml").read_text(), Loader=yaml.BaseLoader)
     assert config["hooks"] == ["scripts/mkdocs_hooks.py"]
+    assert on_config.mkdocs_priority == -100  # runs after every plugin
     versioned = SimpleNamespace(site_url="https://docs.test/flashlights/0.1.0")
     assert on_config(versioned).site_url == "https://docs.test/flashlights/0.1.0/"
     for untouched in ("https://docs.test/flashlights/", "", None):
