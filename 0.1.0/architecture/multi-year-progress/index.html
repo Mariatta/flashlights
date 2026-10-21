@@ -1,0 +1,2233 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://docs.flashlights.app/0.1.0/architecture/multi-year-progress/">
+      
+      
+        <link rel="prev" href="../multi-year-conferences/">
+      
+      
+        <link rel="next" href="../signup-abuse-protection/">
+      
+      
+        
+      
+      
+        <link rel="alternate" type="application/rss+xml" title="RSS feed" href="../../feed_rss_created.xml">
+        <link rel="alternate" type="application/rss+xml" title="RSS feed of updated content" href="../../feed_rss_updated.xml">
+      
+      <link rel="icon" href="../../assets/favicon.svg">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Multi-Year Progress - Tiny Little Flashlights</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Multi-Year Progress - Tiny Little Flashlights" />
+<meta property="og:image" content="https://docs.flashlights.app/0.1.0/assets/images/social/architecture/multi-year-progress.png" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:url" content="https://docs.flashlights.app/0.1.0/architecture/multi-year-progress/" />
+<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:title" content="Multi-Year Progress - Tiny Little Flashlights" />
+<meta property="twitter:image" content="https://docs.flashlights.app/0.1.0/assets/images/social/architecture/multi-year-progress.png" />
+</head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="yellow">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#multi-year-conferences-implementation-progress" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Tiny Little Flashlights" class="md-header__button md-logo" aria-label="Tiny Little Flashlights" data-md-component="logo">
+      
+  <img src="../../assets/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Tiny Little Flashlights
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Multi-Year Progress
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/mariatta/flashlights" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    mariatta/flashlights
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../developer/setup/" class="md-tabs__link">
+          
+  
+  
+  Developer Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../multi-year-conferences/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../user/get_started/" class="md-tabs__link">
+          
+  
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../policies/terms_of_use/" class="md-tabs__link">
+          
+  
+  
+  Policy templates
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Tiny Little Flashlights" class="md-nav__button md-logo" aria-label="Tiny Little Flashlights" data-md-component="logo">
+      
+  <img src="../../assets/logo.svg" alt="logo">
+
+    </a>
+    Tiny Little Flashlights
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/mariatta/flashlights" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    mariatta/flashlights
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Setup Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Working on the code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/howto/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How Tos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/markdown-emails/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Markdown Emails
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/releasing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releasing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/environment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environment reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/community_apps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Community apps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/third_party/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Third-party code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../multi-year-conferences/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Year Conferences
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Year Progress
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Year Progress
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#status-legend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Status legend
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-1-conference-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1 — Conference model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-2-foreign-keys-nullable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2 — Foreign keys (nullable)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-3-backfill" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3 — Backfill
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-4-tighten-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4 — Tighten constraints
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-5-admin-and-importexport" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 5 — Admin and import/export
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-6-behavior-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 6 — Behavior changes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-7-stats-refactor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 7 — Stats refactor
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-8-year-over-year-comparison-page" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 8 — Year-over-year comparison page
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-9-admin-actions-and-polish" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 9 — Admin actions and polish
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-10-your-conferences-history-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 10 — "Your Conferences" history view
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-11-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 11 — Verification
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 11 — Verification">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#conference-scoping-audit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conference-scoping audit
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-12-organizer-start-a-new-year-wizard-issue-341" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 12 — Organizer "Start a new year" wizard (issue #341)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#open-items-blockers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Open items / blockers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-branches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Related branches
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../signup-abuse-protection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Signup Abuse Protection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pretix-per-conference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pretix Per Conference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../session-and-presenter-addresses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Session and Presenter Addresses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../speaker-portal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Speaker Portal
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../email-delivery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Email Delivery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../permissions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Permissions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/get_started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Get started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/adapting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adapting Flashlights
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/core_team/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Team
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/volunteer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Volunteers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/speakers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Speakers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/speaker_files/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your video and files
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/organizer_invite_speakers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inviting Speakers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/sponsor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sponsors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Policy templates
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Policy templates
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../policies/terms_of_use/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Terms of service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../policies/acceptable_use_policy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Acceptable use policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#status-legend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Status legend
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-1-conference-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1 — Conference model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-2-foreign-keys-nullable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2 — Foreign keys (nullable)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-3-backfill" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3 — Backfill
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-4-tighten-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4 — Tighten constraints
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-5-admin-and-importexport" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 5 — Admin and import/export
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-6-behavior-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 6 — Behavior changes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-7-stats-refactor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 7 — Stats refactor
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-8-year-over-year-comparison-page" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 8 — Year-over-year comparison page
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-9-admin-actions-and-polish" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 9 — Admin actions and polish
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-10-your-conferences-history-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 10 — "Your Conferences" history view
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-11-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 11 — Verification
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 11 — Verification">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#conference-scoping-audit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conference-scoping audit
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-12-organizer-start-a-new-year-wizard-issue-341" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 12 — Organizer "Start a new year" wizard (issue #341)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#open-items-blockers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Open items / blockers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-branches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Related branches
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/mariatta/flashlights/edit/main/docs/architecture/multi-year-progress.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="multi-year-conferences-implementation-progress">Multi-Year Conferences — Implementation Progress</h1>
+<p>Tracking the rollout of the design described in
+<a href="../multi-year-conferences/"><code>multi-year-conferences.md</code></a>.</p>
+<p>This file is internal project management — update it as work progresses.
+Delete it once everything is done; the design doc preserves the "why".</p>
+<p><strong>Last updated:</strong> 2026-06-13</p>
+<hr />
+<h2 id="status-legend">Status legend</h2>
+<ul>
+<li>[ ] Not started</li>
+<li>[~] In progress</li>
+<li>[x] Done</li>
+<li>[!] Blocked or needs attention</li>
+</ul>
+<hr />
+<h2 id="phase-1-conference-model">Phase 1 — Conference model</h2>
+<ul>
+<li>[x] Add <code>Conference</code> model to <code>portal/</code> with all fields from the design.</li>
+<li>[x] Migration 1: create <code>Conference</code> table.</li>
+<li>[x] Add <code>Conference</code> to Django admin with <code>is_active</code> toggle.</li>
+<li>[x] Implement <code>Conference.get_active()</code> and the single-active-row enforcer
+      in <code>save()</code>.</li>
+<li>[x] Add context processor exposing the active conference to all templates.</li>
+</ul>
+<h2 id="phase-2-foreign-keys-nullable">Phase 2 — Foreign keys (nullable)</h2>
+<ul>
+<li>[x] Add nullable <code>conference</code> FK to <code>VolunteerProfile</code>.</li>
+<li>[x] Add nullable <code>conference</code> FK to <code>SponsorshipProfile</code>.</li>
+<li>[x] Add nullable <code>conference</code> FK to <code>SponsorshipTier</code>.</li>
+<li>[x] Add nullable <code>conference</code> FK to <code>Team</code>.</li>
+<li>[x] Add nullable <code>conference</code> FK to <code>IndividualDonation</code>.</li>
+<li>[x] Add nullable <code>conference</code> FK to <code>PretixOrder</code>.</li>
+</ul>
+<p>Note: <code>BaseModel</code> is concrete (multi-table inheritance), so <code>Conference</code>
+needed an explicit <code>basemodel_ptr</code> parent link with <code>related_name="+"</code> —
+otherwise the implicit reverse accessor named <code>conference</code> on <code>BaseModel</code>
+clashes with the FK name on every child model (<code>portal</code> migration 0004).</p>
+<h2 id="phase-3-backfill">Phase 3 — Backfill</h2>
+<p>All four steps land in one reversible data migration,
+<code>portal/migrations/0005_backfill_conferences.py</code>.</p>
+<ul>
+<li>[x] Data migration: create Conference rows for 2023, 2024, 2025 (active),
+      2026.</li>
+<li>[x] Data migration: backfill <code>historical_snapshot</code> for 2023 and 2024 from
+      <code>portal/constants.py::HISTORICAL_STATS</code>.</li>
+<li>[x] Data migration: backfill <code>conference</code> on all existing
+      <code>VolunteerProfile</code>, <code>SponsorshipProfile</code>, <code>SponsorshipTier</code>, <code>Team</code>,
+      <code>IndividualDonation</code> rows to point at 2025.</li>
+<li>[x] Data migration: backfill <code>PretixOrder.conference</code> from <code>event_slug</code>
+      matching <code>Conference.pretix_event_slug</code>.</li>
+</ul>
+<p>Notes:
+- Historical values (<code>HISTORICAL_STATS</code>, <code>PROPOSALS_2025_COUNT</code>, goal amounts)
+  are copied literally into the migration, not imported from
+  <code>portal.constants</code> — a data migration must stay replayable on a fresh DB,
+  and Phase 8 deletes those constants. <code>proposals</code> is stored on
+  <code>proposals_count</code>; the rest of each year's stats go in <code>historical_snapshot</code>.
+- <code>pretix_event_slug</code> for 2025 is <code>"2025"</code> (matches
+  <code>common.pretix_wrapper.PRETIX_EVENT_SLUG</code>); orders backfill by slug match so
+  future years route automatically.
+- Not unit-tested, matching the existing <code>volunteer/0011_populate_languages</code>
+  convention. The suite runs <code>--no-migrations</code>, so data migrations never
+  execute under test and are invisible to the 100% coverage gate. Verified
+  manually instead: forward + reverse + re-apply against real data.</p>
+<h2 id="phase-4-tighten-constraints">Phase 4 — Tighten constraints</h2>
+<ul>
+<li>[x] Make <code>conference</code> non-null on all affected models
+      (<code>volunteer/0014</code>, <code>sponsorship/0010</code>, <code>attendee/0005</code>).</li>
+<li>[x] Change <code>VolunteerProfile.user</code> from <code>OneToOneField</code> to <code>ForeignKey</code>.</li>
+<li>[x] Add <code>unique_together = ("user", "conference")</code> to <code>VolunteerProfile</code>.</li>
+<li>[ ] Pause for review before merging — riskiest step.</li>
+</ul>
+<p>Notes:
+- Non-null forced the creation paths to assign a conference now, not later:
+  volunteer/sponsorship forms use <code>Conference.get_active()</code>; the pretix
+  webhook and <code>fetch_pretix_orders</code> resolve it via
+  <code>PretixOrder.resolve_conference(event_slug)</code> (slug match, active fallback);
+  <code>generate_sample_data</code> seeds and scopes to an active 2025 edition.
+- Caught a regression: the <code>SponsorshipProfileResource</code> CSV import silently
+  failed the new non-null FK — fixed in <code>before_save_instance</code> (assigns the
+  active conference). The <code>VolunteerProfileResource</code> import was already
+  vacuous (its <code>user__*</code> rows don't persist), so it's deferred to Phase 5.
+- Admin visibility added early (subset of Phase 5): <code>conference</code> column +
+  list filter on every affected model's admin; <code>Team</code> gained a <code>ModelAdmin</code>;
+  <code>SponsorshipProfileAdmin.fields</code> now includes <code>conference</code>.
+- Tests: autouse <code>conference</code> fixture in <code>conftest.py</code> (skips
+  <code>unittest.TestCase</code> classes, which seed their own). 372 pass, 100% cov.</p>
+<h2 id="phase-5-admin-and-importexport">Phase 5 — Admin and import/export</h2>
+<ul>
+<li>[x] Add <code>conference</code> to <code>VolunteerProfileResource</code>, default list filter
+      to active conference.</li>
+<li>[x] Add <code>conference</code> to <code>SponsorshipProfileResource</code>, default list filter
+      to active conference.</li>
+<li>[x] Add <code>conference</code> to <code>AttendeeProfileResource</code> (export-only, via
+      <code>order.conference</code>).</li>
+<li>[x] Verify existing CSV exports still work and gain a <code>conference</code> column.</li>
+</ul>
+<p>Notes:
+- <code>conference</code> is exported/imported by <strong>year</strong> (via <code>ForeignKeyWidget</code>),
+  not the surrogate pk. Rows imported without a conference column fall back
+  to the active edition in <code>before_save_instance</code> (this also completes the
+  <code>VolunteerProfileResource</code> import fix deferred from Phase 4).
+- "Default list filter to active" is a reusable <code>ActiveConferenceFilter</code>
+  (<code>portal/admin_filters.py</code>): the changelist lands on the active edition
+  with no query param; <code>?conference=all</code> shows every year. Applied to the
+  volunteer and sponsorship profile admins.
+- Admin column/filter visibility on all six models landed in Phase 4.
+- Tests: 381 pass, 100% cov; no schema change (admin-only).</p>
+<h2 id="phase-6-behavior-changes">Phase 6 — Behavior changes</h2>
+<ul>
+<li>[x] ~~Remove the post-save signal that auto-creates <code>VolunteerProfile</code> on
+      user signup.~~ N/A — no such signal exists; signup only creates
+      <code>PortalProfile</code> and volunteering is already explicit via
+      <code>VolunteerProfileCreate</code>.</li>
+<li>[x] Update "Apply to volunteer" view: explicit action, ties new
+      <code>VolunteerProfile</code> to active conference. (Conference assignment landed in
+      Phase 4; the "already applied?" guard is now scoped to the active
+      conference so returning volunteers can apply each year.)</li>
+<li>[x] Implement returning-volunteer pre-fill (form initial values come from
+      user's most recent prior <code>VolunteerProfile</code>).</li>
+<li>[x] Update volunteer list view to filter by active conference; add an
+      admin-only year switcher.</li>
+<li>[x] Update sponsorship list view to filter by active conference.</li>
+</ul>
+<p>Notes:
+- Multi-year broke several single-profile assumptions, now scoped to the
+  active conference: <code>volunteer index</code> (<code>get()</code> → <code>MultipleObjectsReturned</code>),
+  the apply guard, and the <code>portal</code> dashboard lookup.
+- Sponsor access is per-approved-year: staff/superusers see every conference;
+  other users may only view the conference(s) they were APPROVED volunteers
+  for. <code>SponsorshipProfileList</code> defaults to the active edition (or their most
+  recent viewable year) with a year switcher; the detail view checks the
+  specific sponsor's year.
+- Year switchers are a button group on both manage lists; the search form
+  carries the selected year in a hidden field. 386 tests pass, 100% cov.</p>
+<h2 id="phase-7-stats-refactor">Phase 7 — Stats refactor</h2>
+<ul>
+<li>[ ] Refactor every aggregation function in <code>portal/common.py</code> to accept a
+      <code>conference</code> parameter.</li>
+<li>[ ] Namespace stats cache keys by year (e.g.,
+      <code>volunteer_signups_count_2025</code>).</li>
+<li>[ ] Update <code>portal/views.py::stats</code> and <code>stats_json</code> to read <code>?year=</code>.</li>
+<li>[ ] Add year-switcher dropdown to <code>templates/portal/stats.html</code>.</li>
+<li>[ ] Add year-switcher to <code>volunteer_stats.html</code>,
+      <code>sponsorship_stats.html</code>, <code>attendee_stats.html</code>.</li>
+<li>[ ] Handle "predates the portal" case: render <code>historical_snapshot</code> with
+      a banner when live data is empty.</li>
+</ul>
+<h2 id="phase-8-year-over-year-comparison-page">Phase 8 — Year-over-year comparison page</h2>
+<ul>
+<li>[ ] Add <code>historical_snapshot</code> and <code>proposals_count</code> fields to <code>Conference</code>.</li>
+<li>[ ] Migrate <code>HISTORICAL_STATS</code> and <code>PROPOSALS_2025_COUNT</code> values into
+      Conference rows.</li>
+<li>[ ] Add new view <code>stats_comparison</code> at <code>/stats/comparison/</code>.</li>
+<li>[ ] Add new JSON endpoint at <code>/stats/comparison.json</code>.</li>
+<li>[ ] Build template <code>portal/stats_comparison.html</code> with the 7 year-over-year
+      charts.</li>
+<li>[ ] Remove <code>{% include "portal/historical_comparison_charts.html" %}</code> from
+      <code>stats.html</code>.</li>
+<li>[ ] Delete <code>HISTORICAL_STATS</code> and <code>PROPOSALS_2025_COUNT</code> from
+      <code>portal/constants.py</code>.</li>
+<li>[ ] Delete <code>get_historical_comparison_data()</code> from <code>portal/common.py</code>.</li>
+</ul>
+<h2 id="phase-9-admin-actions-and-polish">Phase 9 — Admin actions and polish</h2>
+<ul>
+<li>[ ] Admin action: "Clone teams from prior conference" on <code>Conference</code>.</li>
+<li>[ ] Admin action: "Bring forward returning volunteers" (issue #333). On the
+      <code>VolunteerProfile</code> changelist (or <code>Conference</code>), select prior-year
+      volunteers and create new <code>VolunteerProfile</code> rows for the active
+      conference, copying profile fields (social handles, languages, region,
+      chapter, availability) and optionally team/role assignments. New rows
+      land as <code>PENDING</code> by default. This is the admin-initiated counterpart to
+      the self-service returning-volunteer pre-fill in Phase 6: #333 wants the
+      organizer to onboard last year's volunteers into this year's teams
+      <em>without</em> the volunteer re-filling the form. Depends on the team-clone
+      action above (teams must exist in the new year before assignment).</li>
+<li>[ ] Admin action: "Freeze stats for this conference" — snapshot live
+      aggregations into <code>historical_snapshot</code>.</li>
+<li>[ ] Update <code>AttendeeProfile.participated_in_previous_event</code> choices to
+      derive from <code>Conference.objects.filter(year__lt=current_year)</code>.</li>
+<li>[ ] Add navbar year indicator showing the active conference name.</li>
+</ul>
+<h2 id="phase-10-your-conferences-history-view">Phase 10 — "Your Conferences" history view</h2>
+<ul>
+<li>[ ] Add a section to the user's profile/account page listing every
+      <code>VolunteerProfile</code> the user has across all conferences, ordered by
+      most recent year first.</li>
+<li>[ ] Each row shows: conference name, year, <code>application_status</code>, link to
+      that year's profile detail page.</li>
+<li>[ ] Empty-state copy when the user has no <code>VolunteerProfile</code> rows yet.</li>
+<li>[ ] Equivalent listing for <code>SponsorshipProfile</code> entries linked to the
+      user (via <code>user</code>, <code>main_contact_user</code>, or <code>additional_contacts</code>).</li>
+</ul>
+<h2 id="phase-11-verification">Phase 11 — Verification</h2>
+<ul>
+<li>[x] All existing tests pass (100% coverage maintained).</li>
+<li>[x] Tests for <code>Conference</code> model (single-active enforcer, <code>get_active()</code>) —
+      <code>tests/portal/test_models.py</code>.</li>
+<li>[x] Tests for returning-volunteer pre-fill flow —
+      <code>test_form_prefills_from_most_recent_prior_profile</code>.</li>
+<li>[x] Tests for year-aware stats aggregation — <code>tests/portal/test_common.py</code>.</li>
+<li>[ ] Manual QA: create 2026 conference, flip <code>is_active</code>, verify stats and
+      volunteer flow.</li>
+<li>[ ] Manual QA: switch back to 2025 via <code>?year=2025</code>, verify historical
+      data renders correctly.</li>
+<li>[ ] Manual QA: visit <code>/stats/comparison/</code>, verify 2023–2026 all render
+      with appropriate data sources.</li>
+</ul>
+<h3 id="conference-scoping-audit">Conference-scoping audit</h3>
+<p>A sweep of user-facing read/write paths for cross-year leakage.</p>
+<p>Fixed:</p>
+<ul>
+<li>Sponsor list tier filter listed every year's tiers; now scoped to the
+  edition being viewed.</li>
+<li><code>VolunteerProfileReviewForm.teams</code> declared an all-years default queryset
+  (overridden in <code>__init__</code>); tightened to an empty default.</li>
+<li><code>TeamList</code> (<code>/teams/</code>) now has a year switcher and is scoped to the selected
+  edition (defaulting to the active one), like the sponsor list.</li>
+</ul>
+<p>Deferred (decided to leave for now):</p>
+<ul>
+<li><code>send_internal_email_task</code> notifies admin/staff volunteers from <em>any</em> edition
+  (plus all <code>is_staff</code>/<code>is_superuser</code>). Left as-is intentionally — the
+  <code>is_staff</code>/<code>is_superuser</code> catch-all already covers current organizers.</li>
+<li><code>TeamView</code> / <code>SponsorshipProfileContractRequest</code> fetch by pk without an edition
+  check (admin-only; low risk — a wrong-year footgun, not an access leak).</li>
+</ul>
+<h2 id="phase-12-organizer-start-a-new-year-wizard-issue-341">Phase 12 — Organizer "Start a new year" wizard (issue #341)</h2>
+<p>A guided front-end flow (on the portal dashboard, <strong>not</strong> Django admin) for
+organizers who aren't comfortable in Django admin, so standing up next year's
+conference isn't a series of manual admin edits.</p>
+<ul>
+<li>[ ] Dashboard entry point (staff/superuser): "Start next year's conference".</li>
+<li>[ ] Step 1 — create: year, name, slug.</li>
+<li>[ ] Step 2 — choose carry-over: teams (Phase 9 clone), sponsorship tiers,
+      goal amounts, returning volunteers (#333).</li>
+<li>[ ] Step 3 — review &amp; activate (flip <code>is_active</code>; single-active enforcer
+      demotes the current year).</li>
+<li>[ ] Implement the team-clone (Phase 9) and volunteer carry-forward (#333)
+      as reusable services callable from both Django admin and this wizard, so
+      the logic isn't duplicated.</li>
+</ul>
+<p>Composes Phase 9's "Clone teams" and #333's "Bring forward returning
+volunteers" into one organizer-facing flow; depends on both.</p>
+<hr />
+<h2 id="open-items-blockers">Open items / blockers</h2>
+<p>(None yet — populate as issues come up.)</p>
+<h2 id="related-branches">Related branches</h2>
+<p>The following pre-existing branches may need rebasing onto this work:</p>
+<ul>
+<li><code>feature/stats-comparison-charts-287</code></li>
+<li><code>feature/attendee-stats-276</code></li>
+<li><code>display-attendee-stats</code></li>
+<li><code>tabs-for-stats</code></li>
+<li><code>expose-stats-json</code></li>
+</ul>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="October 17, 2026 18:59:04 UTC">October 17, 2026</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Created">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 12, 2026 16:27:57 UTC">May 12, 2026</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../multi-year-conferences/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Multi-Year Conferences">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Multi-Year Conferences
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../signup-abuse-protection/" class="md-footer__link md-footer__link--next" aria-label="Next: Signup Abuse Protection">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Signup Abuse Protection
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/mariatta/flashlights" target="_blank" rel="noopener" title="The repository" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.footer", "navigation.sections", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow", "content.code.copy", "content.code.select", "content.tabs.link", "content.action.edit"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
