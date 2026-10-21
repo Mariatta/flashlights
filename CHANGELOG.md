@@ -26,7 +26,7 @@ The first release of Flashlights, derived from the
 - **Speakers.** Invitations, profiles, sessions, two-sided checklists with
   reminders, the schedule, video and file uploads, and a public program
   widget and API.
-- **Registrations** from Pretix or a CSV export.
+- **Attendee records** from Pretix or a CSV export, for the stats.
 - **Handles per person**: social links and pronouns belong to the account,
   and every form reads from them.
 - **Runs on any host.** The boot contract (`web`, `worker`, `release`) and
