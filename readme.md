@@ -7,8 +7,9 @@ lightweight speaker intake, the speakers and their files, volunteers and
 teams, sponsors, the schedule, and the emails that hold it all together. The
 intake is not a call for proposals system: people propose a session and you
 say yes or no, or you invite the speakers you have already chosen. One
-instance serves one community, edition after edition; each instance takes its name, colours, logo and policy links from
-the environment (see `portal/branding.py`).
+instance serves one community, edition after edition; each instance takes
+its name, colours, logo and policy links from the environment (see
+`portal/branding.py`).
 
 Flashlights is derived from the
 [PyLadiesCon portal](https://github.com/pyladies/pyladiescon-portal), which
