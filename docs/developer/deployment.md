@@ -482,10 +482,10 @@ shows one process's output; all processes share one stream otherwise.
 **Quirks.** Check the add-on's Postgres version is 15 or newer (Database,
 above). The Key-Value Store add-on requires TLS and presents a self-signed
 certificate: its `REDIS_URL` starts with `rediss://`, and for such a URL the
-portal turns certificate verification off unless the URL carries its own
-`ssl_cert_reqs`, so the worker connects as the add-on expects. Heroku
-restarts dynos daily, which the email tasks tolerate (they are acknowledged
-on completion). After the first deploy, set the site
+portal connects without verifying the certificate unless the URL carries
+its own `ssl_cert_reqs` (Heroku's own guidance for its Redis clients), with
+no warning in the worker log. Heroku restarts dynos daily, which the email
+tasks tolerate (they are acknowledged on completion). After the first deploy, set the site
 domain (One-time configuration) and add your own domain to the app and to
 `DJANGO_ALLOWED_HOSTS`.
 

@@ -576,11 +576,12 @@ ACCOUNTING_EMAIL = os.getenv("ACCOUNTING_EMAIL", "")
 # broker works without copying that secret into a second env var.
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL") or os.environ.get("REDIS_URL")
 
-# A managed Redis that requires TLS gives a rediss:// URL, and some (Heroku's
-# Key-Value Store) present a self-signed certificate, which the client
-# refuses by default: the worker never starts and the web process errors on
-# its first task. Verification is turned off for a rediss:// URL that does
-# not say otherwise; a URL may still ask for it with ?ssl_cert_reqs=required.
+# A managed Redis that requires TLS gives a rediss:// URL, and some present a
+# self-signed certificate. For such a URL with no TLS options kombu already
+# connects without verifying, warning on every connection it opens; this
+# makes that choice the portal's own and keeps the warning out of the worker
+# log. A URL may still ask for verification with ?ssl_cert_reqs=required,
+# which wins over this setting.
 if (CELERY_BROKER_URL or "").startswith(
     "rediss://"
 ) and "ssl_cert_reqs" not in CELERY_BROKER_URL:
