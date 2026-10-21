@@ -11,7 +11,7 @@
     "chart.js": "4.5.1",
     "htmx.org": "2.0.4",
     "jquery": "3.6.0",
-    "select2": "4.1.0-rc.0",
+    "select2": "4.1.0",
     "terser": "5.51.2"
   }
 }
