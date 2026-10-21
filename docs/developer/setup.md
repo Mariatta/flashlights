@@ -264,7 +264,7 @@ ACL on what it uploads, and reads it back only through presigned links.
    origin `http://localhost:8000`, methods `PUT` and `GET`, allowed headers
    `*`, exposed header `ETag`.
 3. Create a Spaces access key (API, Spaces Keys) scoped to that Space.
-4. Give the `web`, `celery` and `beat` services the settings through a
+4. Give the `web` and `celery` services the settings through a
    `compose.override.yml` next to `compose.yml` (ignored by git, so the
    keys stay on your machine):
 
@@ -286,7 +286,7 @@ services:
       AWS_SECRET_ACCESS_KEY: <your Spaces secret>
 ```
 
-   Then `docker compose up -d --force-recreate web celery beat`. Leave
+   Then `docker compose up -d --force-recreate web celery`. Leave
    `USE_SPACES` alone: it switches the image storage, which is a separate
    matter.
 
