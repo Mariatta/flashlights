@@ -1,6 +1,6 @@
 # Tiny Little Flashlights
 
-Flashlights is the back-of-house portal for a volunteer-run event or
+Flashlights is the organizers' portal for a volunteer-run event or
 meetup: volunteers, speakers and their checklists, sponsors, the schedule,
 and the files that go with them, in one place instead of a dozen
 spreadsheets.

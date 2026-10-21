@@ -1,6 +1,6 @@
 # Getting started
 
-Flashlights is the back-of-house portal for your event: where volunteers
+Flashlights is the organizers' portal for your event: where volunteers
 sign up, speakers see what we need from them, sponsors are tracked and the
 schedule is built. This guide is written for any event that runs it, from a
 multi-day online conference to a monthly meetup; "we" are the organisers
@@ -60,6 +60,6 @@ instance or the edition, and what is off disappears from the pages:
 |---|---|
 | Volunteer applications | A meetup run by a fixed crew: keep the Volunteer hub for the team, stop advertising sign-ups on the landing page. |
 | Sponsorship and donations | No sponsors this year: the sponsor pages, goals and stats go. |
-| The speaker portal | An event without a call for proposals: sessions can still be scheduled by hand. |
+| The speaker portal | An event that takes no proposals: sessions can still be scheduled by hand. |
 | Public stats | Numbers you would rather not publish: the stats pages go. |
 | Attendee numbers | No ticketing system connected: nothing is counted. |

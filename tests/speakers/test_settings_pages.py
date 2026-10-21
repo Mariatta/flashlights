@@ -1,4 +1,4 @@
-"""Organizers open the call for proposals and list the websites that may
+"""Organizers open session proposals and list the websites that may
 show the program in the portal, not the Django admin."""
 
 import pytest

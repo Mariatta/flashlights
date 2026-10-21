@@ -1744,7 +1744,7 @@ class SpeakerScheduleView(LoginRequiredMixin, PresenterRequiredMixin, TemplateVi
 
 
 class SpeakerSettingsView(LoginRequiredMixin, SpeakerSettingsRequiredMixin, UpdateView):
-    """The edition's speaker settings: the call for proposals and the rest
+    """The edition's speaker settings: session proposals and the rest
     of the settings row an organizer needs, outside the Django admin."""
 
     form_class = SpeakerSettingsForm

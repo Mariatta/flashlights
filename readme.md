@@ -1,17 +1,24 @@
 # Flashlights
 
-*Tiny Little Flashlights*: the back-of-house platform for events, summits and meetups.
+*Tiny Little Flashlights*: the organizers' portal for events, summits and meetups.
 
-Flashlights runs the parts of an event nobody in the audience sees: the call
-for proposals, speakers and their files, volunteers and teams, sponsors, the
-schedule, and the emails that hold it all together. One instance serves one
-community, edition after edition; each instance takes its name, colours,
-logo and policy links from the environment (see `portal/branding.py`).
+Flashlights runs the parts of an event nobody in the audience sees: session
+proposals, speakers and their files, volunteers and teams, sponsors, the
+schedule, and the emails that hold it all together. It is not a call for
+proposals system: proposals come in through a simple queue, with approve and
+decline, and an event that reviews in Pretalx or Sessionize invites its
+accepted speakers here. One instance serves one community, edition after
+edition; each instance takes its name, colours, logo and policy links from
+the environment (see `portal/branding.py`).
 
 Flashlights is derived from the
 [PyLadiesCon portal](https://github.com/pyladies/pyladiescon-portal), which
-remains the portal built for PyLadiesCon. The name is a nod to the Darren
-Hayes song.
+remains the portal built for PyLadiesCon. That portal was built for one
+event's needs; Flashlights keeps its core, moves what differs between
+communities into configuration and each community's own app (see
+`docs/developer/community_apps.md`), and is meant to be self-hosted, one
+instance per community. It is not a hosting service. The name is a nod to
+the Darren Hayes song.
 
 ## Licence and contributions
 

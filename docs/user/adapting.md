@@ -17,7 +17,7 @@ a small Django app of its own, and the core stays untouched.
 | Sender address | Environment | Who the portal's email comes from |
 | Modules you don't use | Environment, as feature switches | Turn off volunteering, sponsorship or the public stats pages if you run none of them |
 | Each edition's format, venue, chat, reply-to address and links | The edition form in the portal | Code of conduct, sponsorship prospectus, donation and schedule links are per edition too; a link left empty is not shown |
-| Speakers, call for proposals and ticketing | The portal, per edition | The speaker portal is switched on per edition; ticketing is set up on the edition's Tickets page |
+| Speakers, session proposals and registrations | The portal, per edition | The speaker portal is switched on per edition; where registrations come from is set on the edition's Tickets page |
 | Who can do what | Teams in the portal | Organizers get their access through a team, not as superusers |
 | Terms of service and acceptable use policy | The policy templates in these docs | Adapt them, publish your own versions and point the terms link at yours |
 

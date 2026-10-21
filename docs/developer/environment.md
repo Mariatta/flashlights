@@ -137,7 +137,7 @@ theme's, so a community sets the same values for its public site.
 | `EXTRA_APPS` | No | none | Django apps a community adds to the core, comma-separated. [Community apps](community_apps.md) has the contract |
 
 Everything else about an edition, its format, venue, chat, reply-to
-address, ticketing and call for proposals, is set in the portal, not the
+address, registrations and session proposals, is set in the portal, not the
 environment, and changes without a restart.
 
 ## Build arguments
