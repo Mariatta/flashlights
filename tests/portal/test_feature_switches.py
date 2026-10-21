@@ -84,6 +84,11 @@ class TestSponsorshipEnabled:
         assert ids(SPONSORSHIP_ENABLED=False) == {"proposals_comparison"}
         # Registrations: ticketing set up on an edition, even before any order
         # is read; an edition from before the portal with a snapshot; or orders.
+        # A row carried forward with only an event id is not set up.
+        TicketingSettings.objects.create(
+            conference=conference, event_id=conference.slug
+        )
+        assert "registrations_comparison" not in ids(SPONSORSHIP_ENABLED=False)
         make_ticketing(conference)
         assert "registrations_comparison" in ids(SPONSORSHIP_ENABLED=False)
         TicketingSettings.objects.all().delete()
@@ -95,6 +100,9 @@ class TestSponsorshipEnabled:
             historical_snapshot={"registrations": 500},
         )
         assert "registrations_comparison" in ids(SPONSORSHIP_ENABLED=False)
+        past.historical_snapshot = {"registrations": 0}  # frozen, but had none
+        past.save()
+        assert "registrations_comparison" not in ids(SPONSORSHIP_ENABLED=False)
         past.delete()
         PretixOrder.objects.create(order_code="R1", conference=conference)
         everything = ids(SPONSORSHIP_ENABLED=True)

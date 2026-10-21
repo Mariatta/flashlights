@@ -130,14 +130,13 @@ def stats_json(request):
 
 
 def _registrations_recorded():
-    """Some edition has registrations to compare: a ticketing row that is
-    set up, orders already read, or a snapshot from before the portal."""
+    """Some edition has registrations to compare: orders already read, a
+    past edition's snapshot with some (a frozen edition that had none does
+    not count), or a ticketing row that is set up and will bring them."""
     return (
         PretixOrder.objects.exists()
+        or Conference.objects.filter(historical_snapshot__registrations__gt=0).exists()
         or any(row.is_set_up for row in TicketingSettings.objects.all())
-        or Conference.objects.filter(
-            historical_snapshot__has_key="registrations"
-        ).exists()
     )
 
 
