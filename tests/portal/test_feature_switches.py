@@ -6,7 +6,9 @@ from django.test import override_settings
 from django.urls import reverse
 
 from attendee.models import PretixOrder
+from tests.speakers.factories import make_presenter, make_proposal, make_session
 from tests.ticketing_ids import make_ticketing
+from ticketing.models import TicketingSettings
 
 STATS_PAGES = (
     "portal_stats",
@@ -74,15 +76,38 @@ class TestSponsorshipEnabled:
                 response = client.get(reverse("portal_stats_comparison"))
             return {c["chart_id"] for c in response.context["historical_comparison"]}
 
-        # Registrations compare once any edition has some: ticketing
-        # is per edition, not an instance setting.
-        lite = ids(SPONSORSHIP_ENABLED=False)
-        assert lite == {"proposals_comparison"}
+        # Each chart shows only where its metric has a source: nothing on a
+        # fresh instance with sponsorship off.
+        assert ids(SPONSORSHIP_ENABLED=False) == set()
+        conference.proposals_count = 12  # proposals collected elsewhere
+        conference.save()
+        assert ids(SPONSORSHIP_ENABLED=False) == {"proposals_comparison"}
+        # Registrations: ticketing set up on an edition, even before any order
+        # is read; an edition from before the portal with a snapshot; or orders.
+        make_ticketing(conference)
+        assert "registrations_comparison" in ids(SPONSORSHIP_ENABLED=False)
+        TicketingSettings.objects.all().delete()
+        assert "registrations_comparison" not in ids(SPONSORSHIP_ENABLED=False)
+        past = type(conference).objects.create(
+            year=2019,
+            name="Flashlights 2019",
+            slug="2019",
+            historical_snapshot={"registrations": 500},
+        )
+        assert "registrations_comparison" in ids(SPONSORSHIP_ENABLED=False)
+        past.delete()
         PretixOrder.objects.create(order_code="R1", conference=conference)
         everything = ids(SPONSORSHIP_ENABLED=True)
         assert "proposals_comparison" in everything
         assert "sponsors_comparison" in everything
         assert "registrations_comparison" in everything
+
+    def test_proposals_taken_here_compare(self, client, conference):
+        make_proposal(make_session(conference), make_presenter(conference))
+        response = client.get(reverse("portal_stats_comparison"))
+        assert {c["chart_id"] for c in response.context["historical_comparison"]} >= {
+            "proposals_comparison"
+        }
 
 
 @pytest.mark.django_db

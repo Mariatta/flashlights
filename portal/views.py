@@ -36,11 +36,11 @@ from portal.services import (
     clone_teams,
 )
 from speakers.editions import set_working_edition
-from speakers.models import Presenter, SpeakerSettings, speaker_module_enabled
+from speakers.models import Presenter, Proposal, SpeakerSettings, speaker_module_enabled
 from speakers.seeds import clone_speaker_setup, seed_new_edition
 from speakers.stats import edition_task_stats
 from sponsorship.models import SponsorshipProfile
-from ticketing.models import carry_forward
+from ticketing.models import TicketingSettings, carry_forward
 from volunteer.constants import ApplicationStatus
 from volunteer.models import Team, VolunteerProfile
 from volunteer.organizers import ensure_organizers_team
@@ -129,10 +129,32 @@ def stats_json(request):
     return JsonResponse(context)
 
 
-#: Comparison chart -> the setting that makes its numbers meaningful here.
-#: A chart not listed (proposals) is always shown.
+def _registrations_recorded():
+    """Some edition has registrations to compare: a ticketing row that is
+    set up, orders already read, or a snapshot from before the portal."""
+    return (
+        PretixOrder.objects.exists()
+        or any(row.is_set_up for row in TicketingSettings.objects.all())
+        or Conference.objects.filter(
+            historical_snapshot__has_key="registrations"
+        ).exists()
+    )
+
+
+def _proposals_recorded():
+    """Some edition took proposals here, or typed in a count from elsewhere."""
+    return (
+        Proposal.objects.exists()
+        or Conference.objects.filter(proposals_count__gt=0).exists()
+    )
+
+
+#: Comparison chart -> what makes its numbers meaningful on this instance:
+#: a setting, or a callable for what a setting cannot say (registrations
+#: and proposals are per edition, not instance switches).
 COMPARISON_CHART_SWITCHES = {
-    "registrations_comparison": lambda: PretixOrder.objects.exists(),
+    "registrations_comparison": _registrations_recorded,
+    "proposals_comparison": _proposals_recorded,
     "sponsors_comparison": "SPONSORSHIP_ENABLED",
     "sponsorship_amount_comparison": "SPONSORSHIP_ENABLED",
     "donors_comparison": "SPONSORSHIP_ENABLED",
@@ -142,11 +164,8 @@ COMPARISON_CHART_SWITCHES = {
 
 
 def _chart_is_on(chart):
-    """A setting name, or a callable for what a setting cannot say (any
-    edition has registrations: ticketing is per edition)."""
-    setting = COMPARISON_CHART_SWITCHES.get(chart["chart_id"])
-    if setting is None:
-        return True
+    """Each comparison chart shows only where its metric has a source."""
+    setting = COMPARISON_CHART_SWITCHES[chart["chart_id"]]
     return setting() if callable(setting) else getattr(settings, setting)
 
 
