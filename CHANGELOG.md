@@ -7,7 +7,7 @@ a change to the [public API](docs/developer/community_apps.md#public-api)
 for community apps is marked **Breaking**.
 [Releasing](docs/developer/releasing.md) says how a release is made.
 
-## 0.1.0 (unreleased)
+## 0.1.0 (2026-10-21)
 
 The first release of Flashlights, derived from the
 [PyLadiesCon portal](https://github.com/pyladies/pyladiescon-portal).
