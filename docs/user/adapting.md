@@ -74,7 +74,7 @@ issue; it is the kind of change the core takes.
 ## Documenting your customizations
 
 The core's docs are published per release, at
-`https://mariatta.github.io/flashlights/X.Y.Z/`, and an instance's help
+`https://docs.flashlights.app/X.Y.Z/`, and an instance's help
 links go to the version matching its image unless `DOCS_URL` says
 otherwise. A community that only configures needs no docs of its own.
 
@@ -83,7 +83,7 @@ repository next to the app, published wherever it likes: its features,
 every screen it replaced, and its deployment runbook. A replaced template
 changes a page the core guide describes, so that page's guide is wrong for
 your users and yours has to cover it. For everything else, link to the
-core docs at your pinned version, `https://mariatta.github.io/flashlights/0.1.0/user/volunteer/`
+core docs at your pinned version, `https://docs.flashlights.app/0.1.0/user/volunteer/`
 say, never to `latest/`, which moves with each release. Point `DOCS_URL`
 at your docs, and link to the core's from there; the core never links to
 a community's docs.

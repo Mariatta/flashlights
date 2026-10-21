@@ -42,14 +42,11 @@ class TestFromEnv:
             (settings.BASE_DIR / "mkdocs.yml").read_text(), Loader=yaml.BaseLoader
         )
         assert branding.CORE_DOCS_URL == config["site_url"]
-        expected = f"https://mariatta.github.io/flashlights/{version}/"
+        expected = f"https://docs.flashlights.app/{version}/"
         assert branding.from_env({}).docs_url == expected
         blank = branding.from_env({"DOCS_URL": " "})
         assert blank.docs_url == expected and blank.community_docs_url == ""
-        assert (
-            branding.core_docs_url("0.9.1")
-            == "https://mariatta.github.io/flashlights/0.9.1/"
-        )
+        assert branding.core_docs_url("0.9.1") == "https://docs.flashlights.app/0.9.1/"
 
     def test_every_key(self):
         brand = branding.from_env(

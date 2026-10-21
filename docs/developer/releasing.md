@@ -27,8 +27,8 @@ and a GitHub release whose notes are the version's section of
 [Deployment](deployment.md) says what each flavour needs at run time.
 
 The same run publishes this version of the documentation at
-`https://mariatta.github.io/flashlights/X.Y.Z/`, and points
-`https://mariatta.github.io/flashlights/latest/` at it. A deployment's
+`https://docs.flashlights.app/X.Y.Z/`, and points
+`https://docs.flashlights.app/latest/` at it. A deployment's
 help links go to the version matching its image (`DOCS_URL` in the
 [environment reference](environment.md)); a community with docs of its
 own links to the core docs at its pinned version. The versions are
@@ -75,8 +75,20 @@ pushed by mistake is deleted on GitHub and locally before anything uses it.
 GitHub Pages serves the `gh-pages` branch: in the repository's settings,
 under Pages, choose "Deploy from a branch", branch `gh-pages`, folder `/`.
 The first release creates the branch, and the branch menu lists only
-branches that exist, so make the setting after the first release has run. To publish a version by hand, with the docs requirements
-installed and a full clone (mike reads the branch's history):
+branches that exist, so make the setting after the first release has run.
+
+The docs live at `https://docs.flashlights.app/`, the address every image
+bakes in as its default help link, so set the custom domain in the same
+Pages settings: enter `docs.flashlights.app`, with a DNS `CNAME` record for
+that name pointing at `mariatta.github.io`, and turn on "Enforce HTTPS"
+once the certificate is issued. GitHub commits a `CNAME` file to the
+`gh-pages` branch when the domain is set; mike only touches the version
+folders and the redirect index, so the file survives every later release.
+The `mariatta.github.io/flashlights/` address redirects to the domain from
+then on.
+
+To publish a version by hand, with the docs requirements installed and a
+full clone (mike reads the branch's history):
 
 ```bash
 mike deploy --push --update-aliases 0.2.0 latest

@@ -48,9 +48,9 @@ DEFAULT_PRESET = "beam"
 DEFAULT_TITLE = "Flashlights"
 
 #: Where the core's docs are published, one folder per release (mkdocs.yml
-#: says the same under site_url); the help links default to this image's
-#: version of them.
-CORE_DOCS_URL = "https://mariatta.github.io/flashlights/"
+#: says the same under site_url, and the releasing guide says how the
+#: domain is set); the help links default to this image's version of them.
+CORE_DOCS_URL = "https://docs.flashlights.app/"
 
 
 def core_version():

@@ -2,7 +2,7 @@
 site_name: Tiny Little Flashlights
 # Published on GitHub Pages by the release workflow, one version per release
 # plus a latest alias (mike); the version selector reads mike's versions.json.
-site_url: https://mariatta.github.io/flashlights/
+site_url: https://docs.flashlights.app/
 theme:
   name: material
   logo: assets/logo.svg
