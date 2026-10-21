@@ -17,8 +17,9 @@ remains the portal built for PyLadiesCon. That portal was built for one
 event's needs; Flashlights keeps its core, moves what differs between
 communities into configuration and each community's own app (see
 `docs/developer/community_apps.md`), and is meant to be self-hosted, one
-instance per community. It is not a hosting service. The name is a nod to
-the Darren Hayes song.
+instance per community. It is not a hosting service. Flashlights is named
+after the Darren Hayes song *Tiny Little Flashlights*, from the album
+*Secret Codes and Battleships*.
 
 ## Licence and contributions
 

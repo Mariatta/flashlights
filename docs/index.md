@@ -10,7 +10,8 @@ and keeps pulling improvements from it. One instance serves one community;
 each year's event is an edition inside it. What an instance is called, its
 colour, its links and which features it runs are configuration, so the
 same software serves a three-day online conference and a monthly meetup.
-The name is a nod to a Darren Hayes song.
+Flashlights is named after the Darren Hayes song *Tiny Little Flashlights*,
+from the album *Secret Codes and Battleships*.
 
 ## Where to start
 
