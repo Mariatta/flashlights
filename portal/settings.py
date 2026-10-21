@@ -14,6 +14,7 @@ import base64
 import hashlib
 import os
 import shutil
+import ssl
 import sys
 from pathlib import Path
 
@@ -574,6 +575,16 @@ ACCOUNTING_EMAIL = os.getenv("ACCOUNTING_EMAIL", "")
 # Redis add-on is provisioned (its value is often a masked secret), so the
 # broker works without copying that secret into a second env var.
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL") or os.environ.get("REDIS_URL")
+
+# A managed Redis that requires TLS gives a rediss:// URL, and some (Heroku's
+# Key-Value Store) present a self-signed certificate, which the client
+# refuses by default: the worker never starts and the web process errors on
+# its first task. Verification is turned off for a rediss:// URL that does
+# not say otherwise; a URL may still ask for it with ?ssl_cert_reqs=required.
+if (CELERY_BROKER_URL or "").startswith(
+    "rediss://"
+) and "ssl_cert_reqs" not in CELERY_BROKER_URL:
+    CELERY_BROKER_USE_SSL = {"ssl_cert_reqs": ssl.CERT_NONE}
 
 # Without a bound a connection to an address that never answers waits for the
 # operating system's own timeout, minutes long. Only the connect is bounded:

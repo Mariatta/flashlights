@@ -40,7 +40,7 @@ boot.
 |---|---|---|---|
 | `DATABASE_URL` | Yes | none | The Postgres connection URL |
 | `SQL_ENGINE`, `SQL_DATABASE`, `SQL_USER`, `SQL_PASSWORD`, `SQL_HOST`, `SQL_PORT` | No | `postgresql`, `postgres`, `postgres`, `password`, `localhost`, `5432` | The connection in parts, read only when `DATABASE_URL` is unset; for local development |
-| `CELERY_BROKER_URL` or `REDIS_URL` | Yes | none | The Redis URL the workers and the scheduler share. Managed hosts inject `REDIS_URL` with a Redis add-on; `CELERY_BROKER_URL` wins when both are set |
+| `CELERY_BROKER_URL` or `REDIS_URL` | Yes | none | The Redis URL the workers and the scheduler share. Managed hosts inject `REDIS_URL` with a Redis add-on; `CELERY_BROKER_URL` wins when both are set. A `rediss://` URL connects over TLS without verifying the certificate (Heroku's add-on presents a self-signed one) unless the URL sets `ssl_cert_reqs` itself |
 | `FERNET_KEY` or `FERNET_KEYS` | Yes | derived from `SECRET_KEY` in development | The key for fields encrypted at rest (ticketing API tokens, webhook secrets). `FERNET_KEYS` is a comma-separated list for rotation: the first key encrypts, every key decrypts. Deployment, "One-time configuration", has the steps |
 
 ## Email

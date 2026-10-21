@@ -112,7 +112,7 @@ def settings_in_a_fresh_interpreter(**env):
         "import json; from django.conf import settings as s;"
         "print(json.dumps({k: getattr(s, k, None) for k in ("
         "'DEBUG','EMAIL_HOST','EMAIL_PORT','EMAIL_USE_TLS','USE_OBJECT_STORAGE',"
-        "'USE_SPACES')}))"
+        "'USE_SPACES','CELERY_BROKER_USE_SSL')}))"
     )
     base = {
         "PATH": os.environ.get("PATH", ""),
@@ -142,6 +142,16 @@ class TestAtBoot:
         assert found["EMAIL_HOST"] == "mail.example.org"
         assert found["EMAIL_PORT"] == 587 and found["EMAIL_USE_TLS"] is True
         assert found["USE_OBJECT_STORAGE"] is False
+
+    def test_a_tls_broker_skips_certificate_verification_unless_told_otherwise(self):
+        found = settings_in_a_fresh_interpreter(**{**FULL, "REDIS_URL": "rediss://x"})
+        assert found["CELERY_BROKER_USE_SSL"] == {"ssl_cert_reqs": 0}
+        found = settings_in_a_fresh_interpreter(**FULL)
+        assert found["CELERY_BROKER_USE_SSL"] is None
+        found = settings_in_a_fresh_interpreter(
+            **{**FULL, "REDIS_URL": "rediss://x/0?ssl_cert_reqs=required"}
+        )
+        assert found["CELERY_BROKER_USE_SSL"] is None
 
     def test_debug_needs_only_the_secret_key_and_use_spaces_still_works(self):
         found = settings_in_a_fresh_interpreter(
