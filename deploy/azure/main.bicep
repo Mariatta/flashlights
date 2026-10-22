@@ -175,8 +175,8 @@ resource web 'Microsoft.App/containerApps@2024-03-01' = {
             {
               type: 'Startup'
               httpGet: { path: '/_health/', port: 8000 }
-              periodSeconds: 5
-              failureThreshold: 24
+              periodSeconds: 10
+              failureThreshold: 10
             }
             {
               type: 'Readiness'
