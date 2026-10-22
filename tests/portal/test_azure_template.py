@@ -32,3 +32,19 @@ def test_the_secrets_are_encoded_into_the_connection_urls():
     assert "${uriComponent(postgresPassword)}@" in bicep
     assert "${uriComponent(redis.listKeys().primaryKey)}@" in bicep
     assert "${postgresPassword}@" not in bicep
+
+
+def test_the_web_app_is_probed_on_the_health_route():
+    """Startup, readiness and liveness, all against the route that answers
+    without a Host header; the worker has no port and no probes."""
+    bicep = (ROOT / "deploy/azure/main.bicep").read_text()
+    _, web, rest = (
+        bicep.partition("resource web ")[0],
+        *bicep.partition("resource web ")[1:],
+    )
+    web, _, rest = rest.partition("resource worker ")
+    worker, _, _ = rest.partition("resource release ")
+    assert web.count("httpGet: { path: '/_health/', port: 8000 }") == 3
+    for kind in ("Startup", "Readiness", "Liveness"):
+        assert f"type: '{kind}'" in web
+    assert "probes" not in worker
