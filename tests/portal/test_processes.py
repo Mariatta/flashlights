@@ -54,4 +54,4 @@ def test_compose_probes_web_on_the_health_route():
     compose = (ROOT / "compose.yml").read_text()
     web = compose.partition("\n  web:\n")[2].partition("\n  celery:\n")[0]
     assert "healthcheck:" in web
-    assert "http://127.0.0.1:8000/_health/" in web
+    assert "os.environ.get('PORT', '8000') + '/_health/'" in web
