@@ -3,7 +3,7 @@ Django==5.2.13
 django-allauth==65.13.0
 django-filter==25.1
 django-tables2==2.7.5
-gunicorn==23.0.0
+gunicorn==26.2.0
 packaging==24.2
 psycopg2-binary==2.9.13
 sqlparse==0.5.3
