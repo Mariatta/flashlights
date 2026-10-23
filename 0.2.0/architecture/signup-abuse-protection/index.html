@@ -1,0 +1,2371 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://docs.flashlights.app/0.2.0/architecture/signup-abuse-protection/">
+      
+      
+        <link rel="prev" href="../multi-year-progress/">
+      
+      
+        <link rel="next" href="../pretix-per-conference/">
+      
+      
+        
+      
+      
+        <link rel="alternate" type="application/rss+xml" title="RSS feed" href="../../feed_rss_created.xml">
+        <link rel="alternate" type="application/rss+xml" title="RSS feed of updated content" href="../../feed_rss_updated.xml">
+      
+      <link rel="icon" href="../../assets/favicon.svg">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Signup Abuse Protection - Tiny Little Flashlights</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Signup Abuse Protection - Tiny Little Flashlights" />
+<meta property="og:image" content="https://docs.flashlights.app/0.2.0/assets/images/social/architecture/signup-abuse-protection.png" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:url" content="https://docs.flashlights.app/0.2.0/architecture/signup-abuse-protection/" />
+<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:title" content="Signup Abuse Protection - Tiny Little Flashlights" />
+<meta property="twitter:image" content="https://docs.flashlights.app/0.2.0/assets/images/social/architecture/signup-abuse-protection.png" />
+</head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="yellow">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#signup-abuse-protection-architecture" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Tiny Little Flashlights" class="md-header__button md-logo" aria-label="Tiny Little Flashlights" data-md-component="logo">
+      
+  <img src="../../assets/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Tiny Little Flashlights
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Signup Abuse Protection
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/mariatta/flashlights" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    mariatta/flashlights
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../developer/setup/" class="md-tabs__link">
+          
+  
+  
+  Developer Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../multi-year-conferences/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../user/get_started/" class="md-tabs__link">
+          
+  
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../policies/terms_of_use/" class="md-tabs__link">
+          
+  
+  
+  Policy templates
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Tiny Little Flashlights" class="md-nav__button md-logo" aria-label="Tiny Little Flashlights" data-md-component="logo">
+      
+  <img src="../../assets/logo.svg" alt="logo">
+
+    </a>
+    Tiny Little Flashlights
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/mariatta/flashlights" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    mariatta/flashlights
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Setup Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Working on the code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/howto/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How Tos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/markdown-emails/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Markdown Emails
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/releasing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releasing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/environment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environment reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/community_apps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Community apps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/third_party/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Third-party code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../multi-year-conferences/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Year Conferences
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../multi-year-progress/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Year Progress
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Signup Abuse Protection
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Signup Abuse Protection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-we-have-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why we have it
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Why we have it">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-happened" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What happened
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-the-existing-controls-did-not-stop-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why the existing controls did not stop it
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-a-captcha" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why a CAPTCHA
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-django-simple-captcha-and-not-a-hosted-service" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why django-simple-captcha, and not a hosted service
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-is-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it is implemented
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it is implemented">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#package-and-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Package and settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#urls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        URLs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-form-field" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The form field
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The template
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where-it-is-not-applied" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where it is not applied
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tests-that-guard-the-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tests that guard the control
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#companion-controls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Companion controls
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Companion controls">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rate-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rate limits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#unverified-accounts-are-ephemeral" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unverified accounts are ephemeral
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-verification-email-carries-no-user-supplied-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The verification email carries no user-supplied text
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#detection-the-maintenance-section" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Detection: the Maintenance section
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#roles-maintainer-is-a-permission-not-staff" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Roles: maintainer is a permission, not staff
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pretix-per-conference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pretix Per Conference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../session-and-presenter-addresses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Session and Presenter Addresses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../speaker-portal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Speaker Portal
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../email-delivery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Email Delivery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../permissions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Permissions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/get_started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Get started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/adapting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adapting Flashlights
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/core_team/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Team
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/volunteer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Volunteers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/speakers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Speakers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/speaker_files/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your video and files
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/organizer_invite_speakers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inviting Speakers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/sponsor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sponsors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Policy templates
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Policy templates
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../policies/terms_of_use/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Terms of service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../policies/acceptable_use_policy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Acceptable use policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#why-we-have-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why we have it
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Why we have it">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-happened" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What happened
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-the-existing-controls-did-not-stop-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why the existing controls did not stop it
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-a-captcha" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why a CAPTCHA
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-django-simple-captcha-and-not-a-hosted-service" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why django-simple-captcha, and not a hosted service
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-is-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it is implemented
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How it is implemented">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#package-and-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Package and settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#urls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        URLs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-form-field" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The form field
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The template
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where-it-is-not-applied" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where it is not applied
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tests-that-guard-the-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tests that guard the control
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#companion-controls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Companion controls
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Companion controls">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rate-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rate limits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#unverified-accounts-are-ephemeral" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unverified accounts are ephemeral
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-verification-email-carries-no-user-supplied-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The verification email carries no user-supplied text
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#detection-the-maintenance-section" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Detection: the Maintenance section
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#roles-maintainer-is-a-permission-not-staff" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Roles: maintainer is a permission, not staff
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/mariatta/flashlights/edit/main/docs/architecture/signup-abuse-protection.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="signup-abuse-protection-architecture">Signup Abuse Protection (Architecture)</h1>
+<p>This document explains why the public signup form has a CAPTCHA and the
+companion controls around it.</p>
+<p><strong>Last updated:</strong> 2026-09-11</p>
+<p><strong>Incident:</strong> reported upstream as issue 406 there.</p>
+<hr />
+<h2 id="why-we-have-it">Why we have it</h2>
+<h3 id="what-happened">What happened</h3>
+<p>From 2026-05-16 to 2026-07-24 a bot drove the signup form at roughly one
+signup every half hour, around the clock, and created 2,249 accounts. That was
+90.9% of every account the portal had. Not one of them verified its email
+address, not one ever logged in, and every username and name was ten random
+lowercase letters.</p>
+<p>The accounts were not the goal. Each one was registered against a distinct,
+real email address belonging to a stranger. Because the portal sends a
+verification email on every signup, the attacker was using our form to make
+<strong>us</strong> send 2,249 unsolicited emails from the organisers' own address. This is a
+well-known pattern (a "signup bomb" or "subscription bomb"): any open form that
+emails an arbitrary address on submit is a free spam relay, and lists of such
+forms circulate.</p>
+<p>It went unnoticed for four months because the volume was deliberately low.</p>
+<h3 id="why-the-existing-controls-did-not-stop-it">Why the existing controls did not stop it</h3>
+<ul>
+<li><strong>CSRF</strong> stops cross-site forgery. A bot that GETs the page first and reads
+  the token is not forging anything.</li>
+<li><strong>Required CoC/ToS checkboxes</strong> are two more POST keys. 100% of the spam rows
+  had both ticked.</li>
+<li><strong>The per-IP rate limit</strong> (django-allauth's default <code>signup: "20/m/ip"</code>)
+  permits 28,800 signups per IP per day. The attack peaked at 111 per day, in
+  total, across all sources. A per-IP limit is the right tool against one
+  impatient script and the wrong tool against a patient, distributed one, and
+  we should expect the latter: it is the cheaper attack to run.</li>
+<li><strong>Mandatory email verification</strong> keeps the spam accounts from logging in.
+  It does nothing about the email that was the actual payload, because
+  verification is what sends the email.</li>
+</ul>
+<h3 id="why-a-captcha">Why a CAPTCHA</h3>
+<p>The attacker's cost per signup was one HTTP round trip. Every control above
+leaves that cost unchanged. A CAPTCHA is the only control that raises it, and
+raising it is what ends the pattern: our form stops being the cheapest relay on
+the list and the traffic goes elsewhere.</p>
+<p>We considered and rejected, as the <em>primary</em> control:</p>
+<ul>
+<li><strong>Stricter rate limits alone.</strong> Bound the damage from one source; invisible
+  to a hundred sources at one request per hour each. Kept as defence in depth.</li>
+<li><strong>Honeypot field.</strong> Cheap and worth having, but defeated by any bot that
+  renders the page or reads the labels, which is now the common case.</li>
+<li><strong>Requiring an invite or manual approval.</strong> Would work, and would also mean
+  nobody can volunteer without an organizer in the loop first.
+  The portal exists to reduce that kind of work, not add it.</li>
+<li><strong>Deleting unverified accounts.</strong> Removes the litter. Does not stop the
+  emails, which is the harm.</li>
+</ul>
+<h3 id="why-django-simple-captcha-and-not-a-hosted-service">Why django-simple-captcha, and not a hosted service</h3>
+<p>The choice was between a CAPTCHA generated on our own server
+(<a href="https://pypi.org/project/django-simple-captcha/">django-simple-captcha</a>)
+and a hosted one (Cloudflare Turnstile, Google reCAPTCHA, hCaptcha). We use
+django-simple-captcha, following the rule that shapes the rest of the
+portal: <strong>a third-party service only when it is absolutely needed and no
+adequate open-source, self-hosted library exists.</strong> Here one does, so the
+hosted options were never in the running as the default.
+<a href="../../developer/third_party/">Third-party code and services</a> applies the same
+rule to every library on a page.</p>
+<ul>
+<li><strong>No tracking script on the page.</strong> The portal deliberately runs no
+  analytics and sets no third-party cookies. A hosted CAPTCHA puts a script
+  from Cloudflare or Google on the signup page and hands them the IP address
+  and browser fingerprint of every visitor, which is exactly the kind of
+  tracking we tell people we do not do. The image and the audio are generated
+  here and served from <code>/captcha/</code>; nothing about the challenge loads from
+  anywhere else.</li>
+<li><strong>No external account, no keys.</strong> Nothing to create in a dashboard, nothing
+  to rotate, nothing that differs between development, CI and production.</li>
+<li><strong>No runtime dependency on someone else's uptime.</strong> A hosted CAPTCHA must
+  fail closed, so signup is unavailable whenever the provider is.</li>
+<li><strong>Maintained.</strong> 0.7.0 released 2026-07, Django 4.2+, MIT, Pillow-based (Pillow
+  is already a dependency).</li>
+</ul>
+<p>The trade-off: text-in-an-image CAPTCHAs are cheap for modern
+vision models to solve. django-simple-captcha will not keep out an attacker
+who specifically wants in. It does stop the attack we actually had, which was
+not specific at all: a bot walking a list of forms that send email for zero
+effort. Any CAPTCHA takes us off that list, and the rate limits below bound
+what a paid solver can do per address. If a future attack solves it at
+volume, the answer is to escalate to a hosted service, not to tune fonts and
+noise.</p>
+<p><strong>Escalation path: Cloudflare Turnstile.</strong> Free at our volume, at the cost of the third-party script
+above. The switch is a short PR:</p>
+<ul>
+<li>Settings <code>TURNSTILE_SITE_KEY</code> / <code>TURNSTILE_SECRET_KEY</code> from env; empty keys
+  fall back to Cloudflare's published always-pass test keys in <code>DEBUG</code> and
+  fail a system check otherwise, so an empty key can never silently mean
+  "no CAPTCHA".</li>
+<li>A form field whose widget renders <code>&lt;div class="cf-turnstile"
+  data-sitekey=...&gt;</code> and reads the <code>cf-turnstile-response</code> input Cloudflare's
+  script injects; <code>validate()</code> POSTs the token to
+  <code>https://challenges.cloudflare.com/turnstile/v0/siteverify</code> with <code>requests</code>
+  and fails closed on any error.</li>
+<li>The <code>api.js</code> script tag in the signup template's <code>extra_head</code> block.</li>
+<li>The widget template must live under an app's own <code>templates/</code> directory,
+  because Django's form renderer does not search the project-level one.</li>
+</ul>
+<p>Packages checked on 2026-09-11, for the record:</p>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Latest release</th>
+<th>Django support</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>django-simple-captcha</code> 0.7.0</td>
+<td>2026-07</td>
+<td>4.2+</td>
+<td><strong>Chosen.</strong> Self-hosted, maintained</td>
+</tr>
+<tr>
+<td><code>django-turnstile</code> 0.1.3</td>
+<td>2026-01</td>
+<td>classifiers stop at 4.0; single maintainer</td>
+<td>Too thin to depend on; the field above is ~40 lines anyway</td>
+</tr>
+<tr>
+<td><code>django-recaptcha</code> 4.1.0 (Torchbox)</td>
+<td>2025-03</td>
+<td>4.2 to 5.2</td>
+<td>Well maintained, but Google reCAPTCHA only</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="how-it-is-implemented">How it is implemented</h2>
+<h3 id="package-and-settings">Package and settings</h3>
+<p><code>requirements-app.txt</code> pins <code>django-simple-captcha==0.7.0</code>; <code>"captcha"</code> is in
+<code>INSTALLED_APPS</code>, and its one migration (the <code>CaptchaStore</code> table) runs with
+the normal <code>migrate</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># portal/settings.py</span>
+<span class="n">CAPTCHA_LENGTH</span> <span class="o">=</span> <span class="mi">6</span>
+<span class="n">CAPTCHA_FONT_SIZE</span> <span class="o">=</span> <span class="mi">40</span>  <span class="c1"># package default is 22, too small to read comfortably</span>
+<span class="n">CAPTCHA_IMAGE_SIZE</span> <span class="o">=</span> <span class="p">(</span><span class="mi">320</span><span class="p">,</span> <span class="mi">90</span><span class="p">)</span>  <span class="c1"># auto-sizing crops rotated glyphs at the edges</span>
+<span class="n">CAPTCHA_LETTER_ROTATION</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>  <span class="c1"># default +/-35 clips tall letters</span>
+<span class="n">CAPTCHA_TIMEOUT</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># minutes a challenge stays valid; the form is long</span>
+<span class="n">CAPTCHA_FLITE_PATH</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s2">"flite"</span><span class="p">)</span>
+<span class="c1"># Mixes random noise into each audio file so the audio for a given challenge</span>
+<span class="c1"># is never byte-identical (no precomputed audio-to-answer lookup).</span>
+<span class="n">CAPTCHA_SOX_PATH</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s2">"sox"</span><span class="p">)</span>
+</code></pre></div>
+<p>Everything else is the package default: random characters, the bundled font,
+noise and blur. <code>flite</code> and <code>sox</code> are installed in the Dockerfile: <code>flite</code>
+generates the audio alternative to the image, <code>sox</code> adds random noise to it so
+two requests for the same challenge never produce the same file. Where a
+binary is absent the package degrades quietly: no <code>flite</code>, no audio link; no
+<code>sox</code>, unnoised audio.</p>
+<h3 id="urls">URLs</h3>
+<p><code>path("captcha/", include("captcha.urls"))</code> in <code>portal/urls.py</code> serves
+<code>/captcha/image/&lt;key&gt;/</code> and <code>/captcha/audio/&lt;key&gt;/</code> from this server.</p>
+<h3 id="the-form-field">The form field</h3>
+<p><code>CustomSignupForm</code> in <code>portal/forms.py</code> declares <code>captcha = CaptchaField(...)</code>
+with a comment pointing here. How a request flows:</p>
+<ol>
+<li><strong>GET.</strong> Rendering the field creates a <code>CaptchaStore</code> row holding a random
+   hash key and the expected answer, and renders the image (URL keyed by the
+   hash), a hidden <code>captcha_0</code> carrying the key, and a text input <code>captcha_1</code>
+   for the answer.</li>
+<li><strong>POST.</strong> The field looks up a row with that key, that answer
+   (case-insensitive) and an expiration still in the future, and <strong>deletes
+   it</strong>. A solved challenge therefore cannot be replayed. A missing answer is
+   "This field is required"; a wrong or stale one is "Invalid CAPTCHA";
+   either way no user is created.</li>
+<li><strong>Housekeeping.</strong> Every validation prunes expired rows
+   (<code>CaptchaStore.remove_expired()</code>), so no cleanup job is needed.</li>
+</ol>
+<h3 id="the-template">The template</h3>
+<p><code>templates/account/signup.html</code> renders <code>{{ form.captcha }}</code> with its label,
+errors and help text immediately above the submit button. It is the last
+field so it is not solved long before the user has finished typing.</p>
+<p>The widget itself is <code>PortalCaptchaTextInput</code> (<code>portal/forms.py</code>), the
+package widget with one change: its template
+(<code>portal/templates/portal/widgets/captcha.html</code>) shows the audio alternative
+as an inline <code>&lt;audio controls&gt;</code> player next to the image, labelled "Or listen
+to the characters". The package default makes the image the audio link with
+only a hover title, which nobody finds, and a plain link downloads the file
+instead of playing it. The player appears only when <code>CAPTCHA_FLITE_PATH</code>
+resolves; the audio is generated by <code>flite</code> on this server and streamed from
+<code>/captcha/audio/&lt;key&gt;.wav</code> with range support, which is what <code>&lt;audio&gt;</code> needs.</p>
+<h3 id="where-it-is-not-applied">Where it is <em>not</em> applied</h3>
+<p>Login, password reset and email-change forms already carry allauth's
+per-account and per-key limits and do not email arbitrary addresses on
+demand from anonymous visitors. If any of them ever does, it gets the same
+field.</p>
+<h3 id="tests-that-guard-the-control">Tests that guard the control</h3>
+<p>In <code>tests/portal/test_captcha.py</code> and <code>tests/portal/test_forms.py</code>. The
+<code>captcha_solution</code> fixture in <code>conftest.py</code> generates a real challenge and
+reads the answer back from <code>CaptchaStore</code>, so the tests exercise the actual
+validation path rather than a test mode.</p>
+<ol>
+<li>The signup page renders a challenge (<code>captcha_0</code>, <code>captcha_1</code>, an image
+   URL under <code>/captcha/image/</code>).</li>
+<li>The image is served locally as a PNG.</li>
+<li>A signup POST <strong>without</strong> an answer is rejected and creates no user.</li>
+<li>A signup POST with a wrong answer is rejected and creates no user.</li>
+<li>A signup POST with the right answer creates the user.</li>
+<li>Replaying an already-solved challenge is rejected.</li>
+<li><code>CustomSignupForm</code> has a <code>captcha</code> field (<code>test_form_has_captcha_field</code>).
+   This is the test that fails if someone removes the field; its docstring
+   points at this document.</li>
+</ol>
+<hr />
+<h2 id="companion-controls">Companion controls</h2>
+<p>These do not replace the CAPTCHA and the CAPTCHA does not replace them.</p>
+<h3 id="rate-limits">Rate limits</h3>
+<div class="highlight"><pre><span></span><code><span class="n">ACCOUNT_RATE_LIMITS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">"signup"</span><span class="p">:</span> <span class="s2">"5/h/ip,20/d/ip"</span><span class="p">,</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>allauth merges this over its defaults, so every other key keeps its default.
+Twenty signups per IP per day is generous for a shared office or conference
+Wi-Fi and still bounds one source to a nuisance. The cache backend is the
+shared <code>DatabaseCache</code>, so the limit is global across gunicorn workers.</p>
+<h3 id="unverified-accounts-are-ephemeral">Unverified accounts are ephemeral</h3>
+<p><code>UNVERIFIED_ACCOUNT_RETENTION_DAYS</code> (env-configurable, default 7) is the
+single source of truth for how long an account may sit unverified.</p>
+<ul>
+<li><code>portal.adapter.PortalAccountAdapter</code> injects the value into every allauth
+  email context, and the verification email tells the recipient that an
+  unverified account is deleted after that many days without notice. Someone
+  whose address was submitted by a stranger therefore knows they can ignore
+  the email.</li>
+<li>The <code>delete_unverified_accounts</code> management command
+  (<code>portal_account/management/commands/</code>) deletes users who have no verified
+  <code>EmailAddress</code>, whose <code>date_joined</code> is older than the window, who have never
+  logged in, and who are neither staff nor superusers. <code>--dry-run</code> reports
+  the count without deleting; <code>--days N</code> overrides the window for one run.
+  <code>portal_account.tasks.delete_unverified_accounts_task</code> runs the same code
+  on a schedule. The schedule lives in the database
+  (<a href="https://pypi.org/project/django-celery-beat/">django-celery-beat</a>,
+  <code>CELERY_BEAT_SCHEDULER = DatabaseScheduler</code>), seeded by the
+  <code>0004_maintenance_setup</code> migration as the "Delete unverified accounts"
+  periodic task at 03:00 UTC daily, and editable in the Django admin under
+  <em>Periodic tasks</em>, where <code>last_run_at</code> and <code>total_run_count</code> show whether
+  it is firing. The <code>worker-beat</code> process in the Procfile has to be running
+  for any of this to happen (see <a href="../../developer/deployment/">Deployment</a>).
+  A real person who missed the window simply signs up again.</li>
+<li>Both the command and the task return or print the number deleted, so a
+  manual run and a scheduled run leave the same trace (stdout and the Celery
+  task result respectively).</li>
+<li>The first run also removes the 2,249 rows from the incident: every one of
+  them is unverified, never logged in and long past any window. Run it with
+  <code>--dry-run</code> first and compare the count with the export.</li>
+</ul>
+<h3 id="the-verification-email-carries-no-user-supplied-text">The verification email carries no user-supplied text</h3>
+<p><code>templates/account/email/email_confirmation_message.txt</code> says "someone used
+this email address", not "user <em>username</em> has given your email address". The
+email is <code>text/plain</code>, so escaping would change nothing; the fix is to not
+reflect attacker-chosen strings into mail sent under our domain at all.</p>
+<h3 id="detection-the-maintenance-section">Detection: the Maintenance section</h3>
+<p>The incident was four months old when a manual data audit found it. Nothing
+was counting. The fix is not an alert (an email per signup is noise for a
+single maintainer, and hosted monitoring is a service and a bill this project
+does not want) but a number in a place a maintainer already goes.</p>
+<p><strong>Maintenance → Accounts</strong> (<code>/maintenance/</code>, <code>MaintenanceAccountsView</code> in
+<code>portal_account/views.py</code>, figures from <code>portal_account/stats.py</code>) shows,
+computed on request:</p>
+<ul>
+<li>totals: accounts, verified, unverified, never logged in, and <strong>pending
+  deletion</strong> (what the next <code>delete_unverified_accounts</code> run will remove, so
+  the job can be sanity-checked before it runs);</li>
+<li>signups today, last 7 days and last 30 days, each with its verified rate;</li>
+<li>signups per day for the last 30 or 90 days as a stacked verified/unverified
+  bar.</li>
+</ul>
+<p>During the incident this page would have shown a wall of unverified signups
+with a 0% verified rate from the first week. The section is built to take
+more pages (a <code>Jobs</code> page for the beat tasks is the obvious next one) without
+redesign: <code>templates/portal/_maintenance_rail.html</code> is its rail.</p>
+<p>It is reached from the user menu (the "Welcome" flyout, next to <em>Admin
+Area</em>) and, for organizers who are also maintainers, from a <em>Maintenance</em>
+section in the Organize rail. It is deliberately not a top-level nav item:
+it is upkeep, not something every visitor should see in the bar.</p>
+<p><strong>Decision: Maintenance is the permanent home for portal-health metrics.</strong>
+The Accounts page is the first occupant, not the point. Until now every
+number the portal showed was about the conference being organized
+(volunteers, sponsors, donations, proposals) and lived on the Organizer
+dashboard or the public Stats page. There was nowhere to look at the portal
+<em>itself</em>, which is why an anomaly in the one metric nobody was showing went
+unseen for four months. Going forward:</p>
+<ul>
+<li>Anything that describes the health of the portal rather than the progress
+  of a conference goes under Maintenance, behind the maintainer permission.
+  Candidates already known: scheduled job runs and their outcomes, signup
+  rate-limit hits, email delivery failures, media storage growth, stale
+  sessions. Each is its own page in the rail, alongside Accounts.</li>
+<li>Anything about the current edition stays on the Organizer dashboard. The
+  test is "would this number still matter if there were no conference this
+  year?" If yes, it is Maintenance.</li>
+<li>A new metric arrives with the question it answers written on the page
+  (as Accounts does with "pending deletion") and, where it has a threshold,
+  the threshold visible next to the number. The reader should not need to
+  remember what normal looks like.</li>
+<li>The pages stay read-only and computed on request until a metric is
+  expensive enough to need caching. Alerts, if ever, are a later decision
+  and not a substitute for the page.</li>
+</ul>
+<h3 id="roles-maintainer-is-a-permission-not-staff">Roles: maintainer is a permission, not staff</h3>
+<p>Until this change the portal had one role: <code>is_staff</code> (or superuser) meant
+"organizer", and that bit also opens the Django admin. Infra pages should not
+hang off it: someone who looks after the portal is not necessarily running
+the conference, and the reverse.</p>
+<ul>
+<li><strong>Permission</strong> <code>portal_account.view_maintenance</code>, declared on
+  <code>PortalProfile.Meta.permissions</code>.</li>
+<li><strong>Group</strong> <code>Infra maintainers</code>, created by the <code>0004_maintenance_setup</code>
+  data migration with that permission attached. Adding a person is a
+  checkbox on their user in the Django admin.</li>
+<li><strong>Check</strong> through <code>has_perm</code> only: <code>portal_account.permissions.is_maintainer</code>,
+  used by <code>MaintainerRequiredMixin</code> (<code>common/mixins.py</code>) for the views and by
+  the <code>is_maintainer</code> capability flag for the nav. Never by group name, so a
+  permission granted directly or to a superuser counts too.</li>
+</ul>
+<p>Organizer and maintainer are independent: a person can hold either or both.
+Superusers pass every <code>has_perm</code>, so they need no group membership. Making
+"organizer" a permission too, so that it stops being the same bit as "can
+use the Django admin", is the natural follow-up and is out of scope here.</p>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="October 18, 2026 21:29:12 UTC">October 18, 2026</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Created">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="September 12, 2026 00:31:33 UTC">September 12, 2026</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../multi-year-progress/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Multi-Year Progress">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Multi-Year Progress
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../pretix-per-conference/" class="md-footer__link md-footer__link--next" aria-label="Next: Pretix Per Conference">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Pretix Per Conference
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/mariatta/flashlights" target="_blank" rel="noopener" title="The repository" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.footer", "navigation.sections", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow", "content.code.copy", "content.code.select", "content.tabs.link", "content.action.edit"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

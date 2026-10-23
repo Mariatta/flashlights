@@ -1,0 +1,2350 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://docs.flashlights.app/0.2.0/developer/environment/">
+      
+      
+        <link rel="prev" href="../releasing/">
+      
+      
+        <link rel="next" href="../community_apps/">
+      
+      
+        
+      
+      
+        <link rel="alternate" type="application/rss+xml" title="RSS feed" href="../../feed_rss_created.xml">
+        <link rel="alternate" type="application/rss+xml" title="RSS feed of updated content" href="../../feed_rss_updated.xml">
+      
+      <link rel="icon" href="../../assets/favicon.svg">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Environment reference - Tiny Little Flashlights</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Environment reference - Tiny Little Flashlights" />
+<meta property="og:image" content="https://docs.flashlights.app/0.2.0/assets/images/social/developer/environment.png" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:url" content="https://docs.flashlights.app/0.2.0/developer/environment/" />
+<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:title" content="Environment reference - Tiny Little Flashlights" />
+<meta property="twitter:image" content="https://docs.flashlights.app/0.2.0/assets/images/social/developer/environment.png" />
+</head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="yellow">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#environment-reference" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Tiny Little Flashlights" class="md-header__button md-logo" aria-label="Tiny Little Flashlights" data-md-component="logo">
+      
+  <img src="../../assets/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Tiny Little Flashlights
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Environment reference
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/mariatta/flashlights" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    mariatta/flashlights
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../setup/" class="md-tabs__link">
+          
+  
+  
+  Developer Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../architecture/multi-year-conferences/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../user/get_started/" class="md-tabs__link">
+          
+  
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../policies/terms_of_use/" class="md-tabs__link">
+          
+  
+  
+  Policy templates
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Tiny Little Flashlights" class="md-nav__button md-logo" aria-label="Tiny Little Flashlights" data-md-component="logo">
+      
+  <img src="../../assets/logo.svg" alt="logo">
+
+    </a>
+    Tiny Little Flashlights
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/mariatta/flashlights" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    mariatta/flashlights
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Setup Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Working on the code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../howto/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How Tos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../markdown-emails/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Markdown Emails
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../releasing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releasing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environment reference
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environment reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#django-and-the-boot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Django and the boot
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#database-broker-and-encryption" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database, broker and encryption
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#email" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Email
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#object-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Object storage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#speaker-media" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Speaker media
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#workers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#identity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Identity
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#features-and-contacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features and contacts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-arguments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build arguments
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../community_apps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Community apps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../third_party/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Third-party code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/multi-year-conferences/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Year Conferences
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/multi-year-progress/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Year Progress
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/signup-abuse-protection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Signup Abuse Protection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/pretix-per-conference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pretix Per Conference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/session-and-presenter-addresses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Session and Presenter Addresses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/speaker-portal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Speaker Portal
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/email-delivery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Email Delivery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/permissions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Permissions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/get_started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Get started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/adapting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adapting Flashlights
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/core_team/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Team
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/volunteer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Volunteers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/speakers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Speakers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/speaker_files/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your video and files
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/organizer_invite_speakers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inviting Speakers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/sponsor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sponsors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Policy templates
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Policy templates
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../policies/terms_of_use/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Terms of service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../policies/acceptable_use_policy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Acceptable use policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#django-and-the-boot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Django and the boot
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#database-broker-and-encryption" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database, broker and encryption
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#email" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Email
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#object-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Object storage
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#speaker-media" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Speaker media
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#workers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#identity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Identity
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#features-and-contacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features and contacts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#build-arguments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build arguments
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/mariatta/flashlights/edit/main/docs/developer/environment.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="environment-reference">Environment reference</h1>
+<p>Every environment variable Flashlights reads, with its default. An instance
+is the container image plus these variables; the same set goes to every
+process (web, the workers, the scheduler, the release step).
+<a href="../deployment/">Deployment</a> says how to run the processes and what each
+host does with the variables; this page is the list.</p>
+<p><strong>Required</strong> means the boot stops without it in production, naming every
+missing variable at once (<code>portal/boot.py</code>). Where two names are given, any
+one of them is enough. With <code>DEBUG</code> on, or under the test suite, only
+<code>SECRET_KEY</code> is checked. Everything else is optional and has the default
+shown.</p>
+<p>Switches (<code>DEBUG</code>, <code>VOLUNTEERING_ENABLED</code>, <code>USE_OBJECT_STORAGE</code> and the
+like) read <code>0</code>, <code>false</code>, <code>no</code> and <code>off</code> as off, in any case; any other value
+is on.</p>
+<p>Change a variable, then restart every process: settings are read once, at
+boot.</p>
+<h2 id="django-and-the-boot">Django and the boot</h2>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Required</th>
+<th>Default</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SECRET_KEY</code></td>
+<td>Always</td>
+<td>none</td>
+<td>Django's secret key; any long random string</td>
+</tr>
+<tr>
+<td><code>DJANGO_ALLOWED_HOSTS</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>The hostnames the portal answers on, comma-separated</td>
+</tr>
+<tr>
+<td><code>DEBUG</code></td>
+<td>No</td>
+<td>off</td>
+<td>Django's debug mode, for local development only. Leave it unset or off in production</td>
+</tr>
+<tr>
+<td><code>BOOT_CHECK</code></td>
+<td>No</td>
+<td>on</td>
+<td><code>0</code> turns the required-variable check off, for a one-off shell on a half-configured environment</td>
+</tr>
+<tr>
+<td><code>PORT</code></td>
+<td>No</td>
+<td><code>8000</code></td>
+<td>The port the <code>web</code> process serves on; managed hosts set it</td>
+</tr>
+<tr>
+<td><code>SESSION_COOKIE_NAME</code></td>
+<td>No</td>
+<td><code>flashlights_sessionid</code></td>
+<td>The session cookie's name. Browsers scope cookies by host, not port, so two Django apps on one host need different names</td>
+</tr>
+<tr>
+<td><code>CSRF_COOKIE_NAME</code></td>
+<td>No</td>
+<td><code>flashlights_csrftoken</code></td>
+<td>The CSRF cookie's name, for the same reason</td>
+</tr>
+<tr>
+<td><code>PORTAL_LOG_LEVEL</code></td>
+<td>No</td>
+<td><code>INFO</code></td>
+<td>The level of the apps' own log lines</td>
+</tr>
+<tr>
+<td><code>SENTRY_SDK_DSN</code></td>
+<td>No</td>
+<td>none</td>
+<td>Sends errors to Sentry when set. Each event is tagged with the kind of process it came from</td>
+</tr>
+<tr>
+<td><code>SENTRY_SEND_DEFAULT_PII</code></td>
+<td>No</td>
+<td>off</td>
+<td>Adds the signed-in person's details, their IP address, request headers and cookies to each Sentry event. Turn it on only when the instance's privacy notice says so (<a href="../third_party/">Third-party code and services</a>)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="database-broker-and-encryption">Database, broker and encryption</h2>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Required</th>
+<th>Default</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DATABASE_URL</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>The Postgres connection URL</td>
+</tr>
+<tr>
+<td><code>SQL_ENGINE</code>, <code>SQL_DATABASE</code>, <code>SQL_USER</code>, <code>SQL_PASSWORD</code>, <code>SQL_HOST</code>, <code>SQL_PORT</code></td>
+<td>No</td>
+<td><code>postgresql</code>, <code>postgres</code>, <code>postgres</code>, <code>password</code>, <code>localhost</code>, <code>5432</code></td>
+<td>The connection in parts, read only when <code>DATABASE_URL</code> is unset; for local development</td>
+</tr>
+<tr>
+<td><code>CELERY_BROKER_URL</code> or <code>REDIS_URL</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>The Redis URL the workers and the scheduler share. Managed hosts inject <code>REDIS_URL</code> with a Redis add-on; <code>CELERY_BROKER_URL</code> wins when both are set. A <code>rediss://</code> URL connects over TLS without verifying the certificate (managed add-ons often present a self-signed one) unless the URL sets <code>ssl_cert_reqs</code> itself, in which case the URL wins</td>
+</tr>
+<tr>
+<td><code>FERNET_KEY</code> or <code>FERNET_KEYS</code></td>
+<td>Yes</td>
+<td>derived from <code>SECRET_KEY</code> in development</td>
+<td>The key for fields encrypted at rest (ticketing API tokens, webhook secrets). <code>FERNET_KEYS</code> is a comma-separated list for rotation: the first key encrypts, every key decrypts. Deployment, "One-time configuration", has the steps</td>
+</tr>
+</tbody>
+</table>
+<h2 id="email">Email</h2>
+<p>Set either <code>EMAIL_URL</code> or the <code>DJANGO_EMAIL_*</code> variables. With neither,
+email prints to the console, which only development allows.</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Required</th>
+<th>Default</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>EMAIL_URL</code> or <code>DJANGO_EMAIL_HOST</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>The SMTP server. <code>EMAIL_URL</code> is the whole connection in one variable, <code>smtp://user:password@host:port/?tls=true</code>; <code>smtps://</code> means SSL. Without a port it is 587 with TLS, 465 with SSL, 25 otherwise. <code>EMAIL_URL</code> wins when both are set</td>
+</tr>
+<tr>
+<td><code>DJANGO_DEFAULT_FROM_EMAIL</code></td>
+<td>Yes</td>
+<td><code>&lt;short name&gt; &lt;noreply@localhost&gt;</code></td>
+<td>The address the portal's email comes from. Keep it on a domain you send from (SPF and DKIM); replies go to each edition's reply-to address</td>
+</tr>
+<tr>
+<td><code>DJANGO_EMAIL_PORT</code></td>
+<td>No</td>
+<td>25</td>
+<td>The SMTP port, with <code>DJANGO_EMAIL_HOST</code></td>
+</tr>
+<tr>
+<td><code>DJANGO_EMAIL_HOST_USER</code></td>
+<td>No</td>
+<td>none</td>
+<td>The SMTP user, with <code>DJANGO_EMAIL_HOST</code></td>
+</tr>
+<tr>
+<td><code>DJANGO_EMAIL_HOST_PASSWORD</code></td>
+<td>No</td>
+<td>none</td>
+<td>The SMTP password, with <code>DJANGO_EMAIL_HOST</code></td>
+</tr>
+<tr>
+<td><code>DJANGO_EMAIL_USE_TLS</code></td>
+<td>No</td>
+<td>off</td>
+<td>STARTTLS, with <code>DJANGO_EMAIL_HOST</code></td>
+</tr>
+<tr>
+<td><code>DJANGO_EMAIL_TIMEOUT</code></td>
+<td>No</td>
+<td>30</td>
+<td>Seconds a connection to the mail server may wait before the task gives up</td>
+</tr>
+<tr>
+<td><code>EMAIL_RECORD_RETENTION_DAYS</code></td>
+<td>No</td>
+<td>365</td>
+<td>How long the record of a sent email outlives its edition; a nightly task deletes older ones</td>
+</tr>
+</tbody>
+</table>
+<h2 id="object-storage">Object storage</h2>
+<p>Uploads (images, sponsor logos) go to an S3-compatible bucket from any
+provider: DigitalOcean Spaces, AWS S3, Cloudflare R2, Backblaze B2, MinIO.</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Required</th>
+<th>Default</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>USE_OBJECT_STORAGE</code></td>
+<td>No</td>
+<td>off</td>
+<td>Turns the bucket on; off, files stay on local disk (development only). <code>USE_SPACES</code> is the upstream name of the same switch and still works</td>
+</tr>
+<tr>
+<td><code>AWS_ACCESS_KEY_ID</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>The access key, through the S3 API. It must reach the media bucket too, when there is one</td>
+</tr>
+<tr>
+<td><code>AWS_SECRET_ACCESS_KEY</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>The secret key</td>
+</tr>
+<tr>
+<td><code>AWS_STORAGE_BUCKET_NAME</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>The public-read bucket for uploads</td>
+</tr>
+<tr>
+<td><code>AWS_S3_ENDPOINT_URL</code></td>
+<td>Yes</td>
+<td>none</td>
+<td>The provider's endpoint</td>
+</tr>
+<tr>
+<td><code>AWS_S3_REGION_NAME</code></td>
+<td>No</td>
+<td>none</td>
+<td>The region; the media bucket falls back to it</td>
+</tr>
+</tbody>
+</table>
+<h2 id="speaker-media">Speaker media</h2>
+<p>Speakers' videos and files go to a second, <strong>private</strong> bucket. Deployment,
+"Speaker media bucket" and "The media worker", has its lifecycle and CORS
+rules and the worker setup.</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Required</th>
+<th>Default</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SPEAKER_MEDIA_BUCKET</code></td>
+<td>No</td>
+<td>none</td>
+<td>The private bucket. Empty, speaker uploads are off</td>
+</tr>
+<tr>
+<td><code>SPEAKER_MEDIA_PREFIX</code></td>
+<td>No</td>
+<td><code>speaker-media/</code></td>
+<td>The folder inside the bucket</td>
+</tr>
+<tr>
+<td><code>SPEAKER_MEDIA_ENDPOINT_URL</code></td>
+<td>No</td>
+<td><code>AWS_S3_ENDPOINT_URL</code></td>
+<td>The bucket's regional host, never a bucket's own host</td>
+</tr>
+<tr>
+<td><code>SPEAKER_MEDIA_REGION</code></td>
+<td>No</td>
+<td><code>AWS_S3_REGION_NAME</code>, else <code>us-east-1</code></td>
+<td>The bucket's region</td>
+</tr>
+<tr>
+<td><code>SPEAKER_MEDIA_MAX_BYTES</code></td>
+<td>No</td>
+<td>16 GiB</td>
+<td>The largest file a speaker may upload</td>
+</tr>
+<tr>
+<td><code>SPEAKER_MEDIA_PART_SIZE</code></td>
+<td>No</td>
+<td>64 MiB</td>
+<td>The size of each part of an upload</td>
+</tr>
+<tr>
+<td><code>SPEAKER_MEDIA_URL_TTL</code></td>
+<td>No</td>
+<td>3600</td>
+<td>Seconds a download or upload link stays valid</td>
+</tr>
+<tr>
+<td><code>SPEAKER_MEDIA_UPLOAD_TTL_HOURS</code></td>
+<td>No</td>
+<td>48</td>
+<td>Hours before an unfinished upload is abandoned</td>
+</tr>
+<tr>
+<td><code>SPEAKER_MEDIA_BULK_URL_TTL</code></td>
+<td>No</td>
+<td>43200</td>
+<td>Seconds the links in a bulk download stay valid</td>
+</tr>
+<tr>
+<td><code>SPEAKER_MEDIA_ZIP_MAX_BYTES</code></td>
+<td>No</td>
+<td>1 GiB</td>
+<td>The largest bulk download offered as one zip</td>
+</tr>
+<tr>
+<td><code>SPEAKER_TRANSCRIBE_ENGINE</code></td>
+<td>No</td>
+<td>none</td>
+<td><code>local</code> turns on machine transcription with Whisper in the media worker; needs the full image flavour. Empty, the per-edition switch cannot turn it on</td>
+</tr>
+<tr>
+<td><code>SPEAKER_TRANSCRIBE_MODEL</code></td>
+<td>No</td>
+<td><code>small</code></td>
+<td>The Whisper model baked into the image</td>
+</tr>
+<tr>
+<td><code>SPEAKER_TRANSCRIBE_MODEL_DIR</code></td>
+<td>No</td>
+<td><code>/opt/whisper</code></td>
+<td>Where the image keeps the models</td>
+</tr>
+<tr>
+<td><code>SPEAKER_TRANSCRIBE_STALE_HOURS</code></td>
+<td>No</td>
+<td>12</td>
+<td>Hours before a queued media job is marked as failed</td>
+</tr>
+</tbody>
+</table>
+<h2 id="workers">Workers</h2>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Required</th>
+<th>Default</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CELERY_WORKER_CONCURRENCY</code></td>
+<td>No</td>
+<td>2</td>
+<td>Processes per worker</td>
+</tr>
+<tr>
+<td><code>CELERY_WORKER_QUEUES</code></td>
+<td>No</td>
+<td><code>celery,media</code></td>
+<td>The queues <code>bin/worker</code> serves; <code>celery</code> when a separate media worker runs</td>
+</tr>
+<tr>
+<td><code>CELERY_EMBED_BEAT</code></td>
+<td>No</td>
+<td>on</td>
+<td>Runs the scheduler inside <code>bin/worker</code>. <code>0</code> on every worker when the scheduler runs as its own <code>worker-beat</code> process, so it runs exactly once</td>
+</tr>
+<tr>
+<td><code>CELERY_LOG_LEVEL</code></td>
+<td>No</td>
+<td><code>info</code></td>
+<td>The worker's own log level</td>
+</tr>
+</tbody>
+</table>
+<h2 id="identity">Identity</h2>
+<p>What the instance is called and how it looks. The keys mirror the Popular
+theme's, so a community sets the same values for its public site.</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Required</th>
+<th>Default</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SITE_TITLE</code></td>
+<td>No</td>
+<td><code>Flashlights</code></td>
+<td>The community or event name: page titles, share cards, email subjects</td>
+</tr>
+<tr>
+<td><code>SITE_SHORT_NAME</code></td>
+<td>No</td>
+<td>the title</td>
+<td>The name in the navigation bar and the email subject prefix</td>
+</tr>
+<tr>
+<td><code>SITE_DESCRIPTION</code></td>
+<td>No</td>
+<td>"<em>title</em>: the organisers' portal"</td>
+<td>The description on share cards</td>
+</tr>
+<tr>
+<td><code>SITE_LOGO</code></td>
+<td>No</td>
+<td>none</td>
+<td>The full <code>https://</code> URL of a logo shown beside the name in the navigation bar. Empty, the bar shows the name alone</td>
+</tr>
+<tr>
+<td><code>SITE_FAVICON</code></td>
+<td>No</td>
+<td>generated</td>
+<td>The full URL of the favicon. Empty, one is drawn from the title and the accent colour</td>
+</tr>
+<tr>
+<td><code>SITE_OG_IMAGE</code></td>
+<td>No</td>
+<td>generated</td>
+<td>The full URL of the share image. Empty, a card is drawn from the title and the accent colour</td>
+</tr>
+<tr>
+<td><code>BRAND_PRESET</code></td>
+<td>No</td>
+<td><code>beam</code></td>
+<td>The accent colour: <code>beam</code>, <code>teal</code>, <code>copper</code>, <code>indigo</code> or <code>raspberry</code>. Any other value stops the boot</td>
+</tr>
+<tr>
+<td><code>BRAND_PRIMARY</code></td>
+<td>No</td>
+<td>none</td>
+<td>A custom <code>#rrggbb</code> accent in place of the preset; the ink on it and its hover and press shades are derived</td>
+</tr>
+<tr>
+<td><code>DOCS_URL</code></td>
+<td>No</td>
+<td>the core docs for this version</td>
+<td>Where the help links point: your community's own docs when it has some (<a href="../../user/adapting/">Adapting Flashlights</a>, "Documenting your customizations"), else <code>https://docs.flashlights.app/X.Y.Z/</code> for the image's version. The landing's team descriptions link and the volunteer resources card appear only when you set it</td>
+</tr>
+<tr>
+<td><code>TERMS_URL</code></td>
+<td>No</td>
+<td>none</td>
+<td>The terms of service link; left out when unset</td>
+</tr>
+</tbody>
+</table>
+<h2 id="features-and-contacts">Features and contacts</h2>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Required</th>
+<th>Default</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>VOLUNTEERING_ENABLED</code></td>
+<td>No</td>
+<td>on</td>
+<td>Off, the volunteer hub, applications and teams are gone and their pages answer 404</td>
+</tr>
+<tr>
+<td><code>SPONSORSHIP_ENABLED</code></td>
+<td>No</td>
+<td>on</td>
+<td>Off, sponsors, tiers, donations and their stats are gone</td>
+</tr>
+<tr>
+<td><code>STATS_PUBLIC</code></td>
+<td>No</td>
+<td>on</td>
+<td>Off, the public stats, year comparison and JSON feed pages are gone</td>
+</tr>
+<tr>
+<td><code>SPONSORSHIP_EMAIL</code></td>
+<td>No</td>
+<td>none</td>
+<td>The organisers' sponsorship address; receives the contract request (the sponsor never does)</td>
+</tr>
+<tr>
+<td><code>ACCOUNTING_EMAIL</code></td>
+<td>No</td>
+<td>none</td>
+<td>Who issues invoices; also receives the contract request. With neither set, the request is not sent</td>
+</tr>
+<tr>
+<td><code>GDRIVE_FOLDER_ID</code></td>
+<td>No</td>
+<td>none</td>
+<td>A shared Google Drive folder linked from the volunteer onboarding emails; the link is left out when unset</td>
+</tr>
+<tr>
+<td><code>UNVERIFIED_ACCOUNT_RETENTION_DAYS</code></td>
+<td>No</td>
+<td>7</td>
+<td>Days before an account whose email address was never verified is deleted; the verification email quotes it</td>
+</tr>
+<tr>
+<td><code>EXTRA_APPS</code></td>
+<td>No</td>
+<td>none</td>
+<td>Django apps a community adds to the core, comma-separated. <a href="../community_apps/">Community apps</a> has the contract</td>
+</tr>
+</tbody>
+</table>
+<p>Everything else about an edition, its format, venue, chat, reply-to
+address, registrations and session proposals, is set in the portal, not the
+environment, and changes without a restart.</p>
+<h2 id="build-arguments">Build arguments</h2>
+<p>Read when the image is built, not when it runs.</p>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>Default</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>WHISPER_MODEL</code></td>
+<td>none</td>
+<td>Bakes a Whisper model into the image for machine transcription (the full flavour), such as <code>small</code></td>
+</tr>
+<tr>
+<td><code>USER_ID</code>, <code>GROUP_ID</code></td>
+<td>1000 in <code>compose.yml</code></td>
+<td>The ids of the user the development image runs as, so files it writes in the mounted checkout are yours</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="October 21, 2026 16:29:35 UTC">October 21, 2026</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Created">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="October 17, 2026 21:40:59 UTC">October 17, 2026</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../releasing/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Releasing">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Releasing
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../community_apps/" class="md-footer__link md-footer__link--next" aria-label="Next: Community apps">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Community apps
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/mariatta/flashlights" target="_blank" rel="noopener" title="The repository" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.footer", "navigation.sections", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow", "content.code.copy", "content.code.select", "content.tabs.link", "content.action.edit"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

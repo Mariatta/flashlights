@@ -1,0 +1,2876 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://docs.flashlights.app/0.2.0/architecture/speaker-portal/">
+      
+      
+        <link rel="prev" href="../session-and-presenter-addresses/">
+      
+      
+        <link rel="next" href="../email-delivery/">
+      
+      
+        
+      
+      
+        <link rel="alternate" type="application/rss+xml" title="RSS feed" href="../../feed_rss_created.xml">
+        <link rel="alternate" type="application/rss+xml" title="RSS feed of updated content" href="../../feed_rss_updated.xml">
+      
+      <link rel="icon" href="../../assets/favicon.svg">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Speaker Portal - Tiny Little Flashlights</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Speaker Portal - Tiny Little Flashlights" />
+<meta property="og:image" content="https://docs.flashlights.app/0.2.0/assets/images/social/architecture/speaker-portal.png" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:url" content="https://docs.flashlights.app/0.2.0/architecture/speaker-portal/" />
+<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:title" content="Speaker Portal - Tiny Little Flashlights" />
+<meta property="twitter:image" content="https://docs.flashlights.app/0.2.0/assets/images/social/architecture/speaker-portal.png" />
+</head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="yellow">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#speaker-portal" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Tiny Little Flashlights" class="md-header__button md-logo" aria-label="Tiny Little Flashlights" data-md-component="logo">
+      
+  <img src="../../assets/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Tiny Little Flashlights
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Speaker Portal
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/mariatta/flashlights" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    mariatta/flashlights
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../developer/setup/" class="md-tabs__link">
+          
+  
+  
+  Developer Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../multi-year-conferences/" class="md-tabs__link">
+          
+  
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../user/get_started/" class="md-tabs__link">
+          
+  
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../policies/terms_of_use/" class="md-tabs__link">
+          
+  
+  
+  Policy templates
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Tiny Little Flashlights" class="md-nav__button md-logo" aria-label="Tiny Little Flashlights" data-md-component="logo">
+      
+  <img src="../../assets/logo.svg" alt="logo">
+
+    </a>
+    Tiny Little Flashlights
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/mariatta/flashlights" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    mariatta/flashlights
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Setup Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Working on the code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/howto/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How Tos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/markdown-emails/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Markdown Emails
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/releasing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releasing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/environment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Environment reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/community_apps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Community apps
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/third_party/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Third-party code
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../multi-year-conferences/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Year Conferences
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../multi-year-progress/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Year Progress
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../signup-abuse-protection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Signup Abuse Protection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pretix-per-conference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pretix Per Conference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../session-and-presenter-addresses/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Session and Presenter Addresses
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Speaker Portal
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Speaker Portal
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 Goals
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Scope
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../email-delivery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Email Delivery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../permissions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Permissions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/get_started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Get started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/adapting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Adapting Flashlights
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/core_team/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Team
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/volunteer/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Volunteers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/speakers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Speakers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/speaker_files/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your video and files
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/organizer_invite_speakers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inviting Speakers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/sponsor/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sponsors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Policy templates
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Policy templates
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../policies/terms_of_use/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Terms of service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../policies/acceptable_use_policy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Acceptable use policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 Goals
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Scope
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/mariatta/flashlights/edit/main/docs/architecture/speaker-portal.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="speaker-portal">Speaker Portal</h1>
+<p>The design of the speaker module (the <code>speakers</code> app): how presenters are
+invited, what they and the organizers see, the two-sided checklists, the
+media pipeline, scheduling, and the public embeds. Written as a proposal on
+15 September 2026 upstream, for a 2026 edition (first weekend of December, online on
+Discord) and kept here as the reference for the module as it is built.</p>
+<p>Where the built module answers a question differently from the proposal,
+this page says what was built: the session types and presenter roles that
+became rows (§8.1), readiness (§9.3a), and where a person's own tasks live
+(§9.6). Smaller divergences, and the reasons for them, are listed in
+<code>speakers/README.md</code>, which is the place to look when this page and the code
+disagree.</p>
+<p><strong>Stack:</strong> Django, PostgreSQL, Digital Ocean Spaces.</p>
+<hr />
+<h2 id="1-overview">1. Overview</h2>
+<p>That 2026 edition is built around workshops, panels and performances, with speakers invited directly by the organizing team rather than selected through a call for proposals. The speaker portal is the single place where that program is assembled and run:</p>
+<ul>
+<li>Organizers add sessions and the people presenting them, and send invitations.</li>
+<li>Speakers accept, fill in their bio and session details, and see exactly what they need to do and by when.</li>
+<li>Organizers see exactly what <em>they</em> owe each speaker — emails, promo materials, scheduling — and speakers can see that too.</li>
+<li>The schedule is built in the portal, placed in rooms (Discord channels, for an online edition), and shown to everyone in their own timezone.</li>
+<li>The conference website shows the schedule and speakers by embedding a widget from the portal, so there is one source of truth.</li>
+<li>PyJam performers upload their videos to the portal and the team tracks each video through post-production to YouTube.</li>
+</ul>
+<p>The portal is the system of record for the program. There is no external CFP tool to synchronize with; everything the team currently keeps in spreadsheets about speakers moves here.</p>
+<h3 id="11-goals">1.1 Goals</h3>
+<table>
+<thead>
+<tr>
+<th>Goal</th>
+<th>How the design meets it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>No spreadsheet</td>
+<td>Every speaker fact and every status lives in the portal; CSV is an export, not a working document</td>
+</tr>
+<tr>
+<td>Two-way transparency</td>
+<td>Speakers see the team's checklist for them, not just their own</td>
+</tr>
+<tr>
+<td>Timezone safety</td>
+<td>All times stored in UTC, rendered in the viewer's zone; organizers can preview any speaker's local time before confirming a slot</td>
+</tr>
+<tr>
+<td>Lightweight for speakers</td>
+<td>Every content field is optional markdown; a title and two sentences is a complete listing</td>
+</tr>
+<tr>
+<td>Customizable process</td>
+<td>Checklists are templates organizers edit in the portal, not code</td>
+</tr>
+<tr>
+<td>One source for the website</td>
+<td>The conference site embeds a widget; publishing in the portal updates the site</td>
+</tr>
+<tr>
+<td>Reusable next year</td>
+<td>Everything is scoped to a conference (edition); templates and settings clone forward</td>
+</tr>
+</tbody>
+</table>
+<h3 id="12-scope">1.2 Scope</h3>
+<p><strong>In:</strong> session and presenter management, invitations, speaker self-service profile and session editing, two-sided checklists with reminders, scheduling with room assignment, public schedule and speaker embeds with calendar feeds, promo asset storage, video upload and post-production tracking for pre-recorded sessions, CSV/JSON export, pretix registration sync.</p>
+<p><strong>Out:</strong> call for proposals and review, automated transcription/translation/video rendering (uploads and tracking are in; processing is manual), speaker certificates, translation of the portal UI, Discord bot automation (channel and role management stay manual; an estimate is in §12.2), payments or honoraria.</p>
+<hr />
+<h1 id="part-1-how-it-works">Part 1 — How it works</h1>
+<h2 id="2-the-speakers-journey">2. The speaker's journey</h2>
+<p>A speaker never fills in a form they didn't ask for. The whole journey is: get invited, accept, tell us about your session, do a short list of things, show up.</p>
+<h3 id="21-invitation">2.1 Invitation</h3>
+<p>An organizer adds the session and the person, writes a personal note, and sends the invitation. The email carries a link that is just for that speaker; clicking it creates their account. From then on they sign in with a one-time code emailed to them, or with a password if they set one: the welcome page offers to set one and the dashboard asks until they have or dismiss it.</p>
+<h3 id="22-the-dashboard">2.2 The dashboard</h3>
+<p>The first thing a speaker sees after accepting, and the page they come back to. Two lists side by side:</p>
+<ul>
+<li><strong>Your to-dos</strong> — update bio, read the guide, register, join Discord, confirm the slot, share materials, tech check. Items the portal can verify tick themselves (the bio is there; the pretix order was found).</li>
+<li><strong>What we're doing for you</strong> — the team's list for this speaker, with who is on each item. A speaker can see "promo materials — in progress, Lena" without emailing anyone.</li>
+</ul>
+<p>Reminders go out by email a week, three days, and a day before anything is due, in the speaker's own timezone.</p>
+<h3 id="23-their-session">2.3 Their session</h3>
+<p>Every content field is optional markdown: summary, outline, prerequisites, audience. A title and two sentences is a complete listing; a full outline is welcome. Co-presenters and panelists are listed with their roles. Nothing here is visible to the public until the team publishes the session.</p>
+<h3 id="24-their-schedule">2.4 Their schedule</h3>
+<p>The schedule in the speaker's own timezone, their sessions highlighted, visible before the program is public with a "not yet public" badge. Each session has an add-to-calendar link, and there is a personal calendar feed that stays correct if a slot moves.</p>
+<h3 id="25-proposing-a-session-and-adding-one">2.5 Proposing a session, and adding one</h3>
+<blockquote>
+<p><strong>Being built.</strong> Decided on 21 September 2026 and extended on 23 September; the proposal side is new work rather than part of the original proposal.</p>
+</blockquote>
+<p>The 2026 edition invites its speakers, and the portal was built for that. An edition can also open the door: while proposals are open, anyone with a portal account can propose a session at <code>/speakers/propose/</code>, which is the link to put on the conference site.</p>
+<p>The form is one page: who you are, and what you would like to give. It creates real rows from the start, a presenter and a session in a <strong>proposed</strong> status, so nothing about it is a draft held in a form somewhere. Organizers read it and click approve or reject; the review is deliberately informal, with no notes on the proposal, because the answer is yes or no rather than a conversation.</p>
+<p>Submitting sends the proposer a receipt and the organizing side a notice, at <code>SpeakerSettings.organizers_email</code> where the edition has set one and the staff accounts where it has not.</p>
+<p><strong>Approving is the acceptance path an invitation takes</strong>: the presenter is confirmed on the session, their checklists are created and dated from the approval, the session goes on to confirmed when nothing blocks it, and from then on it is an ordinary session. <strong>Rejecting</strong> keeps the rows and sends a short, kind note with no reason, and it is not final: a rejected proposal can be approved later from the answered list, which is what happens when a cancellation frees a slot. The proposer can <strong>withdraw</strong> while nobody has answered: the rows stay, the proposal leaves the organizers' queue, and the proposer can go on editing it and <strong>send it again</strong>, which returns it to pending and re-notifies as any new proposal does. A pending proposal is capped at three per person per edition.</p>
+<p>Someone whose proposal is pending or turned down has an account and a presenter row, but no session of the conference's, so the speaker area is not theirs: the pages check that they are actually on the program.</p>
+<p><strong>A speaker already on the program proposes too.</strong> One door, whoever is knocking: the organizers decide what is on the program, and a second way in made the speaker's own pages contradict each other. What they are spared is the "About you" half, which they filled in at onboarding; the proposal then follows the ordinary path.</p>
+<hr />
+<h2 id="3-running-the-program-as-an-organizer">3. Running the program as an organizer</h2>
+<h3 id="31-sessions">3.1 Sessions</h3>
+<p>One list for everything that will be on the schedule — workshops, panels, PyJam performances, and also the opening, breaks, and closing. Status moves from draft, to invited, to confirmed, to scheduled, to published, and any of them can be cancelled. A speaker liaison sees only the rows assigned to them.</p>
+<h3 id="32-a-presenter-in-one-place">3.2 A presenter, in one place</h3>
+<p>Everything about one person: their to-dos, the team's to-dos for them (assignable and tickable here), sessions, invitation history, promo assets, and an activity log showing what the portal did automatically — "pretix order paid → registration marked done".</p>
+<h3 id="33-the-checklist-board">3.3 The checklist board</h3>
+<p>Presenters down the side, every checklist item across the top, one colour per cell. Sort by most overdue and the people who need a nudge float to the top. Tabs switch between the speaker side, the organizer side, and post-production. This replaces the spreadsheet's status columns.</p>
+<p>Checklists are templates the team edits in the portal — items can be renamed, reordered, added, or removed per role, and the templates carry forward to next year.</p>
+<h3 id="34-building-the-schedule">3.4 Building the schedule</h3>
+<p>A grid with the rooms as columns and 15-minute steps as rows. Unscheduled sessions wait on the side and are dragged in; a "+ program item" button drops an opening or break straight onto the grid, spanning every room. Conflicts — two sessions in one room, a presenter double-booked — are highlighted where they happen.</p>
+<p>The timezone switcher shows the grid as a specific presenter would see it, which is how "we scheduled her at 3 a.m." gets caught before the confirmation email.</p>
+<h3 id="35-publishing">3.5 Publishing</h3>
+<p>The program is internal until the team flips it to published. Each session is published individually and only once it is scheduled; a presenter's bio becomes public only through a published session. A preview link lets the conference website be built against the draft program.</p>
+<h2 id="4-pyjam-performances">4. PyJam performances</h2>
+<p>PyJam sessions are pre-recorded. The performer uploads the video; the team post-produces it and publishes to YouTube for a scheduled premiere or watch party.</p>
+<h3 id="41-the-performer">4.1 The performer</h3>
+<blockquote>
+<p><strong>Being built</strong> (M3b). Task 5.2 (29 September 2026): the upload panel on the performer's session page, with resume, the current version and the length bar, and the organizer's per-session file list with download links and reviewer notes. The duration probe (5.3, same day) fills the length bar within seconds of an upload, and the post-production board (5.5) tracks the pipeline; what remains of the proposal is the performer's own view of it, which today is their checklist's "What we're preparing for your video" list.</p>
+</blockquote>
+<p>Same dashboard as any speaker, plus an upload panel: the video goes straight to storage in chunks and resumes if the connection drops, and the panel shows the duration against the length limit. The performer's second list is "what we're doing with your video", so they can watch it move through transcription, translation, and the final cut. When the final cut is ready, an "approve the final cut" item opens for them.</p>
+<h3 id="42-post-production">4.2 Post-production</h3>
+<blockquote>
+<p><strong>Built</strong> (M3b, task 5.5, 30 September 2026). Cells link to the item page, where the assignment happens; the board itself stays light.</p>
+</blockquote>
+<p>The third tab on the checklist board: sessions down the side, pipeline items across — MC intro and outro, quality review, length check, transcribe, review transcript, translate (one column per language), title card and final cut, publish to YouTube. Items backed by a file complete themselves when the file is uploaded. The length check turns red and blocks the row when a video is over the limit. Every item is assignable, and the template is editable like all the others.</p>
+<h2 id="5-the-conference-website">5. The conference website</h2>
+<p>The website embeds a widget served by the portal. When the team publishes in the portal, the site updates; there is no rebuild.</p>
+<ul>
+<li>The schedule shows in the visitor's timezone, with breaks as bands and sessions as cards.</li>
+<li>Every session has a subscribe link — a calendar feed for that one session, so a reschedule updates the attendee's calendar automatically.</li>
+<li>A session title opens its full details in an overlay; a speaker's name or photo opens their bio, links and sessions the same way.</li>
+<li>Several rooms show as columns on a time axis on wide screens, so staggered sessions line up; on phones the program is one list.</li>
+<li>Unpublished sessions simply aren't there; no "TBA" rows.</li>
+</ul>
+<p>The website already depends on the portal for <code>stats.json</code>, so this adds no new dependency. The widget is long-cached behind the CDN and shows a link to the portal's schedule page if the API is unreachable.</p>
+<h2 id="6-the-workflows-side-by-side">6. The workflows side by side</h2>
+<div class="highlight"><pre><span></span><code>Organizer                          Speaker / performer                   Portal (automatic)
+─────────                          ───────────────────                   ──────────────────
+add session + presenter
+send invitation ──────────────►    accept, account created  ────────►    checklists instantiated
+                                   update bio, session details ──────►   "bio updated" ticks
+                                   read speaker guide ─────────────►     "read guide" ticks
+                                   register on pretix ─────────────►     webhook → "registered" ticks
+send onboarding, registration info
+prepare promo materials ────────►  sees "in progress, Lena"
+schedule on the grid ───────────►  sees slot in own timezone ─────►      "scheduled" ticks; conflicts checked
+send schedule confirmation ─────►  confirms slot
+   (PyJam) ◄────────────────────── uploads video ─────────────────►      duration checked; "uploaded" ticks
+   post-produce, assign items ──►  sees pipeline progress
+   publish to YouTube
+publish program ────────────────►  card goes public ──────────────►      website widget + calendar feeds update
+</code></pre></div>
+<hr />
+<h1 id="part-2-how-it-is-built">Part 2 — How it is built</h1>
+<h2 id="7-roles-and-access">7. Roles and access</h2>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Sees</th>
+<th>Does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Organizer</strong></td>
+<td>everything in the edition</td>
+<td>add sessions and presenters, invite, schedule, publish, edit checklist templates, complete organizer tasks</td>
+</tr>
+<tr>
+<td><strong>Speaker liaison</strong> (volunteer)</td>
+<td>only the presenters and sessions assigned to them</td>
+<td>edit those presenters' details on their behalf, complete organizer tasks for them, send reminders</td>
+</tr>
+<tr>
+<td><strong>Presenter</strong> (speaker, panelist, moderator, host, performer)</td>
+<td>their own profile and sessions, co-presenters' names and bios, the schedule, their checklist, and the organizer checklist for them</td>
+<td>edit own profile and session content, tick own checklist items, upload their video</td>
+</tr>
+<tr>
+<td><strong>Public</strong></td>
+<td>published sessions and presenters through the widget and API</td>
+<td>read</td>
+</tr>
+</tbody>
+</table>
+<p>Liaisons seeing only their assigned speakers is a deliberate change from a shared spreadsheet where every volunteer sees every speaker's email and status. It is enforced in database queries and covered by the portal's tenant-isolation test suite.</p>
+<p>Speakers sign in with a one-time code emailed to them. A password is optional: the welcome page offers to set one, the dashboard asks until they do or dismiss the reminder, and the usual reset flow works for those who have one.</p>
+<h3 id="71-permissions-and-teams-m2b">7.1 Permissions and teams (M2b)</h3>
+<blockquote>
+<p><strong>Not built.</strong> Access today is <code>is_staff</code> and <code>is_superuser</code> plus team membership and item assignment, which is what this section is meant to replace.</p>
+</blockquote>
+<p>The table above says what each audience does. This section says how the portal decides, and replaces the mechanism the portal grew up with.</p>
+<p><strong>Where access comes from today.</strong> Four mechanisms coexist and only one is a permission. The Django <code>is_staff</code> / <code>is_superuser</code> flags mean "organizer" everywhere: the admin mixins, the <code>is_organizer</code> context flag, the speaker-side <code>is_speaker_organizer</code>, sponsorship management, queryset scoping, the "who gets internal emails" queries and a dozen template checks; <code>is_superuser</code> alone gates conferences and Start next year. The volunteer <code>Role</code> model (Admin, Staff, Vendor, Volunteer) is assigned on the review form and used for two things only: routing internal notification emails to Admin and Staff, and picking the admin variant of the onboarding email; it grants no access. Object relations (team leads, <code>Presenter.liaison</code>, item <code>assignee</code> / <code>team</code>, "approved volunteer of this edition") are data-model checks and stay that way. The one real permission is <code>portal_account.view_maintenance</code>, granted by the "Infra maintainers" group and read through <code>has_perm</code>; it is the pattern to generalise.</p>
+<p><strong>Principle.</strong> Every "may this user do this" check goes through <code>user.has_perm("app.codename")</code> in Python and <code>{% if perms.app.codename %}</code> in templates, wrapped in a named predicate in each app's <code>permissions.py</code>. Teams are the grant vehicle; permissions are how access is read. <code>is_superuser</code> keeps Django's built-in bypass as break-glass; <code>is_staff</code> survives only for signing in to the Django admin.</p>
+<p><strong>Teams grant, an auth backend derives.</strong> <em>(Built 27 September 2026, the granting side, the backend and the presets. Tasks 3.2 and 3.3, the same day: the portal, volunteer and sponsorship apps read them, and the staff flag grants nothing there; a volunteer approved only in a past edition no longer reads that edition's sponsors. Task 3.4, also that day: the speakers app reads <code>manage_program</code>, <code>view_program</code>, <code>assign_checklistitem</code>, <code>change_checklisttemplate</code>, <code>change_handbook</code> and <code>change_speakersettings</code>, liaison candidates hold <code>liaise_presenters</code>, and the staff flag means organizer nowhere in the portal. Task 3.5, 28 September: the team form grants through two plain-word pickers and a preset, and the team and profile pages say what is held and why. Task 3.6, the same day: the Role model is gone, its Admin and Staff holders moved onto their edition's Organizers team, the sample data grants through teams, and <code>docs/architecture/permissions.md</code> is the reference. The "presenter gets the speaker side" baseline is not a permission: the speaker side stays relational.)</em> <code>Team</code> gains <code>permissions</code> and <code>lead_permissions</code> (many-to-many to <code>auth.Permission</code>), set by the portal admin when creating a team, editable afterwards, cloned by Start next year. Rather than syncing users into global <code>auth.Group</code> rows (teams are per edition, groups are not, so last year's Sponsorship team would keep this year's rights until something removed them), a small authentication backend implements <code>get_all_permissions</code> by reading the user's approved memberships and leaderships in the <strong>active</strong> edition's teams. Leads get the lead set plus the team set. Nothing is ever stale and the edition switch revokes by itself. The backend also implements <code>with_perm</code> so recipient queries (<code>User.objects.with_perm(...)</code>) find team members. Baseline grants, computed the same way and tied to no team: an approved volunteer of the active edition may read sponsors and open their own volunteering tasks; a presenter gets the speaker side.</p>
+<p><strong>The catalogue.</strong> Built-in <code>add</code> / <code>change</code> / <code>delete</code> / <code>view</code> are reused where they fit; custom ones are declared in <code>Meta.permissions</code> on the model that owns the feature.</p>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Permission</th>
+<th>Replaces</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Conferences</td>
+<td><code>portal.view_organizer_dashboard</code></td>
+<td><code>is_organizer</code> for Organize and its rail</td>
+</tr>
+<tr>
+<td></td>
+<td><code>portal.change_conference</code>, <code>add_conference</code>, <code>delete_conference</code>, <code>portal.start_next_year</code></td>
+<td>superuser</td>
+</tr>
+<tr>
+<td>Volunteers</td>
+<td><code>volunteer.view_volunteerprofile</code></td>
+<td><code>is_staff</code> on the list and other people's profiles</td>
+</tr>
+<tr>
+<td></td>
+<td><code>volunteer.review_volunteerprofile</code></td>
+<td>staff on the review form (leads keep their own team via the object check)</td>
+</tr>
+<tr>
+<td></td>
+<td><code>volunteer.add_team</code>, <code>change_team</code>, <code>delete_team</code></td>
+<td><code>VolunteerAdminRequiredMixin</code></td>
+</tr>
+<tr>
+<td></td>
+<td><code>volunteer.receive_volunteer_notifications</code></td>
+<td>the Admin / Staff roles, i.e. the whole reason <code>Role</code> exists</td>
+</tr>
+<tr>
+<td>Sponsorship</td>
+<td><code>sponsorship.view_sponsorshipprofile</code></td>
+<td>approved volunteer of the edition (kept as the baseline grant)</td>
+</tr>
+<tr>
+<td></td>
+<td><code>sponsorship.add/change/delete_sponsorshipprofile</code>, <code>sponsorship.send_invoice</code></td>
+<td>organizer</td>
+</tr>
+<tr>
+<td></td>
+<td><code>sponsorship.view_unconfirmed_sponsors</code></td>
+<td>superuser in the list filter</td>
+</tr>
+<tr>
+<td></td>
+<td><code>sponsorship.add/change/delete_sponsorshiptier</code></td>
+<td>organizer</td>
+</tr>
+<tr>
+<td></td>
+<td><code>sponsorship.receive_sponsorship_notifications</code></td>
+<td>role-based routing in the sponsorship tasks</td>
+</tr>
+<tr>
+<td>Speakers</td>
+<td><code>speakers.manage_program</code> (sessions, invitations, presenters, scheduling, publishing, pretix link)</td>
+<td><code>is_speaker_organizer</code></td>
+</tr>
+<tr>
+<td></td>
+<td><code>speakers.view_program</code> (read every session and presenter; liaisons stay scoped through <code>Presenter.liaison</code>)</td>
+<td>organizer</td>
+</tr>
+<tr>
+<td></td>
+<td><code>speakers.change_checklisttemplate</code>, <code>speakers.change_handbook</code></td>
+<td>organizer; split out because it is content-team work</td>
+</tr>
+<tr>
+<td></td>
+<td><code>speakers.change_speakersettings</code></td>
+<td>organizer; separate because the row holds pretix secrets</td>
+</tr>
+<tr>
+<td></td>
+<td><code>speakers.assign_checklistitem</code></td>
+<td>"organizer or the presenter's liaison" (the liaison half stays relational)</td>
+</tr>
+<tr>
+<td></td>
+<td><code>speakers.liaise_presenters</code> (may be picked as a liaison)</td>
+<td>"staff or approved volunteer"</td>
+</tr>
+<tr>
+<td>Media (M3b)</td>
+<td><code>speakers.view_mediaasset</code>, <code>add_mediaasset</code>, <code>change_mediaasset</code>, <code>delete_mediaasset</code></td>
+<td>"organizers any kind" in §8.8; performers keep raw video on their own sessions relationally</td>
+</tr>
+<tr>
+<td></td>
+<td><code>speakers.publish_session_video</code> (YouTube URL, publish time, premiere location)</td>
+<td>organizer; narrower than <code>manage_program</code> so Design can close the pipeline</td>
+</tr>
+<tr>
+<td>Promo (M5)</td>
+<td><code>speakers.view/add/change_promoasset</code></td>
+<td>organizer</td>
+</tr>
+<tr>
+<td>Maintenance</td>
+<td><code>portal_account.view_maintenance</code></td>
+<td>already a permission</td>
+</tr>
+</tbody>
+</table>
+<p>Ticking checklist items is never a permission: the assignee, an approved member of the owning team, the presenter's liaison, or the presenter themselves, as today.</p>
+<p><strong>Default permission sets</strong> (presets the admin picks from when creating a team; every team's set stays editable):</p>
+<table>
+<thead>
+<tr>
+<th>Team</th>
+<th>Members</th>
+<th>Leads add</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Organizers (core)</td>
+<td>everything above except <code>delete_conference</code> and <code>start_next_year</code></td>
+<td>those two</td>
+</tr>
+<tr>
+<td>Volunteer coordination</td>
+<td>view and review volunteer profiles, manage teams, volunteer notifications</td>
+<td></td>
+</tr>
+<tr>
+<td>Sponsorship</td>
+<td>sponsor add / change / delete, the contract request, unconfirmed statuses, tiers, sponsorship notifications</td>
+<td></td>
+</tr>
+<tr>
+<td>Program</td>
+<td>manage program, view program, assign items, liaise, templates, handbook</td>
+<td><code>change_speakersettings</code></td>
+</tr>
+<tr>
+<td>Speaker liaisons</td>
+<td>liaise presenters, assign items</td>
+<td></td>
+</tr>
+<tr>
+<td>Design</td>
+<td>view program, view / add / change media assets, publish session video; promo assets when they exist</td>
+<td>delete media assets, assign items</td>
+</tr>
+<tr>
+<td>Website, Content, Social media</td>
+<td>none; work reaches them through task assignment, which is relational</td>
+<td></td>
+</tr>
+<tr>
+<td>Infra maintainers</td>
+<td>view maintenance (unchanged)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>What goes away.</strong> <code>Role</code>, <code>RoleTypes</code> and <code>VolunteerProfile.roles</code>, with a data migration mapping Admin and Staff to membership in that edition's Organizers team (Vendor and Volunteer granted nothing). Every <code>is_staff</code> / <code>is_superuser</code> check in portal logic: the mixins in <code>common/mixins.py</code>, the context-processor flags, the speaker predicates, the sponsorship viewer mixin and filter, the recipient queries, the liaison dropdown and the template checks. Rosters, profiles and emails show team names and a Lead badge instead of roles. Sample data and test factories grant through teams.</p>
+<p><strong>Risks.</strong> Today every staff account is an organizer everywhere; after the switch, people must actually be on a team or they lose access on day one, which is why the migration builds an Organizers team from today's staff users. Liaison and team-member checks stay object-level by design, so this does not simplify them. The superuser bypass must stay or the first admin locks themselves out.</p>
+<hr />
+<h2 id="8-data-model">8. Data model</h2>
+<p>Every model belongs to a <code>portal.Conference</code> — the portal's existing per-edition tenant — so the 2027 edition is a new conference row with the same code.</p>
+<div class="highlight"><pre><span></span><code>portal.Conference
+ ├── SpeakerSettings (one row: the module's switch and the edition's defaults)
+ ├── SessionType ──── PresenterRole (which roles a type allows)
+ ├── Session ──────────────── SessionPresenter ──── Presenter ──── User (optional)
+ │     │                        (role, order)          │
+ │     ├── ScheduleSlot ──── Room                   └── ChecklistItem (owner=SPEAKER)
+ │     ├── MediaAsset (pre-recorded sessions)
+ │     ├── PromoAsset (M5, not built)
+ │     └── ChecklistItem (owner=ORGANIZER; per presenter or per session)
+ ├── ChecklistTemplate ──── ChecklistTemplateItem
+ ├── ReadinessGate (what a checklist line can wait for, §9.3a)
+ ├── Invitation
+ ├── Handbook (versioned) ──── HandbookReadReceipt
+ ├── ReminderLog
+ └── ActivityLog
+</code></pre></div>
+<p>A presenter's pretix order is reached through <code>Presenter.pretix_order</code>; the
+<code>PretixOrder</code> model itself belongs to the <code>attendee</code> app, not to this one.</p>
+<h3 id="81-session">8.1 Session</h3>
+<p>One row per <strong>anything that appears on the schedule</strong>: workshops, panels, PyJam performances, and also the opening, closing, breaks, and social slots. There is no separate "program item" type; a break is a session with no presenters.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kind</code></td>
+<td>A <strong><code>SessionType</code> row</strong> per edition, not an enumeration: the list above became the seeded defaults (<code>WORKSHOP</code> · <code>PANEL</code> · <code>PYJAM</code> · <code>TALK</code> · <code>LIGHTNING</code>, and the program types <code>OPENING</code> · <code>CLOSING</code> · <code>KEYNOTE</code> · <code>ANNOUNCEMENT</code> · <code>BREAK</code> · <code>SOCIAL</code> · <code>OTHER</code>), and organizers add their own on the "Types and roles" page without a deploy. The row carries what the code used to switch on: <code>is_content</code>, the default duration and delivery, whether it spans all rooms, and which <code>PresenterRole</code> rows it allows.</td>
+</tr>
+<tr>
+<td><code>delivery</code></td>
+<td><code>LIVE</code> (default) or <code>PRE_RECORDED</code>. PyJam defaults to pre-recorded; any kind can be switched. Pre-recorded sessions get the media pipeline (§8.8) and a post-production checklist (§9.7).</td>
+</tr>
+<tr>
+<td><code>is_content</code></td>
+<td>read from the type row: a content type needs at least one presenter to be confirmed; a program type can be confirmed with none (a break) or with hosts (the opening)</td>
+</tr>
+<tr>
+<td><code>title</code></td>
+<td>required — the only required field</td>
+</tr>
+<tr>
+<td><code>summary_md</code>, <code>outline_md</code>, <code>prerequisites_md</code>, <code>audience_md</code>, <code>notes_md</code></td>
+<td>Markdown, all optional</td>
+</tr>
+<tr>
+<td><code>level</code>, <code>language</code>, <code>duration_minutes</code></td>
+<td>optional; duration defaults from kind (workshop 90, panel 60)</td>
+</tr>
+<tr>
+<td><code>video_length_limit_minutes</code>, <code>youtube_url</code>, <code>youtube_publish_at</code>, <code>premiere_location</code></td>
+<td>pre-recorded only. <code>premiere_location</code> is <code>DISCORD</code> (watch party in the slot's room) or <code>YOUTUBE</code> (YouTube Premiere at the slot time), defaulting from the edition's speaker settings; it changes what the public card links to and nothing else, so the team can decide per session or late.</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td><code>DRAFT</code> → <code>INVITED</code> → <code>CONFIRMED</code> → <code>SCHEDULED</code> → <code>PUBLISHED</code>, plus <code>CANCELLED</code>. Program kinds skip <code>INVITED</code>.</td>
+</tr>
+<tr>
+<td><code>is_public</code></td>
+<td>explicit publish switch; nothing reaches the website without it (§11.5)</td>
+</tr>
+<tr>
+<td><code>slug</code></td>
+<td>stable public identifier used in URLs and calendar feeds</td>
+</tr>
+</tbody>
+</table>
+<p>Markdown is rendered server-side and sanitized. The source is stored, never the HTML.</p>
+<h3 id="82-presenter">8.2 Presenter</h3>
+<p>The person, independent of any session. One presenter can run a workshop and sit on a panel.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>user</code></td>
+<td>nullable. Linked when the invitation is accepted; a presenter can be added and scheduled before they ever log in</td>
+</tr>
+<tr>
+<td><code>display_name</code>, <code>pronouns</code>, <code>bio_md</code>, <code>headshot</code>, <code>location</code>, <code>timezone</code></td>
+<td><code>pronouns</code> is a copy of the account's (<code>portal_account.handles</code>); <code>timezone</code> drives reminder timing and the speaker's own schedule view</td>
+</tr>
+<tr>
+<td><code>email</code></td>
+<td>invitation and reminder target; unique per conference</td>
+</tr>
+<tr>
+<td><code>website_url</code>, <code>github_username</code>, <code>mastodon_url</code>, <code>linkedin_url</code>, <code>bluesky_username</code></td>
+<td>the links shown on a public presenter card</td>
+</tr>
+<tr>
+<td><code>discord_username</code></td>
+<td>for the speaker role and channel on the conference Discord; organizer-facing, never public. One of the person's handles (<code>portal_account.Handle</code>), as are the links above: every form that asks reads and writes the person's record, and the presenter and volunteer rows are copies of it</td>
+</tr>
+<tr>
+<td><code>is_public</code></td>
+<td>presenter-controlled: opt out of a public bio page while still being named on the schedule</td>
+</tr>
+</tbody>
+</table>
+<h3 id="83-sessionpresenter">8.3 SessionPresenter</h3>
+<p>Links a presenter to a session with a <code>role</code> (a <code>PresenterRole</code> row; the seeded ones are <code>PRESENTER</code>, <code>PANELIST</code>, <code>MODERATOR</code>, <code>HOST</code> and <code>PERFORMER</code>, and a type only allows the roles it lists), an <code>order</code> for display, and <code>confirmed_at</code>. Panels are sessions of kind <code>PANEL</code> with panelists and a moderator; nothing special is needed for them. Panels are assembled by organizers.</p>
+<h3 id="84-invitation">8.4 Invitation</h3>
+<p>An organizer invites a presenter to a specific session (or, for panelists, to the conference generally) with a personal note. The email carries a single-use, expiring token. Accepting it creates or links the account, confirms the presenter on the session, and instantiates their checklist. <code>sent_at</code>, <code>opened_at</code>, <code>accepted_at</code>, <code>declined_at</code> are recorded so the sessions list can show "invited 9 days ago, not yet accepted".</p>
+<h3 id="85-scheduling">8.5 Scheduling</h3>
+<blockquote>
+<p><strong>Built</strong> (M3, 3 October 2026): the models and the validation below, in <code>ScheduleSlot.clean()</code> and <code>ScheduleSlot.presenter_clashes()</code>. The editor and the schedule views are §10, not yet built.</p>
+</blockquote>
+<p><strong>Room</strong> — <code>name</code>, <code>discord_id</code>, <code>url</code>, <code>kind</code> (<code>STAGE</code>, <code>VOICE</code>, <code>TEXT</code>, <code>FORUM</code>), <code>is_active</code>. Deliberately generic: for an online edition a room is typically a Discord channel, created on Discord by hand and recorded here, but nothing else in the portal cares where a room actually is.</p>
+<p><strong>ScheduleSlot</strong> — one per session: <code>room</code> (nullable — null means <em>every room</em>, so the opening or a break spans the whole grid), <code>start_utc</code>, <code>end_utc</code>. <code>end_utc</code> defaults from the session duration.</p>
+<p>Validation: no two slots overlap in one room (an every-room slot conflicts with everything in its window, except other program-kind bands); a presenter in two overlapping slots is flagged as a warning, not blocked — a moderator moving between rooms is legitimate. A session still waiting for an answer (<code>PROPOSED</code>, <code>REJECTED</code>) cannot hold a slot at all, which is what makes it safe for the overlap rules to look through those statuses on the other side; a cancelled session keeps its slot as a record, freed for others. The checks are application-level: two organizers saving overlapping slots in the same instant can both pass and both commit. The database-level guarantee would be a Postgres exclusion constraint on (conference, room, <code>tstzrange(start_utc, end_utc)</code>) via <code>btree_gist</code> — worth adding once the editor makes concurrent edits plausible.</p>
+<p>All times are stored in UTC. <code>SpeakerSettings.conference_timezone</code> (one row per conference) is only the organizer's default display; the conference itself has no timezone.</p>
+<h3 id="86-promo-materials-and-what-the-team-shares-with-the-speaker">8.6 Promo materials, and what the team shares with the speaker</h3>
+<blockquote>
+<p><strong>Built</strong> (M3b, 30 September 2026), as part of <code>MediaAsset</code> rather than a model of its own. The <code>PromoAsset</code> model this section once proposed is not needed.</p>
+</blockquote>
+<p>Promo materials belong to a <strong>session</strong>, not a person: a speaker on a panel and a workshop gets a poster for each. And there are several per session: square, landscape and vertical images, a video, a gif. So they are <code>MediaAsset</code> rows of kind <code>PROMO</code> with a free <strong><code>variant</code></strong> label ("square", "landscape", "vertical", "video", "gif", or whatever next year's formats are; the upload panel suggests those five). Versions count per kind, language and variant, so re-uploading the square poster supersedes the old square poster and nothing else. Organizers upload them on the session's Files section like any other file (the team's Canva workflow produces them; the presenter list exports to Canva's bulk-create CSV); the design team's bulk download (5.6) collects them.</p>
+<p><strong>Sharing is a flag, not a kind.</strong> Every file the team uploads is the team's until an organizer marks it <strong>shared with the speaker</strong> (<code>MediaAsset.shared_with_speaker</code>, a button on the file's row). A shared file appears on the speaker's session page under "Files from the team", with the newest shared version of each kind, language and variant, a download link, and no reviewer notes: those stay with the team. Unsharing takes it back. The speaker hears about newly shared files in the daily digest, when there are any (§13.2). A presenter may fetch their own raw video and whatever is shared; nothing else, however they got the link. Two seeded organizer lines follow the flag: "Promo materials prepared" completes when the first promo file is on the session, "Promo materials shared with presenter" when the first one is shared. The performer's "Approve the final cut" waits until the processed video is not only in but shared, since that is when they can watch it.</p>
+<p>Generating cards in the portal is a possible later addition.</p>
+<h3 id="87-handbook">8.7 Handbook</h3>
+<p>The speaker guide, versioned. Reading it records a <code>HandbookReadReceipt</code>; publishing a new version re-opens the "read the speaker guide" item for everyone who read the old one.</p>
+<h3 id="88-mediaasset">8.8 MediaAsset</h3>
+<blockquote>
+<p><strong>Being built</strong> (M3b). Task 5.1 (29 September 2026): the multipart upload backend, <code>MediaUpload</code>, the JSON endpoints, versioning and <code>asset_ready</code>. Task 5.2 (same day): the browser panel with resume, the performer's video card, the organizer's file list with notes and downloads. Task 5.3 (same day): the duration probe on the <code>media</code> queue, with the failure written on the asset. Task 5.4 (same day): the final-cut approval waits for the processed video; the rest of the session-scoped checklist was already in place from the checklist work. The post-production board (5.5) is next.</p>
+</blockquote>
+<p>For pre-recorded sessions, one row per file that moves through post-production:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kind</code></td>
+<td><code>RAW_VIDEO</code> (performer upload) · <code>INTRO</code> · <code>OUTRO</code> (MC recordings) · <code>PROCESSED_VIDEO</code> (final cut) · <code>TRANSCRIPT</code> · <code>TRANSLATION</code> · <code>TITLE_CARD</code> · <code>THUMBNAIL</code> · <code>PROMO</code> (§8.6) · <code>OTHER</code></td>
+</tr>
+<tr>
+<td><code>file</code></td>
+<td>Digital Ocean Spaces, private; presigned upload and download</td>
+</tr>
+<tr>
+<td><code>language</code></td>
+<td>for transcripts and translations, one row per language</td>
+</tr>
+<tr>
+<td><code>variant</code></td>
+<td>which of several files of one kind: promo materials come as square, landscape, vertical, video, gif (§8.6)</td>
+</tr>
+<tr>
+<td><code>shared_with_speaker</code></td>
+<td>the team's flag that puts the file on the speaker's session page and lets them fetch it (§8.6)</td>
+</tr>
+<tr>
+<td><code>version</code></td>
+<td>increments on re-upload, per kind, language and variant; old versions kept until deleted</td>
+</tr>
+<tr>
+<td><code>duration_seconds</code>, <code>probe_error</code></td>
+<td>probed server-side after upload (<code>ffprobe</code> over a presigned link, on the media queue); drives the length-limit check. When the probe cannot answer, the reason is on the asset and on the page</td>
+</tr>
+<tr>
+<td><code>status</code>, <code>notes_md</code></td>
+<td><code>UPLOADING</code> · <code>READY</code> · <code>FAILED</code> · <code>SUPERSEDED</code>; reviewer notes ("audio clips at 4:10")</td>
+</tr>
+</tbody>
+</table>
+<p>Performance videos are routinely several gigabytes, so the browser uploads directly to object storage in chunks using presigned multipart URLs, with per-part retry and resume. The portal finalizes the upload and records the asset. Performers can upload raw video for their own sessions; organizers upload any kind.</p>
+<h4 id="the-speaker-side-is-a-switch">The speaker side is a switch</h4>
+<p>The organizer side of everything above (files on a session, the board's tab, exports, previews) is always on once the portal has a bucket. What speakers see is a per-edition switch on the speaker settings, <strong>off by default</strong>: with it off, a speaker's session page has no Files tab and no upload panel, a presenter may neither upload nor fetch, and the team gathers videos by other means and uploads them on the performer's behalf, which completes the same checklist lines. The switch lets the media series merge and run dark for speakers while the team tries it with real files.</p>
+<h4 id="a-title-for-each-file">A title for each file</h4>
+<blockquote>
+<p><strong>Built</strong> (30 September 2026, task 5.9).</p>
+</blockquote>
+<p>A file is named by its kind, language and variant ("Promo material (square)", "Transcript (en)"), which says what it is but not what it is about. Organizers want to write "Poster for the panel, from the Canva template" or "Final cut with the new intro" once, and not again for every version or format of the same thing.</p>
+<p><strong>The title belongs to the line, not the version.</strong> A <em>line</em> is one kind and language on one session; its variants and versions are the same thing in different shapes and ages. The title is therefore asked for the first time a line gets a file, carried forward onto every later version and variant, and editable in one place. Stored as <code>MediaAsset.title</code> (short, one line, 200 characters) and copied rather than joined: completing an upload with no title takes the newest title on the line, so the row always carries its own words and the page, the bulk-download manifest and the CSV need no lookup. Editing the title updates every row on the line at once, so old versions read the same as the new one.</p>
+<p><strong>Where it is asked.</strong> The upload panel gains an optional <em>Title</em> field on both sides: the organizer's, where it is prefilled from the line the chosen kind and language already have (a page-level map of line titles, read by the panel's script when the kind or language changes, and left alone once the person has typed), and the performer's, where "take 2, quieter room" is welcome but not required. The start endpoint takes it, <code>MediaUpload</code> carries it, <code>complete_upload</code> writes it or inherits it.</p>
+<p><strong>Where it shows.</strong> The organizer's file list puts the title on the group header next to the kind and variant badges, with a small edit form that swaps the group in place (htmx, like the note). The speaker's "Files from the team" leads with the title when there is one and the kind and variant in a badge after it; without one, the kind as today. The post-production board's video column and the CSV export carry it, and the manifest of the bulk download will once task 5.6 lands.</p>
+<p><strong>What it is not.</strong> Not the reviewer's note, which is per version and internal. Not a description of the session. Not required, so an upload never waits on it. A separate <code>MediaLine</code> model that groups assets would be the more structural home for a per-line attribute, and is the shape to move to if lines ever gain more of their own (an owner, a deadline); for one short field, a copied column is the smaller change and keeps every reader one query.</p>
+<h4 id="deleting-a-file">Deleting a file</h4>
+<blockquote>
+<p><strong>Built</strong> (2 October 2026).</p>
+</blockquote>
+<p>Files are kept until someone deletes them: a cancelled session keeps everything it had, since a cancellation is often undone and the recording is the hard part to get back. Deleting is explicit, per <em>file</em>, and takes <strong>every version</strong> of it: a file is a line (kind, language and variant on the session), its versions are the same thing at different ages, and a page that let someone delete v2 and keep v1 would be offering a choice nobody makes on purpose. The rows go in one transaction, with the finished upload rows that pointed at them; each row's object, the thumbnail beside it and an admin-attached file go from storage once that transaction commits, through the same receiver the admin's cascade runs through, so the two paths cannot drift and a rollback never leaves a row without its file. A machine transcript made from a video on the line goes with it, since its line is keyed to the video's own row and a draft of a file that is gone has no reader; a reviewed transcript a person uploaded stays. The session's activity log records what went, with the file names, and who did it.</p>
+<p><strong>Who.</strong> Organizers may delete any line from the session's Files section. A performer may delete their own raw video from their session page, and only while every version of it is their own upload: once the team has put a version there on their behalf, the line is the team's to take away, and the page offers nothing. The usual gates apply (the speaker side's switch, a presenter on an accepted session). A video whose transcription is still running stays until the job is done, because the job would otherwise write a transcript for a file that is gone.</p>
+<p><strong>The confirmation.</strong> One dialog per page, opened by the row's <em>Delete every version</em> button; it shows what will go and asks the person to type the file's name as the row shows it (the newest ready version's). The button stays disabled until the name matches, and the view checks it again: a name that does not match deletes nothing. Typing a name rather than clicking "yes" is the point, since the file is routinely the only copy of a performance.</p>
+<p><strong>What the admin's session delete does.</strong> Deleting a <code>Session</code> row in the Django admin cascades to its assets, so every object and thumbnail goes with it, and an upload still in flight is aborted so its parts are freed. The design permissions table lists <code>delete_mediaasset</code> for the Design team's leads; until the permissions refactor lands, deleting follows the organizer gate like the other file actions.</p>
+<h4 id="previews">Previews</h4>
+<p>A file row, and the speaker's "Files from the team" card, carry a closed "Preview" fold for the files a browser can show itself: images, video and audio, decided from the upload's content type with the file name as a fallback. Opening it loads the file from the bucket through a second presigned link that says <em>inline</em> rather than <em>attachment</em> and carries the file's type; images load lazily, video and audio not until play, and a multi-gigabyte video then streams by range requests, so nothing is fetched in full. A transcript, captions file or other small text file shows as plain text, fetched through the portal rather than by a signed link (the same permission check, no CORS rule, a few kilobytes), in the fold and in a new tab. Everything else, including an HTML file uploaded as "other", only downloads. The file rows, the speaker's files, the board's video column and the sessions list also carry a <strong>thumbnail</strong> (task 5.8, built 30 September 2026): when an image or video lands, the media worker scales the image with Pillow or takes a frame a few seconds in with ffmpeg, stores it as a small JPEG next to the original, and the pages show it through a redirect to an inline link, so a list of thirty sessions costs no signing to render. Audio gets an icon. A thumbnail that could not be made says why on the row and never holds the file up.</p>
+<h4 id="where-files-live-in-the-bucket">Where files live in the bucket</h4>
+<p>Every object is keyed by edition, session and kind, so the bucket itself reads like a folder tree:</p>
+<div class="highlight"><pre><span></span><code>speaker-media/2026/&lt;session-slug&gt;/raw_video/&lt;upload id&gt;/&lt;original filename&gt;
+speaker-media/2026/&lt;session-slug&gt;/transcript/&lt;upload id&gt;/&lt;original filename&gt;
+</code></pre></div>
+<p>The upload id segment is what makes a re-upload a new object instead of an overwrite; the version number is assigned when the upload completes and lives on the row, not in the key. The row is the source of truth for everything else too: a session's slug can change after its first upload, and old objects keep the old slug. Nothing reads the bucket by listing it.</p>
+<h4 id="bulk-download-post-production">Bulk download (post-production)</h4>
+<blockquote>
+<p><strong>Built</strong> (30 September 2026, task 5.6), with two changes from the design below made on trying it: the zip is the first choice on the page and the script the advanced one, and the browser "download to a folder" path was dropped, since choosing a folder in a browser dialog read as odd. The sessions in the scope are an explicit choice ("every session with files" or "only these", a filtered checkbox list grouped by type), so a stray click narrows nothing.</p>
+</blockquote>
+<p>The people who edit the videos, design the title cards and cut the final versions work on their own machines, in their own tools, and they want <em>everything</em> for the edition on local disk, not one file at a time from a web page. A pull of an edition's raw video is tens of gigabytes across dozens of files, which rules out the two obvious shapes: a zip built on the server doubles the storage and ties up a worker and its disk for an hour, and a zip streamed through Django holds a web worker for the whole transfer and cannot resume when the connection drops. The bucket already knows how to serve large files with range requests and resume; the portal's job is to hand out the list of what to fetch and where to put it.</p>
+<p><strong>The export.</strong> An organizer picks a scope on the sessions list or the post-production board (§4.2): the edition (the active one by default), the kinds (raw video by default), an optional language, the sessions currently filtered, and whether to include superseded versions (latest <code>READY</code> only by default) or only files newer than their last export. The portal answers with one presigned download link per asset and a local path for each, laid out the same way as the bucket, without the upload id and with the version in the file name so two versions can sit side by side:</p>
+<div class="highlight"><pre><span></span><code>&lt;brand&gt;-2026/&lt;session-slug&gt;/raw_video/v2-&lt;original filename&gt;
+&lt;brand&gt;-2026/&lt;session-slug&gt;/transcript/v1-en-&lt;original filename&gt;
+&lt;brand&gt;-2026/&lt;session-slug&gt;/promo/v1-square-&lt;original filename&gt;
+&lt;brand&gt;-2026/manifest.csv
+</code></pre></div>
+<p><code>manifest.csv</code> carries what the file names cannot: session title, presenters, kind, language, version, duration, size, when it was uploaded and by whom, and the reviewer notes. Editors sort and search that in a spreadsheet; the folders stay predictable for scripts and for the editing software's media bins.</p>
+<p><strong>Three ways to fetch it</strong>, all from the same export:</p>
+<ol>
+<li><em>Download to a folder</em>, in the browser. On Chromium browsers the page asks for a local folder (the File System Access API), then streams each object straight from the bucket into that folder with the layout above, with per-file progress, retry, and skip-if-already-complete so a second run only picks up what is missing. No tooling to install; this is the button most people will use. Other browsers do not offer a folder picker and get option 2.</li>
+<li><em>A download script</em>. A shell script with one resumable <code>curl</code> line per file (<code>-C -</code>, <code>--create-dirs</code>) and the manifest embedded, for anyone on a terminal, plus an <code>aria2c</code> input file for parallel transfers. Runs unattended and resumes after an interruption.</li>
+<li><em>A zip</em>, only for small bundles. Transcripts, title cards and thumbnails for an edition are a few hundred megabytes at most, and a designer expects a zip. When the selection is under <code>SPEAKER_MEDIA_ZIP_MAX_BYTES</code> (1 GiB by default) the portal offers to build one: a worker task streams the objects into a zip stored under <code>speaker-media/exports/</code>, and the person gets a link when it is ready. A lifecycle rule deletes exports after 7 days. Above the cap the option is not shown.</li>
+</ol>
+<p><strong>Links and their lifetime.</strong> A presigned link is a bearer credential: anyone holding it can fetch the object until it expires. Bulk links live longer than the one-hour page links (<code>SPEAKER_MEDIA_BULK_URL_TTL</code>, 12 hours by default, enough for a 100 GB pull on a home connection) and the export page says so. The script and the manifest are therefore treated like a credential: the page warns not to share them, and every export is recorded as a <code>MediaExport</code> row (who, when, scope, file count, total bytes, expiry) so the Maintenance section can answer "who pulled the 2026 videos, and when". The links in any email the portal sends about an export are withheld from the email record the same way invitation links are (§2.23).</p>
+<p><strong>Who.</strong> Organizers, the same rule as uploading any kind; presenters never bulk download. Once the permissions catalogue lands this becomes <code>speakers.view_mediaasset</code>, which is what puts the Design and Communication teams on the export page without making them program managers.</p>
+<p><strong>The other direction.</strong> Editors bring processed videos, transcripts and title cards back. That stays per file through the upload panel for now; a "bulk upload from a folder" would read the same layout and manifest in reverse and is not designed here.</p>
+<p><strong>The escape hatch.</strong> For a post-production lead who wants to <code>rclone sync</code> the whole edition and keep it in sync as new uploads arrive, DigitalOcean can issue a Spaces key with read-only access to just the media bucket. That works today, needs no portal code, and is the most efficient way to move 100 GB, but the key sees every edition and every kind and nothing in the portal records what it fetched, so it is an operations procedure for one trusted person (documented in the deployment guide), not a feature.</p>
+<p><strong>Cost.</strong> Spaces includes 1 TiB of outbound transfer a month and charges a cent per GiB beyond it, so a handful of full pulls of an edition costs nothing extra. The export page shows the total size of the selection before anyone starts.</p>
+<h4 id="machine-transcription">Machine transcription</h4>
+<blockquote>
+<p><strong>Built</strong> (30 September 2026, task 5.7), as designed below. The library and the model enter any image built with a non-empty <code>WHISPER_MODEL</code>, which the Dockerfile defaults to <code>small</code> so the platform build (no build arguments) has an engine; <code>compose.yml</code> sets it empty, so local builds and CI carry neither, but the production web process does carry them, one image serving every process; an image built with it empty offers no transcription and says so.</p>
+</blockquote>
+<p>The "Transcribe" item on the post-production checklist completes when a transcript asset exists for the session's language (§9.7), so a worker job that writes one is the whole feature from the checklist's point of view: the item ticks itself, "Review transcript" stays a person's job, and the reviewer's corrected file goes up through the ordinary panel under the draft's variant (the panel lists the variants on the session), which makes it the next version of that video's transcript. The job is a draft-maker, never the last word.</p>
+<p><strong>What triggers it.</strong> A raw video becoming <code>READY</code> (<code>asset_ready</code>), when the edition's speaker settings have <em>machine transcription</em> switched on (off by default) and the session has no transcript for its language that a person made. A new raw video version re-runs it only while the latest transcript is still a machine one; a reviewed transcript is never overwritten by a re-upload. An organizer can also start it by hand from a video's row in the Files section ("Transcribe this"), including on the processed video, and retry a failed run from the same place.</p>
+<p><strong>What it produces.</strong> One <code>MediaAsset</code> of kind <code>TRANSCRIPT</code> in the session's language (or the language the engine detected, when the session has none), as <strong>WebVTT</strong> with cue timings: what YouTube accepts as captions and what a browser plays with <code>&lt;track&gt;</code>, and easy to read as text. It is uploaded to the bucket with a single put, recorded like any other asset (the next version for its kind, language and variant, the previous <code>READY</code> one superseded, <code>asset_ready</code> sent; the variant is the video's file name stem and its pk, so each video has its own transcript line), with <code>uploaded_by</code> empty and a new <code>generated_by</code> field naming the engine and model (for example <code>faster-whisper/small</code>), so the file list and the review item can say "machine draft" rather than pass it off as a person's work. Whisper's translation mode only targets English, so translations stay a person's job; a later job could draft them with a language model, and that is a separate design.</p>
+<p><strong>How it runs.</strong> A Celery task, <code>transcribe_asset_task</code>, on its own queue:</p>
+<ol>
+<li>Records a <code>TranscriptionJob</code> row (video asset, engine, <code>QUEUED</code>), which is what the Files section shows while it runs ("Transcribing, started 4 minutes ago") and what "Retry" acts on.</li>
+<li>Extracts the audio without touching the video on disk: <code>ffmpeg</code> reads the presigned video URL and writes raw 16 kHz mono 16-bit samples to a temporary file (about 57 MB for a 30-minute set, gone with the job). Raw samples rather than a compressed file so the engine decodes nothing itself: on trying it, the engine's own decoder (PyAV) turned out to be the one piece whose versions drift under it.</li>
+<li>Hands the audio to the configured engine and gets back timed segments.</li>
+<li>Writes the VTT, uploads it, records the asset, marks the job <code>DONE</code>.</li>
+<li>On any failure marks the job <code>FAILED</code> with the error, logs it to the session's activity, and leaves the checklist item open. Never silent: a missing <code>ffmpeg</code>, a missing model, an exhausted API quota all show on the page.</li>
+</ol>
+<p><strong>The engine: Whisper in the worker, nothing hosted.</strong> Decided 29 September 2026: transcription runs inside the portal's own worker with <a href="https://github.com/SYSTRAN/faster-whisper">faster-whisper</a> (Whisper on CTranslate2, CPU, int8), and no audio leaves the portal's infrastructure. A hosted API was considered and set aside: it would be faster and better at hard audio, but it sends performers' recordings to a third party, needs a paid key, and would have to be disclosed in the performer guide. The engine sits behind a small interface (<code>speakers/transcription.py</code>: <code>transcribe(audio_path, language) -&gt; segments</code>) so a different engine could be added later without touching the pipeline, but none is planned. <code>SPEAKER_TRANSCRIBE_MODEL</code> picks the Whisper model; the settings switch is off until the worker exists.</p>
+<p>What to expect from the worker, for a 30-minute set on two vCPUs (measure on the real worker before choosing):</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Time</th>
+<th>Memory</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>base</code></td>
+<td>a few minutes</td>
+<td>about 0.5 GB</td>
+<td>rough; fine for a first pass on clear English speech</td>
+</tr>
+<tr>
+<td><code>small</code></td>
+<td>10 to 20 minutes</td>
+<td>about 1 GB</td>
+<td>the default: good for English and the major languages</td>
+</tr>
+<tr>
+<td><code>medium</code></td>
+<td>about an hour</td>
+<td>about 2.5 GB</td>
+<td>noticeably better for accented speech and music-heavy audio</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The model ships in the image.</strong> The worker's disk is ephemeral, so a model fetched at run time would be fetched again after every deploy, from Hugging Face, by a process that has to be up before anyone notices it is not. Instead the Dockerfile downloads the pinned model (<code>SPEAKER_TRANSCRIBE_MODEL</code>, a build argument, and a pinned Hugging Face revision) into <code>/opt/whisper</code> in its own layer, placed right after the Python dependencies and before the code is copied, so the layer is rebuilt only when the model or the dependencies change and every code deploy reuses it from the registry. The worker points faster-whisper at that directory and never downloads anything; a model that is not in the image is an error on the page, not a surprise download. The cost is about 500 MB more image for <code>small</code>, shared by every process, sitting in the registry; the pull is skipped when the layer is unchanged. Two smaller options are recorded and not chosen: <code>base</code> (about 150 MB) trades accuracy for size, and caching the model in the media bucket makes the download fast and free of Hugging Face but still repeats it on every deploy. Whisper detects the language when the session has none.</p>
+<p><strong>The worker.</strong> A transcription ties up a worker for a quarter of an hour, and the default worker also sends every email and reminder, so media jobs go on a separate Celery queue (<code>media</code>) served by their own process (<code>worker-media</code> in the Procfile, one replica, concurrency 1, a two-hour hard time limit, <code>acks_late</code> so a job a killed worker was running is delivered again; the job row notices it was already <code>RUNNING</code> and marks itself <code>FAILED</code> rather than looping). The duration probe (task 5.3) uses the same queue and the same <code>ffmpeg</code> install. The default worker never consumes <code>media</code>, so with the process at zero replicas jobs simply wait: a nightly watchdog marks any job still <code>QUEUED</code> after twelve hours <code>FAILED</code> with "no media worker picked this up", which is how a forgotten replica count shows on the page. In development one worker serves both queues (<code>-Q celery,media</code>), so the compose stack gains no container. What a second process costs, and the single-worker alternative, are weighed in the deployment guide.</p>
+<p><strong>What people see.</strong> Organizers: the job's state on the video's row, the machine draft with a "machine draft" badge and its model, a download, and "Transcribe this" and "Retry" where they apply. The reviewer downloads the draft, fixes it, uploads it under the draft's variant (chosen from the panel's list) as the next version: that is "Review transcript". Performers: "Transcribe: done" in "What we're doing with your video", as for any other item. The performer guide and the upload panel say that recordings are transcribed by our own self-hosted tooling and reviewed by the team, and that nothing is sent to an outside service.</p>
+<p><strong>Documentation that changes when this is built</strong> (the task lists them so none is missed): the developer setup guide (ffmpeg, the model cache, one worker for both queues), the deployment guide (the <code>worker-media</code> process, its memory, scaling it up, the watchdog), the speakers module README (the transcription module and the job row), the speaker settings help text, and the performer guide wording above. The status note at the top of this section flips from "designed" to "built".</p>
+<hr />
+<h3 id="89-proposal">8.9 Proposal</h3>
+<blockquote>
+<p><strong>Being built</strong> (§2.5).</p>
+</blockquote>
+<p>The mirror of <code>Invitation</code>: an invitation is the organizers asking a person, a proposal is a person asking the organizers. One row per proposed session, carrying the review rather than the content: the session and the presenter carry that.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>session</code></td>
+<td>one-to-one; the session sits in <code>PROPOSED</code> until the answer</td>
+</tr>
+<tr>
+<td><code>presenter</code></td>
+<td>the proposer, with their account linked from the start: they signed in to propose</td>
+</tr>
+<tr>
+<td><code>decision</code></td>
+<td><code>PENDING</code> → <code>APPROVED</code> or <code>REJECTED</code></td>
+</tr>
+<tr>
+<td><code>submitted_at</code>, <code>decided_at</code>, <code>decided_by</code></td>
+<td>when it arrived, when it was answered and by whom</td>
+</tr>
+</tbody>
+</table>
+<p><code>Session.created_by_presenter</code> marks both a proposed session and one a speaker added themselves, so the organizers' list can answer "who put this here".</p>
+<hr />
+<h2 id="9-checklists">9. Checklists</h2>
+<p>Checklists are the core of the module: what each speaker must do, what the team must do for each speaker, and — for pre-recorded sessions — what the team must do to each video. All three are the same mechanism.</p>
+<h3 id="91-templates-are-organizer-defined">9.1 Templates are organizer-defined</h3>
+<p>Checklists are data, not code. Organizers create and edit templates in the portal; the defaults listed below are seed data loaded when an edition is set up, and every item can be renamed, reordered, removed, or added to. The only fixed part is a small registry of auto-completion rules (§9.3) that a template item may reference — organizers pick from a list, they do not write code. Templates clone across editions, so next year starts from this year's checklists.</p>
+<p>A <code>ChecklistTemplate</code> has a scope:</p>
+<ul>
+<li><strong>Presenter scope</strong> — keyed by session kind and role ("Workshop presenter", "Panelist", "Moderator", "PyJam performer"). Instantiated once per presenter per session.</li>
+<li><strong>Session scope</strong> — keyed by session kind and delivery ("PyJam post-production"). Instantiated once per session, for work on the session itself.</li>
+</ul>
+<p>Each <code>ChecklistTemplateItem</code> has:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>owner</code></td>
+<td><code>SPEAKER</code> or <code>ORGANIZER</code></td>
+</tr>
+<tr>
+<td><code>title</code>, <code>description_md</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>due_offset</code></td>
+<td>days relative to an anchor: invitation accepted, conference start, or session start</td>
+</tr>
+<tr>
+<td><code>auto_complete_rule</code></td>
+<td>optional, from the registry in §9.3</td>
+</tr>
+<tr>
+<td><code>requires_asset_kind</code></td>
+<td>optional: the item is satisfied when a ready <code>MediaAsset</code> of that kind (and language) exists on the session</td>
+</tr>
+<tr>
+<td><code>is_required</code></td>
+<td>required items gate the session reaching <code>CONFIRMED</code>. None of the default lines below is required: accepting the invitation is the presenter's confirmation (decided in the review round of 16 September 2026), so a seeded edition confirms a session as soon as its required presenters accept. An organizer may mark a line required, and from then on it holds the session at <code>INVITED</code> until it is done or skipped; the session page shows what it is waiting on.</td>
+</tr>
+<tr>
+<td><code>assignee_default</code></td>
+<td>organizer items only: the presenter's liaison, or unassigned</td>
+</tr>
+</tbody>
+</table>
+<p>Templates exist for content kinds and for hosted program kinds (opening, closing, keynote get a two-item host template). Breaks and socials have no checklist.</p>
+<p><strong>Default speaker items (workshop presenter):</strong> update bio and headshot · confirm session title and summary · read the speaker guide · register for the conference · join Discord · confirm scheduled slot · share a link to workshop materials · tech check.</p>
+<p><strong>Default organizer items (per presenter):</strong> invitation sent · presenter in portal · onboarding email sent · registration info sent · promo materials prepared (ticks when a promo file is on the session) · promo materials shared with presenter (ticks when one is shared, §8.6) · session scheduled · schedule confirmation sent · Discord channel and speaker role assigned · day-of reminder sent.</p>
+<p>Panelist and moderator templates are lighter (no materials, no outline). The PyJam templates are in §9.7.</p>
+<h3 id="92-instances">9.2 Instances</h3>
+<p>When an invitation is accepted, every template item becomes a <code>ChecklistItem</code> for that presenter and session with a <code>status</code> (<code>TODO</code> · <code>DONE</code> · <code>SKIPPED</code> · <code>BLOCKED</code>), a computed <code>due_date</code> that organizers can edit per item, an <code>assignee</code> for organizer items, <code>completed_by</code>/<code>completed_at</code>, and a <code>note</code>. Organizers can add one-off items to any presenter or session, and can back-fill an item added to a template after some checklists were created.</p>
+<h3 id="93-auto-completion">9.3 Auto-completion</h3>
+<p>Items complete themselves when the portal can tell:</p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Completes when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bio and headshot updated</td>
+<td>bio non-empty and headshot set</td>
+</tr>
+<tr>
+<td>Read the speaker guide</td>
+<td>read receipt exists for the current version</td>
+</tr>
+<tr>
+<td>Invitation sent / presenter in portal</td>
+<td>invitation sent / accepted</td>
+</tr>
+<tr>
+<td>Session scheduled</td>
+<td>a slot exists</td>
+</tr>
+<tr>
+<td>Registered for the conference</td>
+<td>a pretix order exists for the presenter's email (§12.1)</td>
+</tr>
+<tr>
+<td>Upload your video, transcribe, translate, final cut, …</td>
+<td>a ready asset of the required kind exists</td>
+</tr>
+<tr>
+<td>Video length within limit</td>
+<td>latest video duration ≤ the session's limit; otherwise the item becomes <code>BLOCKED</code> with the overage shown</td>
+</tr>
+<tr>
+<td>Joined Discord</td>
+<td>self-attested in 2026 (checkbox); becomes automatic once Discord account linking exists (§12.2)</td>
+</tr>
+</tbody>
+</table>
+<p>Rules re-run when the relevant record changes and nightly as a safety net.</p>
+<h3 id="93a-readiness-items-nobody-can-start-yet">9.3a Readiness: items nobody can start yet</h3>
+<p>An item exists long before it can be done: confirming a slot before the schedule is built, reading a guide nobody has published, a tech check the team has not opened booking for, an organizer item that waits on a portal feature. Such an item <strong>waits</strong>. It keeps its place in the list, muted, with one line saying what it waits for, and a manual tick is refused, so the disabled box is not the only guard.</p>
+<p>A template line waits on any of three sources, and an organizer override outranks all of them:</p>
+<ul>
+<li><strong>A rule</strong>, for what the database can answer: the session has a slot, the guide it points at is published, registration is configured.</li>
+<li><strong>A gate</strong>, a named switch organizers flip on the "Readiness gates" page, for work the portal cannot see. The item carries the gate's <strong>code</strong>, so a gate created later attaches to the items that already named it, deleting one puts them back to waiting, and a code with no gate row waits too. Gates fail shut in every direction, and clone into next year shut.</li>
+<li><strong>Another item</strong>, for the one piece of work that unblocks this one, which is how a speaker line waits on the organizer line behind it.</li>
+<li><strong>The override</strong> (organizer-only): open this item whatever it waits for, or hold it shut whatever it does not, recorded in the activity log.</li>
+</ul>
+<p>A finished item never waits, whatever its sources say. A waiting item is <strong>counted but never chased</strong>: it is in "3 of 12 done, 2 waiting" and out of the overdue count, the digests and the reminder emails.</p>
+<h3 id="94-reminders">9.4 Reminders</h3>
+<p>A daily job emails each presenter one digest of their open items due within 7, 3, and 1 days, in their own timezone. Organizer items go to the assignee, or to the organizers list if unassigned. Every send is logged so the same reminder never goes out twice. The same email carries the files the team newly shared, and a speaker's upload is announced to the team at once (§13.2).</p>
+<h3 id="95-what-the-speaker-sees">9.5 What the speaker sees</h3>
+<p>The dashboard became a summary and the checklist got a page of its own ("My speaker checklist"), with two views: everything by due date, or grouped by session. Both carry the same two lists:</p>
+<ul>
+<li><strong>Your to-dos</strong> — their items, tickable in place, due dates in their timezone, coloured by urgency.</li>
+<li><strong>What we're doing for you</strong> — the team's items for them, read-only, with status and who is on it. A speaker sees "promo materials — in progress, Lena" instead of emailing to ask.</li>
+</ul>
+<p>Lines that are not about one session (bio, guide, registration, Discord, the tech check) are instantiated once per presenter and grouped as "For you as a speaker".</p>
+<h3 id="96-what-the-organizer-sees">9.6 What the organizer sees</h3>
+<ul>
+<li><strong>Checklist board</strong> — presenters down the side, every checklist item across the top, one colour per cell, sortable by most overdue. Tabs for the speaker side, the organizer side, and post-production. This is the replacement for the spreadsheet's status columns.</li>
+<li><strong>My volunteering tasks</strong> — organizer items assigned to me or to a team I am on, soonest first or grouped by presenter, with what I have finished under them. It sits in the personal rail rather than the Organize one, for organizers too, because it is a person's own work rather than a view of the edition.</li>
+<li><strong>Presenter page</strong> — both checklists, invitation history, sessions, assets, activity.</li>
+</ul>
+<h3 id="97-pyjam-pre-recorded-performances-and-post-production">9.7 PyJam: pre-recorded performances and post-production</h3>
+<p>PyJam sessions are performances recorded by the performer, post-produced by the team, and published to YouTube around a scheduled slot. The flow end to end:</p>
+<ol>
+<li>Organizer adds the session (kind PyJam, pre-recorded) and invites the performer.</li>
+<li>Performer accepts, fills in title and description, and uploads the video from their dashboard. The upload panel shows the file, its duration against the length limit, and the version history.</li>
+<li>The post-production checklist for the session is instantiated. Each item is assignable to a team member.</li>
+<li>The performer's dashboard shows those items in "What we're doing with your video", so they can see "transcript — done, translation — in progress".</li>
+<li>When the final cut is ready, the performer's "approve the final cut" item opens.</li>
+<li>The organizer publishes to YouTube by hand, pastes the URL and publish time into the session, and the last item completes.</li>
+</ol>
+<p><strong>Performer checklist</strong> (seed): update bio and headshot · confirm title and description · read the performer guide · upload your performance video · approve the final cut (waits, "we are still editing your video", until a processed video is in and shared with them) · register · join Discord.</p>
+<p><strong>Post-production checklist</strong> (seed; session-scoped, organizer-owned, fully editable):</p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Completes when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Record intro and outro video (MC)</td>
+<td>intro and outro assets exist</td>
+</tr>
+<tr>
+<td>Review audio and video quality</td>
+<td>manual, with notes on the asset</td>
+</tr>
+<tr>
+<td>Check video length is within limit</td>
+<td>automatic; blocks with the overage</td>
+</tr>
+<tr>
+<td>Transcribe</td>
+<td>transcript asset exists for the session language; the media worker drafts one when the edition asks (§8.8, "Machine transcription")</td>
+</tr>
+<tr>
+<td>Review transcript</td>
+<td>manual</td>
+</tr>
+<tr>
+<td>Translate</td>
+<td>translation asset exists — one item per target language configured in the edition's speaker settings</td>
+</tr>
+<tr>
+<td>Add title card and assemble final video</td>
+<td>processed video asset exists</td>
+</tr>
+<tr>
+<td>Publish to YouTube with schedule and transcript</td>
+<td>YouTube URL and publish time set on the session</td>
+</tr>
+</tbody>
+</table>
+<p>Items are ordered but not gated on each other; transcription can start before the outro is recorded. Because items key on asset kind, automating a step later is a background job that creates the asset with no checklist change; machine transcription (§8.8, task 5.7) is exactly that.</p>
+<p>A pre-recorded session still takes a schedule slot — the premiere or watch-party time — and appears in the public schedule and calendar feeds like any other session.</p>
+<hr />
+<h2 id="10-scheduling-ui">10. Scheduling UI</h2>
+<blockquote>
+<p><strong>Partly built</strong> (M3). The organizer editor below is built (4 October 2026): the grid, dragging, resizing, a keyboard form per card, the inline program item, the timezone switcher and the double-booking warnings, all through one slot endpoint per session (<code>PATCH</code>/<code>DELETE sessions/&lt;slug&gt;/slot/</code>, JSON errors). "Preview as public" waits for the public program work (§11). The presenter view below is built (5 October 2026): everything public plus their own unpublished sessions badged "not yet public", grouped by their local day; its calendar links are placeholders until the feeds (task 4.4).</p>
+</blockquote>
+<p><strong>Organizer editor</strong> — a day-by-time grid: columns are the rooms, rows are 15-minute steps across the conference days. Unscheduled sessions wait in a sidebar and are dragged onto the grid; dragging moves a session, resizing changes its duration. A "+ program item" button on any cell creates an opening, break, or social inline, so the skeleton of a day is built without leaving the grid. Every-room slots render as full-width bands. Conflicts — room overlap, a presenter double-booked — are highlighted in place.</p>
+<p>A timezone switcher on the grid shows the whole schedule as a specific presenter would see it. That is how the team catches "we scheduled her at 3 a.m." before sending the confirmation.</p>
+<p><strong>Presenter view</strong> — the same schedule, read-only, in the presenter's own timezone with their sessions highlighted, visible before publication with a "not yet public" badge, with an add-to-calendar link per session and a personal calendar feed.</p>
+<p><strong>Timezone handling</strong> — UTC everywhere in storage and the API; rendering uses the browser's timezone (overridable, remembered). No timezone arithmetic in templates.</p>
+<h3 id="101-the-working-grid-and-the-published-schedule">10.1 The working grid and the published schedule</h3>
+<blockquote>
+<p><strong>Built</strong> (5 October 2026, the same day it was designed and confirmed). The grid the organizers drag around is a draft; speakers see a snapshot that only changes when an organizer publishes the schedule.</p>
+</blockquote>
+<p><strong>The problem.</strong> The grid is simultaneously the organizers' scratchpad and the speakers' truth. Placing a slot advances the session to <code>SCHEDULED</code> — which locks its title and slug, opens the speaker's "Confirm your scheduled slot" line, ticks the organizer's "Session scheduled" item and starts reminders — and every later move shows up live on the speaker's schedule page. Organizers build a program the way people fill a spreadsheet: everything goes on the grid, gets moved up and down for days, and goes out when it holds together. The portal must not narrate the shuffling.</p>
+<p><strong>The shape: a snapshot, not a flag.</strong> A per-slot "visible" flag would still leak every move made after the flag went on. So the schedule has three audiences and two copies:</p>
+<table>
+<thead>
+<tr>
+<th>Audience</th>
+<th>Reads</th>
+<th>Changes when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Organizers (the editor)</td>
+<td><code>ScheduleSlot</code> — the working grid</td>
+<td>every drag</td>
+</tr>
+<tr>
+<td>Speakers (their schedule page, checklists, feeds)</td>
+<td><strong><code>PublishedSlot</code></strong> — the snapshot</td>
+<td>an organizer clicks <strong>Confirm schedule</strong></td>
+</tr>
+<tr>
+<td>The public (§11, later)</td>
+<td><code>PublishedSlot</code> of public sessions</td>
+<td>ditto, behind <code>program_visibility</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>PublishedSlot</code> is one row per session, same shape as the working slot (<code>room</code> nullable, <code>start_utc</code>, <code>end_utc</code>) plus <code>published_at</code> and <code>ics_sequence</code> — the feeds (§11.3) serve published times, so the <code>SEQUENCE</code> counter lives here and bumps when a publish moves a session, never while organizers shuffle. One word, two scopes, said explicitly wherever it matters: the <strong>schedule</strong> is published to speakers; a <strong>session</strong> is published to the world (<code>PUBLISHED</code> status, §11). Publishing the schedule exposes nothing to the public side.</p>
+<blockquote>
+<p><strong>Naming.</strong> The button is labelled <strong>Confirm schedule</strong> (renamed 7 October 2026) so that "publish" only ever means public (§11.5); this section and the code keep the original publish names (<code>publish_schedule</code>, <code>PublishedSlot</code>) for the speaker-facing snapshot.</p>
+</blockquote>
+<p><strong>Publishing</strong> is one action for the whole edition, never per day: a snapshot of half a schedule would show speakers a grid that contradicts itself. It diffs the working grid against the last snapshot — placed, moved, removed — then, in one transaction: upserts <code>PublishedSlot</code> rows, advances newly published <code>CONFIRMED</code> sessions to <code>SCHEDULED</code> (this is where the identity lock and the checklist effects now fire), bumps <code>ics_sequence</code> on moved ones, and for sessions taken off the grid since the last publish, deletes the snapshot row and returns the session to <code>CONFIRMED</code>, reopening its identity. A public session's slot cannot be removed by a publish (same rule as deleting its slot); a cancelled session's published row is removed on the next publish and its working row already frees the time (§8.5). The editor shows how many unpublished differences exist, marks the affected cards, and the confirm popover lists the counts before the click. <code>Session.schedule()</code> therefore comes to mean "has a published slot": the status machine, the rules registry entries <code>SESSION_SCHEDULED</code> (both kinds) and the speaker page all re-key from <code>ScheduleSlot</code> to <code>PublishedSlot</code>; the editor keeps the working grid's overlap rules exactly as they are.</p>
+<p><strong>Only confirmed sessions publish.</strong> A <code>DRAFT</code> or <code>INVITED</code> session on the grid is the organizers' pencil in the fullest sense: it stays out of every publish (<code>PUBLISHABLE_STATUSES</code> is <code>CONFIRMED</code>/<code>SCHEDULED</code>/<code>PUBLISHED</code>), its presenters, people who may never have been asked, are never emailed, and once the session is confirmed the next publish picks it up as an ordinary placement. The editor gives such a card its own "pencilled in, publishes once confirmed" marker rather than the unpublished one, so the cards and the publish counter tell the same story. <code>confirm()</code> therefore never schedules under this design; the publish is the only scheduler.</p>
+<p><strong>What speakers are told.</strong> The publish popover offers <strong>"Email the affected speakers"</strong>, checked by default. With it on, each presenter <strong>with a confirmed link</strong> whose session was placed, moved or taken off receives one email listing their changes in their own timezone; an invited co-presenter who has not accepted hears nothing. Each line is worded from the snapshot as it stands when the mail is built, so a session a later publish restored is announced at its current time, not as taken off, and a session cancelled since the last publish is announced as cancelled, never with a promise of a new time (cancelling sends nothing itself, so this line is how its speakers hear). The email is sent through the recorded sender (§13) and queued on commit like the portal's other speaker mail; presenters untouched by the publish hear nothing. With it off, the publish is silent, for the fix-a-typo republish. The seeded organizer line "Schedule confirmation sent" stays the human follow-up either way.</p>
+<p><strong>Migration</strong> (one, the next free number): <code>PublishedSlot</code>, plus a data migration copying the working slot of every <code>SCHEDULED</code>/<code>PUBLISHED</code> session into it — those sessions were speaker-visible under the old rule, so their snapshot starts equal to the grid and nothing moves for anyone on deploy. Build order note: this lands <strong>before</strong> the calendar feeds (§11.3), so <code>ics_sequence</code> is born on the right model instead of migrating twice.</p>
+<h3 id="102-seeing-the-whole-program-at-once">10.2 Seeing the whole program at once</h3>
+<blockquote>
+<p><strong>Built</strong> (5 October 2026). The editor's comfortable row height wins for editing one afternoon and loses to a spreadsheet for seeing the shape of a day; the trim and the density switch below close that gap (the all-days view remains listed, not promised).</p>
+</blockquote>
+<p>Three view-layer changes, no model impact:</p>
+<ul>
+<li><strong>Trim the day to its active window.</strong> The grid renders 96 quarter-hours; a conference day uses a fraction of them. The grid starts one hour before the first slot and ends one hour after the last (full day when empty), with "earlier / later" reveals at the edges, so the default page shows the program, not the empty night.</li>
+<li><strong>A density switch</strong> beside the timezone switcher — Comfortable (today's 1.5rem rows), Compact (~0.6rem: one-line cards, details in the tooltip and the pencil), and <strong>Fit</strong>, which divides the viewport height by the trimmed window's rows and sets the row height to match, floor of a few pixels: the whole day on one screen, cards as colored blocks when they must be. Pure CSS variable plus a line of arithmetic, remembered per organizer like the timezone.</li>
+<li><strong>Every day side by side</strong> (later, if wanted): an "All days" tab laying the per-day grids out horizontally in Fit density — the spreadsheet's one-page view. Costs only template work once the density switch exists, so it is listed, not promised.</li>
+</ul>
+<hr />
+<h2 id="11-public-embeds-and-export">11. Public embeds and export</h2>
+<blockquote>
+<p><strong>Partly built.</strong> §11.1 (the JSON API), §11.2 (the widget script) and §11.5 (draft vs. published) are built (October 2026), and so are the §11.3 feeds; the iframe embed and the exports (§11.4) are not.</p>
+</blockquote>
+<p>The conference website is static. The portal exposes read-only data and a drop-in widget so the site never needs a rebuild when the program changes.</p>
+<h3 id="111-json-api">11.1 JSON API</h3>
+<div class="highlight"><pre><span></span><code>GET /api/v1/&lt;conference&gt;/sessions/            published sessions with presenters and slot
+GET /api/v1/&lt;conference&gt;/presenters/          public presenters with their sessions
+GET /api/v1/&lt;conference&gt;/schedule/            slots by day, plus rooms
+GET /api/v1/&lt;conference&gt;/sessions/&lt;slug&gt;/     one session
+</code></pre></div>
+<p>Only published sessions and public presenters (others appear by name only on their sessions), never emails or internal notes. Responses are cached for five minutes per conference and invalidated on save; a preview response is never cached. The conference site's origins are listed per edition (<code>AllowedOrigin</code>, one website per row in the admin) so its pages may call the API from the browser. Built 7 October 2026 (task 6.2) as plain Django views. Program-kind sessions carry <code>is_content: false</code> so the widget can draw breaks as bands rather than cards.</p>
+<h3 id="112-embeddable-widget">11.2 Embeddable widget</h3>
+<div class="highlight"><pre><span></span><code><span class="p">&lt;</span><span class="nt">div</span> <span class="na">data-flashlights-widget</span><span class="o">=</span><span class="s">"schedule"</span> <span class="na">data-conference</span><span class="o">=</span><span class="s">"summit-2026"</span><span class="p">&gt;&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">script</span> <span class="na">src</span><span class="o">=</span><span class="s">"https://portal.example.org/static/widget/v1.js"</span> <span class="na">defer</span><span class="p">&gt;&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+</code></pre></div>
+<blockquote>
+<p><strong>Built</strong> (7 October 2026, tasks 6.3 and 6.4): the widget (<code>portal/static/widget/v1.js</code>, built from <code>frontend/widget/v1.js</code>) and the iframe version at <code>/embed/&lt;edition&gt;/&lt;view&gt;/</code>, which reports its height to the host page so its frame can fit; both snippets are on the Publishing page's Share tab.</p>
+</blockquote>
+<p>A small self-contained script (no framework) that renders <code>schedule</code>, <code>speakers</code>, or a single <code>session</code> into the host element, in the visitor's timezone, with minimal CSS the conference site can restyle through CSS variables. An iframe version exists for pages that cannot add scripts.</p>
+<p>The widget is served by the portal. The conference site already depends on the portal for <code>stats.json</code>, so this does not add a new failure mode; what it adds is mitigation: the script and other static assets are long-cached behind the CDN so a stalled application keeps serving the last good copy, the widget shows a link to the portal's own schedule page instead of a blank box if the API is unreachable, and no portal deploys happen during the conference weekend except hotfixes.</p>
+<h3 id="113-calendar-feeds">11.3 Calendar feeds</h3>
+<p>Attendees can put a single workshop or panel in their calendar and have it stay correct if the slot moves:</p>
+<div class="highlight"><pre><span></span><code>GET /api/v1/&lt;conference&gt;/schedule.ics                          everything (subscribable)
+GET /api/v1/&lt;conference&gt;/schedule.ics?sessions=a,b,c           a personal selection (subscribable)
+GET /api/v1/&lt;conference&gt;/schedule.ics?kind=WORKSHOP&amp;room=…  filtered (built 5 October 2026 under /speakers/ with per-session and signed per-presenter feeds, reading published slots; the `schedule.ics` and `sessions/&lt;slug&gt;.ics` aliases below are routed under /api/v1/ since the public API, the public per-presenter feed is not built)
+GET /api/v1/&lt;conference&gt;/sessions/&lt;slug&gt;.ics                   one session
+GET /api/v1/&lt;conference&gt;/presenters/&lt;slug&gt;.ics                 everything one presenter is on
+</code></pre></div>
+<ul>
+<li>Every feed is subscribable (<code>webcal://</code>), not just downloadable. Subscribing to a session means a reschedule updates the attendee's calendar.</li>
+<li>The widget once let a visitor star sessions and subscribe to just those; the user removed starring on 7 October 2026 (each session keeps its own subscribe link, and <code>?sessions=</code> still works for anyone building such a link).</li>
+<li>Feeds use stable UIDs per session, bump the sequence on every change, and emit cancelled events rather than dropping them, so subscribed calendars stay correct.</li>
+<li>Logged-in presenters get their own feed including unpublished sessions, so their calendar is right before the program is public.</li>
+</ul>
+<h3 id="114-export">11.4 Export</h3>
+<ul>
+<li><strong>JSON or Markdown data file</strong> of sessions and presenters for a static-site build, for anyone who prefers to bake the program in rather than fetch it.</li>
+<li><strong>CSV</strong> of presenters with sessions and checklist completion — the old spreadsheet, exported from the source of truth instead of being it.</li>
+<li><strong>Canva bulk-create CSV</strong> for speaker cards, straight from the presenter list.</li>
+</ul>
+<h3 id="115-draft-vs-published">11.5 Draft vs. published</h3>
+<p>The program is internal until the team publishes it, and a presenter's details stay hidden until their session is scheduled and published. Three switches, evaluated together:</p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Switch</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Edition</td>
+<td><code>program_visibility</code> = internal / published</td>
+<td>Master switch on <code>SpeakerSettings</code>. While internal, the API returns an empty program and the widget shows "Program coming soon".</td>
+</tr>
+<tr>
+<td>Session</td>
+<td>scheduled <strong>and</strong> <code>is_public</code></td>
+<td>A session appears only once it is on the published schedule (§10.1) and an organizer has published it. Scheduling alone publishes nothing. Program items (breaks, opening, closing) are the exception: they go public with the schedule.</td>
+</tr>
+<tr>
+<td>Presenter</td>
+<td><code>is_public</code></td>
+<td>Opt-out hides bio, headshot, and links; the name still appears on their sessions.</td>
+</tr>
+</tbody>
+</table>
+<p>A presenter's bio is public only if the program is published, they are on at least one published session, and they have not opted out. A confirmed presenter whose session is not yet scheduled is simply absent from the public API — no "TBA" rows leak names.</p>
+<blockquote>
+<p><strong>Built</strong> (7 October 2026, task 6.1): <code>speakers/public.py</code> and the organizers' Publishing page. The calendar feeds already read through it; the API, widget and exports will.</p>
+</blockquote>
+<p><strong>Preview for the website build:</strong> every public endpoint and the widget accept a signed preview token that bypasses the edition and session switches (a presenter's own opt-out still holds). It has no expiry: it works until an organizer makes a new one, which revokes every older link, or until the program goes public, so the conference site can be developed against the draft program and switched to live by removing the token. Preview responses are never cached.</p>
+<p>Cancelling a session or a presenter withdrawing un-publishes it, invalidates the cache, and the widget drops it on next load — no site rebuild. The session's files stay (§8.8, "Deleting a file").</p>
+<hr />
+<h2 id="12-integrations">12. Integrations</h2>
+<h3 id="121-pretix-registration">12.1 Pretix (registration)</h3>
+<p>Registration is through pretix, which offers an API and webhooks. The portal keeps a <code>PretixOrder</code> record per order and uses it to auto-complete "registered for the conference":</p>
+<ul>
+<li><strong>Webhooks</strong> for order placed, paid, cancelled, expired, and changed. Since pretix webhooks carry an order reference rather than a signed payload, the receiver re-fetches the order from the API before recording it.</li>
+<li><strong>Nightly reconciliation</strong> pages through orders modified since the last run, catching missed webhooks and edits made in the pretix backend.</li>
+<li><strong>Matching</strong> is by email, case-insensitive, against both the order email and attendee emails. Organizers can link an order to a presenter by hand when someone registered under a different address; a manual link wins.</li>
+<li><strong>Organizer controls:</strong> a "registered" column on the board and a "look up in pretix" button on the presenter page.</li>
+<li><strong>Optional:</strong> if speakers register free, voucher codes can be created through the pretix API and included in the registration-info email.</li>
+</ul>
+<p>Pretix settings (URL, organizer, event, token, webhook secret) are per conference.</p>
+<h3 id="122-discord-deferred">12.2 Discord (deferred)</h3>
+<p>Channel and role setup is manual in 2026: organizers create channels on Discord and record them in the portal. If the team wants automation later, it would add Discord account linking for presenters (which also turns "joined Discord" into an automatic check), a bot that creates channels from the schedule and assigns a speaker role, and a schedule announcement post. Estimated effort is around 56 hours hand-coded or 28 hours AI-assisted with review, plus a Discord admin to create the bot application. Account linking alone is about 10 hours and is the most valuable piece.</p>
+<hr />
+<h2 id="13-storage-email-background-jobs">13. Storage, email, background jobs</h2>
+<ul>
+<li><strong>Files</strong> — Digital Ocean Spaces, private bucket, presigned URLs for upload and download; multipart presigned upload for video; <code>ffprobe</code> on the worker for duration; a bucket lifecycle rule expires abandoned multipart uploads. Public headshots are copied to a public prefix on publish.</li>
+<li><strong>Email</strong> — the portal's existing backend. Templates: invitation, invitation reminder, onboarding, registration info, schedule confirmation, daily checklist digest, and the proposal emails (§2.5). Every send is logged, and a copy of what was sent is kept, for maintainers and for the person it went to (§13.1).</li>
+<li><strong>Jobs</strong> — nightly auto-completion re-check, daily reminder digest, nightly pretix reconciliation, cache warm after publish. Uses the portal's existing job runner; no new infrastructure.</li>
+</ul>
+<h3 id="131-the-record-of-what-was-sent">13.1 The record of what was sent</h3>
+<blockquote>
+<p><strong>Built</strong> on 26 September 2026 (task 2.23), as written here, with three details settled at build time: whose an email is comes from the send context only where the address proves it, so the organizers' copy of a proposal never lands in the proposer's trail; the invitation's accept link, which signs its reader in as the presenter, is withheld from the stored body, because a trail read by maintainers must never hold a credential; and a send that fails inside a caller's transaction leaves no record, since the rollback takes it. <code>speakers/README.md</code> under Email is the tiebreaker.</p>
+</blockquote>
+<p>The activity log records that an invitation was sent, and the reminder log records that a digest went out, but neither keeps what the message said. "What did we actually send her, and when" is a question organizers and maintainers ask, and today nobody can answer it. The person it was sent to has the same question, from the other side: "did the portal ever tell me about the schedule?"</p>
+<p>Every email the portal sends a person leaves a record: the address as sent, the subject, the template that identifies the kind, the rendered Markdown body (which is the source of both parts, so the HTML need not be stored), the ids it was about, the time, and whether it failed with its error. The account and the presenter it concerns are nullable, so a record outlives what it was about.</p>
+<p>One place writes it: the shared send helper every app already calls, so a volunteer's or a sponsor contact's trail is as whole as a speaker's. Account emails are the exception, and deliberately: sign-in codes, password resets and address verification go through the account adapter rather than that helper, never reach the record, and a trail is not where a live reset link belongs.</p>
+<p>The trail has two readers. A <strong>Maintenance</strong> page, beside Accounts, gated on <code>is_maintainer</code> rather than on organizer status, because it holds message bodies for everyone: newest first, filtered by edition, presenter and kind, searchable by subject and address, and a row expands to the body. And a personal page under <strong>Manage account</strong>, "Emails we sent you", where anyone signed in reads exactly what the portal sent them: the record's account is theirs, or the presenter it concerns is, which is what lets a speaker see the invitation that arrived before their account existed. Never by address alone, since an organizer can type an address into a presenter row before anyone has proven it is theirs.</p>
+<p>Bodies are personal data: they are kept for the edition plus a year and pruned nightly, which both pages say. Delivery receipts, opens and bounces are not part of this: they need the mail provider's webhooks, and the record's job is to say what the portal sent, not what the recipient's server did with it.</p>
+<hr />
+<h3 id="132-file-notifications-the-speakers-digest-and-the-teams-upload-notice">13.2 File notifications: the speaker's digest, and the team's upload notice</h3>
+<blockquote>
+<p><strong>Built</strong>: the digest (task 5.11, 2 October 2026) and the upload notice (task 5.12, 3 October 2026).</p>
+</blockquote>
+<p>Two things happen to files that someone should hear about, and today the portal says nothing about either. The team shares a poster, a transcript, the final cut, and the speaker finds out only by opening their session page. A performer uploads their video, or a new take of it, and the liaison finds out by checking the board. Both get an email; they are shaped differently because the traffic is different.</p>
+<h4 id="what-the-team-shared-in-the-daily-digest">What the team shared, in the daily digest</h4>
+<p>A share is a click on a file row, and the design team shares in sittings: every poster for the edition in one afternoon, then the final cuts as they finish. An email per click would be noise. The speaker already gets one daily email from the portal, the checklist digest (§9.4), so newly shared files <strong>ride in that email</strong> rather than in one of their own: a "New files from the team" section, present only when there is something in it, and <strong>no email at all when there is nothing due and nothing new</strong>. At most one portal email per speaker per day, and the final cut arrives in the same message as the "Approve the final cut" reminder it opens. The cost is up to a day's wait between the share and the email; the page shows the file at once, and a poster or a transcript is not urgent. An hourly digest of its own, with a quiet period to bundle a sitting, was the alternative and is the fallback if the delay turns out to matter.</p>
+<p><strong>What the digest changes.</strong> Today it goes only to presenters with a reminder due at one of the thresholds. It now also goes to a presenter who has new files and nothing due, so the loop walks both sets. The subject says what is inside: "2 todos due soon and 3 new files from the team", or one half when only one applies. The reminder rows and the file-notice rows are written in the one transaction with the send, the <code>_deliver</code> pattern, so a crash never leaves either half-recorded. The organizer digest is untouched.</p>
+<p><strong>What counts as new.</strong> Not a timestamp on the presenter, but a row per file told: <code>SharedFileNotice(presenter, asset, sent_at)</code>, unique per pair, the shape <code>ReminderLog</code> already uses so the same thing is never sent twice. A file is due when it is the newest <code>READY</code> version of its line, marked shared, and has no notice row for this presenter. That definition answers the edge cases without special cases: a presenter added to a panel later is told about the files already shared there, because they have no rows for them; a replaced version is a new asset row, so a re-shared final cut v2 is announced; a file unshared and shared again is not announced twice, since the row stays. A file unshared before the digest ran is simply not shared, and is not mentioned. <code>MediaAsset</code> gains <code>shared_at</code>, set when the flag goes on and cleared when it goes off or the version is withdrawn, so the file rows and the digest can say when.</p>
+<p><strong>Who gets it.</strong> Every presenter with a confirmed link on the session, on an accepted session rather than a proposal, in an edition whose speaker side is on (<code>media_for_speakers</code>); the same rule as <code>media.can_download</code>, since the email must not announce a file the page would refuse. A cancelled session is skipped. The address is <code>Presenter.email</code>, as for every other speaker email, and the record is attached to the presenter and the user so it shows under "Emails we sent you" (§13.1).</p>
+<p><strong>What it says.</strong> Under the digest's reminders, a heading per session with a line per file: the title when the line has one, else the kind, with the variant and language, the version, and when it was shared. A link to the session page's Files tab, where the file is previewed and fetched. <strong>No download links</strong>: a presigned link expires in minutes and the record keeps the body, so the email points at the page and the page mints the link on the click.</p>
+<h4 id="a-speaker-uploaded-told-at-once">A speaker uploaded, told at once</h4>
+<p>A speaker's upload is rare and wanted: one video, perhaps a second take, and the team is waiting for it. So it is <strong>one email per upload, sent when the upload completes</strong>, not bundled. The trigger is <code>asset_ready</code> for a file whose uploader is a presenter on the session rather than an organizer, which under <code>media.can_upload</code> means their raw video. A machine transcript landing is not an upload and sends nothing; an organizer uploading on the performer's behalf sends nothing either, since the team did it.</p>
+<p><strong>Who gets it.</strong> The uploading presenter's liaison. Without one, the team's inbox the way every organizer-facing email finds it (<code>emails.organizer_inbox</code>): the edition's organizers address, else the staff accounts. With none of those either, nothing is sent, nothing is recorded as sent, and the gap is logged at warning. The email says whether it went to the liaison or to the team. It is recorded against the session, so it shows on the session's trail but not under the speaker's own "Emails we sent you": it is the team's mail about them, not mail to them.</p>
+<p><strong>What it says.</strong> Who uploaded what for which session, the file name and size, and whether it is the first video or replaces an earlier version ("v2, replacing v1"). The length is probed after the upload on the media queue, so the email does not wait for it; it says the length is being checked and the page will show it against the limit. A link to the organizer's session page, Files section, and to the checklist board. Subject: "Maria uploaded a video for A PyJam set". Reply-to is the presenter's address, so the liaison can answer them directly.</p>
+<p><strong>Delivery.</strong> The receiver queues a task with <code>transaction.on_commit</code>, like the invitation email, acknowledged late and retried the same way (<code>common.tasks.email_task</code>), and like them it checks the email record before sending so a redelivered task does not send twice; the asset is looked up again in the task, and an asset deleted in between sends nothing. The no-liaison fallback can address several staff accounts, which that decorator warns against, but it is one message in one send: a retry happens only when the send raised, which is when nobody got it.</p>
+<h4 id="what-neither-does">What neither does</h4>
+<p>No per-presenter opt-out in the first version, matching the checklist digest; it is one email per sitting at most. No email to the speaker when their own upload completes; the page tells them. No bundling of upload notices; if performers turn out to upload takes in bursts, a quiet period like the digest's is the fix, and the record will show whether it is needed.</p>
+<h2 id="14-build-order">14. Build order</h2>
+<p>The conference is about eleven weeks away and invitations need to go out well before that, so the order lets organizers start inviting after the first milestone while the rest is built.</p>
+<p>The milestones below are called <strong>stages</strong> in the code and in
+<code>speakers/README.md</code>. Translating between the two:</p>
+<table>
+<thead>
+<tr>
+<th>Here</th>
+<th>In the code</th>
+<th>Where it is cited</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M1</td>
+<td>Stage 1</td>
+<td>—</td>
+</tr>
+<tr>
+<td>M2</td>
+<td>Stage 2</td>
+<td><code>speakers/README.md</code> on where checklists are instantiated</td>
+</tr>
+<tr>
+<td>M2b</td>
+<td>no stage number yet</td>
+<td>—</td>
+</tr>
+<tr>
+<td>M3</td>
+<td>Stage 3</td>
+<td><code>ScheduleSlot</code> ("shell for Stage 3") and the presenter schedule placeholder</td>
+</tr>
+<tr>
+<td>M3b</td>
+<td>Stage 3b</td>
+<td><code>MediaAsset</code></td>
+</tr>
+<tr>
+<td>M4</td>
+<td>Stage 5</td>
+<td><code>speakers/README.md</code> on the public schedule, and the addresses page</td>
+</tr>
+<tr>
+<td>M5</td>
+<td>no stage number yet</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>A number with a decimal is a <strong>task</strong>, not a stage: Stage 1.5 and 4.1 are
+the storage work (bucket and presigned URLs, then the upload tasks 4.1 to
+4.3 inside Stage 3b), and Stage 2.5 is the round that brings htmx in.</p>
+<table>
+<thead>
+<tr>
+<th>Milestone</th>
+<th>Delivers</th>
+<th>Target</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>M1 — Presenters and invitations</strong></td>
+<td>Session, Presenter, SessionPresenter, Invitation; invitation email and accept flow; speaker profile and session editing; admin; isolation tests</td>
+<td>late September</td>
+<td><strong>Built</strong></td>
+</tr>
+<tr>
+<td><strong>M2 — Checklists</strong></td>
+<td>template editor and seed defaults; instances; auto-completion; speaker dashboard; organizer board and queue; pretix sync; reminder digests</td>
+<td>early–mid October</td>
+<td><strong>Built</strong>, plus readiness (§9.3a) which the proposal did not have</td>
+</tr>
+<tr>
+<td><strong>M2b — Permissions</strong></td>
+<td>permission catalogue and team-derived grants (§7.1); every app on <code>has_perm</code>; team permission pickers and presets; <code>Role</code> dropped; media permissions land with M3b</td>
+<td>mid October, before M3</td>
+<td><strong>Not built.</strong> Access is still <code>is_staff</code>/<code>is_superuser</code> plus team membership</td>
+</tr>
+<tr>
+<td><strong>M3 — Scheduling</strong></td>
+<td>Rooms, slots, program items, conflict checks, drag-and-drop editor, presenter schedule view, calendar feeds</td>
+<td>mid–late October</td>
+<td><strong>Built through the editor and the presenter view</strong> (October 2026): rooms, slots, overlap rules, the drag-and-drop editor and the presenter's schedule page are in; the published-schedule split (§10.1) and the calendar feeds follow in this PR stack</td>
+</tr>
+<tr>
+<td><strong>M3b — Media</strong></td>
+<td>video upload, duration check, performer upload panel, session-scoped templates, post-production board</td>
+<td>late October, alongside M3</td>
+<td><strong>Not built.</strong> <code>MediaAsset</code> exists as a shell and the video-length rule reads it; nothing uploads</td>
+</tr>
+<tr>
+<td><strong>M4 — Public</strong></td>
+<td>JSON API, widget, iframe, draft/preview/publish, data export; wired into the conference site</td>
+<td>early November</td>
+<td><strong>Not built.</strong> None of the URLs in §11 exist yet</td>
+</tr>
+<tr>
+<td><strong>M5 — Hardening</strong></td>
+<td>promo assets, reminder tuning, load test on the public endpoints, documentation</td>
+<td>mid November</td>
+<td><strong>Not built</strong>, except this page</td>
+</tr>
+</tbody>
+</table>
+<p>Each milestone ships behind the edition's feature flag, so the 2026 conference can use one while the next is in review.</p>
+<p>Sections 4.1, 8.6, 8.8, 10 and 11 describe work in the unbuilt milestones
+and are written in the present tense as proposals. The status column above
+is the place to check before reading any of them as a description of the
+running portal.</p>
+<hr />
+<h2 id="15-decisions-and-open-questions">15. Decisions and open questions</h2>
+<p><strong>Decided</strong></p>
+<ul>
+<li>No CFP; the portal is the system of record for the program.</li>
+<li>Registration through pretix, synced by webhook and nightly reconciliation.</li>
+<li>Discord channel and role setup stays manual in 2026.</li>
+<li>Panels are assembled by organizers.</li>
+<li>The whole schedule, including opening and breaks, is built in the portal.</li>
+<li>Checklists are organizer-defined templates with shipped defaults.</li>
+<li>The widget is served by the portal.</li>
+<li>PyJam performances are pre-recorded, uploaded by performers, post-produced by the team, and published to YouTube by hand.</li>
+<li>Premiere on YouTube or watch party on Discord is supported per session and can be decided later.</li>
+<li>The program and presenter details are internal until published; a presenter's bio is public only through a published, scheduled session.</li>
+</ul>
+<p><strong>Open</strong></p>
+<ol>
+<li>PyJam length limit and translation languages — edition settings, but the seed template needs the values.</li>
+<li>Do speakers register through the normal ticket flow or with a voucher? Decides whether voucher generation goes into M2.</li>
+</ol>
+<hr />
+<h2 id="appendix-a-if-a-future-edition-uses-pretalx">Appendix A — If a future edition uses pretalx</h2>
+<p>A future edition may run a call for proposals again. Nothing in this design assumes it never will, and the right way to bring pretalx in is <strong>import, not integration</strong>:</p>
+<ul>
+<li>Pretalx owns the call for proposals, review, and acceptance. The portal owns everything after acceptance — checklists, scheduling, media, publishing — exactly as it does now.</li>
+<li>When submissions are accepted, an organizer runs an import (a management command or a button on the sessions page) that reads accepted submissions and their speakers from the pretalx API and creates <code>Session</code> and <code>Presenter</code> rows: title, abstract, description, duration, language, track, and speaker name, bio, and email. Sessions arrive as <code>CONFIRMED</code> with the presenter linked, and the invitation step is replaced by a "welcome, your account is ready" email pointing at the sign-in code.</li>
+<li>Each imported row keeps a <code>pretalx_code</code>, so the import can be re-run to pick up late acceptances or edited abstracts without creating duplicates. Organizers choose per field whether pretalx or the portal wins on re-import; the sensible default is pretalx for abstracts until the portal's copy has been edited, portal thereafter.</li>
+<li>Scheduling stays in the portal. Pretalx's schedule features are not used, which avoids two schedules that can disagree.</li>
+<li>Speakers still edit their bio and session content in the portal. If the team wants those edits reflected in pretalx (for its public pages), that is a one-way push that can be added later; it is not required.</li>
+<li>No webhooks, no nightly sync, no cross-checking of accounts — a deliberately smaller surface than a live two-way integration, because after acceptance the portal is the source of truth and pretalx becomes an archive.</li>
+</ul>
+<p>The import is a self-contained module of roughly a week's work and touches no existing model beyond adding the <code>pretalx_code</code> fields. Everything else in this document — checklists, scheduling, widget, media, publishing — works unchanged with imported sessions.</p>
+
+
+
+
+
+
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="October 17, 2026 18:59:04 UTC">October 17, 2026</span>
+  </span>
+
+    
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Created">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="September 24, 2026 15:22:04 UTC">September 24, 2026</span>
+  </span>
+
+    
+    
+    
+  </aside>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../session-and-presenter-addresses/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Session and Presenter Addresses">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Session and Presenter Addresses
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../email-delivery/" class="md-footer__link md-footer__link--next" aria-label="Next: Email Delivery">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Email Delivery
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/mariatta/flashlights" target="_blank" rel="noopener" title="The repository" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.footer", "navigation.sections", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "toc.follow", "content.code.copy", "content.code.select", "content.tabs.link", "content.action.edit"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
