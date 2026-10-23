@@ -45,12 +45,15 @@ changelog.
 
 ## Making a release
 
-1. While work lands, each change that a deployment would notice gets a line
-   under the next version's heading in `CHANGELOG.md`, written
-   `## X.Y.Z (unreleased)`. A test fails when `pyproject.toml`'s version
-   has no section, so bumping the version means starting its entry.
+1. The first change after a release that a deployment would notice opens
+   the next version: that pull request bumps the version in
+   `pyproject.toml` and adds `## X.Y.Z (unreleased)` at the top of
+   `CHANGELOG.md` with its line under it. Nothing is added in advance: no
+   placeholder version, no empty section. A test fails when
+   `pyproject.toml`'s version has no section, so the bump and the heading
+   travel together. Every later change of that version adds its line.
 2. When it is time, date the heading, `## 0.2.0 (2026-11-20)`, check that
-   `pyproject.toml` says the same version, and commit on `main`.
+   `pyproject.toml` says the same version, and merge that on `main`.
 3. Tag that commit and push the tag:
 
    ```bash
@@ -62,8 +65,8 @@ changelog.
    version, or when the changelog section is missing or undated:
    `python scripts/release.py v0.2.0` runs the same check locally and
    prints the notes it would publish.
-5. Afterwards, start the next entry: bump the version and add
-   `## 0.2.1 (unreleased)` (or the next minor) at the top.
+5. Nothing follows. `main` stays at the released version until the next
+   change arrives and opens the next entry, as in step 1.
 
 A failed run publishes nothing, or only some of the images, or the
 images and the release but not the docs; fix the cause and run the
