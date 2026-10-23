@@ -7,6 +7,17 @@ a change to the [public API](docs/developer/community_apps.md#public-api)
 for community apps is marked **Breaking**.
 [Releasing](docs/developer/releasing.md) says how a release is made.
 
+## 0.2.0 (unreleased)
+
+- **A health route for the hosts' probes.** `GET /_health/` answers `200
+  ok` before the `Host` header is checked and without a database query, so
+  Cabotage (whose default probe path it is), Azure Container Apps (the
+  template now declares startup, readiness and liveness probes against it)
+  and any proxy or uptime monitor can probe the web process without a
+  hostname and without rendering a page; the compose template's `web`
+  service carries the same check. gunicorn keeps the probes out of the
+  access log.
+
 ## 0.1.0 (2026-10-21)
 
 The first release of Flashlights, derived from the

@@ -180,6 +180,8 @@ INSTALLED_APPS = EXTRA_APPS + [
 DJANGO_TABLES2_TEMPLATE = "portal/base-tables-responsive.html"
 
 MIDDLEWARE = [
+    # First: it answers the hosts' probes before the Host header is checked.
+    "portal.health.HealthCheckMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
