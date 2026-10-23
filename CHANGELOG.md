@@ -7,6 +7,8 @@ a change to the [public API](docs/developer/community_apps.md#public-api)
 for community apps is marked **Breaking**.
 [Releasing](docs/developer/releasing.md) says how a release is made.
 
+## 0.2.1 (unreleased)
+
 ## 0.2.0 (2026-10-22)
 
 - **A health route for the hosts' probes.** `GET /_health/` answers `200
