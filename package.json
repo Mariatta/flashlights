@@ -8,7 +8,7 @@
   },
   "devDependencies": {
     "bootstrap": "5.2.0",
-    "chart.js": "4.5.1",
+    "chart.js": "4.6.1",
     "htmx.org": "2.0.4",
     "jquery": "3.6.0",
     "select2": "4.1.0-rc.0",
