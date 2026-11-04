@@ -128,6 +128,12 @@ class TestGate:
             ("/captcha/image/abc/", True),
             ("/static/portal.css", True),
             ("/media/profile_pictures/ada.png", True),
+            ("/theme.css", True),
+            ("/favicon.svg", True),
+            ("/favicon.png", True),
+            ("/apple-touch-icon.png", True),
+            ("/share-card.png", True),
+            ("/theme.css/", False),
             ("/volunteer/", False),
             ("/speakers/me/", False),
         ],
@@ -137,6 +143,18 @@ class TestGate:
         reached, so the asset prefixes are checked here directly."""
         middleware = AgreementRequiredMiddleware(lambda request: None)
         assert middleware._exempt(rf.get(path)) is exempt
+
+    def test_the_theme_stylesheet_reaches_an_account_that_has_not_agreed(
+        self, client, user
+    ):
+        """The page that asks is styled by /theme.css. Before this, the
+        gate redirected that request too, so the browser got HTML in place
+        of CSS and the page's button rendered as bare text."""
+        client.force_login(user)
+        response = client.get(reverse("brand_theme_css"))
+        assert response.status_code == 200
+        assert response["Content-Type"].startswith("text/css")
+        assert "--brand-primary" in response.content.decode()
 
     def test_anonymous_visitors_pass(self, client):
         assert client.get(reverse("index")).status_code == 200

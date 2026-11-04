@@ -10,6 +10,8 @@ including ones written later, and so a direct link into the portal cannot
 walk past it.
 """
 
+from functools import cache
+
 from django.conf import settings
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -33,6 +35,24 @@ MAX_TRIES = 3
 #: Every entry keeps its trailing slash, so a future app mounted at
 #: /accounts-of-something/ is not exempt by accident.
 EXEMPT_PREFIXES = ("/accounts/", "/admin/", "/captcha/")
+
+#: The routes that draw a page: the theme stylesheet and the icons. The page
+#: that asks is styled by the first, so redirecting that request too would
+#: hand the browser HTML in place of CSS and leave the page's button bare.
+#: Named rather than listed as paths so a renamed route cannot slip past.
+BRAND_URL_NAMES = (
+    "brand_theme_css",
+    "brand_favicon",
+    "brand_favicon_png",
+    "brand_apple_touch_icon",
+    "brand_share_card",
+)
+
+
+@cache
+def brand_paths():
+    """The brand routes' paths, resolved once the URL conf is loaded."""
+    return frozenset(reverse(name) for name in BRAND_URL_NAMES)
 
 
 def has_agreed(user):
@@ -110,7 +130,7 @@ class AgreementRequiredMiddleware:
 
     def _exempt(self, request):
         path = request.path
-        if path.startswith(EXEMPT_PREFIXES):
+        if path.startswith(EXEMPT_PREFIXES) or path in brand_paths():
             return True
         for prefix in (settings.STATIC_URL, settings.MEDIA_URL):
             # STATIC_URL is stored without a leading slash in this project.
