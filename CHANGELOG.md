@@ -15,6 +15,11 @@ for community apps is marked **Breaking**.
   carries the instance's accent. The browser got HTML in place of CSS, and
   "Agree and continue" rendered as bare text. The gate now lets the theme
   stylesheet, the icons and the share card through.
+- **The pages say "your profile".** The agreements page asks "everyone
+  with an account" rather than "a portal account". The profile form says
+  "Update your profile" rather than "Edit your Portal Profile"; its
+  breadcrumb, the account rail and every link to it say "Update profile";
+  and the profile page says "Your profile".
 
 ## 0.2.0 (2026-10-22)
 
