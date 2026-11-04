@@ -1,4 +1,4 @@
-FROM python:3.14-bookworm AS base
+FROM python:3.15-bookworm AS base
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 RUN mkdir /code
