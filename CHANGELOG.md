@@ -7,6 +7,15 @@ a change to the [public API](docs/developer/community_apps.md#public-api)
 for community apps is marked **Breaking**.
 [Releasing](docs/developer/releasing.md) says how a release is made.
 
+## 0.2.1 (unreleased)
+
+- **The agreements page is styled.** An account that had not yet agreed to
+  the Code of Conduct and the Terms of Service was sent to the page that
+  asks, and so was its request for `/theme.css`, the stylesheet that
+  carries the instance's accent. The browser got HTML in place of CSS, and
+  "Agree and continue" rendered as bare text. The gate now lets the theme
+  stylesheet, the icons and the share card through.
+
 ## 0.2.0 (2026-10-22)
 
 - **A health route for the hosts' probes.** `GET /_health/` answers `200
