@@ -25,6 +25,7 @@ import math
 import os
 import tomllib
 from dataclasses import dataclass
+from functools import cache
 from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
@@ -34,8 +35,12 @@ from PIL import Image, ImageDraw, ImageFont
 #: name -> (accent, hover, press). Beam is the design system's own palette;
 #: teal, copper and indigo are the Popular theme's demo palettes; raspberry
 #: is the upstream portal's heritage palette.
+#: The design system's yellow: the Beam accent, and the mark's beam and
+#: lights whatever the ground.
+BEAM = "#ffd43b"
+
 PRESETS = {
-    "beam": ("#ffd43b", "#ffe27a", "#f2bd00"),
+    "beam": (BEAM, "#ffe27a", "#f2bd00"),
     "teal": ("#0f766e", "#0d5f59", "#0b4f4a"),
     "copper": ("#b45309", "#92400e", "#7c2d12"),
     "indigo": ("#4f46e5", "#4338ca", "#3730a3"),
@@ -53,8 +58,10 @@ DEFAULT_TITLE = "Flashlights"
 CORE_DOCS_URL = "https://docs.flashlights.app/"
 
 
+@cache
 def core_version():
-    """The version pyproject.toml declares, which is the image's."""
+    """The version pyproject.toml declares, which is the image's. Read once:
+    it is hashed into every page's asset URLs."""
     with open(Path(__file__).resolve().parent.parent / "pyproject.toml", "rb") as f:
         return tomllib.load(f)["project"]["version"]
 
@@ -68,8 +75,6 @@ def core_docs_url(version=None):
 NIGHT = "#0f0f0d"
 PAPER = "#f7f5ef"
 WHITE = "#ffffff"
-#: The mark's beam and lights, always this yellow whatever the ground.
-BEAM = "#ffd43b"
 
 #: The share card's bottom band: the footer's Night ground, brought to the
 #: card so the Flashlights lockup sits where its mark reads. On the accent
@@ -235,8 +240,15 @@ class Brand:
     def version(self):
         """Short content hash; the theme, favicon and share card URLs carry
         it so caches drop the old colours or wording the moment the
-        environment changes."""
-        source = self.theme_css() + self.initial + self.title + self.description
+        environment changes, and the old drawing when the image is
+        upgraded: the share card is served as immutable for a year."""
+        source = (
+            core_version()
+            + self.theme_css()
+            + self.initial
+            + self.title
+            + self.description
+        )
         return hashlib.sha256(source.encode()).hexdigest()[:12]
 
     def favicon_svg(self):
@@ -290,9 +302,15 @@ class Brand:
             ink=ink,
         )
         draw.rectangle((0, field, width, height), fill=parse_hex(NIGHT))
+        # The lockup, mark then name, centred as one block.
         middle = field + CARD_BAND / 2
-        _draw_mark(image, width / 2 - 96, middle, 56, PAPER)
-        _draw_centered(draw, "Flashlights", width / 2 + 28, middle, 30, ink=PAPER)
+        mark, gap = 56, 16
+        name = draw.textlength("Flashlights", font=_font(30))
+        left = (width - (mark + gap + name)) / 2
+        _draw_mark(image, left + mark / 2, middle, mark, PAPER)
+        _draw_centered(
+            draw, "Flashlights", left + mark + gap + name / 2, middle, 30, ink=PAPER
+        )
         return _png_bytes(image.convert("RGB"))
 
 
@@ -349,14 +367,14 @@ def _font(size):
     return ImageFont.load_default(size=size)
 
 
-def _draw_centered(draw, text, x, y, size, max_width=None, opacity=255, ink=WHITE):
+def _draw_centered(draw, text, x, y, size, max_width=None, ink=WHITE):
     """Text in ``ink`` centred on (x, y), shrunk until it fits ``max_width``."""
     font = _font(size)
     if max_width:
         while size > 16 and draw.textlength(text, font=font) > max_width:
             size -= 4
             font = _font(size)
-    draw.text((x, y), text, font=font, fill=parse_hex(ink) + (opacity,), anchor="mm")
+    draw.text((x, y), text, font=font, fill=parse_hex(ink), anchor="mm")
 
 
 def _png_bytes(image):

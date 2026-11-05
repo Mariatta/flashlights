@@ -298,6 +298,14 @@ class TestGeneratedImages:
         two = branding.from_env({"SITE_TITLE": "Summit", "SITE_DESCRIPTION": "Other"})
         assert one.version != two.version
 
+    def test_version_follows_the_image(self, monkeypatch):
+        """The card is served as immutable for a year, so a new drawing
+        needs a new URL: the hash moves with the core version."""
+        brand = branding.from_env({"SITE_TITLE": "Summit"})
+        before = brand.version
+        monkeypatch.setattr(branding, "core_version", lambda: "99.0.0")
+        assert brand.version != before
+
     def test_base_template_links_the_generated_images(self, client, conference):
         with override_settings(BRAND=branding.from_env({})):
             content = client.get(reverse("portal_stats")).content.decode()
