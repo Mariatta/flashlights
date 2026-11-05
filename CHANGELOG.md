@@ -7,10 +7,14 @@ a change to the [public API](docs/developer/community_apps.md#public-api)
 for community apps is marked **Breaking**.
 [Releasing](docs/developer/releasing.md) says how a release is made.
 
-## 0.3.0 (unreleased)
+## 0.3.0 (2026-11-05)
 
 - **The image runs Python 3.15.** Community apps built from it get the same
   interpreter.
+- **The vendored libraries move up:** jQuery 4.0, Bootstrap 5.3, Select2
+  4.1.0, htmx 2.0.11 and Chart.js 4.6. jQuery 4 dropped utilities such as
+  `$.isArray`, `$.camelCase` and `$.trim`; a community app whose own
+  scripts call them replaces those calls before pinning this image.
 - **Organizers add their own questions to the proposal form.** Under
   Organize, Proposal questions, an edition asks anything beyond the fixed
   fields: about the session (asked per proposal, editable by the proposer
