@@ -36,6 +36,9 @@ def speaker_module(request):
     * ``pending_proposal_count``: how many are waiting, for the rail badge.
     * ``has_speaker_proposals``: this user has proposals of their own, or
       could send one, so the personal rail offers "My proposals".
+    * ``is_speaker_proposer``: this user has proposals of their own and is
+      not on the program yet, so the navbar offers "Proposals" where a
+      speaker would see "Speaking".
     """
     # A handful of queries per authenticated render: the liaison lookup is
     # skipped for organizers, who already see everything, and the queue
@@ -58,12 +61,22 @@ def speaker_module(request):
             "is_speaker_liaison": False,
             "can_work_speaker_queue": False,
             "is_speaker_presenter": False,
+            "is_speaker_proposer": False,
         }
     active = active_edition(request)
     conference = working_edition(request)
     enabled = module_enabled(conference, request)
     # The public call is the active edition's, whatever is being planned.
     taking_proposals = proposals_open(active)
+    own_proposals = (
+        enabled
+        and Proposal.objects.filter(conference=active, presenter__user=user).exists()
+    )
+    # Being a presenter is not enough for the Speaking tab: a proposal that
+    # has not been answered yet makes a presenter row and no program. The
+    # rule lives on the queryset, shared with the gate on the pages the
+    # tab opens.
+    on_the_program = speaker_edition(user, conference, request) is not None
     return {
         "speaker_proposals_open": taking_proposals,
         # Whoever answers proposals sees the count, open call or not:
@@ -76,13 +89,7 @@ def speaker_module(request):
             if enabled and can_review_proposals(user)
             else None
         ),
-        "has_speaker_proposals": taking_proposals
-        or (
-            enabled
-            and Proposal.objects.filter(
-                conference=active, presenter__user=user
-            ).exists()
-        ),
+        "has_speaker_proposals": taking_proposals or own_proposals,
         "speaker_module_enabled": enabled,
         "speaker_working_edition": conference,
         "is_speaker_liaison": enabled
@@ -92,9 +99,6 @@ def speaker_module(request):
         # their rail entry too now that it has left the Organize rail.
         "can_work_speaker_queue": enabled
         and can_work_queue_in(user, queue_editions(request)),
-        # Being a presenter is not enough for the Speaking tab: a
-        # proposal that has not been answered yet makes a presenter row
-        # and no program. The rule lives on the queryset, shared with the
-        # gate on the pages the tab opens.
-        "is_speaker_presenter": speaker_edition(user, conference, request) is not None,
+        "is_speaker_presenter": on_the_program,
+        "is_speaker_proposer": own_proposals and not on_the_program,
     }

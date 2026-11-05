@@ -23,7 +23,7 @@ from common.tasks import enqueue
 from portal.models import Conference
 from portal_account import agreements
 from ticketing.models import has_api as ticketing_has_api
-from volunteer.models import Team
+from volunteer.models import Team, VolunteerProfile
 
 from .board import (
     POST_PRODUCTION_TAB,
@@ -3144,8 +3144,18 @@ class MyProposalsView(LoginRequiredMixin, ProposalsOpenMixin, TemplateView):
         )
         # A speaker sees this with the rest of their speaking; someone
         # whose proposal nobody has answered is not a speaker yet, so it
-        # sits in their personal rail instead.
+        # sits in their volunteering rail when they volunteer, and on a
+        # page of its own when proposing is all they came to do.
         on_the_program = bool(presenter and presenter.is_onboarded)
+        volunteering = VolunteerProfile.objects.filter(
+            user=self.request.user, conference=self.conference
+        ).exists()
+        if on_the_program:
+            shell = "speakers/_speaker_shell.html"
+        elif volunteering:
+            shell = "portal/base_sidebar.html"
+        else:
+            shell = "portal/base.html"
         context.update(
             {
                 "conference": self.conference,
@@ -3153,11 +3163,7 @@ class MyProposalsView(LoginRequiredMixin, ProposalsOpenMixin, TemplateView):
                 "proposals": proposals,
                 "open_for_proposals": self.open_for_proposals,
                 "on_the_program": on_the_program,
-                "shell": (
-                    "speakers/_speaker_shell.html"
-                    if on_the_program
-                    else "portal/base_sidebar.html"
-                ),
+                "shell": shell,
                 "rail_active": "proposals",
             }
         )

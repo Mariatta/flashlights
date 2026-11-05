@@ -1,0 +1,71 @@
+{% extends "portal/base.html" %}
+{% load i18n %}
+{% comment %}
+The home of an account that has not chosen yet: no volunteer application
+and no proposal, while the edition is taking proposals. The volunteer hub
+would greet them as a volunteer-to-be, which is wrong for the many who
+signed up from the proposal form and did not send one that day. Both ways
+in, side by side, nothing leading; the moment they take one, the home
+page follows it (portal.views.index).
+{% endcomment %}
+{% block head_title %}
+    {% trans "Get started" %}
+{% endblock head_title %}
+{% block content %}
+    <h1 class="h3 mb-2">
+        {% blocktranslate with name=user.first_name|default:user.username %}Welcome, {{ name }}{% endblocktranslate %}
+    </h1>
+    <p class="text-secondary mb-4">
+        {% blocktranslate with short_name=brand.short_name %}There are two ways to take part in {{ short_name }} with this account. Pick one now, or both; your home page follows whatever you do.{% endblocktranslate %}
+    </p>
+    <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body d-flex flex-column gap-2">
+                    <div class="eyebrow">
+                        {% trans "Speaking" %}
+                    </div>
+                    <h2 class="card-title h4 mb-0">
+                        {% trans "Propose a session" %}
+                    </h2>
+                    <p class="text-secondary mb-0">
+                        {% trans "We are taking session proposals. A title and two sentences is enough to start, and first-time speakers are very welcome." %}
+                    </p>
+                    <div class="mt-auto pt-2">
+                        <a href="{% url 'speakers:propose' %}" class="btn btn-primary">
+                            <i class="icon-send" aria-hidden="true"></i> {% trans "Propose a session" %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body d-flex flex-column gap-2">
+                    <div class="eyebrow">
+                        {% trans "Volunteering" %}
+                    </div>
+                    <h2 class="card-title h4 mb-0">
+                        {% trans "Join the team" %}
+                    </h2>
+                    <p class="text-secondary mb-0">
+                        {% trans "Create your volunteer profile and our team will review it, then match you to a team that needs help." %}
+                    </p>
+                    <div class="mt-auto pt-2">
+                        {% if active_conference.volunteer_application_open %}
+                            <a href="{% url 'volunteer:volunteer_profile_new' %}"
+                               class="btn btn-outline-primary">
+                                <i class="icon-user-plus" aria-hidden="true"></i> {% trans "Create my volunteer profile" %}
+                            </a>
+                        {% else %}
+                            <p class="mb-0 text-secondary">
+                                <i class="icon-info" aria-hidden="true"></i>
+                                {% blocktranslate with year=active_conference.year %}We are not taking new volunteer applications for {{ year }} right now.{% endblocktranslate %}
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

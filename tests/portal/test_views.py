@@ -19,7 +19,13 @@ from sponsorship.models import (
     SponsorshipProgressStatus,
     SponsorshipTier,
 )
-from tests.speakers.factories import make_presenter, make_proposal, make_session
+from tests.speakers.factories import (
+    add_presenter,
+    make_presenter,
+    make_proposal,
+    make_session,
+    make_settings,
+)
 from tests.ticketing_ids import make_ticketing
 from ticketing.models import TicketingSettings
 from volunteer.constants import ApplicationStatus
@@ -187,6 +193,142 @@ class TestPortalIndex:
         client.force_login(portal_user)
         response = client.get(reverse("index"))
         assertRedirects(response, reverse("volunteer:index"))
+
+
+@pytest.mark.django_db
+class TestHomeOfSpeakersAndProposers:
+    """Where Home sends someone whose business is speaking: the volunteer
+    hub only when they volunteer too, their own proposals or speaker pages
+    otherwise, and a choice of the two when they have done neither yet."""
+
+    GET_STARTED = "Propose a session"
+    JOIN = "Join the team"
+
+    @pytest.fixture
+    def member(self, portal_user):
+        PortalProfile.objects.create(
+            user=portal_user, coc_agreement=True, tos_agreement=True
+        )
+        return portal_user
+
+    @pytest.fixture
+    def open_call(self, conference):
+        return make_settings(conference, proposals_open=True)
+
+    def proposer(self, conference, user):
+        presenter = make_presenter(conference, user=user)
+        make_proposal(make_session(conference), presenter)
+        return presenter
+
+    def speaker(self, conference, user):
+        presenter = make_presenter(conference, user=user)
+        add_presenter(make_session(conference), presenter, confirmed=True)
+        return presenter
+
+    def volunteer(self, conference, user, status):
+        return VolunteerProfile.objects.create(
+            user=user, conference=conference, application_status=status
+        )
+
+    def test_a_proposer_lands_on_their_proposals(
+        self, client, member, conference, open_call
+    ):
+        self.proposer(conference, member)
+        client.force_login(member)
+        assertRedirects(client.get(reverse("index")), reverse("speakers:my_proposals"))
+
+    def test_a_proposer_who_also_volunteers_lands_on_the_hub(
+        self, client, member, conference, open_call
+    ):
+        self.proposer(conference, member)
+        self.volunteer(conference, member, ApplicationStatus.PENDING)
+        client.force_login(member)
+        assertRedirects(client.get(reverse("index")), reverse("volunteer:index"))
+
+    def test_a_proposer_whose_volunteering_was_declined_lands_on_their_proposals(
+        self, client, member, conference, open_call
+    ):
+        self.proposer(conference, member)
+        self.volunteer(conference, member, ApplicationStatus.REJECTED)
+        client.force_login(member)
+        assertRedirects(client.get(reverse("index")), reverse("speakers:my_proposals"))
+
+    def test_a_speaker_lands_on_their_dashboard(
+        self, client, member, conference, open_call
+    ):
+        self.speaker(conference, member)
+        client.force_login(member)
+        assertRedirects(client.get(reverse("index")), reverse("speakers:my_dashboard"))
+
+    def test_an_approved_volunteer_who_speaks_lands_on_the_hub(
+        self, client, member, conference, open_call
+    ):
+        self.speaker(conference, member)
+        self.volunteer(conference, member, ApplicationStatus.APPROVED)
+        client.force_login(member)
+        assertRedirects(client.get(reverse("index")), reverse("volunteer:index"))
+
+    @pytest.mark.parametrize(
+        "status", [ApplicationStatus.REJECTED, ApplicationStatus.CANCELLED]
+    )
+    def test_a_speaker_whose_volunteering_is_over_lands_on_their_dashboard(
+        self, client, member, conference, open_call, status
+    ):
+        self.speaker(conference, member)
+        self.volunteer(conference, member, status)
+        client.force_login(member)
+        assertRedirects(client.get(reverse("index")), reverse("speakers:my_dashboard"))
+
+    def test_an_undecided_account_is_offered_both_while_proposals_are_open(
+        self, client, member, conference, open_call
+    ):
+        """Signed up from the proposal form and stopped there: Home offers
+        proposing and volunteering side by side instead of the hub."""
+        conference.volunteer_application_open = True
+        conference.save()
+        client.force_login(member)
+        response = client.get(reverse("index"))
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert self.GET_STARTED in content and self.JOIN in content
+        assert reverse("speakers:propose") in content
+        assert reverse("volunteer:volunteer_profile_new") in content
+
+    def test_the_offer_says_when_volunteer_applications_are_closed(
+        self, client, member, conference, open_call
+    ):
+        conference.volunteer_application_open = False
+        conference.save()
+        client.force_login(member)
+        content = client.get(reverse("index")).content.decode()
+        assert "not taking new volunteer applications" in content
+        assert reverse("volunteer:volunteer_profile_new") not in content
+
+    def test_an_undecided_account_lands_on_the_hub_once_proposals_close(
+        self, client, member, conference
+    ):
+        make_settings(conference, proposals_open=False)
+        client.force_login(member)
+        assertRedirects(client.get(reverse("index")), reverse("volunteer:index"))
+
+    def test_a_declined_volunteer_with_nothing_else_keeps_the_hub(
+        self, client, member, conference, open_call
+    ):
+        """The hub shows them the answer and the way to reapply."""
+        self.volunteer(conference, member, ApplicationStatus.REJECTED)
+        client.force_login(member)
+        assertRedirects(client.get(reverse("index")), reverse("volunteer:index"))
+
+    @override_settings(VOLUNTEERING_ENABLED=False)
+    def test_without_volunteering_the_landing_page_carries_the_call(
+        self, client, member, conference, open_call
+    ):
+        client.force_login(member)
+        response = client.get(reverse("index"))
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert reverse("speakers:propose") in content
+        assert self.JOIN not in content
 
 
 @pytest.mark.django_db

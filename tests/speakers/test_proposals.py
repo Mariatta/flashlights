@@ -5,6 +5,8 @@ rather than the organizers asking a person. Approving runs the same path an
 accepted invitation takes, which is what these tests check hardest.
 """
 
+import re
+
 import pytest
 from django.contrib.auth.models import User
 from django.core import mail
@@ -37,6 +39,7 @@ from speakers.tasks import (
     send_proposal_received_email_task,
     send_proposal_rejected_email_task,
 )
+from volunteer.models import VolunteerProfile
 
 from .factories import add_presenter, make_presenter, make_session, make_settings
 
@@ -84,6 +87,12 @@ def propose(client, conference, title="A talk about testing", level="ALL"):
         },
         follow=True,
     )
+
+
+def nav_tab(page, label):
+    """The navbar anchor labelled ``label``, or None when there is no tab."""
+    match = re.search(rf'<a class="nav-link[^>]*>{label}</a>', page)
+    return match.group(0) if match else None
 
 
 @pytest.mark.django_db
@@ -398,14 +407,51 @@ class TestWhereProposalsLive:
             in client.get(reverse("speakers:my_dashboard")).content.decode()
         )
 
-    def test_a_proposer_keeps_them_in_their_own_rail(
+    def test_a_proposer_sees_them_on_a_page_of_their_own(
         self, client, conference, enabled, stranger
     ):
+        """Nothing about volunteering: proposing is what they came to do."""
+        client.force_login(stranger)
+        propose(client, conference)
+        content = client.get(MINE).content.decode()
+        assert "My proposals" in content and "Propose another" in content
+        assert "My volunteering" not in content
+        assert "My speaker checklist" not in content
+
+    def test_a_proposer_who_volunteers_keeps_them_in_the_volunteering_rail(
+        self, client, conference, enabled, stranger
+    ):
+        VolunteerProfile.objects.create(user=stranger, conference=conference)
         client.force_login(stranger)
         propose(client, conference)
         content = client.get(MINE).content.decode()
         assert "My volunteering" in content and "My proposals" in content
         assert "My speaker checklist" not in content
+
+    def test_a_proposer_gets_a_proposals_tab_until_they_are_a_speaker(
+        self, client, conference, enabled, stranger
+    ):
+        """The navbar has no Speaking tab for them yet, so the proposal
+        needs a tab of its own; it marks the proposal pages as current."""
+        client.force_login(stranger)
+        assert nav_tab(client.get(PROPOSE).content.decode(), "Proposals") is None
+        propose(client, conference)
+        page = client.get(MINE).content.decode()
+        assert nav_tab(page, "Speaking") is None
+        assert 'aria-current="page"' in nav_tab(page, "Proposals")
+        # The edit page is one of theirs too.
+        proposal = Proposal.objects.get(presenter__user=stranger)
+        edit = client.get(reverse("speakers:proposal_edit", args=[proposal.pk]))
+        assert 'aria-current="page"' in nav_tab(edit.content.decode(), "Proposals")
+
+    def test_a_speaker_has_no_proposals_tab(self, client, conference, enabled):
+        user = User.objects.create_user(username="bea", email="bea@example.com")
+        presenter = make_presenter(conference, display_name="Bea", user=user)
+        add_presenter(make_session(conference), presenter, confirmed=True)
+        submit_proposal(presenter, make_session(conference, title="One more"))
+        client.force_login(user)
+        page = client.get(MINE).content.decode()
+        assert ">Speaking</a>" in page and ">Proposals</a>" not in page
 
     def test_a_speaker_sees_which_sessions_are_real_and_which_are_asked_for(
         self, client, conference, enabled
