@@ -53,6 +53,7 @@ from .program_types import (
     seed_program_types,
     session_type,
 )
+from .questions import clone_questions
 from .rules import evaluate_items
 
 SPK, ORG = ItemOwner.SPEAKER, ItemOwner.ORGANIZER
@@ -881,6 +882,8 @@ SETTINGS_TO_COPY = [
     "default_video_length_limit_minutes",
     "conference_timezone",
     "organizers_email",
+    "asks_prerequisites",
+    "asks_language",
 ]
 
 
@@ -889,12 +892,13 @@ def clone_speaker_setup(target, source, enable=False):
 
     Copies checklist templates, the latest published version of every guide
     (as an unpublished draft), the active rooms (with their venue, so a
-    conference returns to its building with its lanes in place) and the
-    per-edition settings except the pretix event, token and secret, which
-    are per edition. ``enable`` switches the module on. Returns a dict of
-    counts.
+    conference returns to its building with its lanes in place), the
+    proposal questions still asked, and the per-edition settings except the
+    pretix event, token and secret, which are per edition. ``enable``
+    switches the module on. Returns a dict of counts.
     """
     templates, items = clone_checklists(target, source)
+    questions = clone_questions(target, source)
     rooms = 0
     for room in Room.objects.filter(conference=source, is_active=True):
         _, created = Room.objects.get_or_create(
@@ -932,4 +936,10 @@ def clone_speaker_setup(target, source, enable=False):
             setattr(settings_row, field, getattr(source_settings, field))
     settings_row.speaker_module_enabled = enable
     settings_row.save()
-    return {"templates": templates, "items": items, "guides": guides, "rooms": rooms}
+    return {
+        "templates": templates,
+        "items": items,
+        "guides": guides,
+        "rooms": rooms,
+        "questions": questions,
+    }

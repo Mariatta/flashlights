@@ -309,37 +309,69 @@ open the tab their target lives in.
                         <h2 class="h5 mb-3">
                             {% trans "Description" %}
                         </h2>
+                        {% comment %}
+                        Every heading shows, filled or not, so a reviewer sees
+                        at a glance what the proposer left out; only the
+                        internal notes appear when written.
+                        {% endcomment %}
+                        {% trans "Nothing yet." as nothing_yet %}
                         <div>
-                            {% if session.summary_md %}
-                                <h3 class="h6 text-uppercase text-secondary">
-                                    {% trans "Summary" %}
-                                </h3>
-                                <div class="mb-3">
+                            <h3 class="h6 text-uppercase text-secondary">
+                                {% trans "Summary" %}
+                            </h3>
+                            <div class="mb-3">
+                                {% if session.summary_md %}
                                     {{ session.summary_md|speaker_md }}
-                                </div>
-                            {% endif %}
-                            {% if session.outline_md %}
-                                <h3 class="h6 text-uppercase text-secondary">
-                                    {% trans "Outline" %}
-                                </h3>
-                                <div class="mb-3">
+                                {% else %}
+                                    <p class="text-secondary mb-0">
+                                        {{ nothing_yet }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                            <h3 class="h6 text-uppercase text-secondary">
+                                {% trans "Outline" %}
+                            </h3>
+                            <div class="mb-3">
+                                {% if session.outline_md %}
                                     {{ session.outline_md|speaker_md }}
-                                </div>
-                            {% endif %}
-                            {% if session.prerequisites_md %}
+                                {% else %}
+                                    <p class="text-secondary mb-0">
+                                        {{ nothing_yet }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                            {% if "prerequisites_md" not in unasked %}
                                 <h3 class="h6 text-uppercase text-secondary">
                                     {% trans "Prerequisites" %}
                                 </h3>
                                 <div class="mb-3">
-                                    {{ session.prerequisites_md|speaker_md }}
+                                    {% if session.prerequisites_md %}
+                                        {{ session.prerequisites_md|speaker_md }}
+                                    {% else %}
+                                        <p class="text-secondary mb-0">
+                                            {{ nothing_yet }}
+                                        </p>
+                                    {% endif %}
                                 </div>
                             {% endif %}
-                            {% if session.audience_md %}
+                            <h3 class="h6 text-uppercase text-secondary">
+                                {% trans "Audience" %}
+                            </h3>
+                            <div class="mb-3">
+                                {% if session.audience_md %}
+                                    {{ session.audience_md|speaker_md }}
+                                {% else %}
+                                    <p class="text-secondary mb-0">
+                                        {{ nothing_yet }}
+                                    </p>
+                                {% endif %}
+                            </div>
+                            {% if session_answers %}
                                 <h3 class="h6 text-uppercase text-secondary">
-                                    {% trans "Audience" %}
+                                    {% trans "Answers to the proposal questions" %}
                                 </h3>
                                 <div class="mb-3">
-                                    {{ session.audience_md|speaker_md }}
+                                    {% include "speakers/_answers.html" with answers=session_answers %}
                                 </div>
                             {% endif %}
                             {% if session.notes_md %}
@@ -349,11 +381,6 @@ open the tab their target lives in.
                                 <div class="mb-3 text-secondary">
                                     {{ session.notes_md|speaker_md }}
                                 </div>
-                            {% endif %}
-                            {% if not session.summary_md and not session.outline_md %}
-                                <p class="text-secondary">
-                                    {% trans "No description yet." %}
-                                </p>
                             {% endif %}
                         </div>
                     </div>
@@ -730,9 +757,11 @@ open the tab their target lives in.
                             <div>
                                 <strong>{% trans "Level" %}:</strong> {{ session.get_level_display|default:"—" }}
                             </div>
-                            <div>
-                                <strong>{% trans "Language" %}:</strong> {{ session.language|default:"—" }}
-                            </div>
+                            {% if "language" not in unasked %}
+                                <div>
+                                    <strong>{% trans "Language" %}:</strong> {{ session.language|default:"—" }}
+                                </div>
+                            {% endif %}
                             <div>
                                 <strong>{% trans "Slot" %}:</strong>
                                 {% if session.slot %}

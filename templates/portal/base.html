@@ -122,6 +122,15 @@
                                    href="{% url 'speakers:my_dashboard' %}">{% trans "Speaking" %}</a>
                             </li>
                         {% endif %}
+                        {# Not a speaker yet, but with a proposal in: their speaking #}
+                        {# so far is the proposal, and this is the tab for it. #}
+                        {% if is_speaker_proposer %}
+                            <li class="nav-item">
+                                <a class="nav-link{% if nav_section == "speaking" %} active{% endif %}"
+                                   {% if nav_section == "speaking" %}aria-current="page"{% endif %}
+                                   href="{% url 'speakers:my_proposals' %}">{% trans "Proposals" %}</a>
+                            </li>
+                        {% endif %}
                         {# A tab is a hub with a rail of its own. Sponsorship and #}
                         {# My teams are pages inside a rail, so they have no tab: #}
                         {# organizers reach Sponsors from the Organize rail, #}
@@ -251,7 +260,7 @@
             {% endblock footer_resources %}
             <div class="container py-3 d-flex align-items-center justify-content-between">
                 <span class="d-inline-flex align-items-center flex-wrap gap-2">
-                    {% include "portal/_flashlights_mark.html" with href="https://github.com/mariatta/flashlights" %}
+                    {% include "portal/_flashlights_mark.html" with href="https://flashlights.app/" %}
                     <span>
                         {% trans "Free software under the GNU AGPL." %}
                         <a href="https://github.com/mariatta/flashlights">{% trans "Source code" %}</a>

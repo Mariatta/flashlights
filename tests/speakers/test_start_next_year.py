@@ -197,6 +197,7 @@ class TestStartNextYear:
             "items": first["items"],
             "guides": 0,
             "rooms": 0,
+            "questions": 0,
         }
         second = clone_speaker_setup(target, conference, enable=True)
         assert second["templates"] == 0 and second["guides"] == 0

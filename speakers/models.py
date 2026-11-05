@@ -30,9 +30,12 @@ from portal.validators import validate_discord_username
 
 from .clock import today
 from .constants import (
+    BOOLEAN_KINDS,
     CAN_BE_APPROVED,
+    CHOICE_KINDS,
     DEFAULT_GUIDE_KEY,
     IDENTITY_LOCKED_STATUSES,
+    LINK_KINDS,
     OFF_SCHEDULE_STATUSES,
     OPEN_ITEM_STATUSES,
     PROPOSER_CAN_EDIT,
@@ -42,6 +45,7 @@ from .constants import (
     SLUG_MAX_LENGTH,
     SPEAKER_STATUS_LABELS,
     UNACCEPTED_STATUSES,
+    AnswerVisibility,
     AssigneeDefault,
     AutoRule,
     ChecklistScope,
@@ -56,6 +60,8 @@ from .constants import (
     PremiereLocation,
     ProgramVisibility,
     ProposalDecision,
+    QuestionAbout,
+    QuestionKind,
     ReadyOverride,
     ReadyRule,
     Recordings,
@@ -234,6 +240,23 @@ class SpeakerSettings(TimestampedModel):
         db_default="",
         help_text="Shown above the propose-a-session form: what you are "
         "looking for, and by when.",
+    )
+    # Two of the built-in session fields are an edition's choice: a one-day
+    # summit in one language has no use for either. Off, the field leaves
+    # the proposal form, the session forms, the session pages and the
+    # public API; the column keeps its default.
+    asks_prerequisites = models.BooleanField(
+        "ask for prerequisites",
+        default=True,
+        db_default=True,
+        help_text="Off for an edition with no use for what someone needs to "
+        "follow a session.",
+    )
+    asks_language = models.BooleanField(
+        "ask the session language",
+        default=True,
+        db_default=True,
+        help_text="Off for an edition whose sessions are all in one language.",
     )
     translation_languages = ArrayField(
         models.CharField(max_length=10),
@@ -452,6 +475,31 @@ def event_tz(conference):
         .first()
     )
     return zoneinfo.ZoneInfo(name or "UTC")
+
+
+#: The built-in session fields an edition may switch off, by the switch
+#: that governs each.
+SWITCHABLE_SESSION_FIELDS = {
+    "asks_prerequisites": "prerequisites_md",
+    "asks_language": "language",
+}
+
+
+def unasked_session_fields(conference):
+    """The built-in session fields this edition does not ask: a set of
+    field names, empty with no row. One query, for a form or a page."""
+    if conference is None:
+        return set()
+    row = (
+        SpeakerSettings.objects.filter(conference=conference)
+        .values(*SWITCHABLE_SESSION_FIELDS)
+        .first()
+    )
+    if row is None:
+        return set()
+    return {
+        field for switch, field in SWITCHABLE_SESSION_FIELDS.items() if not row[switch]
+    }
 
 
 def is_in_person(conference):
@@ -1388,6 +1436,183 @@ class Proposal(TimestampedModel):
             update_fields=["decision", "decided_at", "decided_by", "modified_date"]
         )
         return self
+
+
+class ProposalQuestion(TimestampedModel):
+    """A question of the edition's own on the proposal form.
+
+    The form's fixed fields (title, summary, outline, the person's bio and
+    handles) are columns; everything else an edition wants to ask is a row
+    here, added by an organizer without a code change. A question is about
+    the session or about the speaker (``about``); a speaker answers theirs
+    once per edition, whatever they propose. ``visibility`` says who reads
+    the answer, and the form says so under the question, so the person
+    answering knows before they type.
+
+    Deleting a question deletes its answers, so one that has been answered
+    is switched off instead (``is_active``): the form stops asking it and
+    the answers stay on the record.
+    """
+
+    conference = models.ForeignKey(
+        "portal.Conference",
+        verbose_name="event",
+        on_delete=models.CASCADE,
+        related_name="proposal_questions",
+    )
+    about = models.CharField(
+        max_length=16, choices=QuestionAbout.choices, default=QuestionAbout.SESSION
+    )
+    kind = models.CharField(
+        max_length=16, choices=QuestionKind.choices, default=QuestionKind.SHORT_TEXT
+    )
+    label = models.CharField("question", max_length=200)
+    help_text = models.TextField(
+        blank=True, help_text="Shown under the question. Plain text."
+    )
+    options = models.TextField(
+        blank=True,
+        help_text="For the choice kinds: one choice per line.",
+    )
+    required = models.BooleanField(default=False)
+    visibility = models.CharField(
+        "who sees the answer",
+        max_length=16,
+        choices=AnswerVisibility.choices,
+        default=AnswerVisibility.TEAM,
+    )
+    order = models.PositiveSmallIntegerField(
+        default=0, help_text="Questions are asked in this order, lowest first."
+    )
+    is_active = models.BooleanField(
+        "asked on the form",
+        default=True,
+        help_text="Off keeps the answers already given but stops asking.",
+    )
+
+    class Meta:
+        ordering = ["about", "order", "id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["conference", "about", "label"],
+                name="speakers_question_label_unique",
+            )
+        ]
+
+    def __str__(self):
+        return self.label
+
+    @property
+    def is_about_speaker(self):
+        return self.about == QuestionAbout.SPEAKER
+
+    @property
+    def has_options(self):
+        return self.kind in CHOICE_KINDS
+
+    @property
+    def option_list(self):
+        """The choices, one per non-blank line, in the order written."""
+        return [line.strip() for line in self.options.splitlines() if line.strip()]
+
+    @property
+    def visibility_note(self):
+        """One sentence for the person answering: who will read this."""
+        return VISIBILITY_NOTES[self.visibility][self.about]
+
+    def display(self, value):
+        """``value`` (a stored answer) as text; blank when there is none."""
+        if self.kind in BOOLEAN_KINDS:
+            if value is None:
+                return ""
+            return "Yes" if value else "No"
+        # Not ``in (None, "", [])``: a number answer of 0 equals False.
+        if value is None or value == "" or value == []:
+            return ""
+        if isinstance(value, list):
+            return ", ".join(str(item) for item in value)
+        return str(value)
+
+
+#: The sentence under each question, by visibility and by what the question
+#: is about. The speaker's own answer is always theirs to see.
+VISIBILITY_NOTES = {
+    AnswerVisibility.ORGANIZERS: {
+        QuestionAbout.SESSION: "Seen by the organizers only.",
+        QuestionAbout.SPEAKER: "Seen by the organizers only.",
+    },
+    AnswerVisibility.TEAM: {
+        QuestionAbout.SESSION: "Seen by the organizers and the people reviewing proposals.",
+        QuestionAbout.SPEAKER: "Seen by the organizers and the people reviewing proposals.",
+    },
+    AnswerVisibility.PUBLIC: {
+        QuestionAbout.SESSION: "Published with your session if it is accepted.",
+        QuestionAbout.SPEAKER: "Published on your speaker profile if you are accepted.",
+    },
+}
+
+
+class ProposalAnswer(TimestampedModel):
+    """One person's answer to one question: on the session when the question
+    is about the session, on the presenter when it is about the speaker.
+    ``value`` keeps the shape the question's kind gives it (text, a
+    boolean, a list or a number); ``display`` is the text to print."""
+
+    question = models.ForeignKey(
+        ProposalQuestion, on_delete=models.CASCADE, related_name="answers"
+    )
+    session = models.ForeignKey(
+        Session,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="question_answers",
+    )
+    presenter = models.ForeignKey(
+        Presenter,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="question_answers",
+    )
+    value = models.JSONField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["question__order", "question__id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["question", "session"], name="speakers_answer_session_unique"
+            ),
+            models.UniqueConstraint(
+                fields=["question", "presenter"],
+                name="speakers_answer_presenter_unique",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(session__isnull=False, presenter__isnull=True)
+                    | models.Q(session__isnull=True, presenter__isnull=False)
+                ),
+                name="speakers_answer_one_subject",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.question.label}: {self.display}"
+
+    @property
+    def display(self):
+        return self.question.display(self.value)
+
+    @property
+    def links(self):
+        """The answer as a list of links, for the two link kinds."""
+        if self.question.kind not in LINK_KINDS or not self.value:
+            return []
+        return self.value if isinstance(self.value, list) else [self.value]
+
+    @property
+    def is_blank(self):
+        return self.display == ""
 
 
 class SessionPresenter(TimestampedModel):

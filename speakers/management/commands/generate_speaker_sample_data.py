@@ -33,10 +33,13 @@ from speakers.checklists import (
 )
 from speakers.constants import (
     OPEN_ITEM_STATUSES,
+    AnswerVisibility,
     Delivery,
     ItemOwner,
     MediaKind,
     MediaStatus,
+    QuestionAbout,
+    QuestionKind,
     SessionStatus,
 )
 from speakers.lifecycle import confirm_session_if_ready
@@ -46,6 +49,8 @@ from speakers.models import (
     MediaAsset,
     Presenter,
     Proposal,
+    ProposalAnswer,
+    ProposalQuestion,
     PublishedSlot,
     ReadinessGate,
     Room,
@@ -134,6 +139,100 @@ PEOPLE = [
 
 # Proposals, in every state the queue and My proposals have to show.
 # username, presenter name, title, type code, summary, decision
+# The edition's own proposal questions: (about, kind, label, help text,
+# options, required, who sees the answer, order).
+QUESTIONS = [
+    (
+        QuestionAbout.SESSION,
+        QuestionKind.LINKS,
+        "Links to writing this session is based on",
+        "Blog posts, articles, talks: anything that shows the material.",
+        "",
+        False,
+        AnswerVisibility.TEAM,
+        10,
+    ),
+    (
+        QuestionAbout.SESSION,
+        QuestionKind.YES_NO,
+        "Have you given this session before?",
+        "",
+        "",
+        True,
+        AnswerVisibility.TEAM,
+        20,
+    ),
+    (
+        QuestionAbout.SESSION,
+        QuestionKind.ONE_CHOICE,
+        "Track",
+        "",
+        "Main track\nTools track",
+        True,
+        AnswerVisibility.PUBLIC,
+        30,
+    ),
+    (
+        QuestionAbout.SESSION,
+        QuestionKind.LONG_TEXT,
+        "Anything else for the organizers?",
+        "Scheduling constraints, needs for the room, anything we should know.",
+        "",
+        False,
+        AnswerVisibility.ORGANIZERS,
+        40,
+    ),
+    (
+        QuestionAbout.SPEAKER,
+        QuestionKind.LINK,
+        "A recording of a talk you have given",
+        "",
+        "",
+        False,
+        AnswerVisibility.TEAM,
+        10,
+    ),
+    (
+        QuestionAbout.SPEAKER,
+        QuestionKind.MANY_CHOICES,
+        "I am happy to be",
+        "",
+        "Recorded\nPhotographed\nQuoted on social media",
+        False,
+        AnswerVisibility.ORGANIZERS,
+        20,
+    ),
+]
+#: (session title, question label, value)
+SESSION_ANSWERS = [
+    (
+        "Packaging without tears",
+        "Links to writing this session is based on",
+        ["https://example.org/packaging-without-tears"],
+    ),
+    ("Packaging without tears", "Have you given this session before?", False),
+    ("Packaging without tears", "Track", "Main track"),
+    (
+        "Packaging without tears",
+        "Anything else for the organizers?",
+        "I fly in on the Friday evening, so the afternoon suits me best.",
+    ),
+    ("A workshop on Django forms", "Have you given this session before?", True),
+    ("A workshop on Django forms", "Track", "Main track"),
+    ("Live-coding a synth", "Have you given this session before?", False),
+    ("Live-coding a synth", "Track", "Tools track"),
+]
+#: (username, question label, value)
+SPEAKER_ANSWERS = [
+    (
+        "vol_rosa",
+        "A recording of a talk you have given",
+        "https://example.org/rosa-talk",
+    ),
+    ("vol_rosa", "I am happy to be", ["Recorded", "Photographed"]),
+    ("prop_tess", "I am happy to be", ["Recorded"]),
+]
+
 PROPOSALS = [
     (
         "vol_rosa",
@@ -292,6 +391,7 @@ class Command(BaseCommand):
         self.sessions = self._sessions()
         self.presenters = self._presenters()
         self._proposals()
+        self._questions()
         self._schedule()
         self._checklist_states()
         self._performer_video()
@@ -564,6 +664,48 @@ class Command(BaseCommand):
                 reject_proposal(proposal, actor=self.users["organizer_lena"])
             elif decision == "WITHDRAWN":
                 withdraw_proposal(proposal, actor=user)
+
+    def _questions(self):
+        """The edition's own questions on the proposal form, one of each
+        visibility, and the seeded proposers' answers to them."""
+        questions = {}
+        for (
+            about,
+            kind,
+            label,
+            help_text,
+            options,
+            required,
+            visibility,
+            order,
+        ) in QUESTIONS:
+            questions[label], _ = ProposalQuestion.objects.get_or_create(
+                conference=self.conference,
+                about=about,
+                label=label,
+                defaults={
+                    "kind": kind,
+                    "help_text": help_text,
+                    "options": options,
+                    "required": required,
+                    "visibility": visibility,
+                    "order": order,
+                },
+            )
+        for title, label, value in SESSION_ANSWERS:
+            session = Session.objects.get(conference=self.conference, title=title)
+            ProposalAnswer.objects.get_or_create(
+                question=questions[label], session=session, defaults={"value": value}
+            )
+        for username, label, value in SPEAKER_ANSWERS:
+            presenter = Presenter.objects.get(
+                conference=self.conference, user=self.users[username]
+            )
+            ProposalAnswer.objects.get_or_create(
+                question=questions[label],
+                presenter=presenter,
+                defaults={"value": value},
+            )
 
     def _schedule(self):
         stage = Room.objects.get(conference=self.conference, name="main-stage")

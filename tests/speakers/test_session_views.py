@@ -197,6 +197,7 @@ class TestContextProcessor:
             "is_speaker_liaison": False,
             "can_work_speaker_queue": False,
             "is_speaker_presenter": False,
+            "is_speaker_proposer": False,
         }
 
     def test_visitor_reads_the_same_proposals_switch_as_members(
@@ -230,6 +231,7 @@ class TestContextProcessor:
             "has_speaker_proposals": False,
             "is_speaker_liaison": True,
             "is_speaker_presenter": False,
+            "is_speaker_proposer": False,
             # Liaisons may always open My volunteering tasks.
             "can_work_speaker_queue": True,
         }

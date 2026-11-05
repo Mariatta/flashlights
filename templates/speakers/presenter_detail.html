@@ -114,6 +114,16 @@
                     {{ presenter.bio_md|speaker_md }}
                 </div>
             {% endif %}
+            {% if presenter.user and presenter.user.affiliations.all %}
+                <h2 class="h6 text-uppercase text-secondary">
+                    {% trans "Affiliations" %}
+                </h2>
+                <div class="mb-4">
+                    {% include "affiliations/_list.html" with person=presenter.user %}
+                </div>
+            {% endif %}
+            {% trans "Their answers" as answers_heading %}
+            {% include "speakers/_answers.html" with answers=speaker_answers heading=answers_heading %}
             {% if show_checklists %}
                 <h2 class="h6 fw-bold mt-4 mb-2">
                     {% trans "Their to-dos" %}

@@ -146,6 +146,12 @@ layout, as before.
         {% else %}
             {% include "portal/_sidebar_item.html" with url=program_types_url label=_("Types and roles") icon="icon-tags" only %}
         {% endif %}
+        {% url 'speakers:proposal_questions' as proposal_questions_url %}
+        {% if active == "proposal_questions" %}
+            {% include "portal/_sidebar_item.html" with url=proposal_questions_url label=_("Proposal questions") icon="icon-clipboard-list" active=True only %}
+        {% else %}
+            {% include "portal/_sidebar_item.html" with url=proposal_questions_url label=_("Proposal questions") icon="icon-clipboard-list" only %}
+        {% endif %}
     {% endif %}
     {% if perms.speakers.change_checklisttemplate %}
         {% url 'speakers:template_list' as templates_url %}
