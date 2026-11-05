@@ -22,7 +22,9 @@ def test_mark_files_ship_clean():
 @pytest.mark.django_db
 def test_footer_carries_the_lockup(client, conference):
     content = client.get(reverse("portal_stats")).content.decode()
-    assert 'class="flashlights-lockup"' in content
+    # The lockup goes to the product's site; the source link beside it to
+    # the repository.
+    assert 'class="flashlights-lockup" href="https://flashlights.app/"' in content
     assert 'class="flashlights-name">Flashlights</span>' in content
     assert "Free software under the GNU AGPL." in content
     assert (

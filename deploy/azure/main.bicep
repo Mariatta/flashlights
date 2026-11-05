@@ -169,6 +169,26 @@ resource web 'Microsoft.App/containerApps@2024-03-01' = {
           command: [ 'gunicorn', '-c', 'config/gunicorn.conf.py', 'portal.wsgi:application', '--log-file', '-' ]
           env: env
           resources: { cpu: json('0.5'), memory: '1Gi' }
+          // The health route answers before the Host header is checked, so
+          // the probes need no Host header of their own.
+          probes: [
+            {
+              type: 'Startup'
+              httpGet: { path: '/_health/', port: 8000 }
+              periodSeconds: 10
+              failureThreshold: 10
+            }
+            {
+              type: 'Readiness'
+              httpGet: { path: '/_health/', port: 8000 }
+              periodSeconds: 10
+            }
+            {
+              type: 'Liveness'
+              httpGet: { path: '/_health/', port: 8000 }
+              periodSeconds: 30
+            }
+          ]
         }
       ]
       scale: { minReplicas: 1, maxReplicas: 2 }

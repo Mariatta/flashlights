@@ -5,7 +5,7 @@
     {% url 'portal_account:index' as bc_url %}
     {% trans "Account" as bc_section %}
     {% if object.pk %}
-        {% trans "Edit profile" as bc_page %}
+        {% trans "Update profile" as bc_page %}
     {% else %}
         {% trans "Create profile" as bc_page %}
     {% endif %}
@@ -21,17 +21,16 @@
     <main>
         <h1 class="h3 mb-3">
             {% if object.pk %}
-                {% trans "Edit" %}
+                {% trans "Update your profile" %}
             {% else %}
-                {% trans "Create" %}
+                {% trans "Create your profile" %}
             {% endif %}
-            {% trans "your Portal Profile" %}
         </h1>
         <p class="lead">
             {% if object.pk %}
-                {% blocktranslate %} Update your portal profile information below.{% endblocktranslate %}
+                {% trans "Update your profile below." %}
             {% else %}
-                {% blocktranslate %} Please complete your portal profile before proceeding.{% endblocktranslate %}
+                {% trans "Complete your profile before continuing." %}
             {% endif %}
         </p>
         <div class="row g-5">
@@ -57,7 +56,7 @@
                 {% endfor %}
                 <div class="mt-4">
                     <input type="submit"
-                           value="{% if object.pk %}Update Profile{% else %}Create Profile{% endif %}"
+                           value="{% if object.pk %}{% trans "Update profile" %}{% else %}{% trans "Create profile" %}{% endif %}"
                            class="btn btn-primary" />
                     <a href="{% url 'portal_account:index' %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
                 </div>
