@@ -10,10 +10,10 @@
     }
   },
   "chart.js": {
-    "version": "4.5.1",
+    "version": "4.6.1",
     "files": {
-      "vendor/chartjs/chart.umd.min.js": "48444a82d4edcb5bec0f1965faacdde18d9c17db3063d042abada2f705c9f54a",
-      "vendor/chartjs/chart.umd.min.js.map": "8c328df49d295935c81d64d3b36d6ac1c20c385f1ba5b4df3ec12a26b3d64d9b",
+      "vendor/chartjs/chart.umd.min.js": "87364cc2b2a76a6684929e7d6b80b18a897794db38400caff1fcf1791c6925d2",
+      "vendor/chartjs/chart.umd.min.js.map": "b4b4e658a3a10695139f5f2ac2a31a0a0b04619cbdddc4e0793b97a8e9804321",
       "vendor/chartjs/LICENSE.md": "41a84aa2caba645f966a18d9c2056b73e6d3a81d80bc0046bc0011a2634d4cce"
     }
   },
@@ -32,10 +32,10 @@
     }
   },
   "select2": {
-    "version": "4.1.0-rc.0",
+    "version": "4.1.0",
     "files": {
-      "vendor/select2/select2.min.css": "cda4a81c187015d95ed2c71f1841540b08203cdec5fa2a7d5d1825a3c2166f8c",
-      "vendor/select2/select2.min.js": "f7244fff610595b944f76bf3080d74e3af42b5dd234f8f079e698cc39ac966b0",
+      "vendor/select2/select2.min.css": "5d5e14d587308b5d1ad79f51e9aea2f8f469b0a02b335f559f5a4bb756b81737",
+      "vendor/select2/select2.min.js": "15692c266649fbc8acb4ebfb345e7e9499486d9551148241a235c9d62eea2f55",
       "vendor/select2/LICENSE.md": "4ee0cbc51370afde358652a0f977972053729ed578b6a42f5e2a037d114f0b39"
     }
   }
