@@ -1993,8 +1993,7 @@ class ProposalQuestionsView(
                 "rail_active": "proposal_questions",
                 "session_questions": [q for q in questions if not q.is_about_speaker],
                 "speaker_questions": [q for q in questions if q.is_about_speaker],
-                "copy_form": kwargs.get("copy_form")
-                or CopyQuestionsForm(conference=self.conference),
+                "copy_form": CopyQuestionsForm(conference=self.conference),
             }
         )
         return context

@@ -15,7 +15,7 @@ from django.core.validators import URLValidator
 
 from .constants import CHOICE_KINDS, AnswerVisibility, QuestionAbout, QuestionKind
 from .models import Presenter, ProposalAnswer, ProposalQuestion
-from .permissions import can_review_proposals, can_view_program, is_speaker_organizer
+from .permissions import can_review_proposals, is_speaker_organizer
 
 YES_NO_CHOICES = (("yes", "Yes"), ("no", "No"))
 
@@ -178,15 +178,14 @@ class QuestionAnswersForm(forms.Form):
 def can_read_answer(question, user, *, own=False):
     """Whether ``user`` reads an answer to ``question``: the person who gave
     it always does, everyone does for a public question, whoever runs the
-    program (``speakers.manage_program``) does for the rest, and program
-    readers and proposal reviewers for the team-visible ones."""
+    program (``speakers.manage_program``) does for the rest, and proposal
+    reviewers for the team-visible ones. Exactly what the note under the
+    question promised: reading the program is not enough."""
     if own or question.visibility == AnswerVisibility.PUBLIC:
         return True
     if is_speaker_organizer(user):
         return True
-    return question.visibility == AnswerVisibility.TEAM and (
-        can_review_proposals(user) or can_view_program(user)
-    )
+    return question.visibility == AnswerVisibility.TEAM and can_review_proposals(user)
 
 
 def readable_answers(subject, user, *, own=False, answers=None):

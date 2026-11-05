@@ -1375,9 +1375,10 @@ class SpeakerSettingsForm(forms.ModelForm):
 
 class ProposalQuestionForm(forms.ModelForm):
     """One question of the edition's own on the proposal form. What it is
-    about and how it is asked are fixed once anyone has answered, since the
-    stored answers have that shape; the wording, the order and whether it
-    is still asked stay editable."""
+    about, how it is asked, its choices and who reads the answer are fixed
+    once anyone has answered: the stored answers have that shape, and were
+    given on the promise the form made. The wording, the order and whether
+    it is still asked stay editable."""
 
     class Meta:
         model = ProposalQuestion
@@ -1416,7 +1417,7 @@ class ProposalQuestionForm(forms.ModelForm):
             self.instance.conference = conference
         self.answered = bool(self.instance.pk) and self.instance.answers.exists()
         if self.answered:
-            for name in ("about", "kind"):
+            for name in ("about", "kind", "options", "visibility"):
                 self.fields[name].disabled = True
                 self.fields[name].help_text = (
                     "Fixed: this question has answers. Switch it off and add a "

@@ -182,14 +182,6 @@ def presenter_payload(presenter, sessions, base):
             "linkedin": presenter.linkedin_url or None,
             "bluesky": presenter.bluesky_username or None,
         },
-        "affiliations": (
-            [
-                {"kind": a.kind, "name": a.name, "url": a.url or None}
-                for a in presenter.user.affiliations.all()
-            ]
-            if presenter.user_id
-            else []
-        ),
         "answers": public_answers(presenter),
         "sessions": sessions,
     }
@@ -206,13 +198,8 @@ def presenters_data(conference, preview=None, slug=None):
             by_presenter.setdefault(link.presenter_id, []).append(
                 {"slug": session.slug, "title": session.title, **slot_block(session)}
             )
-    presenters = (
-        public_presenters(conference, preview)
-        .select_related("user")
-        .prefetch_related(
-            "user__affiliations",
-            Prefetch("question_answers", queryset=answers_queryset()),
-        )
+    presenters = public_presenters(conference, preview).prefetch_related(
+        Prefetch("question_answers", queryset=answers_queryset())
     )
     if slug is not None:
         presenters = presenters.filter(slug=slug)

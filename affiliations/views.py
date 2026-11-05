@@ -38,12 +38,15 @@ class AffiliationFormsetMixin:
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["affiliation_formset"] = self.get_affiliation_formset()
+        formset = self.get_affiliation_formset()
+        context["affiliation_formset"] = formset
         # Existing names, so "PyCon US" is spelled one way across people.
         context["affiliation_names"] = (
             Affiliation.objects.order_by("name")
             .values_list("name", flat=True)
             .distinct()
+            if formset is not None
+            else []
         )
         return context
 

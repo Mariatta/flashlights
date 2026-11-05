@@ -5,8 +5,11 @@ question says, managed by organizers, copied between editions."""
 import pytest
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
+from affiliations.models import Affiliation
 from portal.models import Conference
 from speakers.api import presenter_payload, session_payload
 from speakers.constants import AnswerVisibility, QuestionAbout, QuestionKind
@@ -318,6 +321,19 @@ def answered(conference, enabled, stranger):
 
 @pytest.mark.django_db
 class TestWhoReadsAnswers:
+    def test_a_program_reader_who_reviews_nothing_sees_only_public_answers(
+        self, client, answered, join_team
+    ):
+        """The note promised "the organizers and the people reviewing
+        proposals"; a Recordings member reads the program and is neither."""
+        reader = join_team(
+            User.objects.create_user(username="rec", email="rec@example.com"),
+            "Recordings",
+        )
+        client.force_login(reader)
+        content = client.get(answered.session.get_absolute_url()).content.decode()
+        assert "open" in content and "shared" not in content and "secret" not in content
+
     def test_organizers_read_everything_reviewers_not_the_private_ones(
         self, client, answered, organizer, reviewer
     ):
@@ -330,6 +346,41 @@ class TestWhoReadsAnswers:
         content = client.get(QUEUE).content.decode()
         assert "secret" not in content and "For organizers" not in content
         assert "shared" in content and "open" in content
+
+    def test_queue_queries_do_not_grow_with_the_proposals(
+        self, client, answered, organizer
+    ):
+        """Every row prints the proposer's affiliations and the answers it
+        may show; all of it is prefetched."""
+        conference = answered.conference
+        client.force_login(organizer)
+
+        def count():
+            with CaptureQueriesContext(connection) as context:
+                client.get(QUEUE)
+            return len(context)
+
+        questions = list(ProposalQuestion.objects.filter(conference=conference))
+        before = count()
+        for n in range(4):
+            user = User.objects.create_user(username=f"p{n}", email=f"p{n}@x.org")
+            Affiliation.objects.create(user=user, name=f"Project {n}")
+            presenter = make_presenter(conference, user=user)
+            session = make_session(conference, kind="TALK")
+            add_presenter(session, presenter)
+            Proposal.objects.create(session=session, presenter=presenter)
+            for question in questions:
+                subject = (
+                    {"presenter": presenter}
+                    if question.is_about_speaker
+                    else {"session": session}
+                )
+                ProposalAnswer.objects.create(
+                    question=question, value=f"v{n}", **subject
+                )
+        assert count() == before
+        content = client.get(QUEUE).content.decode()
+        assert "(Project 3)" in content and "v3" in content
 
     def test_the_session_and_presenter_pages_print_them(
         self, client, answered, organizer
@@ -361,9 +412,6 @@ class TestWhoReadsAnswers:
         assert payload["answers"] == public_answers(session)
         payload = presenter_payload(answered.presenter, [], "https://x")
         assert payload["answers"][0]["value"] == "first\nsecond"
-        assert payload["affiliations"] == []
-        orphan = make_presenter(session.conference, display_name="No account")
-        assert presenter_payload(orphan, [], "https://x")["affiliations"] == []
 
 
 @pytest.mark.django_db
@@ -433,16 +481,19 @@ class TestOrganizerPages:
                 "kind": QuestionKind.NUMBER,
                 "label": "For the team, reworded",
                 "help_text": "",
-                "options": "",
-                "visibility": AnswerVisibility.TEAM,
+                "options": "A\nB",
+                "visibility": AnswerVisibility.PUBLIC,
                 "order": 5,
             },
         )
         assert response.status_code == 302
         question.refresh_from_db()
         assert question.label == "For the team, reworded"
+        # The shape and the promise the answers were given under stay.
         assert question.kind == QuestionKind.SHORT_TEXT
         assert question.about == QuestionAbout.SESSION
+        assert question.options == ""
+        assert question.visibility == AnswerVisibility.TEAM
         assert question.is_active is False
 
     def test_deleting(self, client, answered, organizer):

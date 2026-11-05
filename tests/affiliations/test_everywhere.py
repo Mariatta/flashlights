@@ -157,12 +157,12 @@ class TestTheSpeakerSide:
         assert response.status_code == 200
         assert [a.name for a in ada.affiliations.all()] == ["Meetup"]
 
-    def test_the_public_api_lists_them(self, conference, ada):
+    def test_the_public_api_keeps_them_private(self, conference, ada):
+        """Organizers see them; the public program does not, until the
+        rows carry a notice saying otherwise."""
         presenter = make_presenter(conference, display_name="Ada", user=ada)
         Affiliation.objects.create(
             user=ada, kind=AffiliationKind.PROJECT, name="CPython", url=""
         )
         payload = presenter_payload(presenter, [], "https://x")
-        assert payload["affiliations"] == [
-            {"kind": "project", "name": "CPython", "url": None}
-        ]
+        assert "affiliations" not in payload and "CPython" not in str(payload)

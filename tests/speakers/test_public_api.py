@@ -12,8 +12,20 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from portal.models import EventDate, Venue
-from speakers.constants import ProgramVisibility
-from speakers.models import AllowedOrigin, Presenter, Room, Session, SpeakerSettings
+from speakers.constants import (
+    AnswerVisibility,
+    ProgramVisibility,
+    QuestionAbout,
+)
+from speakers.models import (
+    AllowedOrigin,
+    Presenter,
+    ProposalAnswer,
+    ProposalQuestion,
+    Room,
+    Session,
+    SpeakerSettings,
+)
 from speakers.public import preview_token
 
 from .factories import (
@@ -285,7 +297,6 @@ class TestSnapshots:
                     "linkedin": None,
                     "bluesky": None,
                 },
-                "affiliations": [],
                 "answers": [],
                 "sessions": [
                     {
@@ -511,6 +522,40 @@ class TestCache:
             session.schedule()
             session.publish()
         assert count() == before
+
+    def test_presenter_queries_do_not_grow_with_the_program(
+        self, client, program, conference
+    ):
+        """Each public presenter carries their public answers; the rows are
+        prefetched, so more presenters do not mean more queries."""
+        question = ProposalQuestion.objects.create(
+            conference=conference,
+            about=QuestionAbout.SPEAKER,
+            label="Spoken before?",
+            visibility=AnswerVisibility.PUBLIC,
+        )
+
+        def count():
+            cache.clear()
+            with CaptureQueriesContext(connection) as context:
+                client.get(url("presenters"))
+            return len(context)
+
+        before = count()
+        for hour in range(5, 9):
+            session = make_session(conference, kind="PANEL", title=f"Extra {hour}")
+            presenter = make_presenter(conference)
+            ProposalAnswer.objects.create(
+                question=question, presenter=presenter, value=f"answer {hour}"
+            )
+            add_presenter(session, presenter, confirmed=True)
+            session.confirm()
+            make_published_slot(session, start_utc=T0 + timedelta(hours=hour))
+            session.schedule()
+            session.publish()
+        assert count() == before
+        _, data = get(client, url("presenters"))
+        assert sum(len(p["answers"]) for p in data["presenters"]) == 4
 
     def test_one_bump_per_edition_per_transaction(
         self, program, conference, django_capture_on_commit_callbacks

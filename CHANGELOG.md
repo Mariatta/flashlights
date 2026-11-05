@@ -10,7 +10,7 @@ for community apps is marked **Breaking**.
 ## 0.3.0 (unreleased)
 
 - **Organizers add their own questions to the proposal form.** Under
-  Organize › Proposal questions, an edition asks anything beyond the fixed
+  Organize, Proposal questions, an edition asks anything beyond the fixed
   fields: about the session (asked per proposal, editable by the proposer
   while it waits) or about the speaker (asked once per person, on the form
   and on the speaker profile). Nine kinds of question: short and long text,
@@ -25,9 +25,8 @@ for community apps is marked **Breaking**.
 - **Affiliations reach speakers and the account page.** The affiliation
   rows that volunteers already keep are edited on Update profile, on My
   speaker profile and in the About you half of the proposal form, and shown
-  on the proposal queue, the presenter page and the public API as
-  `affiliations`.
-
+  to organizers on the proposal queue and the presenter page. They stay off
+  the public program.
 - **A speaker's home page is about speaking.** Signing in used to open the
   volunteer hub for everyone who was not an organizer or a confirmed speaker,
   so a person who had created an account from the proposal form was greeted
