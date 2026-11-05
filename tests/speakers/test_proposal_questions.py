@@ -388,6 +388,14 @@ class TestWhoReadsAnswers:
         client.force_login(organizer)
         content = client.get(answered.session.get_absolute_url()).content.decode()
         assert "Answers to the proposal questions" in content and "secret" in content
+        # The answers sit in the description, after the fixed fields, and
+        # every fixed field keeps its heading when empty so a reviewer sees
+        # what the proposer left out.
+        assert content.index("Audience") < content.index("Answers to the proposal")
+        start = content.index('id="description"')
+        end = content.index('id="presenters"')
+        description = content[start:end]
+        assert description.count("Nothing yet.") == 4
         url = reverse("speakers:presenter_detail", args=[answered.presenter.slug])
         content = client.get(url).content.decode()
         assert "Their answers" in content and "first<br>second" in content

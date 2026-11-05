@@ -26,7 +26,12 @@ for community apps is marked **Breaking**.
   rows that volunteers already keep are edited on Update profile, on My
   speaker profile and in the About you half of the proposal form, and shown
   to organizers on the proposal queue and the presenter page. They stay off
-  the public program.
+  the public program. The affiliation rows, which the volunteer form already
+  had, now carry the form's styling instead of bare browser inputs.
+- **The organizer's session page shows every description heading.** Summary,
+  outline, prerequisites and audience each keep their heading when empty, so
+  a reviewer sees what a proposer left out; the answers to the proposal
+  questions follow them, inside the description.
 - **A speaker's home page is about speaking.** Signing in used to open the
   volunteer hub for everyone who was not an organizer or a confirmed speaker,
   so a person who had created an account from the proposal form was greeted
