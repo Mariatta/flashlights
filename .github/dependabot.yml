@@ -24,3 +24,9 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # The full image installs faster-whisper, whose onnxruntime has wheels up
+    # to Python 3.14 (release 1.31.1, November 2026). Lift this once
+    # onnxruntime publishes a 3.15 wheel.
+    ignore:
+      - dependency-name: python
+        versions: [">= 3.15"]
