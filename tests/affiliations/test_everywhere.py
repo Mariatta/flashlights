@@ -84,6 +84,12 @@ class TestTheSpeakerSide:
         client.force_login(ada)
         page = client.get(PROPOSE).content.decode()
         assert "affiliations-TOTAL_FORMS" in page
+        # The rows are rendered field by field, so the widgets carry the
+        # Bootstrap classes themselves.
+        first_row = page.index("data-affiliation-row")
+        row = page[first_row:]
+        for css in ("form-select", "form-control", "form-check-input"):
+            assert f'class="{css}"' in row, css
         data = {
             "you-display_name": "Ada",
             "you-bio_md": "Hi.",
