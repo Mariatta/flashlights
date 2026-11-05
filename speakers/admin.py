@@ -130,7 +130,12 @@ class SpeakerSettingsAdmin(admin.ModelAdmin):
                 "description": "While proposals are open, the landing page and the "
                 "hubs offer the propose-a-session form to anyone with an account. "
                 "Only session types marked open for proposals are offered.",
-                "fields": ("proposals_open", "proposals_intro_md"),
+                "fields": (
+                    "proposals_open",
+                    "proposals_intro_md",
+                    "asks_prerequisites",
+                    "asks_language",
+                ),
             },
         ),
         (

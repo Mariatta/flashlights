@@ -115,6 +115,13 @@ def slot_block(session):
     }
 
 
+def _asks_language(conference):
+    """Read through the one-to-one, cached on the conference across a
+    page of sessions."""
+    settings_row = getattr(conference, "speaker_settings", None)
+    return settings_row is None or settings_row.asks_language
+
+
 def session_payload(conference, session, public_ids, base):
     payload = {
         "slug": session.slug,
@@ -123,7 +130,12 @@ def session_payload(conference, session, public_ids, base):
         "is_content": session.kind.is_content,
         "delivery": session.delivery,
         "level": session.level or None,
-        "language": session.language or None,
+        # An edition that does not ask the language has none to print.
+        "language": (
+            session.language
+            if session.language and _asks_language(conference)
+            else None
+        ),
         "duration_minutes": session.duration_minutes,
     }
     for name in SESSION_TEXT:

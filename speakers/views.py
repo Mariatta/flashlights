@@ -70,6 +70,7 @@ from .filters import PresenterFilter, SessionFilter
 from .forms import (
     AdhocItemForm,
     AssignItemForm,
+    BuiltInFieldsForm,
     ChecklistTemplateForm,
     ChecklistTemplateItemForm,
     CopyQuestionsForm,
@@ -142,6 +143,7 @@ from .models import (
     event_tz,
     records_sessions,
     team_records,
+    unasked_session_fields,
 )
 from .permissions import (
     approved_teams,
@@ -397,6 +399,7 @@ class SessionDetailView(SessionScopedMixin, DetailView):
             self.request.user,
             answers=answers_queryset().filter(session=self.object),
         )
+        context["unasked"] = unasked_session_fields(self.conference)
         latest = {}
         for invitation in Invitation.objects.filter(session=self.object).order_by(
             "creation_date", "id"
@@ -1678,6 +1681,7 @@ class SpeakerSessionDetailView(SpeakerSessionMixin, TemplateView):
             "done": len(mine) - len(open_items),
             "total": len(mine),
         }
+        context["unasked"] = unasked_session_fields(self.conference)
         return context
 
 
@@ -1987,6 +1991,7 @@ class ProposalQuestionsView(
                 answer_count=Count("answers")
             )
         )
+        settings_row = get_object_or_404(SpeakerSettings, conference=self.conference)
         context.update(
             {
                 "conference": self.conference,
@@ -1994,9 +1999,30 @@ class ProposalQuestionsView(
                 "session_questions": [q for q in questions if not q.is_about_speaker],
                 "speaker_questions": [q for q in questions if q.is_about_speaker],
                 "copy_form": CopyQuestionsForm(conference=self.conference),
+                "fields_form": BuiltInFieldsForm(instance=settings_row),
             }
         )
         return context
+
+
+class BuiltInFieldsView(LoginRequiredMixin, SpeakerSettingsRequiredMixin, View):
+    """Switch the switchable built-in session fields on or off."""
+
+    def post(self, request):
+        settings_row = get_object_or_404(SpeakerSettings, conference=self.conference)
+        form = BuiltInFieldsForm(request.POST, instance=settings_row)
+        # Two checkboxes: there is no invalid POST, only ticked or not.
+        form.is_valid()
+        form.save()
+        ActivityLog.record(
+            self.conference,
+            "speakers.settings_changed",
+            target=settings_row,
+            actor=request.user,
+            fields=sorted(form.changed_data),
+        )
+        messages.success(request, "Saved which built-in fields the form asks.")
+        return redirect("speakers:proposal_questions")
 
 
 class ProposalQuestionFormMixin(LoginRequiredMixin, SpeakerSettingsRequiredMixin):

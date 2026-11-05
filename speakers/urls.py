@@ -288,6 +288,11 @@ urlpatterns = [
         name="proposal_question_create",
     ),
     path(
+        "settings/questions/fields/",
+        views.BuiltInFieldsView.as_view(),
+        name="proposal_fields",
+    ),
+    path(
         "settings/questions/copy/",
         views.CopyProposalQuestionsView.as_view(),
         name="proposal_questions_copy",

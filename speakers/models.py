@@ -241,6 +241,22 @@ class SpeakerSettings(TimestampedModel):
         help_text="Shown above the propose-a-session form: what you are "
         "looking for, and by when.",
     )
+    # Two of the built-in session fields are an edition's choice: a one-day
+    # summit in one language has no use for either. Off, the field leaves
+    # the proposal form, the session forms, the session pages and the
+    # public API; the column keeps its default.
+    asks_prerequisites = models.BooleanField(
+        "ask for prerequisites",
+        default=True,
+        db_default=True,
+        help_text="What someone needs to follow the session.",
+    )
+    asks_language = models.BooleanField(
+        "ask the session language",
+        default=True,
+        db_default=True,
+        help_text="Off for an edition whose sessions are all in one language.",
+    )
     translation_languages = ArrayField(
         models.CharField(max_length=10),
         default=list,
@@ -458,6 +474,31 @@ def event_tz(conference):
         .first()
     )
     return zoneinfo.ZoneInfo(name or "UTC")
+
+
+#: The built-in session fields an edition may switch off, by the switch
+#: that governs each.
+SWITCHABLE_SESSION_FIELDS = {
+    "asks_prerequisites": "prerequisites_md",
+    "asks_language": "language",
+}
+
+
+def unasked_session_fields(conference):
+    """The built-in session fields this edition does not ask: a set of
+    field names, empty with no row. One query, for a form or a page."""
+    if conference is None:
+        return set()
+    row = (
+        SpeakerSettings.objects.filter(conference=conference)
+        .values(*SWITCHABLE_SESSION_FIELDS)
+        .first()
+    )
+    if row is None:
+        return set()
+    return {
+        field for switch, field in SWITCHABLE_SESSION_FIELDS.items() if not row[switch]
+    }
 
 
 def is_in_person(conference):

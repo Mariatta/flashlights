@@ -7,6 +7,17 @@ handles. Anything else an edition wants to know is a **proposal
 question**, added by an organizer on **Organize**, **Proposal questions**,
 without a code change.
 
+## Built-in fields
+
+The top of **Proposal questions** lists what the form asks about every
+session before the questions: kind, title, summary, outline, prerequisites,
+audience, level and language, each with who sees the answer. Two of them are
+the edition's choice. Untick **Prerequisites** or **Language** and the field
+leaves the proposal form, the organizer's session form, the speaker's own
+session form, the session pages and the public program; a summit whose
+talks are all in English has no use for a language field. Both are on by
+default, and the choice travels with "start next year".
+
 ## What a question is about
 
 A question is about **the session** or about **the speaker**.

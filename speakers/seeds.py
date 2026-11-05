@@ -882,6 +882,8 @@ SETTINGS_TO_COPY = [
     "default_video_length_limit_minutes",
     "conference_timezone",
     "organizers_email",
+    "asks_prerequisites",
+    "asks_language",
 ]
 
 

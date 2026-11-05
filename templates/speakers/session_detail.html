@@ -340,18 +340,20 @@ open the tab their target lives in.
                                     </p>
                                 {% endif %}
                             </div>
-                            <h3 class="h6 text-uppercase text-secondary">
-                                {% trans "Prerequisites" %}
-                            </h3>
-                            <div class="mb-3">
-                                {% if session.prerequisites_md %}
-                                    {{ session.prerequisites_md|speaker_md }}
-                                {% else %}
-                                    <p class="text-secondary mb-0">
-                                        {{ nothing_yet }}
-                                    </p>
-                                {% endif %}
-                            </div>
+                            {% if "prerequisites_md" not in unasked %}
+                                <h3 class="h6 text-uppercase text-secondary">
+                                    {% trans "Prerequisites" %}
+                                </h3>
+                                <div class="mb-3">
+                                    {% if session.prerequisites_md %}
+                                        {{ session.prerequisites_md|speaker_md }}
+                                    {% else %}
+                                        <p class="text-secondary mb-0">
+                                            {{ nothing_yet }}
+                                        </p>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
                             <h3 class="h6 text-uppercase text-secondary">
                                 {% trans "Audience" %}
                             </h3>
@@ -755,9 +757,11 @@ open the tab their target lives in.
                             <div>
                                 <strong>{% trans "Level" %}:</strong> {{ session.get_level_display|default:"—" }}
                             </div>
-                            <div>
-                                <strong>{% trans "Language" %}:</strong> {{ session.language|default:"—" }}
-                            </div>
+                            {% if "language" not in unasked %}
+                                <div>
+                                    <strong>{% trans "Language" %}:</strong> {{ session.language|default:"—" }}
+                                </div>
+                            {% endif %}
                             <div>
                                 <strong>{% trans "Slot" %}:</strong>
                                 {% if session.slot %}

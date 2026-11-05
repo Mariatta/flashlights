@@ -13,7 +13,14 @@ from affiliations.models import Affiliation
 from portal.models import Conference
 from speakers.api import presenter_payload, session_payload
 from speakers.constants import AnswerVisibility, QuestionAbout, QuestionKind
-from speakers.models import ActivityLog, Proposal, ProposalAnswer, ProposalQuestion
+from speakers.models import (
+    ActivityLog,
+    Proposal,
+    ProposalAnswer,
+    ProposalQuestion,
+    SpeakerSettings,
+    unasked_session_fields,
+)
 from speakers.program_types import session_type
 from speakers.questions import (
     LinksField,
@@ -606,3 +613,115 @@ class TestTheParts:
         assert form.is_valid()
         form.save()
         assert presenter.question_answers.get().value == "yes"
+
+
+FIELDS = reverse("speakers:proposal_fields")
+
+
+@pytest.mark.django_db
+class TestBuiltInFields:
+    """Prerequisites and language are the edition's choice; off, the field
+    leaves every form and page that printed it."""
+
+    def switch_off(self, conference, *names):
+        SpeakerSettings.objects.filter(conference=conference).update(
+            **{name: False for name in names}
+        )
+
+    def test_the_page_lists_them_and_the_switches_save(
+        self, client, conference, enabled, organizer
+    ):
+        client.force_login(organizer)
+        content = client.get(QUESTIONS).content.decode()
+        assert "Built-in fields" in content and content.count("Always") == 6
+        assert 'name="asks_language"' in content and "checked" in content
+        response = client.post(FIELDS, {"asks_prerequisites": "on"}, follow=True)
+        assert "Saved which built-in fields" in response.content.decode()
+        row = SpeakerSettings.objects.get(conference=conference)
+        assert row.asks_prerequisites is True and row.asks_language is False
+        assert ActivityLog.objects.filter(
+            action="speakers.settings_changed", data__fields=["asks_language"]
+        ).exists()
+
+    def test_the_proposal_forms_stop_asking(
+        self, client, conference, enabled, stranger
+    ):
+        self.switch_off(conference, "asks_language", "asks_prerequisites")
+        client.force_login(stranger)
+        content = client.get(PROPOSE).content.decode()
+        assert 'name="session-language"' not in content
+        assert 'name="session-prerequisites_md"' not in content
+        assert 'name="session-outline_md"' in content
+        # A stale POST naming them is ignored, not refused.
+        response = client.post(
+            PROPOSE, proposal_post(conference, **{"session-language": "fr"})
+        )
+        assert response.status_code == 302
+        session = Proposal.objects.get().session
+        assert session.language != "fr"
+        url = reverse("speakers:proposal_edit", args=[Proposal.objects.get().pk])
+        assert 'name="session-language"' not in client.get(url).content.decode()
+
+    def test_the_session_forms_and_pages_follow(
+        self, client, conference, enabled, organizer
+    ):
+        self.switch_off(conference, "asks_language", "asks_prerequisites")
+        user = User.objects.create_user(username="ada", email="ada@example.com")
+        presenter = make_presenter(conference, display_name="Ada", user=user)
+        session = make_session(conference, title="Switched", kind="TALK")
+        add_presenter(session, presenter, confirmed=True)
+        client.force_login(organizer)
+        content = client.get(
+            reverse("speakers:session_edit", args=[session.slug])
+        ).content.decode()
+        assert (
+            'name="language"' not in content
+            and 'name="prerequisites_md"' not in content
+        )
+        content = client.get(session.get_absolute_url()).content.decode()
+        assert "Prerequisites" not in content
+        assert "Language" not in content.split('id="details"')[1].split("Slot")[0]
+        client.force_login(user)
+        content = client.get(
+            reverse("speakers:my_session_edit", args=[session.slug])
+        ).content.decode()
+        assert (
+            'name="language"' not in content
+            and 'name="prerequisites_md"' not in content
+        )
+        content = client.get(
+            reverse("speakers:my_session_detail", args=[session.slug])
+        ).content.decode()
+        assert "<strong>Language" not in content
+
+    def test_the_public_api_prints_no_language(self, conference, enabled):
+        session = make_session(conference, kind="TALK", language="en")
+        make_published_slot(session)
+        session.public_links = []
+        assert (
+            session_payload(conference, session, set(), "https://x")["language"] == "en"
+        )
+        self.switch_off(conference, "asks_language")
+        conference = Conference.objects.get(pk=conference.pk)
+        assert (
+            session_payload(conference, session, set(), "https://x")["language"] is None
+        )
+        bare = Conference.objects.create(
+            name="Bare", year=conference.year + 2, slug="bare"
+        )
+        bare_session = make_session(bare, kind="TALK", language="en")
+        make_published_slot(bare_session)
+        bare_session.public_links = []
+        assert (
+            session_payload(bare, bare_session, set(), "https://x")["language"] == "en"
+        )
+
+    def test_nothing_is_unasked_without_an_edition_or_a_row(self, conference):
+        assert unasked_session_fields(None) == set()
+        assert unasked_session_fields(conference) == set()
+
+    def test_starting_next_year_carries_the_switches(self, conference, enabled):
+        self.switch_off(conference, "asks_language")
+        target = Conference.objects.create(name="Next", year=conference.year + 1)
+        clone_speaker_setup(target, conference)
+        assert SpeakerSettings.objects.get(conference=target).asks_language is False

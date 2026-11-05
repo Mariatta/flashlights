@@ -46,6 +46,7 @@ from .models import (
     event_tz,
     is_in_person,
     recordings,
+    unasked_session_fields,
 )
 from .people import assignee_candidates, liaison_candidates, picker_label
 from .permissions import can_publish_session_video
@@ -74,6 +75,13 @@ DISCORD_HELP = (
     "So we can give you the speaker role on the event Discord. "
     "Never shown on the public site."
 )
+
+
+def drop_unasked_fields(form, conference):
+    """Take the built-in session fields the edition switched off out of a
+    session form, so nobody is asked, and a stale POST is ignored."""
+    for name in unasked_session_fields(conference):
+        form.fields.pop(name, None)
 
 
 def drop_discord_without_chat(form, conference):
@@ -195,6 +203,7 @@ class SessionForm(EventTimeMixin, forms.ModelForm):
         )
         self.fields["kind"].queryset = types
         self.fields["kind"].label = "Type"
+        drop_unasked_fields(self, conference)
         # An in-person edition's sessions are live, and a
         # premiere is an online notion.
         self.in_person = is_in_person(conference)
@@ -621,6 +630,10 @@ class SpeakerSessionForm(IdentityLockMixin, forms.ModelForm):
         }
 
     IDENTITY_FIELDS = (("title", "Title"), ("slug", "Web address"))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        drop_unasked_fields(self, self.instance.conference)
 
     def clean_title(self):
         """One line, like a proposal's: it reaches email subjects and the
@@ -1259,6 +1272,7 @@ class ProposalSessionForm(forms.ModelForm):
         self.fields["kind"].queryset = proposable_types(conference)
         self.fields["title"].required = True
         self.fields["summary_md"].required = True
+        drop_unasked_fields(self, conference)
 
     def clean_title(self):
         return one_line(self.cleaned_data["title"])
@@ -1447,6 +1461,15 @@ class ProposalQuestionForm(forms.ModelForm):
                     "label", "There is already a question with this wording."
                 )
         return cleaned
+
+
+class BuiltInFieldsForm(forms.ModelForm):
+    """Which of the switchable built-in session fields this edition asks."""
+
+    class Meta:
+        model = SpeakerSettings
+        fields = ["asks_prerequisites", "asks_language"]
+        labels = {"asks_prerequisites": "Prerequisites", "asks_language": "Language"}
 
 
 class CopyQuestionsForm(forms.Form):

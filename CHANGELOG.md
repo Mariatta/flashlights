@@ -28,6 +28,10 @@ for community apps is marked **Breaking**.
   to organizers on the proposal queue and the presenter page. They stay off
   the public program. The affiliation rows, which the volunteer form already
   had, now carry the form's styling instead of bare browser inputs.
+- **Prerequisites and language are the edition's choice.** Two switches at
+  the top of Proposal questions take either built-in field off the proposal
+  form, the session forms, the session pages and the public API, where an
+  unasked language prints null. Both stay on unless switched off.
 - **The organizer's session page shows every description heading.** Summary,
   outline, prerequisites and audience each keep their heading when empty, so
   a reviewer sees what a proposer left out; the answers to the proposal
