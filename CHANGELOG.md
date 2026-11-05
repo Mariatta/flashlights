@@ -20,6 +20,11 @@ for community apps is marked **Breaking**.
   "Update your profile" rather than "Edit your Portal Profile"; its
   breadcrumb, the account rail and every link to it say "Update profile";
   and the profile page says "Your profile".
+- **The share card shows the Flashlights mark.** The mark's beam and
+  lights are Beam yellow, so on the Beam accent, the default, a link
+  preview showed only the handle. The lockup now sits on a Night band
+  along the bottom of the card, as the site footer carries it, and the
+  beam keeps its fade.
 
 ## 0.2.0 (2026-10-22)
 

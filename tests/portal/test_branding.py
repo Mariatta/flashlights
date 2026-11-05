@@ -272,6 +272,18 @@ class TestGeneratedImages:
         assert image.size == (1200, 630)
         assert image.getpixel((10, 10)) == branding.parse_hex(settings.BRAND.primary)
 
+    def test_share_card_carries_the_lockup_on_a_night_band(self):
+        """The mark's beam and lights are Beam yellow, so on the Beam accent,
+        the default, they vanished into the card and only the handle showed.
+        The lockup now sits on the footer's Night ground along the bottom."""
+        brand = branding.from_env({})
+        image = Image.open(io.BytesIO(brand.share_card_png())).convert("RGB")
+        assert image.getpixel((10, 10)) == branding.parse_hex(brand.primary)
+        assert image.getpixel((10, 620)) == branding.parse_hex(branding.NIGHT)
+        band = list(image.crop((440, 630 - branding.CARD_BAND, 760, 630)).getdata())
+        assert any(r > 200 and g > 170 and b < 120 for r, g, b in band), "no beam"
+        assert branding.parse_hex(branding.PAPER) in band, "no handle or name"
+
     def test_long_titles_shrink_to_fit(self):
         brand = branding.from_env(
             {

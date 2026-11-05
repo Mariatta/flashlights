@@ -68,6 +68,13 @@ def core_docs_url(version=None):
 NIGHT = "#0f0f0d"
 PAPER = "#f7f5ef"
 WHITE = "#ffffff"
+#: The mark's beam and lights, always this yellow whatever the ground.
+BEAM = "#ffd43b"
+
+#: The share card's bottom band: the footer's Night ground, brought to the
+#: card so the Flashlights lockup sits where its mark reads. On the accent
+#: itself the beam vanishes whenever the accent is Beam, the default.
+CARD_BAND = 96
 
 #: WCAG minimum for user-interface components and large text (filled
 #: buttons), and for body text (accent-coloured text on Paper).
@@ -261,38 +268,41 @@ class Brand:
         return _png_bytes(image)
 
     def share_card_png(self):
-        """The default Open Graph image: primary background, the title and
-        description, and a small Flashlights mark. 1200 by 630, the size
+        """The default Open Graph image: the title and description on the
+        primary colour, and the Flashlights lockup on a Night band along
+        the bottom, as the site footer carries it. 1200 by 630, the size
         every social network reads."""
         width, height = 1200, 630
-        image = Image.new("RGB", (width, height), self.primary)
+        image = Image.new("RGBA", (width, height), parse_hex(self.primary) + (255,))
         draw = ImageDraw.Draw(image)
         ink = self.text_on_accent
+        field = height - CARD_BAND
         _draw_centered(
-            draw, self.title, width / 2, height * 0.42, 96, max_width=1080, ink=ink
+            draw, self.title, width / 2, field * 0.45, 96, max_width=1080, ink=ink
         )
         _draw_centered(
             draw,
             self.description,
             width / 2,
-            height * 0.62,
+            field * 0.68,
             40,
             max_width=1080,
             ink=ink,
         )
-        # The small Flashlights mark with its name, bottom centre.
-        _draw_mark(draw, width / 2 - 78, height - 56, 56, ink)
-        _draw_centered(
-            draw, "Flashlights", width / 2 + 16, height - 56, 28, opacity=170, ink=ink
-        )
-        return _png_bytes(image)
+        draw.rectangle((0, field, width, height), fill=parse_hex(NIGHT))
+        middle = field + CARD_BAND / 2
+        _draw_mark(image, width / 2 - 96, middle, 56, PAPER)
+        _draw_centered(draw, "Flashlights", width / 2 + 28, middle, 30, ink=PAPER)
+        return _png_bytes(image.convert("RGB"))
 
 
-def _draw_mark(draw, cx, cy, size, ink):
-    """The torch mark (Wordmark spec, simplified) centred on (cx, cy):
-    handle and lens in ``ink``, beam and one light in Beam yellow, the whole
-    rotated 32 degrees up like the SVG."""
-    beam = (255, 212, 59)
+def _draw_mark(image, cx, cy, size, ink):
+    """The torch mark (Wordmark spec) centred on (cx, cy): handle and head
+    in ``ink``, beam, lights and lens in Beam yellow, rotated 32 degrees up
+    like the SVG. Drawn on its own layer so the beam keeps the SVG's fade,
+    which a fill on an opaque image would drop."""
+    beam = parse_hex(BEAM)
+    solid = parse_hex(ink)
     angle = math.radians(-32)
     cos, sin = math.cos(angle), math.sin(angle)
 
@@ -301,13 +311,36 @@ def _draw_mark(draw, cx, cy, size, ink):
         dx, dy = (x - 50) / 100 * size, (y - 50) / 100 * size
         return (cx + dx * cos - dy * sin, cy + dx * sin + dy * cos)
 
-    draw.polygon([at(52, 40), at(100, 18), at(100, 82), at(52, 60)], fill=beam + (60,))
-    draw.polygon([at(0, 40), at(34, 40), at(34, 60), at(0, 60)], fill=parse_hex(ink))
-    draw.polygon([at(32, 40), at(48, 34), at(48, 66), at(32, 60)], fill=parse_hex(ink))
-    draw.polygon([at(48, 34), at(52, 34), at(52, 66), at(48, 66)], fill=beam)
-    lx, ly = at(80, 44)
-    r = size * 0.05
-    draw.ellipse((lx - r, ly - r, lx + r, ly + r), fill=beam)
+    layer = Image.new("RGBA", image.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(layer)
+    # The beam fades from the lens outwards: three slices stand in for the
+    # SVG's gradient.
+    for x0, x1, alpha in ((50, 68, 130), (68, 84, 70), (84, 100, 25)):
+        y_top = 41 - (x0 - 50) * 21 / 50, 41 - (x1 - 50) * 21 / 50
+        y_bottom = 59 + (x0 - 50) * 21 / 50, 59 + (x1 - 50) * 21 / 50
+        draw.polygon(
+            [
+                at(x0, y_top[0]),
+                at(x1, y_top[1]),
+                at(x1, y_bottom[1]),
+                at(x0, y_bottom[0]),
+            ],
+            fill=beam + (alpha,),
+        )
+    for light in (
+        (64, 46, 3, 255),
+        (75, 56, 4.2, 255),
+        (89, 40, 5.5, 255),
+        (93, 64, 3, 180),
+    ):
+        x, y, radius, alpha = light
+        lx, ly = at(x, y)
+        r = radius / 100 * size
+        draw.ellipse((lx - r, ly - r, lx + r, ly + r), fill=beam + (alpha,))
+    draw.polygon([at(2, 43), at(32, 43), at(32, 57), at(2, 57)], fill=solid)
+    draw.polygon([at(31, 43), at(46, 38), at(46, 62), at(31, 57)], fill=solid)
+    draw.polygon([at(46, 38), at(49, 38), at(49, 62), at(46, 62)], fill=beam)
+    image.alpha_composite(layer)
 
 
 def _font(size):
