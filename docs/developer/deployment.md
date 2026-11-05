@@ -38,6 +38,16 @@ half-configured environment.
 runs: the Django apps a community adds, built into an image of its own
 from the core's. [Community apps](community_apps.md) has the contract.
 
+**The health route.** `GET /_health/` (or `/_health`) answers `200 ok` as
+plain text. It is answered before Django checks the `Host` header and runs
+no query, so a host can probe the web process at the pod's own address,
+with no hostname configured, and a database that blinks does not get the
+web process restarted. Point every liveness and readiness probe, proxy
+health check and uptime monitor at it; it is the only path that skips the
+host check. It says the process answers, nothing more: whether the
+database and the workers are well is shown on the maintenance pages.
+gunicorn keeps the probes out of its access log.
+
 ### Processes and formation
 
 The `Procfile` names the processes; every host runs the same image.
@@ -476,6 +486,10 @@ formation, each as a dyno. The host sets `$PORT` and routes to it. To add
 migrations before the new dynos take traffic. A failed migration stops the
 deploy and the old release keeps serving.
 
+**Health.** Heroku runs no probes; it only checks that `web` binds
+`$PORT` in time. Dokku and Render do probe, and an uptime monitor should:
+give them `/_health/`.
+
 **Logs.** `heroku logs --tail --dyno worker` (or the host's equivalent)
 shows one process's output; all processes share one stream otherwise.
 
@@ -507,6 +521,11 @@ image, `web` with ingress on port 8000, which the template also sets as
 **Release step.** A manual Container Apps job runs the release command.
 Start it after every image change, before scaling the new revision in:
 `az containerapp job start -g <group> -n <name>-release`.
+
+**Health.** The template declares startup, readiness and liveness probes
+on `web` against `/_health/` on port 8000; a revision takes traffic once
+the readiness probe passes, and a replica that stops answering is
+replaced. `worker` has no port and no probes.
 
 **Logs.** Each container app has its own log stream in Log Analytics and
 under `az containerapp logs show -n <app>`; the worker's lines are under
@@ -540,12 +559,27 @@ is `worker-beat`.
 before the other processes are replaced. Deploys happen on every push of
 the configured branch.
 
+**Health.** Cabotage probes `web` through its TLS sidecar, every few
+seconds, at the application's Health Path, whose default is `/_health/`:
+the route the image serves, so leave the default and leave Health Host
+empty. A different path, or a host the instance does not answer on, keeps
+the pod from ever becoming ready and the deploy times out.
+
 **Logs.** Open the process (`web`, `worker`, `worker-media`,
 `worker-beat`) in the application; each has its own log view and events,
 where restarts and out-of-memory kills show.
 
 **Quirks.**
 
+- **Keep the project and application names short.** Cabotage names each
+  Kubernetes object after the project, the application, a random suffix
+  for each, and the process, and Kubernetes refuses a name over 63
+  characters. A project called `pyladies-vancouver-flashlights` with an
+  application called `flashlights` is one character over for `web`, and
+  the deploy fails at "Fetching web Service" with `must be no more than 63
+  characters`. Neither name can be changed afterwards. Keep the two names
+  together under about 30 characters (`pyladies-vancouver` and
+  `flashlights`, say), which leaves room for `worker-media`.
 - **A new or renamed process starts at zero replicas.** Cabotage does not
   scale it automatically, and a deploy that adds or renames a `Procfile`
   entry reports success without ever running the new process. After the
@@ -585,6 +619,10 @@ header, and a request that reaches `web` directly can claim to be secure.
 containers: `docker compose run --rm web python manage.py createcachetable
 && docker compose run --rm web python manage.py migrate`, or the same two
 through whatever starts your containers.
+
+**Health.** Give the proxy's upstream health check, the container's
+`healthcheck`, and your uptime monitor `/_health/` on `web`; it needs no
+`Host` header.
 
 **Logs.** `docker compose logs -f celery` for the worker, `web` for
 gunicorn's request lines; each container is one process.

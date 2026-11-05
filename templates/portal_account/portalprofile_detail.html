@@ -15,7 +15,7 @@
 {% endblock sidebar %}
 {% block content %}
     <h1 class="h3 mb-4">
-        {% trans "Your portal profile" %}
+        {% trans "Your profile" %}
     </h1>
     <div class="card mb-4">
         <div class="card-header">
@@ -84,6 +84,6 @@
     </div>
     <div class="mt-4">
         <a class="btn btn-primary"
-           href="{% url 'portal_account:portal_profile_edit' object.pk %}">{% trans "Edit profile" %}</a>
+           href="{% url 'portal_account:portal_profile_edit' object.pk %}">{% trans "Update profile" %}</a>
     </div>
 {% endblock content %}

@@ -7,16 +7,20 @@ image paths onto it as text, so the feed would point at
 ``.../0.1.0assets/...``. A hook runs after every plugin has read the
 config, so the slash goes back there, and the copy the RSS plugin keeps is
 brought in line at the next event, before any page is rendered.
+
+The module imports nothing from mkdocs, so the test suite reads it inside
+the image, where only the application's requirements are installed.
+``mkdocs_priority`` is the attribute ``mkdocs.plugins.event_priority`` sets.
 """
 
-from mkdocs.plugins import event_priority
 
-
-@event_priority(-100)
 def on_config(config):
     if config.site_url and not config.site_url.endswith("/"):
         config.site_url += "/"
     return config
+
+
+on_config.mkdocs_priority = -100  # after every plugin has read the config
 
 
 def on_files(files, config):

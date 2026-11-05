@@ -4,11 +4,25 @@ from datetime import date, timedelta
 import pytest
 from captcha.models import CaptchaStore
 
+from portal import branding
 from portal.models import Conference
 from tests.ticketing_ids import ANONYMOUS_QUESTION, NOT_ANONYMOUS
 from volunteer.constants import ApplicationStatus
 from volunteer.models import Language, Team, VolunteerProfile
 from volunteer.permission_presets import ORGANIZERS, PRESETS, permissions_for
+
+
+@pytest.fixture(autouse=True)
+def default_brand(settings):
+    """Every test sees the default brand, whatever SITE_* the shell set.
+
+    The compose file names the local instance "Flashlights (dev)" with the
+    teal preset, and the tests assert on the title, the colours and the
+    links, so the suite would read differently inside the container than
+    in a bare shell. Tests of the environment parsing build their own
+    ``Brand`` with ``branding.from_env`` and override this one.
+    """
+    settings.BRAND = branding.from_env({})
 
 
 @pytest.fixture(autouse=True)

@@ -7,6 +7,41 @@ a change to the [public API](docs/developer/community_apps.md#public-api)
 for community apps is marked **Breaking**.
 [Releasing](docs/developer/releasing.md) says how a release is made.
 
+## 0.2.1 (unreleased)
+
+- **The agreements page is styled.** An account that had not yet agreed to
+  the Code of Conduct and the Terms of Service was sent to the page that
+  asks, and so was its request for `/theme.css`, the stylesheet that
+  carries the instance's accent. The browser got HTML in place of CSS, and
+  "Agree and continue" rendered as bare text. The gate now lets the theme
+  stylesheet, the icons and the share card through.
+- **The pages say "your profile".** The agreements page asks "everyone
+  with an account" rather than "a portal account". The profile form says
+  "Update your profile" rather than "Edit your Portal Profile"; its
+  breadcrumb, the account rail and every link to it say "Update profile";
+  and the profile page says "Your profile".
+- **The share card shows the Flashlights mark.** The mark's beam and
+  lights are Beam yellow, so on the Beam accent, the default, a link
+  preview showed only the handle. The lockup now sits on a Night band
+  along the bottom of the card, as the site footer carries it, and the
+  beam keeps its fade.
+- **The footer's Flashlights lockup links to flashlights.app.** The
+  "Source code" link beside it still goes to the repository.
+- **A chosen radio button fills.** It was a Night ring with a Night dot,
+  hard to tell from the empty ring beside it. It is now a Night disc with
+  a Beam dot, the same fill as a ticked checkbox.
+
+## 0.2.0 (2026-10-22)
+
+- **A health route for the hosts' probes.** `GET /_health/` answers `200
+  ok` before the `Host` header is checked and without a database query, so
+  Cabotage (whose default probe path it is), Azure Container Apps (the
+  template now declares startup, readiness and liveness probes against it)
+  and any proxy or uptime monitor can probe the web process without a
+  hostname and without rendering a page; the compose template's `web`
+  service carries the same check. gunicorn keeps the probes out of the
+  access log.
+
 ## 0.1.0 (2026-10-21)
 
 The first release of Flashlights, derived from the
