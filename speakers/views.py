@@ -23,6 +23,7 @@ from common.tasks import enqueue
 from portal.models import Conference
 from portal_account import agreements
 from ticketing.models import has_api as ticketing_has_api
+from volunteer.constants import CLOSED_APPLICATIONS
 from volunteer.models import Team, VolunteerProfile
 
 from .board import (
@@ -3144,12 +3145,17 @@ class MyProposalsView(LoginRequiredMixin, ProposalsOpenMixin, TemplateView):
         )
         # A speaker sees this with the rest of their speaking; someone
         # whose proposal nobody has answered is not a speaker yet, so it
-        # sits in their volunteering rail when they volunteer, and on a
-        # page of its own when proposing is all they came to do.
+        # sits in their volunteering rail when they volunteer (an
+        # application waiting, waitlisted or approved), and on a page of its
+        # own when proposing is all they came to do.
         on_the_program = bool(presenter and presenter.is_onboarded)
-        volunteering = VolunteerProfile.objects.filter(
-            user=self.request.user, conference=self.conference
-        ).exists()
+        volunteering = (
+            VolunteerProfile.objects.filter(
+                user=self.request.user, conference=self.conference
+            )
+            .exclude(application_status__in=CLOSED_APPLICATIONS)
+            .exists()
+        )
         if on_the_program:
             shell = "speakers/_speaker_shell.html"
         elif volunteering:

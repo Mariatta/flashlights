@@ -35,20 +35,16 @@ from portal.services import (
     clone_sponsorship_tiers,
     clone_teams,
 )
-from speakers.editions import set_working_edition
-from speakers.models import Presenter, Proposal, SpeakerSettings, speaker_module_enabled
+from speakers.editions import set_working_edition, speaker_edition
+from speakers.models import Proposal, SpeakerSettings, speaker_module_enabled
 from speakers.seeds import clone_speaker_setup, seed_new_edition
 from speakers.services import proposals_open
 from speakers.stats import edition_task_stats
 from sponsorship.models import SponsorshipProfile
 from ticketing.models import TicketingSettings, carry_forward
-from volunteer.constants import ApplicationStatus
+from volunteer.constants import CLOSED_APPLICATIONS, ApplicationStatus
 from volunteer.models import Team, VolunteerProfile
 from volunteer.organizers import ensure_organizers_team
-
-#: Volunteer applications that are over: they no longer make the volunteer
-#: hub someone's home when they have speaking to go to.
-CLOSED_APPLICATIONS = (ApplicationStatus.REJECTED, ApplicationStatus.CANCELLED)
 
 
 def index(request):
@@ -61,7 +57,8 @@ def index(request):
       waitlisted or approved: the volunteer hub (one consistent home, not a
       second landing page). A rejected or withdrawn application does not
       make that hub someone's home when they have speaking to go to.
-    - Otherwise, speakers on the program: their speaker dashboard.
+    - Otherwise, speakers on the program of the active edition or a newer
+      one: their speaker dashboard, which follows them to their edition.
     - Otherwise, someone with a proposal of their own: My proposals, which
       is what they came back to check.
     - An account that has done neither while proposals are open: a page
@@ -82,26 +79,25 @@ def index(request):
         volunteering = applications.exclude(
             application_status__in=CLOSED_APPLICATIONS
         ).exists()
-        if not volunteering and speaker_module_enabled(active):
+        if not volunteering:
             # On the program, not merely known to the speakers app: a
             # presenter row alone (a proposal nobody has answered) opens no
             # speaker page, and sending it there would land on a refusal.
-            if (
-                Presenter.objects.filter(conference=active, user=user)
-                .onboarded()
-                .exists()
-            ):
+            # The same rule as the Speaking tab, across the editions a
+            # speaker can be on.
+            if speaker_edition(user, request=request) is not None:
                 return redirect("speakers:my_dashboard")
-            if Proposal.objects.filter(
-                conference=active, presenter__user=user
-            ).exists():
-                return redirect("speakers:my_proposals")
-            if (
-                settings.VOLUNTEERING_ENABLED
-                and proposals_open(active)
-                and not applications.exists()
-            ):
-                return render(request, "portal/get_started.html")
+            if speaker_module_enabled(active):
+                if Proposal.objects.filter(
+                    conference=active, presenter__user=user
+                ).exists():
+                    return redirect("speakers:my_proposals")
+                if (
+                    settings.VOLUNTEERING_ENABLED
+                    and proposals_open(active)
+                    and not applications.exists()
+                ):
+                    return render(request, "portal/get_started.html")
         if settings.VOLUNTEERING_ENABLED:
             return redirect("volunteer:index")
 

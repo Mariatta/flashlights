@@ -39,6 +39,7 @@ from speakers.tasks import (
     send_proposal_received_email_task,
     send_proposal_rejected_email_task,
 )
+from volunteer.constants import ApplicationStatus
 from volunteer.models import VolunteerProfile
 
 from .factories import add_presenter, make_presenter, make_session, make_settings
@@ -427,6 +428,19 @@ class TestWhereProposalsLive:
         content = client.get(MINE).content.decode()
         assert "My volunteering" in content and "My proposals" in content
         assert "My speaker checklist" not in content
+
+    def test_a_proposer_whose_volunteering_was_declined_has_a_page_of_their_own(
+        self, client, conference, enabled, stranger
+    ):
+        VolunteerProfile.objects.create(
+            user=stranger,
+            conference=conference,
+            application_status=ApplicationStatus.REJECTED,
+        )
+        client.force_login(stranger)
+        propose(client, conference)
+        content = client.get(MINE).content.decode()
+        assert "My proposals" in content and "My volunteering" not in content
 
     def test_a_proposer_gets_a_proposals_tab_until_they_are_a_speaker(
         self, client, conference, enabled, stranger

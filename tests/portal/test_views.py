@@ -260,6 +260,19 @@ class TestHomeOfSpeakersAndProposers:
         client.force_login(member)
         assertRedirects(client.get(reverse("index")), reverse("speakers:my_dashboard"))
 
+    def test_a_speaker_of_the_next_edition_lands_on_their_dashboard(
+        self, client, member, conference, open_call
+    ):
+        """Speakers follow their own edition: confirmed for next year with
+        nothing in this year's call, they are a speaker all the same."""
+        planned = Conference.objects.create(
+            year=conference.year + 1, name="Next", slug="next", is_active=False
+        )
+        make_settings(planned)
+        self.speaker(planned, member)
+        client.force_login(member)
+        assertRedirects(client.get(reverse("index")), reverse("speakers:my_dashboard"))
+
     def test_an_approved_volunteer_who_speaks_lands_on_the_hub(
         self, client, member, conference, open_call
     ):
