@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
             field=models.BooleanField(
                 db_default=True,
                 default=True,
-                help_text="What someone needs to follow the session.",
+                help_text="Off for an edition with no use for what someone needs to follow a session.",
                 verbose_name="ask for prerequisites",
             ),
         ),
