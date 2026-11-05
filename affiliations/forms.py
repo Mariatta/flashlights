@@ -32,13 +32,10 @@ class AffiliationForm(forms.ModelForm):
 
 
 class BaseAffiliationFormSet(BaseInlineFormSet):
-    """The formset adds the Remove box after the form is built, so it is
-    styled here rather than on the form."""
+    """The formset adds the Remove box itself, so its widget is named here
+    rather than on the form."""
 
-    def add_fields(self, form, index):
-        super().add_fields(form, index)
-        if "DELETE" in form.fields:
-            form.fields["DELETE"].widget.attrs["class"] = "form-check-input"
+    deletion_widget = forms.CheckboxInput(attrs={"class": "form-check-input"})
 
 
 #: One blank row to start with; the page adds more without a round trip.

@@ -87,9 +87,15 @@ class TestTheSpeakerSide:
         # The rows are rendered field by field, so the widgets carry the
         # Bootstrap classes themselves.
         first_row = page.index("data-affiliation-row")
-        row = page[first_row:]
-        for css in ("form-select", "form-control", "form-check-input"):
-            assert f'class="{css}"' in row, css
+        card_end = page.index("data-affiliation-add")
+        row = page[first_row:card_end]
+        for name, css in (
+            ("kind", "form-select"),
+            ("name", "form-control"),
+            ("url", "form-control"),
+            ("DELETE", "form-check-input"),
+        ):
+            assert f'name="affiliations-0-{name}" class="{css}"' in row, name
         data = {
             "you-display_name": "Ada",
             "you-bio_md": "Hi.",
