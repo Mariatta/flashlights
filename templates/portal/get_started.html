@@ -16,7 +16,7 @@ page follows it (portal.views.index).
         {% blocktranslate with name=user.first_name|default:user.username %}Welcome, {{ name }}{% endblocktranslate %}
     </h1>
     <p class="text-secondary mb-4">
-        {% blocktranslate with short_name=brand.short_name %}There are two ways to take part in {{ short_name }} with this account. Pick one now, or both; your home page follows whatever you do.{% endblocktranslate %}
+        {% trans "How would you like to take part?" %}
     </p>
     <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
         <div class="col">
