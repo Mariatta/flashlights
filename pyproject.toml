@@ -3,7 +3,7 @@
 # 3.15, and psycopg2-binary 2.9.13 is the first with wheels for 3.15: keep
 # local environments on the same floor.
 name = "flashlights"
-version = "0.3.0"
+version = "0.3.1"
 requires-python = ">=3.14"
 
 [tool.djlint]
