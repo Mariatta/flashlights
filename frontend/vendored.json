@@ -32,10 +32,10 @@
     }
   },
   "select2": {
-    "version": "4.1.0-rc.0",
+    "version": "4.1.0",
     "files": {
-      "vendor/select2/select2.min.css": "cda4a81c187015d95ed2c71f1841540b08203cdec5fa2a7d5d1825a3c2166f8c",
-      "vendor/select2/select2.min.js": "f7244fff610595b944f76bf3080d74e3af42b5dd234f8f079e698cc39ac966b0",
+      "vendor/select2/select2.min.css": "5d5e14d587308b5d1ad79f51e9aea2f8f469b0a02b335f559f5a4bb756b81737",
+      "vendor/select2/select2.min.js": "15692c266649fbc8acb4ebfb345e7e9499486d9551148241a235c9d62eea2f55",
       "vendor/select2/LICENSE.md": "4ee0cbc51370afde358652a0f977972053729ed578b6a42f5e2a037d114f0b39"
     }
   }
