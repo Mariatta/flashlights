@@ -635,6 +635,8 @@ class TestBuiltInFields:
         content = client.get(QUESTIONS).content.decode()
         assert "Built-in fields" in content and content.count("Always") == 6
         assert 'name="asks_language"' in content and "checked" in content
+        for name in ("asks_prerequisites", "asks_language"):
+            assert f'name="{name}" class="form-check-input"' in content, name
         # Every built-in field reaches the public program: the table says so.
         start = content.index("Built-in fields")
         end = content.index("About the session")
@@ -674,7 +676,9 @@ class TestBuiltInFields:
         self.switch_off(conference, "asks_language", "asks_prerequisites")
         user = User.objects.create_user(username="ada", email="ada@example.com")
         presenter = make_presenter(conference, display_name="Ada", user=user)
-        session = make_session(conference, title="Switched", kind="TALK")
+        session = make_session(
+            conference, title="Switched", kind="TALK", prerequisites_md="A laptop"
+        )
         add_presenter(session, presenter, confirmed=True)
         client.force_login(organizer)
         content = client.get(
@@ -699,6 +703,8 @@ class TestBuiltInFields:
             reverse("speakers:my_session_detail", args=[session.slug])
         ).content.decode()
         assert "<strong>Language" not in content
+        # The stale text stays in the column but the page no longer prints it.
+        assert "Prerequisites" not in content and "A laptop" not in content
 
     def test_the_public_api_prints_neither_when_off(self, conference, enabled):
         session = make_session(

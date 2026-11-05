@@ -11,10 +11,9 @@ without a code change.
 
 The top of **Proposal questions** lists what the form asks about every
 session before the questions: kind, title, summary, outline, prerequisites,
-audience, level and language, each with who sees the answer (everything but
-outline, prerequisites and audience is public on the program, and those
-three are too once the program is published). Two of them are the edition's
-choice. Untick **Prerequisites** or **Language** and the field
+audience, level and language, each with who sees the answer: all of them
+reach everyone on the public program once it is published. Two of them are
+the edition's choice. Untick **Prerequisites** or **Language** and the field
 leaves the proposal form, the organizer's session form, the speaker's own
 session form, the session pages and the public program; a summit whose
 talks are all in English has no use for a language field. Both are on by
