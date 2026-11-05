@@ -1,6 +1,7 @@
 {% extends "portal/base_sidebar.html" %}
 {% load allauth i18n %}
 {% load django_bootstrap5 %}
+{% load static %}
 {% block breadcrumb %}
     {% url 'portal_account:index' as bc_url %}
     {% trans "Account" as bc_section %}
@@ -55,12 +56,16 @@
                     {% bootstrap_field field %}
                 {% endfor %}
                 <div class="mt-4">
+                    {% include "affiliations/_formset.html" %}
+                </div>
+                <div class="mt-4">
                     <input type="submit"
                            value="{% if object.pk %}{% trans "Update profile" %}{% else %}{% trans "Create profile" %}{% endif %}"
                            class="btn btn-primary" />
                     <a href="{% url 'portal_account:index' %}" class="btn btn-secondary">{% trans "Cancel" %}</a>
                 </div>
             </form>
+            <script src="{% static 'affiliations/formset.js' %}" defer></script>
             {# djlint:off #}
 {#                <form class="needs-validation" novalidate="">#}
 {#                  <div class="row g-3">#}

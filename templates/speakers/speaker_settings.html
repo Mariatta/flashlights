@@ -14,7 +14,8 @@
     </h1>
     <p class="text-secondary">
         {% url 'speakers:program_types' as types_url %}
-        {% blocktrans %}Session proposals and how the speaker side runs for {{ conference }}. Which session types people may propose is set on <a href="{{ types_url }}">Types and roles</a>.{% endblocktrans %}
+        {% url 'speakers:proposal_questions' as questions_url %}
+        {% blocktrans %}Session proposals and how the speaker side runs for {{ conference }}. Which session types people may propose is set on <a href="{{ types_url }}">Types and roles</a>; the edition's own questions on the form are on <a href="{{ questions_url }}">Proposal questions</a>.{% endblocktrans %}
     </p>
     <form method="post" class="col-lg-9">
         {% csrf_token %}

@@ -9,6 +9,7 @@ from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.edit import CreateView, FormView, UpdateView
 from django_filters.views import FilterView
 
+from affiliations.views import AffiliationFormsetMixin
 from common.mixins import MaintainerRequiredMixin
 from common.models import SentEmail, kind_of
 
@@ -45,7 +46,7 @@ class PortalProfileView(DetailView):
         return context
 
 
-class PortalProfileCreate(CreateView):
+class PortalProfileCreate(AffiliationFormsetMixin, CreateView):
     model = PortalProfile
     template_name = "portal_account/portalprofile_form.html"
     success_url = reverse_lazy("index")
@@ -69,7 +70,7 @@ class PortalProfileCreate(CreateView):
         return context
 
 
-class PortalProfileUpdate(UpdateView):
+class PortalProfileUpdate(AffiliationFormsetMixin, UpdateView):
     model = PortalProfile
     template_name = "portal_account/portalprofile_form.html"
     # Editing returns to the account page (the hub), not the landing page.

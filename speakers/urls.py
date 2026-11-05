@@ -276,6 +276,32 @@ urlpatterns = [
     ),
     path("settings/", views.SpeakerSettingsView.as_view(), name="speaker_settings"),
     path("settings/types/", views.ProgramTypesView.as_view(), name="program_types"),
+    # The edition's own questions on the proposal form.
+    path(
+        "settings/questions/",
+        views.ProposalQuestionsView.as_view(),
+        name="proposal_questions",
+    ),
+    path(
+        "settings/questions/new/",
+        views.ProposalQuestionCreateView.as_view(),
+        name="proposal_question_create",
+    ),
+    path(
+        "settings/questions/copy/",
+        views.CopyProposalQuestionsView.as_view(),
+        name="proposal_questions_copy",
+    ),
+    path(
+        "settings/questions/<int:pk>/",
+        views.ProposalQuestionUpdateView.as_view(),
+        name="proposal_question_edit",
+    ),
+    path(
+        "settings/questions/<int:pk>/delete/",
+        views.ProposalQuestionDeleteView.as_view(),
+        name="proposal_question_delete",
+    ),
     path(
         "settings/gates/",
         views.ReadinessGatesView.as_view(),

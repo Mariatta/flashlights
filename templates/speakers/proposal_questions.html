@@ -1,0 +1,67 @@
+{% extends "speakers/_organize_shell.html" %}
+{% load i18n %}
+{% load django_bootstrap5 %}
+{% comment %}
+Settings: the edition's own questions on the proposal form. Two tables,
+about the session and about the speaker, each row saying who reads the
+answer; a copy form for the questions of another edition.
+{% endcomment %}
+{% block head_title %}
+    {% trans "Proposal questions" %}
+{% endblock head_title %}
+{% block breadcrumb %}
+    {% trans "Proposal questions" as bc_section %}
+    {% include "portal/_breadcrumbs.html" with section=bc_section %}
+{% endblock breadcrumb %}
+{% block content %}
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-1">
+        <h1 class="h3 mb-0">
+            {% trans "Proposal questions" %}
+        </h1>
+        <a class="btn btn-sm btn-primary"
+           href="{% url 'speakers:proposal_question_create' %}">
+            <i class="icon-plus"></i> {% trans "Add question" %}
+        </a>
+    </div>
+    <p class="text-secondary">
+        {% url 'speakers:speaker_settings' as settings_url %}
+        {% blocktranslate %}The proposal form always asks for the session's title, summary, outline, prerequisites, audience, level and language, and for the speaker's name, pronouns, bio, photo, location, affiliations and handles. Anything else {{ conference }} wants to know is a question here. Every question says who reads the answer, and the form tells the person answering the same thing. The intro above the form is on <a href="{{ settings_url }}">Speaker settings</a>.{% endblocktranslate %}
+    </p>
+    <h2 class="h5 mt-4">
+        {% trans "About the session" %}
+    </h2>
+    <p class="text-secondary small">
+        {% trans "Asked for every session proposed, and editable by the proposer while the proposal waits for an answer." %}
+    </p>
+    {% trans "No questions about the session yet." as empty_session %}
+    {% include "speakers/_question_rows.html" with questions=session_questions empty=empty_session %}
+    <h2 class="h5 mt-4">
+        {% trans "About the speaker" %}
+    </h2>
+    <p class="text-secondary small">
+        {% trans "Asked once per person for this edition, on the proposal form and on their speaker profile." %}
+    </p>
+    {% trans "No questions about the speaker yet." as empty_speaker %}
+    {% include "speakers/_question_rows.html" with questions=speaker_questions empty=empty_speaker %}
+    {% if copy_form.has_sources %}
+        <h2 class="h5 mt-4">
+            {% trans "Copy from another edition" %}
+        </h2>
+        <p class="text-secondary small">
+            {% trans "Brings over the questions another edition asks, skipping any already here with the same wording. The answers stay with their own edition." %}
+        </p>
+        <form method="post"
+              class="row row-cols-lg-auto g-2 align-items-end"
+              action="{% url 'speakers:proposal_questions_copy' %}">
+            {% csrf_token %}
+            <div class="col-12">
+                {% bootstrap_field copy_form.source show_label=False %}
+            </div>
+            <div class="col-12">
+                <button class="btn btn-outline-primary" type="submit">
+                    {% trans "Copy questions" %}
+                </button>
+            </div>
+        </form>
+    {% endif %}
+{% endblock content %}

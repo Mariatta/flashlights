@@ -16,6 +16,8 @@ from .models import (
     Presenter,
     PresenterRole,
     Proposal,
+    ProposalAnswer,
+    ProposalQuestion,
     ReadinessGate,
     ReminderLog,
     Room,
@@ -159,6 +161,31 @@ class PresenterRoleAdmin(admin.ModelAdmin):
     list_filter = (ActiveConferenceFilter, "is_active")
     search_fields = ("name", "code")
     list_select_related = ("conference",)
+
+
+@admin.register(ProposalQuestion)
+class ProposalQuestionAdmin(admin.ModelAdmin):
+    list_display = (
+        "label",
+        "about",
+        "kind",
+        "required",
+        "visibility",
+        "order",
+        "is_active",
+        "conference",
+    )
+    list_filter = (ActiveConferenceFilter, "about", "kind", "visibility", "is_active")
+    search_fields = ("label",)
+    list_select_related = ("conference",)
+
+
+@admin.register(ProposalAnswer)
+class ProposalAnswerAdmin(admin.ModelAdmin):
+    list_display = ("question", "session", "presenter", "display")
+    list_select_related = ("question", "session", "presenter")
+    search_fields = ("question__label", "session__title", "presenter__display_name")
+    raw_id_fields = ("session", "presenter")
 
 
 @admin.register(SessionType)

@@ -69,6 +69,47 @@ SPEAKER_STATUS_LABELS = {
 }
 
 
+class QuestionAbout(models.TextChoices):
+    """What a proposal question is about: the session being proposed, or
+    the person proposing it. A speaker's answers are given once per
+    edition, however many sessions they propose."""
+
+    SESSION = "SESSION", "The session"
+    SPEAKER = "SPEAKER", "The speaker"
+
+
+class QuestionKind(models.TextChoices):
+    """The input a proposal question is asked with. Each has a form field
+    in ``speakers.questions`` and a stored shape: text for the text kinds,
+    a boolean for the two yes-or-no kinds, a list for several choices and
+    for links, a number for the number."""
+
+    SHORT_TEXT = "SHORT_TEXT", "Short text"
+    LONG_TEXT = "LONG_TEXT", "Long text"
+    YES_NO = "YES_NO", "Yes or no"
+    CHECKBOX = "CHECKBOX", "A box to tick"
+    ONE_CHOICE = "ONE_CHOICE", "One choice from a list"
+    MANY_CHOICES = "MANY_CHOICES", "Several choices from a list"
+    LINK = "LINK", "A link"
+    LINKS = "LINKS", "Links, one per line"
+    NUMBER = "NUMBER", "A number"
+
+
+CHOICE_KINDS = (QuestionKind.ONE_CHOICE, QuestionKind.MANY_CHOICES)
+LIST_KINDS = (QuestionKind.MANY_CHOICES, QuestionKind.LINKS)
+LINK_KINDS = (QuestionKind.LINK, QuestionKind.LINKS)
+BOOLEAN_KINDS = (QuestionKind.YES_NO, QuestionKind.CHECKBOX)
+
+
+class AnswerVisibility(models.TextChoices):
+    """Who reads the answer, besides the person who gave it. The form
+    says this next to every question, so nobody is surprised later."""
+
+    ORGANIZERS = "ORGANIZERS", "Organizers only"
+    TEAM = "TEAM", "Organizers and proposal reviewers"
+    PUBLIC = "PUBLIC", "Everyone, on the public program"
+
+
 class ProposalDecision(models.TextChoices):
     PENDING = "PENDING", "Pending review"
     APPROVED = "APPROVED", "Approved"

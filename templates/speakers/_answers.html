@@ -1,0 +1,44 @@
+{% load i18n %}
+{% comment %}
+A subject's answers to the edition's own questions, as a definition list.
+Include with `answers` (ProposalAnswer rows the reader may see, blanks left
+out, from speakers.questions.readable_answers) and optionally `heading`.
+Nothing renders when there is nothing to show.
+{% endcomment %}
+{% if answers %}
+    {% if heading %}
+        <h2 class="h6 text-uppercase text-secondary">
+            {{ heading }}
+        </h2>
+    {% endif %}
+    <dl class="row mb-3 small">
+        {% for answer in answers %}
+            <dt class="col-sm-4 fw-semibold">
+                {{ answer.question.label }}
+                {% if answer.question.visibility == "PUBLIC" %}
+                    {% trans "Published with the program" as public_hint %}
+                    <span class="badge text-bg-light border fw-normal"
+                          title="{{ public_hint }}">{% trans "public" %}</span>
+                {% elif answer.question.visibility == "ORGANIZERS" %}
+                    {% trans "Organizers only" as private_hint %}
+                    <span class="badge text-bg-light border fw-normal"
+                          title="{{ private_hint }}">{% trans "organizers only" %}</span>
+                {% endif %}
+            </dt>
+            <dd class="col-sm-8 mb-1">
+                {% if answer.links %}
+                    {% for link in answer.links %}
+                        <a href="{{ link }}" rel="noopener">{{ link }}</a>
+                        {% if not forloop.last %}
+                            <br>
+                        {% endif %}
+                    {% endfor %}
+                {% elif answer.question.kind == "LONG_TEXT" %}
+                    {{ answer.display|linebreaksbr }}
+                {% else %}
+                    {{ answer.display }}
+                {% endif %}
+            </dd>
+        {% endfor %}
+    </dl>
+{% endif %}

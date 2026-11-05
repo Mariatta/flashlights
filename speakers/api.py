@@ -15,6 +15,7 @@ from .emails import absolute_url
 from .markdown import render_md
 from .models import Room, SessionPresenter
 from .public import program_is_published, public_presenters, public_program
+from .questions import answers_queryset, public_answers
 
 CACHE_SECONDS = 300
 SESSION_TEXT = ("summary", "outline", "prerequisites", "audience")
@@ -87,7 +88,9 @@ def sessions_queryset(conference, preview=None):
     sessions = (
         public_program(conference, preview)
         .select_related("kind", "published_slot", "published_slot__room__venue")
-        .prefetch_related(links)
+        .prefetch_related(
+            links, Prefetch("question_answers", queryset=answers_queryset())
+        )
         .order_by("published_slot__start_utc", "title")
     )
     return sessions, public_ids
@@ -127,6 +130,7 @@ def session_payload(conference, session, public_ids, base):
         payload.update(_text(session, name))
     payload.update(
         youtube_url=session.published_video_url or None,
+        answers=public_answers(session),
         slot=slot_block(session),
         presenters=[
             presenter_link(link, link.presenter_id in public_ids, base)
@@ -178,6 +182,15 @@ def presenter_payload(presenter, sessions, base):
             "linkedin": presenter.linkedin_url or None,
             "bluesky": presenter.bluesky_username or None,
         },
+        "affiliations": (
+            [
+                {"kind": a.kind, "name": a.name, "url": a.url or None}
+                for a in presenter.user.affiliations.all()
+            ]
+            if presenter.user_id
+            else []
+        ),
+        "answers": public_answers(presenter),
         "sessions": sessions,
     }
     return payload
@@ -193,7 +206,14 @@ def presenters_data(conference, preview=None, slug=None):
             by_presenter.setdefault(link.presenter_id, []).append(
                 {"slug": session.slug, "title": session.title, **slot_block(session)}
             )
-    presenters = public_presenters(conference, preview)
+    presenters = (
+        public_presenters(conference, preview)
+        .select_related("user")
+        .prefetch_related(
+            "user__affiliations",
+            Prefetch("question_answers", queryset=answers_queryset()),
+        )
+    )
     if slug is not None:
         presenters = presenters.filter(slug=slug)
     return [

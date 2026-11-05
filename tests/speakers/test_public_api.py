@@ -180,6 +180,7 @@ class TestSnapshots:
                     "audience_md": "",
                     "audience_html": "",
                     "youtube_url": None,
+                    "answers": [],
                     "slot": {
                         "start": "2026-12-05T14:00:00Z",
                         "end": "2026-12-05T15:00:00Z",
@@ -225,6 +226,7 @@ class TestSnapshots:
                     "audience_md": "",
                     "audience_html": "",
                     "youtube_url": None,
+                    "answers": [],
                     "slot": {
                         "start": "2026-12-05T15:00:00Z",
                         "end": "2026-12-05T15:15:00Z",
@@ -283,6 +285,8 @@ class TestSnapshots:
                     "linkedin": None,
                     "bluesky": None,
                 },
+                "affiliations": [],
+                "answers": [],
                 "sessions": [
                     {
                         "slug": talk.slug,

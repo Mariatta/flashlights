@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 from text_unidecode import unidecode
 
+from portal.models import Conference
 from portal_account.handles import PRESENTER_COLUMNS, HandleFieldsMixin, push_handles
 from portal_account.models import PortalProfile
 from volunteer.models import Team
@@ -35,6 +36,7 @@ from .models import (
     Handbook,
     Presenter,
     PresenterRole,
+    ProposalQuestion,
     ReadinessGate,
     Room,
     Session,
@@ -47,6 +49,7 @@ from .models import (
 )
 from .people import assignee_candidates, liaison_candidates, picker_label
 from .permissions import can_publish_session_video
+from .questions import validate_options
 from .services import proposable_types
 
 MARKDOWN_HELP = "Markdown supported: headings, lists, links, **bold**, *italics*."
@@ -1368,6 +1371,104 @@ class SpeakerSettingsForm(forms.ModelForm):
         if recordings(conference) == Recordings.NONE:
             self.fields.pop("media_for_speakers")
             self.fields.pop("auto_transcribe")
+
+
+class ProposalQuestionForm(forms.ModelForm):
+    """One question of the edition's own on the proposal form. What it is
+    about and how it is asked are fixed once anyone has answered, since the
+    stored answers have that shape; the wording, the order and whether it
+    is still asked stay editable."""
+
+    class Meta:
+        model = ProposalQuestion
+        fields = [
+            "about",
+            "label",
+            "help_text",
+            "kind",
+            "options",
+            "required",
+            "visibility",
+            "order",
+            "is_active",
+        ]
+        labels = {
+            "about": "What it is about",
+            "kind": "Asked as",
+            "options": "Choices",
+            "help_text": "Help text",
+        }
+        help_texts = {
+            "about": "A speaker answers a question about themselves once per "
+            "edition, however many sessions they propose.",
+            "visibility": "The form tells the person answering who will read it. "
+            "They always see their own answers.",
+        }
+        widgets = {
+            "help_text": forms.Textarea(attrs={"rows": 2}),
+            "options": forms.Textarea(attrs={"rows": 4}),
+        }
+
+    def __init__(self, *args, conference, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.conference = conference
+        if not self.instance.conference_id:
+            self.instance.conference = conference
+        self.answered = bool(self.instance.pk) and self.instance.answers.exists()
+        if self.answered:
+            for name in ("about", "kind"):
+                self.fields[name].disabled = True
+                self.fields[name].help_text = (
+                    "Fixed: this question has answers. Switch it off and add a "
+                    "new one to ask differently."
+                )
+
+    def clean_label(self):
+        return one_line(self.cleaned_data["label"])
+
+    def clean(self):
+        cleaned = super().clean()
+        kind, options = cleaned.get("kind"), cleaned.get("options", "")
+        if kind:
+            try:
+                cleaned["options"] = validate_options(kind, options)
+            except ValidationError as error:
+                self.add_error("options", error)
+        label, about = cleaned.get("label"), cleaned.get("about")
+        if label and about:
+            clash = ProposalQuestion.objects.filter(
+                conference=self.conference, about=about, label__iexact=label
+            )
+            if self.instance.pk:
+                clash = clash.exclude(pk=self.instance.pk)
+            if clash.exists():
+                self.add_error(
+                    "label", "There is already a question with this wording."
+                )
+        return cleaned
+
+
+class CopyQuestionsForm(forms.Form):
+    """Pick an edition whose questions to copy into this one."""
+
+    source = forms.ModelChoiceField(
+        queryset=Conference.objects.none(),
+        label="Copy the questions of",
+        empty_label=None,
+    )
+
+    def __init__(self, *args, conference, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["source"].queryset = (
+            Conference.objects.filter(proposal_questions__is_active=True)
+            .exclude(pk=conference.pk)
+            .distinct()
+            .order_by("-year")
+        )
+
+    @property
+    def has_sources(self):
+        return self.fields["source"].queryset.exists()
 
 
 class RoomForm(forms.ModelForm):

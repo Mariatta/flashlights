@@ -349,7 +349,8 @@ class StartNewYearView(UserPassesTestMixin, FormView):
             )
             carried.append(
                 f"{counts['templates']} checklist template(s), "
-                f"{counts['guides']} speaker guide(s), {counts['rooms']} room(s)"
+                f"{counts['guides']} speaker guide(s), {counts['rooms']} room(s), "
+                f"{counts['questions']} proposal question(s)"
             )
         elif data["speaker_portal"]:
             # The defaults are seeded for a format, so the previous

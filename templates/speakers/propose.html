@@ -2,6 +2,7 @@
 {% load i18n %}
 {% load django_bootstrap5 %}
 {% load speakers_extras %}
+{% load static %}
 {% comment %}
 The front door for proposals. Signed out it is an invitation to sign in,
 because the account carries the verified address we would write to; signed
@@ -51,7 +52,7 @@ portal already knows.
                 {% endcomment %}
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
-                    {% if profile_form.errors or session_form.errors %}
+                    {% if about_errors or session_errors %}
                         {% comment %}
                         A section can be folded away, so the errors inside one
                         can be off screen entirely. This says so at the top and
@@ -63,46 +64,54 @@ portal already knows.
                             </h2>
                             <p class="mb-0">
                                 {% trans "There are a few things to fix first:" %}
-                                {% if profile_form.errors %}
-                                    <a class="alert-link" href="#propose-about-you">{% blocktranslate count counter=profile_form.errors|length %}{{ counter }} in "About you"{% plural %}{{ counter }} in "About you"{% endblocktranslate %}</a>
+                                {% if about_errors %}
+                                    <a class="alert-link" href="#propose-about-you">{% blocktranslate count counter=about_errors %}{{ counter }} in "About you"{% plural %}{{ counter }} in "About you"{% endblocktranslate %}</a>
                                 {% endif %}
-                                {% if profile_form.errors and session_form.errors %}
+                                {% if about_errors and session_errors %}
                                     ,
                                 {% endif %}
-                                {% if session_form.errors %}
-                                    <a class="alert-link" href="#propose-your-session">{% blocktranslate count counter=session_form.errors|length %}{{ counter }} in "Your session"{% plural %}{{ counter }} in "Your session"{% endblocktranslate %}</a>
+                                {% if session_errors %}
+                                    <a class="alert-link" href="#propose-your-session">{% blocktranslate count counter=session_errors %}{{ counter }} in "Your session"{% plural %}{{ counter }} in "Your session"{% endblocktranslate %}</a>
                                 {% endif %}
                             </p>
                         </div>
                     {% endif %}
                     <div class="accordion mb-3" id="propose-sections">
-                        {% if profile_form %}
-                            <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button"
-                                            type="button"
-                                            data-bs-toggle="collapse"
-                                            data-bs-target="#propose-about-you"
-                                            aria-expanded="true"
-                                            aria-controls="propose-about-you">
-                                        {% trans "About you" %}
-                                        {% if profile_form.errors %}
-                                            <span class="badge text-bg-danger ms-2">
-                                                {% blocktranslate count counter=profile_form.errors|length %}{{ counter }} to fix{% plural %}{{ counter }} to fix{% endblocktranslate %}
-                                            </span>
-                                        {% endif %}
-                                    </button>
-                                </h2>
-                                <div id="propose-about-you" class="accordion-collapse collapse show">
-                                    <div class="accordion-body">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button"
+                                        type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#propose-about-you"
+                                        aria-expanded="true"
+                                        aria-controls="propose-about-you">
+                                    {% trans "About you" %}
+                                    {% if about_errors %}
+                                        <span class="badge text-bg-danger ms-2">
+                                            {% blocktranslate count counter=about_errors %}{{ counter }} to fix{% plural %}{{ counter }} to fix{% endblocktranslate %}
+                                        </span>
+                                    {% endif %}
+                                </button>
+                            </h2>
+                            <div id="propose-about-you" class="accordion-collapse collapse show">
+                                <div class="accordion-body">
+                                    {% if profile_form %}
                                         <p class="text-secondary small">
                                             {% trans "This is what we would put on the schedule if your session is accepted." %}
                                         </p>
                                         {% bootstrap_form profile_form %}
-                                    </div>
+                                    {% else %}
+                                        <p class="text-secondary small">
+                                            {% blocktranslate with name=presenter.display_name %}Proposing as {{ name }}. Your details are already with us; your affiliations and the answers below can be changed here or on your speaker profile.{% endblocktranslate %}
+                                        </p>
+                                    {% endif %}
+                                    {% include "affiliations/_formset.html" %}
+                                    {% if speaker_form %}
+                                        {% bootstrap_form speaker_form %}
+                                    {% endif %}
                                 </div>
                             </div>
-                        {% endif %}
+                        </div>
                         <div class="accordion-item">
                             <h2 class="accordion-header">
                                 <button class="accordion-button"
@@ -121,12 +130,10 @@ portal already knows.
                             </h2>
                             <div id="propose-your-session" class="accordion-collapse collapse show">
                                 <div class="accordion-body">
-                                    {% if not profile_form %}
-                                        <p class="text-secondary small">
-                                            {% blocktranslate with name=presenter.display_name %}Proposing as {{ name }}. Your details are already with us.{% endblocktranslate %}
-                                        </p>
-                                    {% endif %}
                                     {% bootstrap_form session_form %}
+                                    {% if answers_form %}
+                                        {% bootstrap_form answers_form %}
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -135,6 +142,7 @@ portal already knows.
                         {% trans "Send the proposal" %}
                     </button>
                 </form>
+                <script src="{% static 'affiliations/formset.js' %}" defer></script>
             {% endif %}
         {% endif %}
     </div>

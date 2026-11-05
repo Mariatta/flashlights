@@ -5,7 +5,7 @@ from django.contrib.auth import logout, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
-from django.db.models import Count, F, Q
+from django.db.models import Count, F, Prefetch, Q
 from django.http import FileResponse, Http404, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -18,6 +18,7 @@ from django.views.generic.edit import CreateView, FormView, UpdateView
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
 
+from affiliations.views import AffiliationFormsetMixin
 from attendee.models import PretixOrder
 from common.tasks import enqueue
 from portal.models import Conference
@@ -71,6 +72,7 @@ from .forms import (
     AssignItemForm,
     ChecklistTemplateForm,
     ChecklistTemplateItemForm,
+    CopyQuestionsForm,
     HandbookForm,
     InviteForm,
     NewHandbookForm,
@@ -79,6 +81,7 @@ from .forms import (
     PresenterRoleForm,
     ProgramItemForm,
     ProposalProfileForm,
+    ProposalQuestionForm,
     ProposalSessionForm,
     ReadinessGateForm,
     SessionForm,
@@ -129,6 +132,7 @@ from .models import (
     Presenter,
     PresenterRole,
     Proposal,
+    ProposalQuestion,
     ReadinessGate,
     Session,
     SessionPresenter,
@@ -155,6 +159,14 @@ from .pretix import (
     link_presenter_order,
     lookup_presenter_orders,
     unlink_presenter_order,
+)
+from .questions import (
+    QuestionAnswersForm,
+    answers_queryset,
+    clone_questions,
+    readable_answers,
+    session_questions,
+    speaker_questions,
 )
 from .readiness import apply_readiness, refresh_for_conference, refresh_readiness
 from .rules import evaluate_items
@@ -379,6 +391,11 @@ class SessionDetailView(SessionScopedMixin, DetailView):
             Proposal.objects.filter(session=self.object)
             .select_related("presenter", "decided_by")
             .first()
+        )
+        context["session_answers"] = readable_answers(
+            self.object,
+            self.request.user,
+            answers=answers_queryset().filter(session=self.object),
         )
         latest = {}
         for invitation in Invitation.objects.filter(session=self.object).order_by(
@@ -763,6 +780,11 @@ class PresenterDetailView(PresenterScopedMixin, DetailView):
             PretixOrder.objects.filter(
                 conference=self.conference, email__iexact=self.object.email
             ).order_by("-datetime")[:5]
+        )
+        context["speaker_answers"] = readable_answers(
+            self.object,
+            self.request.user,
+            answers=answers_queryset().filter(presenter=self.object),
         )
         return context
 
@@ -1453,7 +1475,13 @@ class SpeakerItemDetailView(LoginRequiredMixin, PresenterRequiredMixin, Template
         return context
 
 
-class SpeakerProfileUpdateView(LoginRequiredMixin, PresenterRequiredMixin, UpdateView):
+class SpeakerProfileUpdateView(
+    LoginRequiredMixin, PresenterRequiredMixin, AffiliationFormsetMixin, UpdateView
+):
+    """The speaker's own details, with their affiliations (the account's
+    rows, shared with a volunteer profile) and the edition's questions
+    about the speaker."""
+
     form_class = SpeakerProfileForm
     template_name = "speakers/speaker_profile_form.html"
 
@@ -1468,9 +1496,27 @@ class SpeakerProfileUpdateView(LoginRequiredMixin, PresenterRequiredMixin, Updat
     def get_success_url(self):
         return reverse("speakers:my_profile")
 
+    def get_answers_form(self, data=None):
+        return QuestionAnswersForm(
+            speaker_questions(self.conference),
+            data,
+            prefix="answers",
+            subject=self.presenter,
+        )
+
+    def post(self, request, *args, **kwargs):
+        self.answers_form = self.get_answers_form(request.POST)
+        return super().post(request, *args, **kwargs)
+
     def form_valid(self, form):
+        formset = self.get_affiliation_formset()
+        if not self.answers_form.is_valid() or (
+            formset.is_bound and not formset.is_valid()
+        ):
+            return self.form_invalid(form)
         changes = _identity_changes(form, ("display_name", "slug"))
         response = super().form_valid(form)
+        self.answers_form.save()
         # Every name or address change is on record, whoever made it: a
         # co-presenter's bookmark breaks on a new address and the trail
         # must say what the old one was.
@@ -1488,6 +1534,9 @@ class SpeakerProfileUpdateView(LoginRequiredMixin, PresenterRequiredMixin, Updat
         context = super().get_context_data(**kwargs)
         context["conference"] = self.conference
         context["presenter"] = self.presenter
+        context["answers_form"] = (
+            getattr(self, "answers_form", None) or self.get_answers_form()
+        )
         return context
 
 
@@ -1921,6 +1970,134 @@ class PresenterRoleUpdateView(ProgramTypeFormMixin, UpdateView):
     model = PresenterRole
     form_class = PresenterRoleForm
     template_name = "speakers/presenter_role_form.html"
+
+
+class ProposalQuestionsView(
+    LoginRequiredMixin, SpeakerSettingsRequiredMixin, TemplateView
+):
+    """Settings: the edition's own questions on the proposal form, about
+    the session and about the speaker, with who reads each answer."""
+
+    template_name = "speakers/proposal_questions.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        questions = list(
+            ProposalQuestion.objects.filter(conference=self.conference).annotate(
+                answer_count=Count("answers")
+            )
+        )
+        context.update(
+            {
+                "conference": self.conference,
+                "rail_active": "proposal_questions",
+                "session_questions": [q for q in questions if not q.is_about_speaker],
+                "speaker_questions": [q for q in questions if q.is_about_speaker],
+                "copy_form": kwargs.get("copy_form")
+                or CopyQuestionsForm(conference=self.conference),
+            }
+        )
+        return context
+
+
+class ProposalQuestionFormMixin(LoginRequiredMixin, SpeakerSettingsRequiredMixin):
+    model = ProposalQuestion
+    form_class = ProposalQuestionForm
+    template_name = "speakers/proposal_question_form.html"
+
+    def get_queryset(self):
+        return ProposalQuestion.objects.filter(conference=self.conference)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["conference"] = self.conference
+        return kwargs
+
+    def get_success_url(self):
+        return reverse("speakers:proposal_questions")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["conference"] = self.conference
+        context["rail_active"] = "proposal_questions"
+        return context
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        ActivityLog.record(
+            self.conference,
+            "speakers.question_changed",
+            target=self.object,
+            actor=self.request.user,
+            fields=sorted(form.changed_data),
+        )
+        messages.success(self.request, f"Saved “{self.object.label}”.")
+        return response
+
+
+class ProposalQuestionCreateView(ProposalQuestionFormMixin, CreateView):
+    pass
+
+
+class ProposalQuestionUpdateView(ProposalQuestionFormMixin, UpdateView):
+    pass
+
+
+class ProposalQuestionDeleteView(
+    LoginRequiredMixin, SpeakerSettingsRequiredMixin, View
+):
+    """Delete a question nobody has answered. One with answers is switched
+    off instead, so the answers stay on the record."""
+
+    def post(self, request, pk):
+        question = get_object_or_404(
+            ProposalQuestion, pk=pk, conference=self.conference
+        )
+        if question.answers.exists():
+            messages.error(
+                request,
+                f"“{question.label}” has answers. Switch it off instead of deleting it.",
+            )
+        else:
+            label = question.label
+            question.delete()
+            ActivityLog.record(
+                self.conference,
+                "speakers.question_deleted",
+                actor=request.user,
+                label=label,
+            )
+            messages.success(request, f"Deleted “{label}”.")
+        return redirect("speakers:proposal_questions")
+
+
+class CopyProposalQuestionsView(LoginRequiredMixin, SpeakerSettingsRequiredMixin, View):
+    """Bring another edition's questions over, skipping any this edition
+    already asks with the same wording."""
+
+    def post(self, request):
+        form = CopyQuestionsForm(request.POST, conference=self.conference)
+        if not form.is_valid():
+            messages.error(request, "Pick an edition to copy the questions from.")
+            return redirect("speakers:proposal_questions")
+        source = form.cleaned_data["source"]
+        created = clone_questions(self.conference, source)
+        ActivityLog.record(
+            self.conference,
+            "speakers.questions_copied",
+            actor=request.user,
+            source=source.name,
+            created=created,
+        )
+        messages.success(
+            request,
+            (
+                f"Copied {created} question{'s' if created != 1 else ''} from {source.name}."
+                if created
+                else f"Nothing to copy: every question of {source.name} is already here."
+            ),
+        )
+        return redirect("speakers:proposal_questions")
 
 
 # ---- Organizer checklists: board, queue, item actions -----------------------
@@ -3016,13 +3193,16 @@ class ProposalsOpenMixin(SpeakerModuleRequiredMixin):
         return proposals_open(self.conference)
 
 
-class ProposeSessionView(ProposalsOpenMixin, TemplateView):
+class ProposeSessionView(ProposalsOpenMixin, AffiliationFormsetMixin, TemplateView):
     """The front door: propose a session for this edition.
 
     Signed out it is an invitation to sign in, because the account is what
     carries the verified email address we would write to; signed in it is
-    one page of two halves, "about you" and "your session", with the first
-    half skipped for someone the portal already knows.
+    one page of two halves, "about you" and "your session". Someone the
+    portal already knows is not asked their details again; "about you"
+    then holds only their affiliations and the edition's questions about
+    the speaker. The edition's questions about the session close the
+    second half.
     """
 
     template_name = "speakers/propose.html"
@@ -3048,8 +3228,20 @@ class ProposeSessionView(ProposalsOpenMixin, TemplateView):
                 conference=self.conference,
             )
         )
-        return profile, ProposalSessionForm(
-            data, files, prefix="session", conference=self.conference
+        return (
+            profile,
+            ProposalSessionForm(
+                data, files, prefix="session", conference=self.conference
+            ),
+            QuestionAnswersForm(
+                speaker_questions(self.conference),
+                data,
+                prefix="speaker",
+                subject=presenter,
+            ),
+            QuestionAnswersForm(
+                session_questions(self.conference), data, prefix="answers"
+            ),
         )
 
     def get_context_data(self, **kwargs):
@@ -3058,7 +3250,17 @@ class ProposeSessionView(ProposalsOpenMixin, TemplateView):
             conference=self.conference
         ).first()
         presenter = self.get_presenter()
-        profile_form, session_form = kwargs.get("forms") or self.forms()
+        profile_form, session_form, speaker_form, answers_form = (
+            kwargs.get("forms") or self.forms()
+        )
+        formset = context.get("affiliation_formset")
+        # The sections fold, so the alert at the top counts the errors in
+        # each one, whichever forms they come from.
+        about_errors = (
+            len(profile_form.errors if profile_form else ())
+            + len(speaker_form.errors)
+            + (formset.total_error_count() if formset and formset.is_bound else 0)
+        )
         context.update(
             {
                 "conference": self.conference,
@@ -3067,6 +3269,10 @@ class ProposeSessionView(ProposalsOpenMixin, TemplateView):
                 "presenter": presenter,
                 "profile_form": profile_form,
                 "session_form": session_form,
+                "speaker_form": speaker_form,
+                "answers_form": answers_form,
+                "about_errors": about_errors,
+                "session_errors": len(session_form.errors) + len(answers_form.errors),
                 "pending_count": (
                     pending_proposals(presenter).count() if presenter else 0
                 ),
@@ -3080,16 +3286,22 @@ class ProposeSessionView(ProposalsOpenMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         if not self.open_for_proposals or not request.user.is_authenticated:
             raise PermissionDenied("Proposals are not open.")
-        profile_form, session_form = self.forms(request.POST, request.FILES)
-        forms_valid = session_form.is_valid() and (
-            profile_form is None or profile_form.is_valid()
-        )
-        if not forms_valid:
-            return self.render_to_response(
-                self.get_context_data(forms=(profile_form, session_form))
-            )
+        forms = self.forms(request.POST, request.FILES)
+        profile_form, session_form, speaker_form, answers_form = forms
+        formset = self.get_affiliation_formset()
+        # Every form is validated, not just up to the first bad one, so the
+        # page shows everything there is to fix at once.
+        checks = [
+            session_form.is_valid(),
+            profile_form is None or profile_form.is_valid(),
+            speaker_form.is_valid(),
+            answers_form.is_valid(),
+            not formset.is_bound or formset.is_valid(),
+        ]
+        if not all(checks):
+            return self.render_to_response(self.get_context_data(forms=forms))
         try:
-            proposal = self.create(profile_form, session_form)
+            proposal = self.create(*forms, formset)
         except ProposalError as exc:
             messages.error(request, str(exc))
             return redirect("speakers:my_proposals")
@@ -3101,8 +3313,9 @@ class ProposeSessionView(ProposalsOpenMixin, TemplateView):
         return redirect("speakers:my_proposals")
 
     @transaction.atomic
-    def create(self, profile_form, session_form):
-        """The presenter, the session, the link and the proposal, together."""
+    def create(self, profile_form, session_form, speaker_form, answers_form, formset):
+        """The presenter, the session, the link, the answers and the
+        proposal, together."""
         presenter = self.get_presenter()
         if presenter is None:
             presenter = profile_form.save(commit=False)
@@ -3111,12 +3324,16 @@ class ProposeSessionView(ProposalsOpenMixin, TemplateView):
             presenter.email = self.request.user.email
             presenter.save()
             profile_form.write_handles(self.request.user)
+        speaker_form.save(presenter)
+        if formset.is_bound:
+            formset.save()
         session = session_form.save(commit=False)
         session.conference = self.conference
         # ``submit_proposal`` moves it to PROPOSED once the rows exist.
         session.duration_minutes = session.kind.default_duration_minutes
         session.delivery = session.kind.default_delivery
         session.save()
+        answers_form.save(session)
         SessionPresenter.objects.create(
             session=session,
             presenter=presenter,
@@ -3210,10 +3427,20 @@ class ProposalEditView(ProposalActionMixin, TemplateView):
                     prefix="session",
                     conference=self.conference,
                 ),
+                "answers_form": kwargs.get("answers_form")
+                or self.answers_form(proposal),
                 "rail_active": "proposals",
             }
         )
         return context
+
+    def answers_form(self, proposal, data=None):
+        return QuestionAnswersForm(
+            session_questions(self.conference),
+            data,
+            prefix="answers",
+            subject=proposal.session,
+        )
 
     def post(self, request, pk):
         proposal = self.get_proposal()
@@ -3226,11 +3453,15 @@ class ProposalEditView(ProposalActionMixin, TemplateView):
             prefix="session",
             conference=self.conference,
         )
-        if not form.is_valid():
-            return self.render_to_response(self.get_context_data(session_form=form))
+        answers_form = self.answers_form(proposal, request.POST)
+        if not (form.is_valid() and answers_form.is_valid()):
+            return self.render_to_response(
+                self.get_context_data(session_form=form, answers_form=answers_form)
+            )
         session = form.save(commit=False)
         session.duration_minutes = session.kind.default_duration_minutes
         session.save()
+        answers_form.save(session)
         messages.success(request, "Your proposal has been updated.")
         return redirect("speakers:my_proposals")
 
@@ -3281,9 +3512,27 @@ class ProposalQueueView(LoginRequiredMixin, ProposalReviewRequiredMixin, Templat
         proposals = (
             Proposal.objects.filter(conference=self.conference)
             .exclude(decision=ProposalDecision.WITHDRAWN)
-            .select_related("session", "session__kind", "presenter", "decided_by")
+            .select_related(
+                "session", "session__kind", "presenter", "presenter__user", "decided_by"
+            )
+            .prefetch_related(
+                Prefetch("session__question_answers", queryset=answers_queryset()),
+                Prefetch("presenter__question_answers", queryset=answers_queryset()),
+                "presenter__user__affiliations",
+            )
             .order_by("decision", "-submitted_at", "-id")
         )
+        for proposal in proposals:
+            proposal.session_answers = readable_answers(
+                proposal.session, self.request.user
+            )
+            proposal.speaker_answers = readable_answers(
+                proposal.presenter, self.request.user
+            )
+            user = proposal.presenter.user
+            proposal.affiliation_names = (
+                ", ".join(a.name for a in user.affiliations.all()) if user else ""
+            )
         context.update(
             {
                 "conference": self.conference,

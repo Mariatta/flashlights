@@ -369,15 +369,19 @@ class TestProposing:
         # Both open on arrival: nothing is hidden from a first-time reader.
         assert content.count("accordion-collapse collapse show") == 2
 
-    def test_a_returning_proposer_only_sees_the_session_half(
+    def test_a_returning_proposer_is_not_asked_their_details_again(
         self, client, conference, enabled, stranger
     ):
+        """ "About you" stays for their affiliations and the edition's
+        questions about the speaker; the name, bio and handles are not
+        asked twice."""
         client.force_login(stranger)
         propose(client, conference)
         content = client.get(PROPOSE).content.decode()
-        assert "About you" not in content
         assert "Your details are already with us" in content
-        assert content.count("accordion-item") == 1
+        assert 'name="you-display_name"' not in content
+        assert "affiliations-TOTAL_FORMS" in content
+        assert content.count("accordion-item") == 2
 
     def test_the_page_sits_below_the_navbar(self, client, conference, enabled):
         """The base template's body block is the hero above the navbar; a
@@ -777,7 +781,7 @@ class TestASpeakerProposesAgain:
         user, presenter = speaker
         client.force_login(user)
         content = client.get(PROPOSE).content.decode()
-        assert "About you" not in content
+        assert 'name="you-display_name"' not in content
         assert "Proposing as Ada" in content
 
 

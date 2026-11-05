@@ -36,13 +36,27 @@ emptied; answered ones stay as the record.
                                href="{{ proposal.session.get_absolute_url }}">{{ proposal.session.title }}</a>
                             <div class="small text-secondary">
                                 {{ proposal.session.kind.name }} ·
-                                {% blocktranslate with name=proposal.presenter.display_name %}proposed by {{ name }}{% endblocktranslate %} ·
+                                {% blocktranslate with name=proposal.presenter.display_name %}proposed by {{ name }}{% endblocktranslate %}
+                                {% if proposal.affiliation_names %}
+                                    ({{ proposal.affiliation_names }})
+                                {% endif %}
+                                ·
                                 {{ proposal.submitted_at|date:"j M Y" }}
                             </div>
                             {% if proposal.session.summary_md %}
                                 <div class="small text-body-secondary mt-1">
                                     {{ proposal.session.summary_md|truncatewords:45 }}
                                 </div>
+                            {% endif %}
+                            {% if proposal.session_answers or proposal.speaker_answers %}
+                                <details class="small mt-1">
+                                    <summary class="text-secondary">
+                                        {% trans "Their answers" %}
+                                    </summary>
+                                    {% include "speakers/_answers.html" with answers=proposal.session_answers %}
+                                    {% trans "About the speaker" as speaker_heading %}
+                                    {% include "speakers/_answers.html" with answers=proposal.speaker_answers heading=speaker_heading %}
+                                </details>
                             {% endif %}
                         </div>
                         {% if can_decide %}

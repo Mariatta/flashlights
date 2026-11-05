@@ -7,7 +7,26 @@ a change to the [public API](docs/developer/community_apps.md#public-api)
 for community apps is marked **Breaking**.
 [Releasing](docs/developer/releasing.md) says how a release is made.
 
-## 0.2.1 (unreleased)
+## 0.3.0 (unreleased)
+
+- **Organizers add their own questions to the proposal form.** Under
+  Organize › Proposal questions, an edition asks anything beyond the fixed
+  fields: about the session (asked per proposal, editable by the proposer
+  while it waits) or about the speaker (asked once per person, on the form
+  and on the speaker profile). Nine kinds of question: short and long text,
+  yes or no, a box to tick, one or several choices from a list, a link,
+  links one per line, a number. Each question says who reads the answer
+  (organizers only, organizers and proposal reviewers, or everyone on the
+  public program) and the form tells the person answering the same thing.
+  Answers show on the proposal queue, the session page and the presenter
+  page; public ones join the public API as `answers`. Questions can be
+  copied from another edition, and "start next year" carries them over. A
+  question with answers is switched off rather than deleted.
+- **Affiliations reach speakers and the account page.** The affiliation
+  rows that volunteers already keep are edited on Update profile, on My
+  speaker profile and in the About you half of the proposal form, and shown
+  on the proposal queue, the presenter page and the public API as
+  `affiliations`.
 
 - **A speaker's home page is about speaking.** Signing in used to open the
   volunteer hub for everyone who was not an organizer or a confirmed speaker,

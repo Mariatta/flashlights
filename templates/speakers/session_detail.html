@@ -120,6 +120,14 @@ open the tab their target lives in.
             </div>
         </div>
     {% endif %}
+    {% if session_answers %}
+        <div class="card mb-3">
+            <div class="card-body">
+                {% trans "Answers to the proposal questions" as answers_heading %}
+                {% include "speakers/_answers.html" with answers=session_answers heading=answers_heading %}
+            </div>
+        </div>
+    {% endif %}
     {# At a glance: what needs a person, each tile a link to its section. #}
     <div class="row g-2 mb-4" id="glance">
         <div class="col-6 col-lg">
