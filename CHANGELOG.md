@@ -7,6 +7,15 @@ a change to the [public API](docs/developer/community_apps.md#public-api)
 for community apps is marked **Breaking**.
 [Releasing](docs/developer/releasing.md) says how a release is made.
 
+## 0.3.1 (2026-11-05)
+
+- **The image is back on Python 3.14.** 0.3.0 moved it to 3.15, and its
+  slim images run that version, but the full flavour with machine
+  transcription did not build: faster-whisper needs onnxruntime, which has
+  no wheel for 3.15 yet. So 0.3.0 has slim images only, and no GitHub
+  release. Both flavours run 3.14 until onnxruntime catches up, and
+  Dependabot's bump to 3.15 is held back with the reason beside the rule.
+
 ## 0.3.0 (2026-11-05)
 
 - **The image runs Python 3.15.** Community apps built from it get the same
