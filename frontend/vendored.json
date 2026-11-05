@@ -10,10 +10,10 @@
     }
   },
   "chart.js": {
-    "version": "4.5.1",
+    "version": "4.6.1",
     "files": {
-      "vendor/chartjs/chart.umd.min.js": "48444a82d4edcb5bec0f1965faacdde18d9c17db3063d042abada2f705c9f54a",
-      "vendor/chartjs/chart.umd.min.js.map": "8c328df49d295935c81d64d3b36d6ac1c20c385f1ba5b4df3ec12a26b3d64d9b",
+      "vendor/chartjs/chart.umd.min.js": "87364cc2b2a76a6684929e7d6b80b18a897794db38400caff1fcf1791c6925d2",
+      "vendor/chartjs/chart.umd.min.js.map": "b4b4e658a3a10695139f5f2ac2a31a0a0b04619cbdddc4e0793b97a8e9804321",
       "vendor/chartjs/LICENSE.md": "41a84aa2caba645f966a18d9c2056b73e6d3a81d80bc0046bc0011a2634d4cce"
     }
   },
