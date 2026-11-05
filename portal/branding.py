@@ -32,13 +32,13 @@ from django.core.exceptions import ImproperlyConfigured
 from django.utils.text import slugify
 from PIL import Image, ImageDraw, ImageFont
 
-#: name -> (accent, hover, press). Beam is the design system's own palette;
-#: teal, copper and indigo are the Popular theme's demo palettes; raspberry
-#: is the upstream portal's heritage palette.
 #: The design system's yellow: the Beam accent, and the mark's beam and
 #: lights whatever the ground.
 BEAM = "#ffd43b"
 
+#: name -> (accent, hover, press). Beam is the design system's own palette;
+#: teal, copper and indigo are the Popular theme's demo palettes; raspberry
+#: is the upstream portal's heritage palette.
 PRESETS = {
     "beam": (BEAM, "#ffe27a", "#f2bd00"),
     "teal": ("#0f766e", "#0d5f59", "#0b4f4a"),
