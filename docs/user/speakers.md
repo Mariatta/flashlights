@@ -77,6 +77,10 @@ volunteered with us in a previous year.
     - Links to your website, GitHub, Mastodon, LinkedIn and Bluesky, all
       optional. They are your account's handles: if you have a volunteer
       profile, they arrive filled in, and a change here follows there.
+    - **Affiliations**: where you work, what you build, which communities
+      you belong to. Optional, as many as you like, kept on your account.
+    - Any questions the edition asks about you as a speaker. Each says who
+      will read the answer.
 4. Fill in the **Your session** part:
     - **What kind of session** (required): only the kinds we are currently
       accepting are listed, each with its length and, for an online event,
@@ -84,9 +88,13 @@ volunteered with us in a previous year.
     - **Title** and **Summary** (required). The summary is what attendees would
       see on the schedule.
     - **Outline**, **Prerequisites** and **Audience** are optional but help us
-      plan.
-    - **Level** and **Language**. The language is a code such as `en` or
-      `pt-br`. Leave the level as "Not sure yet" if you are unsure.
+      plan. Prerequisites are asked only when the edition wants them.
+    - **Level**, and **Language** when the edition asks for it. The language
+      is a code such as `en` or `pt-br`. Leave the level as "Not sure yet" if
+      you are unsure.
+    - Any questions the edition asks about the session, each saying who will
+      read the answer: the organizers only, the organizers and the people
+      reviewing proposals, or everyone once the program is public.
 5. Choose **Send the proposal**.
 6. You land on **My proposals**, where your proposal shows as **Pending
    review**. From there you can **Edit** it or **Withdraw** it while nobody has
@@ -99,9 +107,9 @@ volunteered with us in a previous year.
 
 !!! tip "Already have a speaker profile this year?"
     If you already have a profile with us for this edition, because you sent a
-    proposal earlier or we added you, the form skips the **About you** half,
-    because we already have those details. Proposing another session is one
-    form.
+    proposal earlier or we added you, the form does not ask for your details
+    again. **About you** then holds only your affiliations and the edition's
+    questions about you, already filled in with what you said before.
 
 ### What happens next
 

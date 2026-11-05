@@ -1,0 +1,38 @@
+{% extends "speakers/_organize_shell.html" %}
+{% load i18n %}
+{% load django_bootstrap5 %}
+{% block head_title %}
+    {% if object.pk %}
+        {% trans "Edit question" %}
+    {% else %}
+        {% trans "New question" %}
+    {% endif %}
+{% endblock head_title %}
+{% block breadcrumb %}
+    {% url 'speakers:proposal_questions' as bc_url %}
+    {% trans "Proposal questions" as bc_section %}
+    {% if object.pk %}
+        {% include "portal/_breadcrumbs.html" with section=bc_section section_url=bc_url page=object.label %}
+    {% else %}
+        {% trans "New question" as bc_page %}
+        {% include "portal/_breadcrumbs.html" with section=bc_section section_url=bc_url page=bc_page %}
+    {% endif %}
+{% endblock breadcrumb %}
+{% block content %}
+    <h1 class="h3 mb-3">
+        {% if object.pk %}
+            {% blocktranslate with name=object.label %}Edit “{{ name }}”{% endblocktranslate %}
+        {% else %}
+            {% trans "New question" %}
+        {% endif %}
+    </h1>
+    <p class="text-secondary">
+        {% trans "The person answering sees the question, the help text and one line saying who will read the answer. A question nobody has answered can be deleted; one with answers is switched off instead." %}
+    </p>
+    <form method="post" class="col-lg-7" data-question-form>
+        {% csrf_token %}
+        {% bootstrap_form form %}
+        {% bootstrap_button "Save" button_type="submit" %}
+        <a href="{% url 'speakers:proposal_questions' %}" class="btn btn-link">{% trans "Cancel" %}</a>
+    </form>
+{% endblock content %}

@@ -7,8 +7,35 @@ a change to the [public API](docs/developer/community_apps.md#public-api)
 for community apps is marked **Breaking**.
 [Releasing](docs/developer/releasing.md) says how a release is made.
 
-## 0.2.1 (unreleased)
+## 0.3.0 (unreleased)
 
+- **Organizers add their own questions to the proposal form.** Under
+  Organize, Proposal questions, an edition asks anything beyond the fixed
+  fields: about the session (asked per proposal, editable by the proposer
+  while it waits) or about the speaker (asked once per person, on the form
+  and on the speaker profile). Nine kinds of question: short and long text,
+  yes or no, a box to tick, one or several choices from a list, a link,
+  links one per line, a number. Each question says who reads the answer
+  (organizers only, organizers and proposal reviewers, or everyone on the
+  public program) and the form tells the person answering the same thing.
+  Answers show on the proposal queue, the session page and the presenter
+  page; public ones join the public API as `answers`. Questions can be
+  copied from another edition, and "start next year" carries them over. A
+  question with answers is switched off rather than deleted.
+- **Affiliations reach speakers and the account page.** The affiliation
+  rows that volunteers already keep are edited on Update profile, on My
+  speaker profile and in the About you half of the proposal form, and shown
+  to organizers on the proposal queue and the presenter page. They stay off
+  the public program. The affiliation rows, which the volunteer form already
+  had, now carry the form's styling instead of bare browser inputs.
+- **Prerequisites and language are the edition's choice.** Two switches at
+  the top of Proposal questions take either built-in field off the proposal
+  form, the session forms, the session pages and the public API, where an
+  unasked language prints null. Both stay on unless switched off.
+- **The organizer's session page shows every description heading.** Summary,
+  outline, prerequisites and audience each keep their heading when empty, so
+  a reviewer sees what a proposer left out; the answers to the proposal
+  questions follow them, inside the description.
 - **A speaker's home page is about speaking.** Signing in used to open the
   volunteer hub for everyone who was not an organizer or a confirmed speaker,
   so a person who had created an account from the proposal form was greeted

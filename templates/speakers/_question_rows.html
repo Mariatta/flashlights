@@ -1,0 +1,97 @@
+{% load i18n %}
+{% comment %}
+One table of proposal questions on the settings page. Include with
+`questions` (annotated with answer_count) and `empty` (the text when there
+are none).
+{% endcomment %}
+<div class="table-responsive mb-4">
+    <table class="table table-sm table-bordered align-middle">
+        <thead class="table-light">
+            <tr>
+                <th class="text-nowrap">
+                    {% trans "Order" %}
+                </th>
+                <th>
+                    {% trans "Question" %}
+                </th>
+                <th>
+                    {% trans "Asked as" %}
+                </th>
+                <th>
+                    {% trans "Who sees the answer" %}
+                </th>
+                <th>
+                    {% trans "Answers" %}
+                </th>
+                <th>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for question in questions %}
+                <tr {% if not question.is_active %}class="text-secondary"{% endif %}>
+                    <td>
+                        {{ question.order }}
+                    </td>
+                    <td>
+                        <a href="{% url 'speakers:proposal_question_edit' question.pk %}">{{ question.label }}</a>
+                        {% if question.required %}
+                            <span class="badge text-bg-light border">{% trans "required" %}</span>
+                        {% endif %}
+                        {% if not question.is_active %}
+                            <span class="badge text-bg-secondary">{% trans "not asked" %}</span>
+                        {% endif %}
+                        {% if question.help_text %}
+                            <div class="small text-secondary">
+                                {{ question.help_text }}
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ question.get_kind_display }}
+                        {% if question.has_options %}
+                            <div class="small text-secondary">
+                                {{ question.option_list|join:", " }}
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if question.visibility == "PUBLIC" %}
+                            <span class="badge text-bg-warning-subtle border border-warning-subtle text-body"><i class="icon-globe"></i> {{ question.get_visibility_display }}</span>
+                        {% elif question.visibility == "ORGANIZERS" %}
+                            <span class="badge text-bg-light border"><i class="icon-lock"></i> {{ question.get_visibility_display }}</span>
+                        {% else %}
+                            <span class="badge text-bg-light border"><i class="icon-users"></i> {{ question.get_visibility_display }}</span>
+                        {% endif %}
+                        <div class="small text-secondary">
+                            {{ question.visibility_note }}
+                        </div>
+                    </td>
+                    <td>
+                        {{ question.answer_count }}
+                    </td>
+                    <td class="text-end text-nowrap">
+                        <a class="btn btn-sm btn-outline-secondary"
+                           href="{% url 'speakers:proposal_question_edit' question.pk %}">{% trans "Edit" %}</a>
+                        {% if not question.answer_count %}
+                            <form method="post"
+                                  class="d-inline"
+                                  action="{% url 'speakers:proposal_question_delete' question.pk %}">
+                                {% csrf_token %}
+                                <button class="btn btn-sm btn-outline-danger" type="submit">
+                                    {% trans "Delete" %}
+                                </button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6" class="text-secondary">
+                        {{ empty }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

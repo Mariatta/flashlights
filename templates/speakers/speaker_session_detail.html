@@ -232,7 +232,7 @@ upload action open the tab their target lives in.
                                 {{ session.outline_md|speaker_md }}
                             </div>
                         {% endif %}
-                        {% if session.prerequisites_md %}
+                        {% if session.prerequisites_md and "prerequisites_md" not in unasked %}
                             <h3 class="h6 text-uppercase text-secondary">
                                 {% trans "Prerequisites" %}
                             </h3>
@@ -265,9 +265,11 @@ upload action open the tab their target lives in.
                             <div>
                                 <strong>{% trans "Level" %}:</strong> {{ session.get_level_display|default:"—" }}
                             </div>
-                            <div>
-                                <strong>{% trans "Language" %}:</strong> {{ session.language|default:"—" }}
-                            </div>
+                            {% if "language" not in unasked %}
+                                <div>
+                                    <strong>{% trans "Language" %}:</strong> {{ session.language|default:"—" }}
+                                </div>
+                            {% endif %}
                             <div>
                                 <strong>{% trans "When" %}:</strong>
                                 {% if slot %}

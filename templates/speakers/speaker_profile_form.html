@@ -1,6 +1,7 @@
 {% extends "speakers/_speaker_shell.html" %}
 {% load i18n %}
 {% load django_bootstrap5 %}
+{% load static %}
 {% block head_title %}
     {% trans "My speaker profile" %}
 {% endblock head_title %}
@@ -45,6 +46,14 @@
             </div>
         {% endif %}
         {% bootstrap_form form %}
+        {% include "affiliations/_formset.html" %}
+        {% if answers_form %}
+            <h2 class="h5 mt-4">
+                {% blocktranslate with name=conference.name %}Questions from {{ name }}{% endblocktranslate %}
+            </h2>
+            {% bootstrap_form answers_form %}
+        {% endif %}
         {% bootstrap_button "Save profile" button_type="submit" %}
     </form>
+    <script src="{% static 'affiliations/formset.js' %}" defer></script>
 {% endblock content %}
