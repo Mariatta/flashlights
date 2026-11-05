@@ -25,6 +25,8 @@ for community apps is marked **Breaking**.
   preview showed only the handle. The lockup now sits on a Night band
   along the bottom of the card, as the site footer carries it, and the
   beam keeps its fade.
+- **The footer's Flashlights lockup links to flashlights.app.** The
+  "Source code" link beside it still goes to the repository.
 
 ## 0.2.0 (2026-10-22)
 
