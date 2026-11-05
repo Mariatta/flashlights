@@ -88,9 +88,10 @@ volunteered with us in a previous year.
     - **Title** and **Summary** (required). The summary is what attendees would
       see on the schedule.
     - **Outline**, **Prerequisites** and **Audience** are optional but help us
-      plan.
-    - **Level** and **Language**. The language is a code such as `en` or
-      `pt-br`. Leave the level as "Not sure yet" if you are unsure.
+      plan. Prerequisites are asked only when the edition wants them.
+    - **Level**, and **Language** when the edition asks for it. The language
+      is a code such as `en` or `pt-br`. Leave the level as "Not sure yet" if
+      you are unsure.
     - Any questions the edition asks about the session, each saying who will
       read the answer: the organizers only, the organizers and the people
       reviewing proposals, or everyone once the program is public.

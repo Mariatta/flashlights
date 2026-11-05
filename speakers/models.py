@@ -249,7 +249,8 @@ class SpeakerSettings(TimestampedModel):
         "ask for prerequisites",
         default=True,
         db_default=True,
-        help_text="What someone needs to follow the session.",
+        help_text="Off for an edition with no use for what someone needs to "
+        "follow a session.",
     )
     asks_language = models.BooleanField(
         "ask the session language",

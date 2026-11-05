@@ -633,7 +633,7 @@ class SpeakerSessionForm(IdentityLockMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        drop_unasked_fields(self, self.instance.conference)
+        drop_unasked_fields(self, self.conference)
 
     def clean_title(self):
         """One line, like a proposal's: it reaches email subjects and the
@@ -1470,6 +1470,10 @@ class BuiltInFieldsForm(forms.ModelForm):
         model = SpeakerSettings
         fields = ["asks_prerequisites", "asks_language"]
         labels = {"asks_prerequisites": "Prerequisites", "asks_language": "Language"}
+        widgets = {
+            name: forms.CheckboxInput(attrs={"class": "form-check-input"})
+            for name in fields
+        }
 
 
 class CopyQuestionsForm(forms.Form):

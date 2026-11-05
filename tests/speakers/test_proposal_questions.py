@@ -635,6 +635,12 @@ class TestBuiltInFields:
         content = client.get(QUESTIONS).content.decode()
         assert "Built-in fields" in content and content.count("Always") == 6
         assert 'name="asks_language"' in content and "checked" in content
+        # Every built-in field reaches the public program: the table says so.
+        start = content.index("Built-in fields")
+        end = content.index("About the session")
+        table = content[start:end]
+        assert table.count("Everyone, on the public program") == 8
+        assert "Organizers and proposal reviewers" not in table
         response = client.post(FIELDS, {"asks_prerequisites": "on"}, follow=True)
         assert "Saved which built-in fields" in response.content.decode()
         row = SpeakerSettings.objects.get(conference=conference)
@@ -694,18 +700,22 @@ class TestBuiltInFields:
         ).content.decode()
         assert "<strong>Language" not in content
 
-    def test_the_public_api_prints_no_language(self, conference, enabled):
-        session = make_session(conference, kind="TALK", language="en")
+    def test_the_public_api_prints_neither_when_off(self, conference, enabled):
+        session = make_session(
+            conference, kind="TALK", language="en", prerequisites_md="Bring a laptop"
+        )
         make_published_slot(session)
         session.public_links = []
-        assert (
-            session_payload(conference, session, set(), "https://x")["language"] == "en"
-        )
-        self.switch_off(conference, "asks_language")
+        payload = session_payload(conference, session, set(), "https://x")
+        assert payload["language"] == "en"
+        assert payload["prerequisites_html"] == "<p>Bring a laptop</p>"
+        self.switch_off(conference, "asks_language", "asks_prerequisites")
         conference = Conference.objects.get(pk=conference.pk)
-        assert (
-            session_payload(conference, session, set(), "https://x")["language"] is None
-        )
+        payload = session_payload(conference, session, set(), "https://x")
+        assert payload["language"] is None
+        assert payload["prerequisites_md"] is None
+        assert payload["prerequisites_html"] is None
+        assert payload["outline_md"] == ""
         bare = Conference.objects.create(
             name="Bare", year=conference.year + 2, slug="bare"
         )

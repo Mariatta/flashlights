@@ -232,7 +232,7 @@ upload action open the tab their target lives in.
                                 {{ session.outline_md|speaker_md }}
                             </div>
                         {% endif %}
-                        {% if session.prerequisites_md %}
+                        {% if session.prerequisites_md and "prerequisites_md" not in unasked %}
                             <h3 class="h6 text-uppercase text-secondary">
                                 {% trans "Prerequisites" %}
                             </h3>

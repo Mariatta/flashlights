@@ -2,9 +2,10 @@
 {% load i18n %}
 {% load django_bootstrap5 %}
 {% comment %}
-Settings: the edition's own questions on the proposal form. Two tables,
-about the session and about the speaker, each row saying who reads the
-answer; a copy form for the questions of another edition.
+Settings: what the proposal form asks. The built-in fields first, with the
+two switches an edition may turn off; then the edition's own questions in
+two tables, about the session and about the speaker, each row saying who
+reads the answer; and a copy form for the questions of another edition.
 {% endcomment %}
 {% block head_title %}
     {% trans "Proposal questions" %}
@@ -53,7 +54,6 @@ answer; a copy form for the questions of another edition.
                 <tbody>
                     {% trans "Always" as always %}
                     {% trans "Everyone, on the public program" as public %}
-                    {% trans "Organizers and proposal reviewers" as team %}
                     <tr>
                         <td>
                             {% trans "Kind of session" %}
@@ -95,7 +95,7 @@ answer; a copy form for the questions of another edition.
                             {{ always }}
                         </td>
                         <td>
-                            {{ team }}
+                            {{ public }}
                         </td>
                     </tr>
                     <tr>
@@ -112,7 +112,7 @@ answer; a copy form for the questions of another edition.
                             </div>
                         </td>
                         <td>
-                            {{ team }}
+                            {{ public }}
                         </td>
                     </tr>
                     <tr>
@@ -123,7 +123,7 @@ answer; a copy form for the questions of another edition.
                             {{ always }}
                         </td>
                         <td>
-                            {{ team }}
+                            {{ public }}
                         </td>
                     </tr>
                     <tr>

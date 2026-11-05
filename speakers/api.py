@@ -13,7 +13,7 @@ from django.urls import reverse
 from .constants import EventFormat
 from .emails import absolute_url
 from .markdown import render_md
-from .models import Room, SessionPresenter
+from .models import SWITCHABLE_SESSION_FIELDS, Room, SessionPresenter
 from .public import program_is_published, public_presenters, public_program
 from .questions import answers_queryset, public_answers
 
@@ -115,14 +115,24 @@ def slot_block(session):
     }
 
 
-def _asks_language(conference):
-    """Read through the one-to-one, cached on the conference across a
-    page of sessions."""
+def _unasked(conference):
+    """The built-in session fields the edition switched off, read through
+    the one-to-one, which is cached on the conference across a page of
+    sessions. Nothing is off without a settings row."""
     settings_row = getattr(conference, "speaker_settings", None)
-    return settings_row is None or settings_row.asks_language
+    if settings_row is None:
+        return set()
+    return {
+        field
+        for switch, field in SWITCHABLE_SESSION_FIELDS.items()
+        if not getattr(settings_row, switch)
+    }
 
 
 def session_payload(conference, session, public_ids, base):
+    # A field the edition switched off prints as null, whatever the column
+    # holds: the form stopped asking and nobody can edit it.
+    unasked = _unasked(conference)
     payload = {
         "slug": session.slug,
         "title": session.title,
@@ -130,16 +140,16 @@ def session_payload(conference, session, public_ids, base):
         "is_content": session.kind.is_content,
         "delivery": session.delivery,
         "level": session.level or None,
-        # An edition that does not ask the language has none to print.
         "language": (
-            session.language
-            if session.language and _asks_language(conference)
-            else None
+            session.language if session.language and "language" not in unasked else None
         ),
         "duration_minutes": session.duration_minutes,
     }
     for name in SESSION_TEXT:
-        payload.update(_text(session, name))
+        if f"{name}_md" in unasked:
+            payload.update({f"{name}_md": None, f"{name}_html": None})
+        else:
+            payload.update(_text(session, name))
     payload.update(
         youtube_url=session.published_video_url or None,
         answers=public_answers(session),
