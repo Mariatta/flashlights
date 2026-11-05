@@ -29,7 +29,7 @@ for community apps is marked **Breaking**.
   "Source code" link beside it still goes to the repository.
 - **A chosen radio button fills.** It was a Night ring with a Night dot,
   hard to tell from the empty ring beside it. It is now a Night disc with
-  an accent dot, the same fill as a ticked checkbox.
+  a Beam dot, the same fill as a ticked checkbox.
 
 ## 0.2.0 (2026-10-22)
 

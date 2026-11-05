@@ -242,8 +242,8 @@ textarea.form-control {
 }
 
 /* Checkbox: 22px, 2px Night border, radius 4; ticked is a Night box with an
-   accent check. Radio: chosen is a Night disc with an accent dot, the same
-   fill as a ticked box, so the chosen answer reads at a glance. */
+   accent check. Radio: chosen is a Night disc with a Beam dot, the same fill
+   as a ticked box, so the chosen answer reads at a glance. */
 .form-check {
     padding-left: 2rem;
 }
