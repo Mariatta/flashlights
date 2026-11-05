@@ -176,6 +176,14 @@ code, kbd, pre, samp, .font-monospace {
     background-color: var(--surface-card);
 }
 
+/* The addon beside a control (the @ before a handle, hours/week) takes the
+   control's border, so the two sit flush. */
+.input-group-text {
+    --bs-border-width: var(--border-2);
+    --bs-border-color: var(--border-default);
+    --bs-border-radius: var(--radius-md);
+}
+
 /* The small variants (the schedule editor's switcher, the upload panel) and
    the controls in a small input group (the share page, the media files)
    keep Bootstrap's height and padding. */
@@ -468,6 +476,7 @@ a.card:hover {
 
 /* Tables, list groups, dropdowns, pagination and pills on the neutrals. */
 .table {
+    --bs-table-bg: transparent;
     --bs-table-color: var(--text-body);
     --bs-table-border-color: var(--border-subtle);
     --bs-table-striped-bg: var(--surface-sunken);
