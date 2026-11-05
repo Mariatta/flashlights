@@ -9,6 +9,19 @@ for community apps is marked **Breaking**.
 
 ## 0.2.1 (unreleased)
 
+- **A speaker's home page is about speaking.** Signing in used to open the
+  volunteer hub for everyone who was not an organizer or a confirmed speaker,
+  so a person who had created an account from the proposal form was greeted
+  with "Create my volunteer profile", with their proposal below it; a speaker
+  whose volunteer application had been declined saw that answer as their
+  home. Now a proposal waiting for an answer opens **My proposals**, a
+  speaker opens their dashboard unless they also volunteer this year, and an
+  account that has done neither while proposals are open gets a page
+  offering both ways to take part. A declined or withdrawn volunteer
+  application no longer decides where a speaker or proposer lands. A
+  **Proposals** tab stands in for **Speaking** until the proposal is
+  accepted, and a proposer who does not volunteer sees their proposals on a
+  page of their own instead of inside the volunteering rail.
 - **The agreements page is styled.** An account that had not yet agreed to
   the Code of Conduct and the Terms of Service was sent to the page that
   asks, and so was its request for `/theme.css`, the stylesheet that

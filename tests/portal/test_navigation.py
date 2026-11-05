@@ -72,6 +72,12 @@ def test_a_request_that_matched_nothing_is_home():
         ("speakers:session_list", ORGANIZE),
         ("speakers:my_dashboard", SPEAKING),
         ("speakers:my_checklist", SPEAKING),
+        # Proposing is a person's own speaking before they are a speaker.
+        ("speakers:propose", SPEAKING),
+        ("speakers:my_proposals", SPEAKING),
+        ("speakers:proposal_edit", SPEAKING),
+        ("speakers:proposal_withdraw", SPEAKING),
+        ("speakers:proposal_resubmit", SPEAKING),
         # A person's own work sits under My volunteering, whoever they are.
         ("speakers:checklist_queue", VOLUNTEER),
         ("speakers:item_detail", VOLUNTEER),
