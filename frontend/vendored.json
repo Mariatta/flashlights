@@ -25,9 +25,9 @@
     }
   },
   "jquery": {
-    "version": "3.6.0",
+    "version": "4.0.0",
     "files": {
-      "vendor/jquery/jquery.min.js": "ff1523fb7389539c84c65aba19260648793bb4f5e29329d2ee8804bc37a3fe6e",
+      "vendor/jquery/jquery.min.js": "39a546ea9ad97f8bfaf5d3e0e8f8556adb415e470e59007ada9759dce472adaa",
       "vendor/jquery/LICENSE.txt": "d4db9ebe6f29f5168eac45ad713f055623ac5d0dcd5ba92da23d650ae012020d"
     }
   },
