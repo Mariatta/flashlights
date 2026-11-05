@@ -27,6 +27,12 @@ class ApplicationStatus(StrEnum):
     WAITLISTED = "Waitlisted"
 
 
+#: Applications that are over. A volunteer profile in one of these states no
+#: longer makes the volunteer hub someone's home, or frames their proposals
+#: as volunteering, when they have speaking to go to.
+CLOSED_APPLICATIONS = (ApplicationStatus.REJECTED, ApplicationStatus.CANCELLED)
+
+
 class Region(StrEnum):
     """Region where the volunteer usually reside."""
 

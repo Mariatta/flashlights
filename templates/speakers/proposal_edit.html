@@ -25,6 +25,9 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {% bootstrap_form session_form %}
+        {% if answers_form %}
+            {% bootstrap_form answers_form %}
+        {% endif %}
         <button class="btn btn-primary" type="submit">
             {% trans "Save" %}
         </button>

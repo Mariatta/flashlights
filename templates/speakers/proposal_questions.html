@@ -1,0 +1,201 @@
+{% extends "speakers/_organize_shell.html" %}
+{% load i18n %}
+{% load django_bootstrap5 %}
+{% comment %}
+Settings: what the proposal form asks. The built-in fields first, with the
+two switches an edition may turn off; then the edition's own questions in
+two tables, about the session and about the speaker, each row saying who
+reads the answer; and a copy form for the questions of another edition.
+{% endcomment %}
+{% block head_title %}
+    {% trans "Proposal questions" %}
+{% endblock head_title %}
+{% block breadcrumb %}
+    {% trans "Proposal questions" as bc_section %}
+    {% include "portal/_breadcrumbs.html" with section=bc_section %}
+{% endblock breadcrumb %}
+{% block content %}
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-1">
+        <h1 class="h3 mb-0">
+            {% trans "Proposal questions" %}
+        </h1>
+        <a class="btn btn-sm btn-primary"
+           href="{% url 'speakers:proposal_question_create' %}">
+            <i class="icon-plus"></i> {% trans "Add question" %}
+        </a>
+    </div>
+    <p class="text-secondary">
+        {% url 'speakers:speaker_settings' as settings_url %}
+        {% blocktranslate %}The proposal form asks the built-in fields below for every session, and for the speaker's name, pronouns, bio, photo, location, affiliations and handles. Anything else {{ conference }} wants to know is a question here. Every question says who reads the answer, and the form tells the person answering the same thing. The intro above the form is on <a href="{{ settings_url }}">Speaker settings</a>.{% endblocktranslate %}
+    </p>
+    <h2 class="h5 mt-4">
+        {% trans "Built-in fields" %}
+    </h2>
+    <p class="text-secondary small">
+        {% trans "What the form asks about every session before the questions below. Two of them are this edition's choice." %}
+    </p>
+    <form method="post" action="{% url 'speakers:proposal_fields' %}">
+        {% csrf_token %}
+        <div class="table-responsive mb-2">
+            <table class="table table-sm table-bordered align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>
+                            {% trans "Field" %}
+                        </th>
+                        <th>
+                            {% trans "Asked" %}
+                        </th>
+                        <th>
+                            {% trans "Who sees the answer" %}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% trans "Always" as always %}
+                    {% trans "Everyone, on the public program" as public %}
+                    <tr>
+                        <td>
+                            {% trans "Kind of session" %}
+                        </td>
+                        <td>
+                            {{ always }}
+                        </td>
+                        <td>
+                            {{ public }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {% trans "Title" %}
+                        </td>
+                        <td>
+                            {{ always }}
+                        </td>
+                        <td>
+                            {{ public }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {% trans "Summary" %}
+                        </td>
+                        <td>
+                            {{ always }}
+                        </td>
+                        <td>
+                            {{ public }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {% trans "Outline" %}
+                        </td>
+                        <td>
+                            {{ always }}
+                        </td>
+                        <td>
+                            {{ public }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {% trans "Prerequisites" %}
+                        </td>
+                        <td>
+                            <div class="form-check mb-0">
+                                {{ fields_form.asks_prerequisites }}
+                                <label class="form-check-label"
+                                       for="{{ fields_form.asks_prerequisites.id_for_label }}">
+                                    {% trans "Asked" %}
+                                </label>
+                            </div>
+                        </td>
+                        <td>
+                            {{ public }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {% trans "Audience" %}
+                        </td>
+                        <td>
+                            {{ always }}
+                        </td>
+                        <td>
+                            {{ public }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {% trans "Level" %}
+                        </td>
+                        <td>
+                            {{ always }}
+                        </td>
+                        <td>
+                            {{ public }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            {% trans "Language" %}
+                        </td>
+                        <td>
+                            <div class="form-check mb-0">
+                                {{ fields_form.asks_language }}
+                                <label class="form-check-label"
+                                       for="{{ fields_form.asks_language.id_for_label }}">
+                                    {% trans "Asked" %}
+                                </label>
+                            </div>
+                        </td>
+                        <td>
+                            {{ public }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <button class="btn btn-sm btn-outline-primary" type="submit">
+            {% trans "Save built-in fields" %}
+        </button>
+    </form>
+    <h2 class="h5 mt-4">
+        {% trans "About the session" %}
+    </h2>
+    <p class="text-secondary small">
+        {% trans "Asked for every session proposed, and editable by the proposer while the proposal waits for an answer." %}
+    </p>
+    {% trans "No questions about the session yet." as empty_session %}
+    {% include "speakers/_question_rows.html" with questions=session_questions empty=empty_session %}
+    <h2 class="h5 mt-4">
+        {% trans "About the speaker" %}
+    </h2>
+    <p class="text-secondary small">
+        {% trans "Asked once per person for this edition, on the proposal form and on their speaker profile." %}
+    </p>
+    {% trans "No questions about the speaker yet." as empty_speaker %}
+    {% include "speakers/_question_rows.html" with questions=speaker_questions empty=empty_speaker %}
+    {% if copy_form.has_sources %}
+        <h2 class="h5 mt-4">
+            {% trans "Copy from another edition" %}
+        </h2>
+        <p class="text-secondary small">
+            {% trans "Brings over the questions another edition asks, skipping any already here with the same wording. The answers stay with their own edition." %}
+        </p>
+        <form method="post"
+              class="row row-cols-lg-auto g-2 align-items-end"
+              action="{% url 'speakers:proposal_questions_copy' %}">
+            {% csrf_token %}
+            <div class="col-12">
+                {% bootstrap_field copy_form.source show_label=False %}
+            </div>
+            <div class="col-12">
+                <button class="btn btn-outline-primary" type="submit">
+                    {% trans "Copy questions" %}
+                </button>
+            </div>
+        </form>
+    {% endif %}
+{% endblock content %}

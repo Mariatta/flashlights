@@ -11,7 +11,7 @@ Affiliation rows on a profile form. Include inside the <form> with
     </div>
     <div class="card-body">
         <p class="text-secondary small">
-            {% trans "Where you work, what you build, which communities you belong to. All optional; add as many as you like." %}
+            {% trans "Where you work, what you build, which communities you belong to. All optional; add as many as you like. The organizers see them with your volunteer and speaker profiles; they are not published." %}
         </p>
         {{ affiliation_formset.management_form }}
         {% if affiliation_formset.non_form_errors %}

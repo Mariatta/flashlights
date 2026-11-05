@@ -31,6 +31,8 @@ class TestSpeakersAdmin:
             "activitylog",
             "speakersettings",
             "proposal",
+            "proposalquestion",
+            "proposalanswer",
             "readinessgate",
             "handbookreadreceipt",
         ],
