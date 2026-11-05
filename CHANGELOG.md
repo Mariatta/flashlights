@@ -7,7 +7,7 @@ a change to the [public API](docs/developer/community_apps.md#public-api)
 for community apps is marked **Breaking**.
 [Releasing](docs/developer/releasing.md) says how a release is made.
 
-## 0.3.0 (unreleased)
+## 0.3.0 (2026-11-05)
 
 - **The image runs Python 3.15.** Community apps built from it get the same
   interpreter.
