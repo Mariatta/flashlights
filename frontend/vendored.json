@@ -18,9 +18,9 @@
     }
   },
   "htmx.org": {
-    "version": "2.0.4",
+    "version": "2.0.11",
     "files": {
-      "vendor/htmx/htmx.min.js": "e209dda5c8235479f3166defc7750e1dbcd5a5c1808b7792fc2e6733768fb447",
+      "vendor/htmx/htmx.min.js": "d6fdc75f204e6bdefa99b69bf1e6d4ac69b8a364f77929f45c13476b4000f717",
       "vendor/htmx/LICENSE": "d3d2456f76414f2456104660ebd65aff1c04cd7966b942bdabd63f3cdb316a38"
     }
   },
