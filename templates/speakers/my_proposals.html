@@ -5,8 +5,10 @@ What this person proposed and what came of it.
 
 A speaker sees it under Speaking, with the rest of their speaking; someone
 whose proposal nobody has answered is not a speaker yet, so they see it in
-their personal rail. ``shell`` is one of two templates the view picks:
-"speakers/_speaker_shell.html" or "portal/base_sidebar.html".
+their volunteering rail when they volunteer, and on a page of its own
+otherwise. ``shell`` is one of three templates the view picks:
+"speakers/_speaker_shell.html", "portal/base_sidebar.html" or
+"portal/base.html"; the sidebar blocks below are ignored by the last.
 {% endcomment %}
 {% block head_title %}
     {% trans "My proposals" %}

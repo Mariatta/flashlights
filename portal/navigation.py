@@ -25,6 +25,12 @@ SECTION_BY_NAMESPACE = {
 
 # Pages whose hub is not their namespace's.
 EXCEPTIONS = {
+    # Proposing is a person's own speaking, before they are a speaker: the
+    # Proposals tab (or the Speaking tab, once on the program) is current.
+    "speakers:propose": SPEAKING,
+    "speakers:proposal_edit": SPEAKING,
+    "speakers:proposal_withdraw": SPEAKING,
+    "speakers:proposal_resubmit": SPEAKING,
     # A person's own work, under "My volunteering" for everyone.
     "speakers:checklist_queue": VOLUNTEER,
     "speakers:item_detail": VOLUNTEER,

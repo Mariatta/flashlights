@@ -13,8 +13,9 @@ from django.urls import reverse
 from .constants import EventFormat
 from .emails import absolute_url
 from .markdown import render_md
-from .models import Room, SessionPresenter
+from .models import SWITCHABLE_SESSION_FIELDS, Room, SessionPresenter
 from .public import program_is_published, public_presenters, public_program
+from .questions import answers_queryset, public_answers
 
 CACHE_SECONDS = 300
 SESSION_TEXT = ("summary", "outline", "prerequisites", "audience")
@@ -87,7 +88,9 @@ def sessions_queryset(conference, preview=None):
     sessions = (
         public_program(conference, preview)
         .select_related("kind", "published_slot", "published_slot__room__venue")
-        .prefetch_related(links)
+        .prefetch_related(
+            links, Prefetch("question_answers", queryset=answers_queryset())
+        )
         .order_by("published_slot__start_utc", "title")
     )
     return sessions, public_ids
@@ -112,7 +115,24 @@ def slot_block(session):
     }
 
 
+def _unasked(conference):
+    """The built-in session fields the edition switched off, read through
+    the one-to-one, which is cached on the conference across a page of
+    sessions. Nothing is off without a settings row."""
+    settings_row = getattr(conference, "speaker_settings", None)
+    if settings_row is None:
+        return set()
+    return {
+        field
+        for switch, field in SWITCHABLE_SESSION_FIELDS.items()
+        if not getattr(settings_row, switch)
+    }
+
+
 def session_payload(conference, session, public_ids, base):
+    # A field the edition switched off prints as null, whatever the column
+    # holds: the form stopped asking and nobody can edit it.
+    unasked = _unasked(conference)
     payload = {
         "slug": session.slug,
         "title": session.title,
@@ -120,13 +140,19 @@ def session_payload(conference, session, public_ids, base):
         "is_content": session.kind.is_content,
         "delivery": session.delivery,
         "level": session.level or None,
-        "language": session.language or None,
+        "language": (
+            session.language if session.language and "language" not in unasked else None
+        ),
         "duration_minutes": session.duration_minutes,
     }
     for name in SESSION_TEXT:
-        payload.update(_text(session, name))
+        if f"{name}_md" in unasked:
+            payload.update({f"{name}_md": None, f"{name}_html": None})
+        else:
+            payload.update(_text(session, name))
     payload.update(
         youtube_url=session.published_video_url or None,
+        answers=public_answers(session),
         slot=slot_block(session),
         presenters=[
             presenter_link(link, link.presenter_id in public_ids, base)
@@ -178,6 +204,7 @@ def presenter_payload(presenter, sessions, base):
             "linkedin": presenter.linkedin_url or None,
             "bluesky": presenter.bluesky_username or None,
         },
+        "answers": public_answers(presenter),
         "sessions": sessions,
     }
     return payload
@@ -193,7 +220,9 @@ def presenters_data(conference, preview=None, slug=None):
             by_presenter.setdefault(link.presenter_id, []).append(
                 {"slug": session.slug, "title": session.title, **slot_block(session)}
             )
-    presenters = public_presenters(conference, preview)
+    presenters = public_presenters(conference, preview).prefetch_related(
+        Prefetch("question_answers", queryset=answers_queryset())
+    )
     if slug is not None:
         presenters = presenters.filter(slug=slug)
     return [
