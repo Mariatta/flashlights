@@ -242,7 +242,8 @@ textarea.form-control {
 }
 
 /* Checkbox: 22px, 2px Night border, radius 4; ticked is a Night box with an
-   accent check. Radio: ticked is a Night dot on white. */
+   accent check. Radio: chosen is a Night disc with a Beam dot, the same fill
+   as a ticked box, so the chosen answer reads at a glance. */
 .form-check {
     padding-left: 2rem;
 }
@@ -272,9 +273,9 @@ textarea.form-control {
 }
 
 .form-check-input:checked[type="radio"] {
-    background-color: var(--surface-card);
+    background-color: var(--night-950);
     border-color: var(--night-950);
-    --bs-form-check-bg-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2.5' fill='%230f0f0d'/%3e%3c/svg%3e");
+    --bs-form-check-bg-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23ffd43b'/%3e%3c/svg%3e");
 }
 
 /* A checkbox or radio rendered without Bootstrap's classes (allauth's
@@ -301,7 +302,8 @@ input[type="checkbox"]:not(.form-check-input):checked {
 }
 
 input[type="radio"]:not(.form-check-input):checked {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2.5' fill='%230f0f0d'/%3e%3c/svg%3e");
+    background-color: var(--night-950);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23ffd43b'/%3e%3c/svg%3e");
 }
 
 /* Switch: a 44 by 26 pill with a 2px Night border; the knob is Night, and

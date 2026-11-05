@@ -27,6 +27,9 @@ for community apps is marked **Breaking**.
   beam keeps its fade.
 - **The footer's Flashlights lockup links to flashlights.app.** The
   "Source code" link beside it still goes to the repository.
+- **A chosen radio button fills.** It was a Night ring with a Night dot,
+  hard to tell from the empty ring beside it. It is now a Night disc with
+  a Beam dot, the same fill as a ticked checkbox.
 
 ## 0.2.0 (2026-10-22)
 
