@@ -9,6 +9,8 @@ for community apps is marked **Breaking**.
 
 ## 0.3.0 (unreleased)
 
+- **The image runs Python 3.15.** Community apps built from it get the same
+  interpreter.
 - **Organizers add their own questions to the proposal form.** Under
   Organize, Proposal questions, an edition asks anything beyond the fixed
   fields: about the session (asked per proposal, editable by the proposer
