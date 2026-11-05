@@ -34,7 +34,7 @@ jobs:
 
       # Slim, the default: X.Y.Z, X.Y and latest, for Intel and ARM hosts.
       - id: slim
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
@@ -54,7 +54,7 @@ jobs:
       # Full, with machine transcription: X.Y.Z-full and X.Y-full. The model
       # alone is several hundred MB, so Intel only, where the hosts are.
       - id: full
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ghcr.io/${{ github.repository }}
           flavor: |
