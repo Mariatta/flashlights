@@ -157,6 +157,7 @@ INSTALLED_APPS = EXTRA_APPS + [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sites",
+    "django.contrib.postgres",
     "django_bootstrap5",
     "django_filters",
     "django_tables2",

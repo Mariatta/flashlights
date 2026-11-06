@@ -7,6 +7,12 @@ a change to the [public API](docs/developer/community_apps.md#public-api)
 for community apps is marked **Breaking**.
 [Releasing](docs/developer/releasing.md) says how a release is made.
 
+## 0.4.0 (unreleased)
+
+- **Django 6.0.** The framework moves from 5.2 to 6.0, so community apps
+  built on the image run on it too; Django 6.1 waits for a django-celery-beat
+  release that allows it. Nothing changes for a deployment.
+
 ## 0.3.1 (2026-11-05)
 
 - **The image is back on Python 3.14.** 0.3.0 moved it to 3.15, and its
