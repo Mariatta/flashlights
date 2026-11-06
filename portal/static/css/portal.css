@@ -1181,16 +1181,22 @@ body > .container:has(> .landing-hero:last-child) {
 /* Contextual left rail (portal/base_sidebar.html): pinned alongside content on
    desktop, an off-canvas drawer on mobile (handled by Bootstrap offcanvas-md).
    A rail taller than the window scrolls on its own, otherwise its lower items
-   would sit below the fold until the page itself reached its end. The 4px
-   inset keeps the focus ring of the first and last items inside the scroll
-   box, where the overflow would otherwise clip it. */
+   would sit below the fold until the page itself reached its end. The cap is
+   the dynamic viewport where the browser has it, so a tablet toolbar that
+   slides away on scroll does not hide the rail's last items while shown. The
+   4px inset keeps the focus ring of the first and last items inside the
+   scroll box, where the overflow would otherwise clip it, and the matching
+   scroll padding keeps the ring of an item that focus scrolls into view off
+   the edge it lands on. */
 @media (min-width: 768px) {
     .app-sidebar {
         position: sticky;
         top: 1rem;
         max-height: calc(100vh - 2rem);
+        max-height: calc(100dvh - 2rem);
         overflow-y: auto;
         scrollbar-width: thin;
+        scroll-padding: 4px;
         padding: 4px;
         margin: -4px;
     }
