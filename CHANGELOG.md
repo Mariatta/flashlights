@@ -7,6 +7,14 @@ a change to the [public API](docs/developer/community_apps.md#public-api)
 for community apps is marked **Breaking**.
 [Releasing](docs/developer/releasing.md) says how a release is made.
 
+- **redis-py 8.** The Redis client in the image moves from 6.4 to 8.1.
+  The Celery broker, the core's only use of it, is unchanged: kombu 5.7
+  supports redis-py 8 and sets the connection timeouts itself. A community
+  app that talks to Redis directly reads the
+  [8.0 release notes](https://github.com/redis/redis-py/releases/tag/v8.0.0)
+  before pinning this image: RESP3 is the wire protocol by default, socket
+  timeouts default to five seconds, and the return type hints changed.
+
 ## 0.3.1 (2026-11-05)
 
 - **The image is back on Python 3.14.** 0.3.0 moved it to 3.15, and its
