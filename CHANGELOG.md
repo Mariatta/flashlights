@@ -7,7 +7,7 @@ a change to the [public API](docs/developer/community_apps.md#public-api)
 for community apps is marked **Breaking**.
 [Releasing](docs/developer/releasing.md) says how a release is made.
 
-## 0.4.0 (unreleased)
+## 0.4.0 (2026-11-06)
 
 - **Django 6.0.** The framework moves from 5.2 to 6.0, so community apps
   built on the image run on it too; Django 6.1 waits for a django-celery-beat
@@ -30,6 +30,10 @@ for community apps is marked **Breaking**.
   notes before pinning this image: RESP3 is the wire protocol by default,
   with the old response shapes kept, socket timeouts default to five
   seconds, and the return type hints changed.
+- **sqlparse 0.6.1.** The SQL formatter Django uses moves from 0.5.3 to
+  0.6.1, which closes several denial-of-service advisories in parsing and
+  formatting. Its maintainer has announced the end of the project's
+  maintenance with this release, so no further fixes are expected from it.
 - **A long side rail scrolls on its own.** On desktop the rail is pinned
   beside the page, and one taller than the window kept its lower items
   below the fold until the page itself was scrolled to its end. The rail
