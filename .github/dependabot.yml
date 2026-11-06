@@ -16,6 +16,11 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # django-celery-beat 2.9.0, the newest, requires Django below 6.1. Lift
+    # this when a release allows 6.1.
+    ignore:
+      - dependency-name: django
+        versions: [">= 6.1"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
