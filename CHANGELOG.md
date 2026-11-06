@@ -11,7 +11,14 @@ for community apps is marked **Breaking**.
 
 - **Django 6.0.** The framework moves from 5.2 to 6.0, so community apps
   built on the image run on it too; Django 6.1 waits for a django-celery-beat
-  release that allows it. Nothing changes for a deployment.
+  release that allows it. Nothing changes for a deployment. A community app
+  checks its own code against the
+  [6.0 release notes](https://docs.djangoproject.com/en/6.0/releases/6.0/)
+  before pinning this image: `format_html()` without arguments, the `check`
+  keyword of `CheckConstraint` and positional arguments to `Model.save()`
+  are gone, `forms.URLField` assumes https, and `ArrayField` and the other
+  `django.contrib.postgres` fields now need that app installed, which the
+  core does.
 
 ## 0.3.1 (2026-11-05)
 
