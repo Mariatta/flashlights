@@ -19,6 +19,17 @@ for community apps is marked **Breaking**.
   are gone, `forms.URLField` assumes https, and `ArrayField` and the other
   `django.contrib.postgres` fields now need that app installed, which the
   core does.
+- **redis-py 8.** The Redis client in the image moves from 6.4 to 8.1.
+  The Celery broker, the core's only use of it, is unchanged: kombu 5.7
+  supports redis-py 8 and sets the connection timeouts itself. The broker
+  must be Redis 6 or newer: redis-py 8 opens every connection with the
+  `HELLO` command, which Redis 5 does not have. A community app that talks
+  to Redis directly reads the
+  [7.0](https://github.com/redis/redis-py/releases/tag/v7.0.0) and
+  [8.0](https://github.com/redis/redis-py/releases/tag/v8.0.0) release
+  notes before pinning this image: RESP3 is the wire protocol by default,
+  with the old response shapes kept, socket timeouts default to five
+  seconds, and the return type hints changed.
 - **A long side rail scrolls on its own.** On desktop the rail is pinned
   beside the page, and one taller than the window kept its lower items
   below the fold until the page itself was scrolled to its end. The rail
