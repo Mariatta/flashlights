@@ -7,6 +7,19 @@ a change to the [public API](docs/developer/community_apps.md#public-api)
 for community apps is marked **Breaking**.
 [Releasing](docs/developer/releasing.md) says how a release is made.
 
+## 0.4.1 (unreleased)
+
+- **A fresh database migrates again.** On 0.4.0, `migrate` on an empty
+  database stopped in the sponsorship app with "cannot drop column id ...
+  because other objects depend on it": Django 6.0 no longer drops a column
+  with CASCADE, and an early migration swapped the primary key while a
+  many-to-many table and a foreign key still pointed at it. A replacement
+  migration takes its place on a database that has not applied it, removing
+  the two relations first and putting them back on the new key. A database
+  past that point, every deployment that upgraded, records the replacement
+  and runs nothing. CI now applies every migration to a fresh database, so
+  this cannot pass unnoticed again.
+
 ## 0.4.0 (2026-11-06)
 
 - **Django 6.0.** The framework moves from 5.2 to 6.0, so community apps

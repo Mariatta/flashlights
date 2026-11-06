@@ -73,6 +73,9 @@ lint: .state/docker-build-web
 	docker compose run --rm web djlint . --lint
 	docker compose run --rm web flake8
 	docker compose run --rm web python manage.py makemigrations --check --settings=portal.settings
+	# CI's database is fresh, so this applies every migration from nothing, which
+	# the tests never do (they run with --no-migrations).
+	docker compose run --rm web python manage.py migrate --noinput
 
 reformat: .state/docker-build-web
 	docker compose run --rm web isort .
