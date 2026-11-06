@@ -32,8 +32,10 @@ for community apps is marked **Breaking**.
   seconds, and the return type hints changed.
 - **sqlparse 0.6.1.** The SQL formatter Django uses moves from 0.5.3 to
   0.6.1, which closes several denial-of-service advisories in parsing and
-  formatting. Its maintainer has announced the end of the project's
-  maintenance with this release, so no further fixes are expected from it.
+  formatting. Django only hands it its own migration and debug SQL, so
+  nothing changes for a deployment. Its maintainer has announced the end of
+  the project's maintenance with this release, so no further fixes are
+  expected from it.
 - **A long side rail scrolls on its own.** On desktop the rail is pinned
   beside the page, and one taller than the window kept its lower items
   below the fold until the page itself was scrolled to its end. The rail
