@@ -600,7 +600,7 @@ where restarts and out-of-memory kills show.
 
 ### A plain server
 
-**What to create.** A host with Docker, a Postgres 15 or newer, a Redis,
+**What to create.** A host with Docker, a Postgres 15 or newer, a Redis 6 or newer,
 and the bucket and SMTP from any provider. `compose.yml` is the development
 stack and the template: its `web` and `celery` services are the minimum
 formation, its `postgres` and `redis` the two services. A production stack
