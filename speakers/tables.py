@@ -1,11 +1,19 @@
 import django_tables2 as tables
 from django.urls import reverse
 from django.utils.html import format_html, format_html_join
+from django.utils.safestring import mark_safe
 
 from portal.people import person_cell
 
 from .constants import SessionStatus
 from .models import InvitationStatus, Presenter, Session
+
+# What an empty cell shows, in the muted text the tables use for absence.
+EMPTY_CELL = mark_safe('<span class="text-secondary">—</span>')
+# The clock after a presenter who has not confirmed yet.
+UNCONFIRMED_MARK = mark_safe(
+    ' <i class="icon-clock text-secondary" title="Not yet confirmed"></i>'
+)
 
 STATUS_BADGE_CLASSES = {
     SessionStatus.PROPOSED: "text-bg-light border",
@@ -52,7 +60,7 @@ class SessionTable(tables.Table):
     def render_presenters(self, record):
         links = record.presenter_links
         if not links:
-            return format_html('<span class="text-secondary">—</span>')
+            return EMPTY_CELL
         return format_html_join(
             ", ",
             '{} <span class="badge text-bg-light border">{}</span>{}',
@@ -60,14 +68,7 @@ class SessionTable(tables.Table):
                 (
                     link.presenter.display_name,
                     link.role.name,
-                    (
-                        ""
-                        if link.is_confirmed
-                        else format_html(
-                            ' <i class="icon-clock text-secondary" '
-                            'title="Not yet confirmed"></i>'
-                        )
-                    ),
+                    ("" if link.is_confirmed else UNCONFIRMED_MARK),
                 )
                 for link in links
             ),
@@ -145,7 +146,7 @@ INVITATION_BADGE_CLASSES = {
 def session_list(record):
     """A presenter's sessions, one line each: the title linked, the role."""
     if not record.session_links:
-        return format_html('<span class="text-secondary">—</span>')
+        return EMPTY_CELL
     return format_html(
         '<ul class="list-unstyled mb-0">{}</ul>',
         format_html_join(
@@ -161,7 +162,7 @@ def session_list(record):
 
 def invitation_badge(invitation):
     if invitation is None:
-        return format_html('<span class="text-secondary">—</span>')
+        return EMPTY_CELL
     status = invitation.status
     return format_html(
         '<span class="badge {}">{}</span>',

@@ -7,6 +7,34 @@ a change to the [public API](docs/developer/community_apps.md#public-api)
 for community apps is marked **Breaking**.
 [Releasing](docs/developer/releasing.md) says how a release is made.
 
+## 0.4.0 (unreleased)
+
+- **Django 6.0.** The framework moves from 5.2 to 6.0, so community apps
+  built on the image run on it too; Django 6.1 waits for a django-celery-beat
+  release that allows it. Nothing changes for a deployment. A community app
+  checks its own code against the
+  [6.0 release notes](https://docs.djangoproject.com/en/6.0/releases/6.0/)
+  before pinning this image: `format_html()` without arguments, the `check`
+  keyword of `CheckConstraint` and positional arguments to `Model.save()`
+  are gone, `forms.URLField` assumes https, and `ArrayField` and the other
+  `django.contrib.postgres` fields now need that app installed, which the
+  core does.
+- **redis-py 8.** The Redis client in the image moves from 6.4 to 8.1.
+  The Celery broker, the core's only use of it, is unchanged: kombu 5.7
+  supports redis-py 8 and sets the connection timeouts itself. The broker
+  must be Redis 6 or newer: redis-py 8 opens every connection with the
+  `HELLO` command, which Redis 5 does not have. A community app that talks
+  to Redis directly reads the
+  [7.0](https://github.com/redis/redis-py/releases/tag/v7.0.0) and
+  [8.0](https://github.com/redis/redis-py/releases/tag/v8.0.0) release
+  notes before pinning this image: RESP3 is the wire protocol by default,
+  with the old response shapes kept, socket timeouts default to five
+  seconds, and the return type hints changed.
+- **A long side rail scrolls on its own.** On desktop the rail is pinned
+  beside the page, and one taller than the window kept its lower items
+  below the fold until the page itself was scrolled to its end. The rail
+  is now capped at the window's height and scrolls within it.
+
 ## 0.3.1 (2026-11-05)
 
 - **The image is back on Python 3.14.** 0.3.0 moved it to 3.15, and its
