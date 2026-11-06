@@ -157,6 +157,9 @@ INSTALLED_APPS = EXTRA_APPS + [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sites",
+    # For the ArrayFields; Django 6.0 checks it is installed. It also adds
+    # the unaccent and trigram lookups to text fields.
+    "django.contrib.postgres",
     "django_bootstrap5",
     "django_filters",
     "django_tables2",
