@@ -19,6 +19,10 @@ for community apps is marked **Breaking**.
   are gone, `forms.URLField` assumes https, and `ArrayField` and the other
   `django.contrib.postgres` fields now need that app installed, which the
   core does.
+- **A long side rail scrolls on its own.** On desktop the rail is pinned
+  beside the page, and one taller than the window kept its lower items
+  below the fold until the page itself was scrolled to its end. The rail
+  is now capped at the window's height and scrolls within it.
 
 ## 0.3.1 (2026-11-05)
 
