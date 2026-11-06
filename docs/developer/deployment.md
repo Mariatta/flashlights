@@ -204,8 +204,8 @@ The worker and beat share a **Redis 6 or newer**. The Redis client in the
 image (redis-py 8) greets the server with the `HELLO` command on every
 connection, which Redis 5 does not have, so a worker pointed at an older
 server fails on its first connection with an unknown-command error. Local
-development and CI run `redis:7` from `compose.yml`; the managed Redis on
-the hosts below is 6 or 7.
+development and CI run `redis:7` from `compose.yml`; check the version a
+managed Redis add-on provisions before pointing this image at it.
 
 ### Speaker media bucket
 
