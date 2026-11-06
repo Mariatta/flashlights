@@ -7,7 +7,7 @@ a change to the [public API](docs/developer/community_apps.md#public-api)
 for community apps is marked **Breaking**.
 [Releasing](docs/developer/releasing.md) says how a release is made.
 
-## 0.4.1 (unreleased)
+## 0.4.1 (2026-11-06)
 
 - **A fresh database migrates again.** On 0.4.0, `migrate` on an empty
   database stopped in the sponsorship app with "cannot drop column id ...
