@@ -1,4 +1,4 @@
-"""The 0003 migration, written for a database that drops no column with CASCADE.
+"""The 0003 migration, written for a Django that drops no column with CASCADE.
 
 Upstream's 0003 swaps the primary key of SponsorshipProfile and
 SponsorshipTier for a link to BaseModel by dropping the ``id`` column while

@@ -3,6 +3,8 @@
 import importlib
 
 from django.db import migrations
+from django.db.migrations.loader import MigrationLoader
+from django.test import override_settings
 
 replacement = importlib.import_module(
     "sponsorship.migrations.0013_drop_primary_keys_without_cascade"
@@ -46,23 +48,25 @@ def test_the_relations_leave_before_the_key_and_return_after_it():
         assert removed < tier_id_dropped < tier_key_added < added
 
 
-def test_it_adds_what_0003_adds_and_nothing_else():
-    """The end state must be 0003's, so later migrations apply unchanged:
-    every field 0003 adds is added with the same definition, and the only
-    extra operations are the removal and return of the two relations."""
-    original_adds = {
-        (op.model_name, op.name): op.field.deconstruct()[1:]
-        for op in original.Migration.operations
-        if isinstance(op, migrations.AddField)
-    }
-    replacement_adds = {
-        (op.model_name, op.name): op.field.deconstruct()[1:]
-        for op in replacement.Migration.operations
-        if isinstance(op, migrations.AddField)
-    }
-    for key, definition in original_adds.items():
-        assert replacement_adds[key] == definition
-    assert set(replacement_adds) - set(original_adds) == {
-        ("sponsorshipprofile", "additional_contacts"),
-        ("sponsorshipprofile", "sponsorship_tier"),
-    }
+def test_it_leaves_the_state_0003_leaves():
+    """Later migrations build on 0003's end state, so the replacement must
+    arrive at the same models: the same fields with the same definitions,
+    the same options and bases. Read from the graph, so a rewrite of 0003
+    upstream would show here as a difference."""
+    with override_settings(MIGRATION_MODULES={}):
+        loader = MigrationLoader(None, replace_migrations=False)
+    original_node = ("sponsorship", original.Migration.__module__.rsplit(".", 1)[1])
+    replacement_node = (
+        "sponsorship",
+        replacement.Migration.__module__.rsplit(".", 1)[1],
+    )
+    after_original = loader.project_state(original_node)
+    after_replacement = loader.project_state(replacement_node)
+    for model in ("sponsorshipprofile", "sponsorshiptier"):
+        theirs = after_original.models["sponsorship", model]
+        ours = after_replacement.models["sponsorship", model]
+        assert {name: f.deconstruct()[1:] for name, f in ours.fields.items()} == {
+            name: f.deconstruct()[1:] for name, f in theirs.fields.items()
+        }
+        assert ours.options == theirs.options
+        assert ours.bases == theirs.bases
