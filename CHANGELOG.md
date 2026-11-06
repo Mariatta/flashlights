@@ -7,6 +7,22 @@ a change to the [public API](docs/developer/community_apps.md#public-api)
 for community apps is marked **Breaking**.
 [Releasing](docs/developer/releasing.md) says how a release is made.
 
+## 0.4.0 (unreleased)
+
+- **Django 6.0.** The framework moves from 5.2 to 6.0, so community apps
+  built on the image run on it too; Django 6.1 waits for a django-celery-beat
+  release that allows it. Nothing changes for a deployment. A community app
+  checks its own code against the
+  [6.0 release notes](https://docs.djangoproject.com/en/6.0/releases/6.0/)
+  before pinning this image: `format_html()` without arguments, the `check`
+  keyword of `CheckConstraint` and positional arguments to `Model.save()`
+  are gone, `forms.URLField` assumes https, and `ArrayField` and the other
+  `django.contrib.postgres` fields now need that app installed, which the
+  core does.
+- **A long side rail scrolls on its own.** On desktop the rail is pinned
+  beside the page, and one taller than the window kept its lower items
+  below the fold until the page itself was scrolled to its end. The rail
+  is now capped at the window's height and scrolls within it.
 - **redis-py 8.** The Redis client in the image moves from 6.4 to 8.1.
   The Celery broker, the core's only use of it, is unchanged: kombu 5.7
   supports redis-py 8 and sets the connection timeouts itself. A community

@@ -1,5 +1,5 @@
-asgiref==3.8.1
-Django==5.2.13
+asgiref==3.13.0
+Django==6.0.10
 django-allauth==65.13.0
 django-filter==25.1
 django-tables2==3.0.1
