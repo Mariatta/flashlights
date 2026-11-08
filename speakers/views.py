@@ -3448,18 +3448,29 @@ class ProposalDetailView(ProposalActionMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         proposal = self.get_proposal()
         session = proposal.session
+        unasked = unasked_session_fields(self.conference)
         context.update(
             {
                 "conference": self.conference,
                 "proposal": proposal,
                 "session": session,
+                # Whether any part of the description shows, so the page
+                # says there is none only when that is true.
+                "has_description": any(
+                    [
+                        session.summary_md,
+                        session.outline_md,
+                        session.audience_md,
+                        session.prerequisites_md and "prerequisites_md" not in unasked,
+                    ]
+                ),
                 "session_answers": readable_answers(
                     session,
                     self.request.user,
                     own=True,
                     answers=answers_queryset().filter(session=session),
                 ),
-                "unasked": unasked_session_fields(self.conference),
+                "unasked": unasked,
                 "rail_active": "proposals",
                 **_proposals_shell(
                     self.request.user, self.conference, proposal.presenter

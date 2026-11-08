@@ -996,6 +996,21 @@ class TestTheProposalPage:
         # And My proposals links to it.
         assert proposal_url(proposal) in client.get(MINE).content.decode()
 
+    def test_no_description_is_said_only_when_nothing_shows(self, client, speaker):
+        user, _, proposal = speaker
+        session = proposal.session
+        session.summary_md = session.outline_md = ""
+        session.audience_md = "People who write tests."
+        session.save()
+        client.force_login(user)
+        content = client.get(proposal_url(proposal)).content.decode()
+        assert "People who write tests." in content
+        assert "No description yet." not in content
+        session.audience_md = ""
+        session.save()
+        content = client.get(proposal_url(proposal)).content.decode()
+        assert "No description yet." in content
+
     def test_someone_elses_proposal_is_not_found(self, client, speaker, stranger):
         _, _, proposal = speaker
         client.force_login(stranger)

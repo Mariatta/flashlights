@@ -119,7 +119,7 @@ the same actions: edit, withdraw or send again while nobody has answered.
                 {{ session.audience_md|speaker_md }}
             </div>
         {% endif %}
-        {% if not session.summary_md and not session.outline_md %}
+        {% if not has_description %}
             <p class="text-secondary">
                 {% trans "No description yet." %}
             </p>
