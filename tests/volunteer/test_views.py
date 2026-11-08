@@ -32,9 +32,12 @@ class TestVolunteer:
     def test_hub_shows_contextual_resources(self, client, portal_user, conference):
         # The hub shows the volunteering and speaking resource cards; the
         # footer's Sponsorship group stays on the logged-out landing only.
+        conference.sponsors_url = "https://example.org/sponsors/"
+        conference.save()
         client.force_login(portal_user)
         with override_settings(
-            BRAND=branding.from_env({"DOCS_URL": "https://docs.example.org/"})
+            BRAND=branding.from_env({"DOCS_URL": "https://docs.example.org/"}),
+            SPONSORSHIP_ENABLED=True,
         ):
             content = client.get(reverse("volunteer:index")).content.decode()
         assert "Volunteer resources" in content
