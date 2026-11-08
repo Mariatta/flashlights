@@ -1066,7 +1066,10 @@ class TestTheProposalPage:
         client.force_login(user)
         response = client.get(reverse(f"speakers:{page}"))
         assert response.status_code == 200
-        assert f'href="{MINE}"' in response.content.decode()
+        content = response.content.decode()
+        # The rail, then the orphan's title and button.
+        assert content.count(f'href="{MINE}"') == 3
+        assert reverse("speakers:my_session_detail", args=[orphan.slug]) not in content
 
     @pytest.mark.parametrize("page", ["my_sessions", "my_dashboard"])
     def test_a_co_presenter_is_not_linked_to_a_proposal_they_cannot_open(
