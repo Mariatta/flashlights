@@ -41,6 +41,11 @@ prominent,confirm,{{ extra_tags }}
 {% element button type="submit" tags=submit_button_tags %}
 {% translate "Confirm" %}
 {% endelement %}
+{% if can_resend %}
+    {% element button type="submit" form="resend" tags="outline,secondary,resend" %}
+    {% translate "Send me a new code" %}
+{% endelement %}
+{% endif %}
 {% if cancel_url %}
     {% element button href=cancel_url tags="link,cancel" %}
     {% translate "Cancel" %}
@@ -52,6 +57,21 @@ prominent,confirm,{{ extra_tags }}
 {% endif %}
 {% endslot %}
 {% endelement %}
+{% if can_resend %}
+    {% comment %}
+    The code page's second form: a new code to the same address. The view
+    swaps the code in this browser's session for the new one, so an earlier
+    email stops working. Quota and the 10-second spacing are allauth's.
+    {% endcomment %}
+    {% element p %}
+    {% blocktranslate %}Did not get it? Check your spam folder, or ask for a new code. Signing in again sends one too.{% endblocktranslate %}
+{% endelement %}
+<form id="resend" method="post" action="{{ action_url }}">
+    <input type="hidden" name="action" value="resend">
+    {{ redirect_field }}
+    {% csrf_token %}
+</form>
+{% endif %}
 {% if not cancel_url %}
     <form id="logout-from-stage"
           method="post"

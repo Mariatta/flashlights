@@ -7,7 +7,7 @@ a change to the [public API](docs/developer/community_apps.md#public-api)
 for community apps is marked **Breaking**.
 [Releasing](docs/developer/releasing.md) says how a release is made.
 
-## 0.4.2 (unreleased)
+## 0.5.0 (unreleased)
 
 - **Affiliation rows fit their card.** On the speaker profile, proposal,
   volunteer profile and account profile forms, the Remove checkbox and its
@@ -39,6 +39,15 @@ for community apps is marked **Breaking**.
   dashboard and My sessions pages it was an outline button; on the
   dashboard that made it easier to miss than the filled "Open my
   checklist". It is now filled on both pages.
+- **A new verification code on request.** A person whose verification email
+  did not arrive used to have no way on from the code page but signing up
+  again or writing to an organiser. The page now has **Send me a new code**,
+  twice per signup, with the newest code the only one that works; after
+  that, signing in again sends a fresh one. A request within ten seconds of
+  the last email, allauth's spacing, lands on a new "Please wait a moment"
+  page in the instance's own styling instead of a bare "429 Too Many
+  Requests". The [getting started guide](docs/user/get_started.md) says
+  what to do when the code does not arrive.
 - **django-allauth 65.21.1.** The accounts library moves from 65.13.0, taking
   in its security notices since: rate limits with several windows on one
   scope no longer share a cache entry, rate-limit updates are serialised
