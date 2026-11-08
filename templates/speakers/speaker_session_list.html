@@ -37,7 +37,7 @@
                             {{ link.session.kind.name }} · {{ link.session.duration_minutes }} {% trans "min" %}
                         </div>
                         <h2 class="h5 mb-1">
-                            {% if link.session.is_a_proposal and link.session.proposal %}
+                            {% if link.session.is_a_proposal and link.session.proposal.presenter_id == presenter.pk %}
                                 <a href="{% url 'speakers:proposal_detail' link.session.proposal.pk %}">{{ link.session.title }}</a>
                             {% elif link.session.is_a_proposal %}
                                 <a href="{% url 'speakers:my_proposals' %}">{{ link.session.title }}</a>
@@ -65,7 +65,7 @@
                                 {% blocktranslate with done=link.summary.done total=link.summary.total %}{{ done }} of {{ total }} tasks done{% endblocktranslate %}
                             </span>
                         {% endif %}
-                        {% if link.session.is_a_proposal and link.session.proposal %}
+                        {% if link.session.is_a_proposal and link.session.proposal.presenter_id == presenter.pk %}
                             <a class="btn btn-sm btn-outline-primary"
                                href="{% url 'speakers:proposal_detail' link.session.proposal.pk %}">{% trans "See the proposal" %}</a>
                         {% elif link.session.is_a_proposal %}

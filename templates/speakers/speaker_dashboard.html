@@ -59,7 +59,7 @@
             {% for summary in session_summaries %}
                 <li class="list-group-item d-flex flex-wrap align-items-center gap-2">
                     <span class="badge text-bg-light border">{{ summary.session.kind.name }}</span>
-                    {% if summary.session.is_a_proposal and summary.session.proposal %}
+                    {% if summary.session.is_a_proposal and summary.session.proposal.presenter_id == presenter.pk %}
                         <a class="fw-semibold"
                            href="{% url 'speakers:proposal_detail' summary.session.proposal.pk %}">{{ summary.session.title }}</a>
                     {% elif summary.session.is_a_proposal %}
@@ -86,7 +86,7 @@
                             {% trans "Title and web address are locked now that the session is scheduled" as locked_label %}
                             <i class="icon-lock text-secondary small" title="{{ locked_label }}"></i>
                         {% endif %}
-                        {% if summary.session.is_a_proposal and summary.session.proposal %}
+                        {% if summary.session.is_a_proposal and summary.session.proposal.presenter_id == presenter.pk %}
                             {# A proposal has no checklist yet; its own page is where it is worked on. #}
                             <a class="btn btn-sm btn-outline-primary"
                                href="{% url 'speakers:proposal_detail' summary.session.proposal.pk %}">{% trans "See the proposal" %}</a>

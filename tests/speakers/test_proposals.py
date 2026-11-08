@@ -1069,6 +1069,23 @@ class TestTheProposalPage:
         assert f'href="{MINE}"' in response.content.decode()
 
     @pytest.mark.parametrize("page", ["my_sessions", "my_dashboard"])
+    def test_a_co_presenter_is_not_linked_to_a_proposal_they_cannot_open(
+        self, client, conference, speaker, page
+    ):
+        """An organizer can add someone to a proposal, but only the proposer
+        can open its page, so the others keep the link to My proposals."""
+        _, _, proposal = speaker
+        bea = User.objects.create_user(username="bea", email="bea@example.com")
+        presenter = make_presenter(conference, display_name="Bea", user=bea)
+        add_presenter(make_session(conference, title="Bea's own"), presenter, True)
+        add_presenter(proposal.session, presenter)
+        client.force_login(bea)
+        content = client.get(reverse(f"speakers:{page}")).content.decode()
+        assert proposal_url(proposal) not in content
+        assert content.count(f'href="{MINE}"') == 3
+        assert client.get(proposal_url(proposal)).status_code == 404
+
+    @pytest.mark.parametrize("page", ["my_sessions", "my_dashboard"])
     def test_the_links_cost_no_query_per_proposal(
         self, client, conference, speaker, page
     ):
