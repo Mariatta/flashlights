@@ -17,7 +17,7 @@
             </div>
         {% endfor %}
     </div>
-    <div class="col-md-4">
+    <div class="col-md">
         {{ row.url }}
         {% for error in row.url.errors %}
             <div class="invalid-feedback d-block">
@@ -25,10 +25,12 @@
             </div>
         {% endfor %}
     </div>
-    <div class="col-md-1 form-check pt-2">
-        {{ row.DELETE }}
-        <label class="form-check-label small" for="{{ row.DELETE.id_for_label }}">
-            {% trans "Remove" %}
-        </label>
+    <div class="col-md-auto">
+        <div class="form-check pt-2">
+            {{ row.DELETE }}
+            <label class="form-check-label small" for="{{ row.DELETE.id_for_label }}">
+                {% trans "Remove" %}
+            </label>
+        </div>
     </div>
 </div>
