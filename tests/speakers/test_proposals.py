@@ -10,6 +10,8 @@ import re
 import pytest
 from django.contrib.auth.models import User
 from django.core import mail
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from speakers.constants import (
@@ -31,8 +33,10 @@ from speakers.program_types import session_type
 from speakers.seeds import seed_checklists
 from speakers.services import (
     ProposalError,
+    approve_proposal,
     reject_proposal,
     submit_proposal,
+    withdraw_proposal,
 )
 from speakers.tasks import (
     send_proposal_approved_email_task,
@@ -937,3 +941,149 @@ class TestWhatOthersSee:
         session = make_session(conference, title="Over")
         with pytest.raises(ProposalError, match="waiting for an answer"):
             submit_proposal(presenter, session)
+
+
+def proposal_url(proposal):
+    return reverse("speakers:proposal_detail", args=[proposal.pk])
+
+
+@pytest.mark.django_db
+class TestTheProposalPage:
+    """Each proposal has a page of its own, and every link to a proposal
+    from the speaker pages goes there rather than to the whole list."""
+
+    @pytest.fixture
+    def speaker(self, conference, enabled):
+        """Ada, on the program with one confirmed session and one waiting."""
+        user = User.objects.create_user(username="ada", email="ada@example.com")
+        presenter = make_presenter(conference, display_name="Ada", user=user)
+        confirmed = make_session(conference, title="The real one")
+        add_presenter(confirmed, presenter, confirmed=True)
+        asked_for = make_session(
+            conference,
+            title="The asked-for one",
+            summary_md="Why tests matter.",
+            outline_md="First this, then that.",
+        )
+        add_presenter(asked_for, presenter)
+        proposal = submit_proposal(presenter, asked_for)
+        return user, confirmed, proposal
+
+    def test_the_proposer_reads_what_they_sent(self, client, speaker):
+        user, _, proposal = speaker
+        client.force_login(user)
+        response = client.get(proposal_url(proposal))
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert "The asked-for one" in content
+        assert "Why tests matter." in content and "First this, then that." in content
+        assert "Waiting for an answer" in content
+        assert reverse("speakers:proposal_edit", args=[proposal.pk]) in content
+        assert reverse("speakers:proposal_withdraw", args=[proposal.pk]) in content
+        # A speaker reads it with the rest of their speaking.
+        assert "My speaker checklist" in content
+
+    def test_a_proposer_who_is_not_a_speaker_yet_has_it_on_a_page_of_its_own(
+        self, client, conference, enabled, stranger
+    ):
+        client.force_login(stranger)
+        propose(client, conference)
+        proposal = Proposal.objects.get(presenter__user=stranger)
+        content = client.get(proposal_url(proposal)).content.decode()
+        assert "A talk about testing" in content and "What testing is for." in content
+        assert "My speaker checklist" not in content
+        assert "My volunteering" not in content
+        # And My proposals links to it.
+        assert proposal_url(proposal) in client.get(MINE).content.decode()
+
+    def test_someone_elses_proposal_is_not_found(self, client, speaker, stranger):
+        _, _, proposal = speaker
+        client.force_login(stranger)
+        assert client.get(proposal_url(proposal)).status_code == 404
+
+    def test_signed_out_is_asked_to_sign_in(self, client, speaker):
+        _, _, proposal = speaker
+        assert client.get(proposal_url(proposal)).status_code == 302
+
+    def test_a_withdrawn_one_offers_to_send_it_again(self, client, speaker):
+        user, _, proposal = speaker
+        withdraw_proposal(proposal)
+        client.force_login(user)
+        content = client.get(proposal_url(proposal)).content.decode()
+        assert reverse("speakers:proposal_resubmit", args=[proposal.pk]) in content
+        assert reverse("speakers:proposal_withdraw", args=[proposal.pk]) not in content
+
+    def test_an_answered_one_is_read_only(self, client, speaker):
+        user, _, proposal = speaker
+        reject_proposal(proposal)
+        client.force_login(user)
+        content = client.get(proposal_url(proposal)).content.decode()
+        assert "Not accepted for this edition" in content
+        assert reverse("speakers:proposal_edit", args=[proposal.pk]) not in content
+
+    def test_an_accepted_one_points_at_the_session(self, client, speaker):
+        user, _, proposal = speaker
+        approve_proposal(proposal)
+        client.force_login(user)
+        content = client.get(proposal_url(proposal)).content.decode()
+        session_page = reverse(
+            "speakers:my_session_detail", args=[proposal.session.slug]
+        )
+        assert session_page in content
+        assert reverse("speakers:proposal_edit", args=[proposal.pk]) not in content
+
+    @pytest.mark.parametrize("page", ["my_sessions", "my_dashboard"])
+    def test_the_speaker_pages_link_to_the_proposal_itself(self, client, speaker, page):
+        """The title and the button both go to the proposal's own page; a
+        proposal has no checklist or session page to send them to."""
+        user, confirmed, proposal = speaker
+        client.force_login(user)
+        content = client.get(reverse(f"speakers:{page}")).content.decode()
+        assert content.count(f'href="{proposal_url(proposal)}"') == 2
+        assert "See the proposal" in content
+        asked_for = proposal.session.slug
+        assert reverse("speakers:my_session_detail", args=[asked_for]) not in content
+        assert reverse("speakers:my_session_detail", args=[confirmed.slug]) in content
+
+    @pytest.mark.parametrize("page", ["my_sessions", "my_dashboard"])
+    def test_a_session_turned_down_still_links_to_its_proposal(
+        self, client, speaker, page
+    ):
+        user, _, proposal = speaker
+        reject_proposal(proposal)
+        client.force_login(user)
+        content = client.get(reverse(f"speakers:{page}")).content.decode()
+        assert content.count(f'href="{proposal_url(proposal)}"') == 2
+
+    @pytest.mark.parametrize("page", ["my_sessions", "my_dashboard"])
+    def test_a_proposed_session_with_no_proposal_row_falls_back_to_the_list(
+        self, client, conference, speaker, page
+    ):
+        """Only an admin edit makes one, but the page must still render."""
+        user, _, proposal = speaker
+        orphan = make_session(conference, title="No row", status=SessionStatus.PROPOSED)
+        add_presenter(orphan, proposal.presenter)
+        client.force_login(user)
+        response = client.get(reverse(f"speakers:{page}"))
+        assert response.status_code == 200
+        assert f'href="{MINE}"' in response.content.decode()
+
+    @pytest.mark.parametrize("page", ["my_sessions", "my_dashboard"])
+    def test_the_links_cost_no_query_per_proposal(
+        self, client, conference, speaker, page
+    ):
+        user, _, proposal = speaker
+        client.force_login(user)
+        url = reverse(f"speakers:{page}")
+
+        def count():
+            with CaptureQueriesContext(connection) as context:
+                client.get(url)
+            return len(context)
+
+        before = count()
+        for n in range(2):
+            session = make_session(conference, title=f"Another {n}")
+            add_presenter(session, proposal.presenter)
+            submit_proposal(proposal.presenter, session)
+        assert count() == before

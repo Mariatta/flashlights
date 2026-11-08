@@ -1212,7 +1212,7 @@ def _speaker_checklist(presenter, as_of):
     """
     links = list(
         presenter.session_presenters.select_related(
-            "session", "session__kind", "role"
+            "session", "session__kind", "session__proposal", "role"
         ).order_by("session__title")
     )
     items = list(
@@ -1590,7 +1590,7 @@ class SpeakerSessionListView(LoginRequiredMixin, PresenterRequiredMixin, Templat
         checklist = _speaker_checklist(self.presenter, today_here)
         links = list(
             self.presenter.session_presenters.select_related(
-                "session", "session__kind", "role"
+                "session", "session__kind", "session__proposal", "role"
             )
             .prefetch_related(
                 "session__session_presenters__presenter",
@@ -3368,6 +3368,31 @@ class ProposeSessionView(ProposalsOpenMixin, AffiliationFormsetMixin, TemplateVi
         return submit_proposal(presenter, session, actor=self.request.user)
 
 
+def _proposals_shell(user, conference, presenter):
+    """Which page frame a proposer's pages sit in.
+
+    A speaker sees their proposals with the rest of their speaking; someone
+    whose proposal nobody has answered is not a speaker yet, so they sit in
+    the volunteering rail when the person volunteers (an application
+    waiting, waitlisted or approved), and on a page of their own when
+    proposing is all they came to do. Returns ``on_the_program`` and
+    ``shell`` for the template context.
+    """
+    on_the_program = bool(presenter and presenter.is_onboarded)
+    volunteering = (
+        VolunteerProfile.objects.filter(user=user, conference=conference)
+        .exclude(application_status__in=CLOSED_APPLICATIONS)
+        .exists()
+    )
+    if on_the_program:
+        shell = "speakers/_speaker_shell.html"
+    elif volunteering:
+        shell = "portal/base_sidebar.html"
+    else:
+        shell = "portal/base.html"
+    return {"on_the_program": on_the_program, "shell": shell}
+
+
 class MyProposalsView(LoginRequiredMixin, ProposalsOpenMixin, TemplateView):
     """What this person has proposed, and what came of it."""
 
@@ -3385,34 +3410,14 @@ class MyProposalsView(LoginRequiredMixin, ProposalsOpenMixin, TemplateView):
             if presenter
             else []
         )
-        # A speaker sees this with the rest of their speaking; someone
-        # whose proposal nobody has answered is not a speaker yet, so it
-        # sits in their volunteering rail when they volunteer (an
-        # application waiting, waitlisted or approved), and on a page of its
-        # own when proposing is all they came to do.
-        on_the_program = bool(presenter and presenter.is_onboarded)
-        volunteering = (
-            VolunteerProfile.objects.filter(
-                user=self.request.user, conference=self.conference
-            )
-            .exclude(application_status__in=CLOSED_APPLICATIONS)
-            .exists()
-        )
-        if on_the_program:
-            shell = "speakers/_speaker_shell.html"
-        elif volunteering:
-            shell = "portal/base_sidebar.html"
-        else:
-            shell = "portal/base.html"
         context.update(
             {
                 "conference": self.conference,
                 "presenter": presenter,
                 "proposals": proposals,
                 "open_for_proposals": self.open_for_proposals,
-                "on_the_program": on_the_program,
-                "shell": shell,
                 "rail_active": "proposals",
+                **_proposals_shell(self.request.user, self.conference, presenter),
             }
         )
         return context
@@ -3427,11 +3432,41 @@ class ProposalActionMixin(LoginRequiredMixin, SpeakerModuleRequiredMixin):
 
     def get_proposal(self):
         return get_object_or_404(
-            Proposal.objects.select_related("session", "presenter"),
+            Proposal.objects.select_related("session", "session__kind", "presenter"),
             pk=self.kwargs["pk"],
             conference=self.conference,
             presenter__user=self.request.user,
         )
+
+
+class ProposalDetailView(ProposalActionMixin, TemplateView):
+    """One proposal as its proposer sent it, and what came of it."""
+
+    template_name = "speakers/proposal_detail.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        proposal = self.get_proposal()
+        session = proposal.session
+        context.update(
+            {
+                "conference": self.conference,
+                "proposal": proposal,
+                "session": session,
+                "session_answers": readable_answers(
+                    session,
+                    self.request.user,
+                    own=True,
+                    answers=answers_queryset().filter(session=session),
+                ),
+                "unasked": unasked_session_fields(self.conference),
+                "rail_active": "proposals",
+                **_proposals_shell(
+                    self.request.user, self.conference, proposal.presenter
+                ),
+            }
+        )
+        return context
 
 
 class ProposalEditView(ProposalActionMixin, TemplateView):

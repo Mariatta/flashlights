@@ -50,9 +50,8 @@ otherwise. ``shell`` is one of three templates the view picks:
                 <li class="list-group-item">
                     <div class="d-flex flex-wrap align-items-start gap-2">
                         <div class="flex-grow-1">
-                            <div class="fw-semibold">
-                                {{ proposal.session.title }}
-                            </div>
+                            <a class="fw-semibold"
+                               href="{% url 'speakers:proposal_detail' proposal.pk %}">{{ proposal.session.title }}</a>
                             <div class="small text-secondary">
                                 {{ proposal.session.kind.name }} ·
                                 {% blocktranslate with date=proposal.submitted_at|date:"j M Y" %}sent {{ date }}{% endblocktranslate %}
