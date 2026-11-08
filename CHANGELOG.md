@@ -44,16 +44,19 @@ for community apps is marked **Breaking**.
   that cancelling and signing in again sends a new code. The page now has
   **Send me a new code**, twice per code page, with the newest code the
   only one that works, and a line saying what else to try, which stays when
-  the button is gone. Any of allauth's rate limits, such as a new code
-  within ten seconds of the last email, now lands on a "Please wait a
-  moment" page in the instance's own styling instead of a bare "429 Too
-  Many Requests". The [getting started guide](docs/user/get_started.md) says
+  the button is gone. A request that one of allauth's rate limits refuses
+  outright, such as a new code within ten seconds of the last email, now
+  lands on a "Please wait a moment" page in the instance's own styling
+  instead of a bare "429 Too Many Requests". The [getting started guide](docs/user/get_started.md) says
   what to do when the code does not arrive.
 - **django-allauth 65.21.1.** The accounts library moves from 65.13.0, taking
-  in its security fixes since. A rate limit with two windows on one scope,
+  in its security fixes since, among them these. A rate limit with two
+  windows on one scope,
   such as the signup limit of 5 an hour and 20 a day, no longer lets the
-  longer window be bypassed; rate-limit updates are serialised under
-  concurrent requests; and codes typed by a person (email verification,
+  longer window be bypassed; cancelling a sign-in part way through now
+  discards what it had collected, so the next sign-in in the same browser
+  starts clean; rate-limit updates are serialised under concurrent
+  requests; and codes typed by a person (email verification,
   sign-in, password reset) are compared in constant time. Those codes are
   now eight characters in two groups of four, such as `LZTL-KPGV`, and a
   person may type them without the dash. On the change-password page the

@@ -375,9 +375,10 @@ STATS_PUBLIC = _switch("STATS_PUBLIC")
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
 # A person who did not get the code asks for a new one from the code page,
-# this many times per signup; after that, signing in again sends a fresh one.
-# allauth spaces the emails ten seconds apart and answers a faster request
-# with templates/429.html.
+# this many times per code page; after that, choosing Cancel and signing in
+# again sends a fresh one and starts a new code page. allauth spaces the
+# emails ten seconds apart and answers a faster request with
+# templates/429.html.
 ACCOUNT_EMAIL_VERIFICATION_SUPPORTS_RESEND = 2
 ACCOUNT_EMAIL_SUBJECT_PREFIX = f"[{BRAND.short_name}] "
 LOGIN_REDIRECT_URL = "/"

@@ -110,3 +110,14 @@ def test_sign_in_code_page_has_no_resend_or_hint(client, portal_user):
     assert response.status_code == 200
     assertNotContains(response, "Send me a new code")
     assertNotContains(response, "spam folder")
+
+
+def test_adding_an_address_while_signed_in_offers_no_sign_in_again(client, portal_user):
+    client.force_login(portal_user)
+    client.post(
+        reverse("account_email"), {"action_add": "", "email": "second@example.com"}
+    )
+    response = client.get(reverse("account_email_verification_sent"))
+    assertContains(response, "Check your spam folder")
+    assertNotContains(response, "choose Cancel and sign in again")
+    assertContains(response, f'href="{reverse("account_email")}"')
