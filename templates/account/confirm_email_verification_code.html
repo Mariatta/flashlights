@@ -13,6 +13,25 @@
 {% block action_url %}
     {% url "account_email_verification_sent" %}
 {% endblock action_url %}
+{% block help %}
+    {% comment %}
+    Shown with or without the button: once the two new codes are used up the
+    button is gone, and this is what still works. Signing in again sends a
+    code only after Cancel; while the code page is pending, allauth sends a
+    sign-in straight back to it. With a cancel_url the person is adding an
+    address while signed in, so only the spam folder applies.
+    {% endcomment %}
+    {% element p %}
+    {% if can_resend %}
+        {% translate "Did not get it? Check your spam folder, or ask for a new code." %}
+    {% else %}
+        {% translate "Did not get it? Check your spam folder." %}
+    {% endif %}
+    {% if not cancel_url %}
+        {% translate "You can also choose Cancel and sign in again, which sends a new code." %}
+    {% endif %}
+{% endelement %}
+{% endblock help %}
 {% block extra_tags %}
     email,verification
 {% endblock extra_tags %}

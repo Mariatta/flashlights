@@ -1,5 +1,5 @@
 """A person who did not get the verification email asks for a new code from
-the code page, instead of signing up again or writing to an organiser."""
+the code page, instead of signing up again or writing to an organizer."""
 
 import re
 
@@ -80,3 +80,33 @@ def test_asking_again_within_ten_seconds_shows_the_wait_page(code_page, url):
     assertTemplateUsed(response, "429.html")
     assertContains(response, "Please wait a moment", status_code=429)
     assert len(mail.outbox) == 1
+
+
+def test_without_the_button_the_page_still_says_what_to_do(code_page, url):
+    for _ in range(2):
+        cache.clear()
+        code_page.post(url, {"action": "resend"})
+    response = code_page.get(url)
+    assertNotContains(response, "Send me a new code")
+    assertContains(response, "Check your spam folder.")
+    assertContains(response, "choose Cancel and sign in again")
+
+
+def test_cancel_then_sign_in_again_sends_a_new_code(code_page, url):
+    code_page.post(reverse("account_logout"))
+    cache.clear()
+    response = code_page.post(
+        reverse("account_login"),
+        {"login": SIGNUP["username"], "password": SIGNUP["password1"]},
+    )
+    assert response.status_code == 302 and response.url == url
+    assert len(mail.outbox) == 2
+    assertContains(code_page.get(url), "Send me a new code")
+
+
+def test_sign_in_code_page_has_no_resend_or_hint(client, portal_user):
+    client.post(reverse("account_request_login_code"), {"email": portal_user.email})
+    response = client.get(reverse("account_confirm_login_code"))
+    assert response.status_code == 200
+    assertNotContains(response, "Send me a new code")
+    assertNotContains(response, "spam folder")

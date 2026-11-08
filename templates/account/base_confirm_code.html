@@ -57,20 +57,19 @@ prominent,confirm,{{ extra_tags }}
 {% endif %}
 {% endslot %}
 {% endelement %}
+{% block help %}
+{% endblock help %}
 {% if can_resend %}
     {% comment %}
     The code page's second form: a new code to the same address. The view
     swaps the code in this browser's session for the new one, so an earlier
     email stops working. Quota and the 10-second spacing are allauth's.
     {% endcomment %}
-    {% element p %}
-    {% blocktranslate %}Did not get it? Check your spam folder, or ask for a new code. Signing in again sends one too.{% endblocktranslate %}
-{% endelement %}
-<form id="resend" method="post" action="{{ action_url }}">
-    <input type="hidden" name="action" value="resend">
-    {{ redirect_field }}
-    {% csrf_token %}
-</form>
+    <form id="resend" method="post" action="{{ action_url }}">
+        <input type="hidden" name="action" value="resend">
+        {{ redirect_field }}
+        {% csrf_token %}
+    </form>
 {% endif %}
 {% if not cancel_url %}
     <form id="logout-from-stage"
