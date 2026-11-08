@@ -1,9 +1,12 @@
 {% load i18n %}
-{# External reference links for the footer of landing pages, grouped by role. #}
-{# Included via the footer_resources block in portal/base.html. #}
+{% comment %}
+External reference links for the footer, grouped by role. portal/base.html
+includes it on every page with the About group; the landing page adds the
+Sponsorship group with show_sponsorship.
+{% endcomment %}
 <div class="container py-4 border-bottom border-secondary">
     <div class="row row-cols-2 g-4">
-        {% if sponsorship_enabled and active_conference.sponsors_url or sponsorship_enabled and active_conference.donate_url %}
+        {% if show_sponsorship and sponsorship_enabled and active_conference.sponsors_url or show_sponsorship and sponsorship_enabled and active_conference.donate_url %}
             <div class="col">
                 <h3 class="h6 text-white-50 text-uppercase mb-3 footer-heading">
                     {% trans "Sponsorship" %}

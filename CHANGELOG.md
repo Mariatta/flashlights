@@ -7,6 +7,14 @@ a change to the [public API](docs/developer/community_apps.md#public-api)
 for community apps is marked **Breaking**.
 [Releasing](docs/developer/releasing.md) says how a release is made.
 
+## 0.4.2 (unreleased)
+
+- **Code of Conduct and Terms of Service on every page.** The footer's
+  About group (Code of Conduct, Terms of Service, Documentation) showed only
+  on the signed-out landing page, so a signed-in person had no link to
+  either. Every page now has it. The Sponsorship group (prospectus, donate)
+  stays on the landing page.
+
 ## 0.4.1 (2026-11-06)
 
 - **A fresh database migrates again.** On 0.4.0, `migrate` on an empty

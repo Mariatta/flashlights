@@ -30,8 +30,8 @@ class TestVolunteer:
         assert response.context["profile"] is None
 
     def test_hub_shows_contextual_resources(self, client, portal_user, conference):
-        # The hub shows the volunteering and speaking resource cards, not the
-        # sitewide footer (that stays on the logged-out landing only).
+        # The hub shows the volunteering and speaking resource cards; the
+        # footer's Sponsorship group stays on the logged-out landing only.
         client.force_login(portal_user)
         with override_settings(
             BRAND=branding.from_env({"DOCS_URL": "https://docs.example.org/"})
@@ -41,7 +41,7 @@ class TestVolunteer:
         assert 'href="https://docs.example.org/"' in content
         # The speaker card is for presenters; this volunteer is not one.
         assert "Speaker resources" not in content
-        assert "footer-heading" not in content  # footer-only marker
+        assert "Sponsorship prospectus" not in content
         # Without docs of its own the instance shows no card: the core docs
         # it links to by default have no team descriptions.
         with override_settings(BRAND=branding.from_env({})):
