@@ -390,8 +390,8 @@ a.card:hover {
 /* Bootstrap picks each tone's text colour for its own palette, black on
    info and white on the rest, and the tokens above change the
    backgrounds under it. Each tone gets a text colour that reads on its
-   token background (WCAG AA, 4.5:1 or better), for the text-bg-* and
-   the plain bg-* forms alike. */
+   token background (WCAG AA, 4.5:1 or better; the primary tone on every
+   accent preset), for the text-bg-* and the plain bg-* forms alike. */
 .badge.bg-primary,
 .badge.text-bg-primary {
     color: var(--text-on-accent) !important;

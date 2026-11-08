@@ -15,12 +15,13 @@ for community apps is marked **Breaking**.
   either. Every page now has it. The Sponsorship group (prospectus, donate)
   stays on the landing page.
 - **Status badges are readable.** A speaker's "Confirmed" session showed
-  black text on dark grey. Four badge colours took Bootstrap's text colour
-  over the portal's own backgrounds: confirmed and shared (black on grey),
-  published, approved and other green badges (white on green, just short of
-  readable), scheduled and the team counts (white on the accent, unreadable
-  on a light accent), and a sponsor awaiting a response (white on orange).
-  Each now has a text colour that reads on its background.
+  black text on dark grey. Four badge colours kept Bootstrap's text colour
+  on the portal's own backgrounds: confirmed, shared and the volunteer
+  application badges (dark on grey), published, approved and other green
+  badges (white on green, just short of readable), scheduled and the team
+  counts (white on the accent, unreadable on a light accent), and a sponsor
+  awaiting a response and the team's pending counts (white on orange). Each
+  now has a text colour that reads on its background.
 
 ## 0.4.1 (2026-11-06)
 

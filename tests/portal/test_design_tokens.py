@@ -109,13 +109,15 @@ def _declarations(css, selector):
 
 
 def _variables(brand):
-    """The custom properties a page defines in light mode: the tokens,
-    portal.css's Bootstrap mapping, then the instance theme."""
-    colors = (TOKENS / "colors.css").read_text().split('[data-theme="night"]')[0]
-    portal_root = Path(finders.find("css/portal.css")).read_text().split("}")[0]
+    """The custom properties a page defines on :root in light mode: the
+    tokens, portal.css's Bootstrap mapping, then the instance theme."""
     found = {}
-    for text in (colors, portal_root, brand.theme_css()):
-        found.update(re.findall(r"(--[\w-]+)\s*:\s*([^;]+);", text))
+    for css in (
+        (TOKENS / "colors.css").read_text(),
+        Path(finders.find("css/portal.css")).read_text(),
+        brand.theme_css(),
+    ):
+        found.update(_declarations(css, ":root"))
     return found
 
 
@@ -147,14 +149,11 @@ def test_every_badge_tone_reads(preset, tone, form):
     variables = _variables(branding.from_env({"BRAND_PRESET": preset}))
     bootstrap = Path(finders.find("vendor/bootstrap/bootstrap.min.css")).read_text()
     portal = Path(finders.find("css/portal.css")).read_text()
-    if form == "text-bg":
-        rendered = _declarations(bootstrap, f".text-bg-{tone}")
-    else:
-        rendered = {
-            "color": "#fff",
-            "background-color": f"rgba(var(--bs-{tone}-rgb), 1)",
-        }
+    # A plain bg-* sets only the background; the text is the badge's own.
+    rendered = _declarations(bootstrap, ".badge") if form == "bg" else {}
+    rendered.update(_declarations(bootstrap, f".{form}-{tone}"))
     rendered.update(_declarations(portal, f".badge.{form}-{tone}"))
+    variables.update((k, v) for k, v in rendered.items() if k.startswith("--"))
     text = _rgb(rendered["color"], variables)
     background = _rgb(rendered["background-color"], variables)
     assert branding.contrast(text, background) >= 4.5, rendered
