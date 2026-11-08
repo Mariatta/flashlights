@@ -50,16 +50,16 @@ for community apps is marked **Breaking**.
   Many Requests". The [getting started guide](docs/user/get_started.md) says
   what to do when the code does not arrive.
 - **django-allauth 65.21.1.** The accounts library moves from 65.13.0, taking
-  in its security notices since: rate limits with several windows on one
-  scope no longer share a cache entry, rate-limit updates are serialised
-  under concurrent requests, IPv6 addresses are limited by their /64 prefix,
-  and codes typed by a person (email verification, sign-in, password reset)
-  are compared in constant time. Those codes are now eight characters in
-  two groups of four, such as `LZTL-KPGV`, and a person may type them
-  without the dash or in lower case. Nothing changes for a deployment. A
-  second visible change: a "Forgot your password?" link now sits under the password
-  field on the sign-in, change-password and confirm-it-is-you pages, where
-  allauth puts it; the change-password page's own copy of the link is gone.
+  in its security fixes since. A rate limit with two windows on one scope,
+  such as the signup limit of 5 an hour and 20 a day, no longer lets the
+  longer window be bypassed; rate-limit updates are serialised under
+  concurrent requests; and codes typed by a person (email verification,
+  sign-in, password reset) are compared in constant time. Those codes are
+  now eight characters in two groups of four, such as `LZTL-KPGV`, and a
+  person may type them without the dash. On the change-password page the
+  "Forgot your password?" link moves under the current-password field, and
+  the Confirm access page now shows it too, as the sign-in page already
+  did. Nothing changes for a deployment.
 
 ## 0.4.1 (2026-11-06)
 
