@@ -92,10 +92,25 @@ class TestPortalIndex:
         assert 'href="https://docs.example.org/">Documentation</a>' in content
         assert "Code of Conduct" in content
 
-    def test_inner_page_keeps_minimal_footer(self, client, conference):
-        # Pages that don't opt into footer_resources keep the minimal footer.
-        content = client.get(reverse("portal_stats")).content.decode()
-        assert "footer-heading" not in content
+    def test_every_page_footer_has_the_about_group(
+        self, client, portal_user, conference
+    ):
+        """Code of Conduct and Terms of Service stay in reach after sign-in;
+        the Sponsorship group is the landing page's alone."""
+        conference.coc_url = "https://example.org/coc/"
+        conference.sponsors_url = "https://example.org/sponsors/"
+        conference.donate_url = "https://example.org/donate/"
+        conference.save()
+        brand = branding.from_env({"TERMS_URL": "https://example.org/terms/"})
+        with override_settings(BRAND=brand, SPONSORSHIP_ENABLED=True):
+            landing = client.get(reverse("index")).content.decode()
+            client.force_login(portal_user)
+            inner = client.get(reverse("portal_stats")).content.decode()
+        for content in (landing, inner):
+            assert 'href="https://example.org/coc/">Code of Conduct</a>' in content
+            assert 'href="https://example.org/terms/">Terms of Service</a>' in content
+        assert 'href="https://example.org/donate/">Donate</a>' in landing
+        assert 'href="https://example.org/donate/">Donate</a>' not in inner
 
     def test_landing_never_counts_signups(self, client, portal_user, conference):
         # The "join N volunteers who signed up" line was a PyLadiesCon
@@ -980,8 +995,8 @@ class TestOrganizerDashboard:
         # Contextual sponsorship resources below Quick actions, not the footer.
         assert "Sponsorship resources" in content
         assert "Sponsorship prospectus" in content
-        # The footer resources stay on the logged-out landing only.
-        assert "footer-heading" not in content
+        # The footer's Sponsorship group stays on the landing page only.
+        assert content.count("Sponsorship prospectus") == 1
         assert "Portal documentation" not in content
 
     def test_rail_follows_the_organizers_sets(
