@@ -1011,6 +1011,25 @@ class TestTheProposalPage:
         content = client.get(proposal_url(proposal)).content.decode()
         assert "No description yet." in content
 
+    def test_prerequisites_count_as_a_description_only_when_asked(
+        self, client, conference, speaker
+    ):
+        user, _, proposal = speaker
+        session = proposal.session
+        session.summary_md = session.outline_md = session.audience_md = ""
+        session.prerequisites_md = "Some Python."
+        session.save()
+        client.force_login(user)
+        content = client.get(proposal_url(proposal)).content.decode()
+        assert "Some Python." in content
+        assert "No description yet." not in content
+        SpeakerSettings.objects.filter(conference=conference).update(
+            asks_prerequisites=False
+        )
+        content = client.get(proposal_url(proposal)).content.decode()
+        assert "Some Python." not in content
+        assert "No description yet." in content
+
     def test_someone_elses_proposal_is_not_found(self, client, speaker, stranger):
         _, _, proposal = speaker
         client.force_login(stranger)
