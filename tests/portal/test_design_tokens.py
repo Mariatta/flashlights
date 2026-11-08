@@ -10,6 +10,8 @@ import pytest
 from django.contrib.staticfiles import finders
 from django.urls import reverse
 
+from portal import branding
+
 TOKENS = Path(finders.find("css/tokens"))
 STYLESHEETS = [Path(finders.find("css/flashlights.css"))] + sorted(TOKENS.glob("*.css"))
 
@@ -93,6 +95,69 @@ def test_bootstrap_is_mapped_onto_the_tokens():
     ):
         assert mapping in css, mapping
     assert ".navbar-logo {\n    background: #fff;" not in css
+
+
+def _declarations(css, selector):
+    """The declarations of every rule naming ``selector``, later ones winning."""
+    found = {}
+    css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    for selectors, body in re.findall(r"([^{}]+)\{([^{}]*)\}", css):
+        if selector in (s.strip() for s in selectors.split(",")):
+            for name, value in re.findall(r"(?<![\w-])([\w-]+)\s*:\s*([^;]+)", body):
+                found[name] = value.replace("!important", "").strip()
+    return found
+
+
+def _variables(brand):
+    """The custom properties a page defines in light mode: the tokens,
+    portal.css's Bootstrap mapping, then the instance theme."""
+    colors = (TOKENS / "colors.css").read_text().split('[data-theme="night"]')[0]
+    portal_root = Path(finders.find("css/portal.css")).read_text().split("}")[0]
+    found = {}
+    for text in (colors, portal_root, brand.theme_css()):
+        found.update(re.findall(r"(--[\w-]+)\s*:\s*([^;]+);", text))
+    return found
+
+
+def _rgb(value, variables):
+    """A colour (hex, or Bootstrap's ``RGBA(var(--x-rgb), ...)``) as an RGB
+    tuple, following var() references and their fallbacks."""
+    reference = re.compile(r"var\((--[\w-]+)(?:,([^()]*))?\)")
+    while reference.search(value):
+        value = reference.sub(lambda m: variables.get(m[1], m[2]).strip(), value)
+    if value.startswith("#"):
+        digits = value[1:]
+        if len(digits) == 3:
+            digits = "".join(c * 2 for c in digits)
+        return branding.parse_hex("#" + digits)
+    return tuple(int(c) for c in re.findall(r"\d+", value)[:3])
+
+
+@pytest.mark.parametrize("preset", sorted(branding.PRESETS))
+@pytest.mark.parametrize(
+    "tone",
+    ["primary", "secondary", "success", "danger", "warning", "info", "light", "dark"],
+)
+@pytest.mark.parametrize("form", ["text-bg", "bg"])
+def test_every_badge_tone_reads(preset, tone, form):
+    """The tokens change Bootstrap's backgrounds but not the text colour it
+    picked for them (black on info, white on the rest), so "Confirmed" read
+    black on dark grey. Each tone, as text-bg-* and as plain bg-* (which
+    keeps the badge's white text), clears WCAG AA on every accent preset."""
+    variables = _variables(branding.from_env({"BRAND_PRESET": preset}))
+    bootstrap = Path(finders.find("vendor/bootstrap/bootstrap.min.css")).read_text()
+    portal = Path(finders.find("css/portal.css")).read_text()
+    if form == "text-bg":
+        rendered = _declarations(bootstrap, f".text-bg-{tone}")
+    else:
+        rendered = {
+            "color": "#fff",
+            "background-color": f"rgba(var(--bs-{tone}-rgb), 1)",
+        }
+    rendered.update(_declarations(portal, f".badge.{form}-{tone}"))
+    text = _rgb(rendered["color"], variables)
+    background = _rgb(rendered["background-color"], variables)
+    assert branding.contrast(text, background) >= 4.5, rendered
 
 
 def test_no_font_awesome_remains():
