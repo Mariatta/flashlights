@@ -28,7 +28,7 @@
              height="96"
              class="rounded-circle object-fit-cover mb-3">
     {% endif %}
-    <form method="post" enctype="multipart/form-data" class="col-lg-8">
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {% if form.locked_fields %}
             <div class="alert alert-secondary small" role="note">
