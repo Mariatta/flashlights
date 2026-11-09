@@ -19,6 +19,10 @@ for community apps is marked **Breaking**.
   on the signed-out landing page, so a signed-in person had no link to
   either. Every page now has it. The Sponsorship group (prospectus, donate)
   stays on the landing page.
+- **The username in the navbar reads on the dark bar.** The account menu
+  showed the signed-in username in black on the dark navbar. It now uses
+  the navbar's light link colour, like the other navbar links, and
+  brightens on hover.
 - **Status badges are readable.** A speaker's "Confirmed" session showed
   black text on dark grey. Four badge colours kept Bootstrap's text colour
   on the portal's own backgrounds: confirmed, shared and the volunteer
