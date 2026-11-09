@@ -1,4 +1,5 @@
 import io
+import re
 
 import pytest
 from django.contrib.auth.models import AnonymousUser, User
@@ -253,6 +254,21 @@ class TestDashboard:
         assert "Not yet public" in content
         assert "Your bio or photo is still missing" in content
         assert "Open my checklist" in content
+
+    @pytest.mark.parametrize("url", [DASHBOARD, SESSIONS])
+    def test_propose_another_is_a_solid_button(
+        self, client, speaker, presenter, enabled, url
+    ):
+        """While proposals are open, proposing another session is a filled
+        button, as easy to spot as the checklist one, not an outline."""
+        enabled.proposals_open = True
+        enabled.save()
+        client.force_login(speaker)
+        content = client.get(url).content.decode()
+        propose = re.escape(reverse("speakers:propose"))
+        classes = re.findall(rf'<a class="([^"]*)"\s+href="{propose}"', content)
+        assert classes == ["btn btn-sm btn-primary"]
+        assert "Propose another session" in content
 
     def test_nudge_gone_when_complete(self, client, speaker, presenter):
         presenter.bio_md = "Hi"
