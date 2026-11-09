@@ -171,7 +171,7 @@ class TestTheSpeakerSide:
         assert response.status_code == 200
         assert [a.name for a in ada.affiliations.all()] == ["Meetup"]
 
-    def test_the_speaker_profile_uses_the_full_width(
+    def test_the_speaker_profile_fills_the_content_column(
         self, client, conference, enabled, ada
     ):
         """The form fills the content column, and each row's Remove
@@ -182,7 +182,10 @@ class TestTheSpeakerSide:
         Affiliation.objects.create(user=ada, name="Old job")
         client.force_login(ada)
         page = client.get(MY_PROFILE).content.decode()
-        assert 'class="col-lg-8"' not in page
+        (form,) = re.findall(
+            r'<form method="post" enctype="multipart/form-data"[^>]*>', page
+        )
+        assert "col-" not in form, form
         assert re.search(r'<div class="col-md-auto">\s*<div class="form-check', page)
 
     def test_the_public_api_keeps_them_private(self, conference, ada):
