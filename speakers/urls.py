@@ -250,6 +250,11 @@ urlpatterns = [
     path("propose/", views.ProposeSessionView.as_view(), name="propose"),
     path("proposals/", views.MyProposalsView.as_view(), name="my_proposals"),
     path(
+        "proposals/<int:pk>/",
+        views.ProposalDetailView.as_view(),
+        name="proposal_detail",
+    ),
+    path(
         "proposals/<int:pk>/edit/",
         views.ProposalEditView.as_view(),
         name="proposal_edit",

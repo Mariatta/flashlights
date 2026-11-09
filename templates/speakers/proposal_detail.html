@@ -1,0 +1,130 @@
+{% extends shell %}
+{% load i18n %}
+{% load speakers_extras %}
+{% comment %}
+One proposal as its proposer sent it, and what came of it. The same frame
+as My proposals (``shell`` and ``on_the_program`` come from the view), and
+the same actions: edit, withdraw or send again while nobody has answered.
+{% endcomment %}
+{% block head_title %}
+    {{ session.title }}
+{% endblock head_title %}
+{% block breadcrumb %}
+    {% trans "My proposals" as bc_section %}
+    {% url 'speakers:my_proposals' as bc_url %}
+    {% include "portal/_breadcrumbs.html" with section=bc_section section_url=bc_url page=session.title %}
+{% endblock breadcrumb %}
+{% block sidebar_title %}
+    {% if on_the_program %}
+        {% trans "Speaking" %}
+    {% else %}
+        {% trans "My volunteering" %}
+    {% endif %}
+{% endblock sidebar_title %}
+{% block sidebar %}
+    {% if on_the_program %}
+        {% include "speakers/_speaker_rail.html" with active="proposals" %}
+    {% else %}
+        {% include "volunteer/_volunteer_rail.html" with active="proposals" %}
+    {% endif %}
+{% endblock sidebar %}
+{% block content %}
+    <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-3">
+        <div>
+            <div class="text-secondary small">
+                {{ session.kind.name }} · {{ session.duration_minutes }} {% trans "min" %} ·
+                {% blocktranslate with date=proposal.submitted_at|date:"j M Y" %}sent {{ date }}{% endblocktranslate %}
+            </div>
+            <h1 class="h3 mb-1">
+                {{ session.title }}
+            </h1>
+            <span class="badge {% if proposal.decision == 'APPROVED' %}text-bg-success{% elif proposal.decision == 'REJECTED' or proposal.decision == 'WITHDRAWN' %}text-bg-secondary{% else %}text-bg-light border{% endif %}">
+                {{ proposal.get_decision_display }}
+            </span>
+        </div>
+        {% if proposal.proposer_can_edit %}
+            <div class="d-flex flex-wrap gap-2" id="proposal-actions">
+                <a class="btn btn-sm btn-outline-primary"
+                   href="{% url 'speakers:proposal_edit' proposal.pk %}">
+                    <i class="icon-pen"></i> {% trans "Edit" %}
+                </a>
+                {% if proposal.is_withdrawn %}
+                    <form method="post"
+                          action="{% url 'speakers:proposal_resubmit' proposal.pk %}">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-primary" type="submit">
+                            {% trans "Send it again" %}
+                        </button>
+                    </form>
+                {% else %}
+                    <form method="post"
+                          action="{% url 'speakers:proposal_withdraw' proposal.pk %}">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-outline-secondary" type="submit">
+                            {% trans "Withdraw" %}
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+    {% if proposal.is_withdrawn %}
+        <p class="small text-secondary">
+            {% trans "Withdrawn, and kept here. Change anything you like and send it again." %}
+        </p>
+    {% elif proposal.is_pending %}
+        <p class="small text-secondary">
+            {% trans "Waiting for an answer. Change anything you like while we are still deciding." %}
+        </p>
+    {% elif proposal.decision == "APPROVED" %}
+        <p class="small">
+            {% trans "Accepted." %}
+            <a href="{% url 'speakers:my_session_detail' session.slug %}">{% trans "Go to the session page" %}</a>
+        </p>
+    {% elif proposal.is_rejected %}
+        <p class="small text-secondary">
+            {% trans "Not accepted for this edition. It stays here, and the team can still come back to it if a slot opens up." %}
+        </p>
+    {% endif %}
+    <div class="mb-4" id="description">
+        {% if session.summary_md %}
+            <h2 class="h6 text-uppercase text-secondary">
+                {% trans "Summary" %}
+            </h2>
+            <div class="mb-3">
+                {{ session.summary_md|speaker_md }}
+            </div>
+        {% endif %}
+        {% if session.outline_md %}
+            <h2 class="h6 text-uppercase text-secondary">
+                {% trans "Outline" %}
+            </h2>
+            <div class="mb-3">
+                {{ session.outline_md|speaker_md }}
+            </div>
+        {% endif %}
+        {% if session.prerequisites_md and "prerequisites_md" not in unasked %}
+            <h2 class="h6 text-uppercase text-secondary">
+                {% trans "Prerequisites" %}
+            </h2>
+            <div class="mb-3">
+                {{ session.prerequisites_md|speaker_md }}
+            </div>
+        {% endif %}
+        {% if session.audience_md %}
+            <h2 class="h6 text-uppercase text-secondary">
+                {% trans "Audience" %}
+            </h2>
+            <div class="mb-3">
+                {{ session.audience_md|speaker_md }}
+            </div>
+        {% endif %}
+        {% if not has_description %}
+            <p class="text-secondary">
+                {% trans "No description yet." %}
+            </p>
+        {% endif %}
+    </div>
+    {% trans "Your answers" as answers_heading %}
+    {% include "speakers/_answers.html" with answers=session_answers heading=answers_heading %}
+{% endblock content %}

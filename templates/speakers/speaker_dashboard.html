@@ -59,8 +59,15 @@
             {% for summary in session_summaries %}
                 <li class="list-group-item d-flex flex-wrap align-items-center gap-2">
                     <span class="badge text-bg-light border">{{ summary.session.kind.name }}</span>
-                    <a class="fw-semibold"
-                       href="{% url 'speakers:my_session_detail' summary.session.slug %}">{{ summary.session.title }}</a>
+                    {% if summary.session.is_a_proposal and summary.session.proposal.presenter_id == presenter.pk %}
+                        <a class="fw-semibold"
+                           href="{% url 'speakers:proposal_detail' summary.session.proposal.pk %}">{{ summary.session.title }}</a>
+                    {% elif summary.session.is_a_proposal %}
+                        <a class="fw-semibold" href="{% url 'speakers:my_proposals' %}">{{ summary.session.title }}</a>
+                    {% else %}
+                        <a class="fw-semibold"
+                           href="{% url 'speakers:my_session_detail' summary.session.slug %}">{{ summary.session.title }}</a>
+                    {% endif %}
                     <span class="text-secondary small">{{ summary.role }}</span>
                     {% include "speakers/_speaker_session_status.html" with session=summary.session %}
                     <span class="ms-auto d-flex align-items-center gap-2">
@@ -79,10 +86,19 @@
                             {% trans "Title and web address are locked now that the session is scheduled" as locked_label %}
                             <i class="icon-lock text-secondary small" title="{{ locked_label }}"></i>
                         {% endif %}
-                        <a class="btn btn-sm btn-outline-primary"
-                           href="{% url 'speakers:my_session_detail' summary.session.slug %}#checklist">
-                            <i class="icon-list-check"></i> {% trans "Checklist" %}
-                        </a>
+                        {% if summary.session.is_a_proposal and summary.session.proposal.presenter_id == presenter.pk %}
+                            {# A proposal has no checklist yet; its own page is where it is worked on. #}
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="{% url 'speakers:proposal_detail' summary.session.proposal.pk %}">{% trans "See the proposal" %}</a>
+                        {% elif summary.session.is_a_proposal %}
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="{% url 'speakers:my_proposals' %}">{% trans "See the proposal" %}</a>
+                        {% else %}
+                            <a class="btn btn-sm btn-outline-primary"
+                               href="{% url 'speakers:my_session_detail' summary.session.slug %}#checklist">
+                                <i class="icon-list-check"></i> {% trans "Checklist" %}
+                            </a>
+                        {% endif %}
                     </span>
                 </li>
             {% empty %}

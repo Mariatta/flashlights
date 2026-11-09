@@ -354,6 +354,18 @@ class TestWhoReadsAnswers:
         assert "secret" not in content and "For organizers" not in content
         assert "shared" in content and "open" in content
 
+    def test_the_proposer_reads_every_answer_they_gave_on_its_page(
+        self, client, answered, stranger
+    ):
+        """Their own answers, organizers-only ones included, blanks left out."""
+        client.force_login(stranger)
+        content = client.get(
+            reverse("speakers:proposal_detail", args=[answered.pk])
+        ).content.decode()
+        assert "Your answers" in content
+        assert "secret" in content and "shared" in content and "open" in content
+        assert "Left blank" not in content
+
     def test_queue_queries_do_not_grow_with_the_proposals(
         self, client, answered, organizer
     ):
