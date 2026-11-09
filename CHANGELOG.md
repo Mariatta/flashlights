@@ -31,6 +31,9 @@ for community apps is marked **Breaking**.
   session, so it no longer looks like a draft. The shared media, volunteer
   application and language badges, and an accepted or invoiced sponsor,
   are outlined.
+- **"Propose another session" is a solid button.** On the speaker
+  overview and My sessions pages it was an outline button, easy to miss
+  next to the filled "Open my checklist". It is now filled to match.
 
 ## 0.4.1 (2026-11-06)
 
