@@ -9,6 +9,11 @@ for community apps is marked **Breaking**.
 
 ## 0.4.2 (unreleased)
 
+- **Affiliation rows fit their card.** On the speaker profile, proposal,
+  volunteer profile and account profile forms, the Remove checkbox and its
+  label spilled past the card border. They now sit in a column sized to
+  fit them, and the speaker profile form fills the content column instead
+  of two thirds of it.
 - **Code of Conduct and Terms of Service on every page.** The footer's
   About group (Code of Conduct, Terms of Service, Documentation) showed only
   on the signed-out landing page, so a signed-in person had no link to

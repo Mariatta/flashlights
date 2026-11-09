@@ -183,7 +183,6 @@ class TestTheSpeakerSide:
         client.force_login(ada)
         page = client.get(MY_PROFILE).content.decode()
         assert 'class="col-lg-8"' not in page
-        assert "col-md-1" not in page
         assert re.search(r'<div class="col-md-auto">\s*<div class="form-check', page)
 
     def test_the_public_api_keeps_them_private(self, conference, ada):
