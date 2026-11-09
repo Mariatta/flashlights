@@ -15,11 +15,15 @@ UNCONFIRMED_MARK = mark_safe(
     ' <i class="icon-clock text-secondary" title="Not yet confirmed"></i>'
 )
 
+# A confirmed session is light green, short of a published one's solid
+# green, so it no longer reads as a grey draft.
+CONFIRMED_BADGE = "bg-success-subtle text-success-emphasis border border-success"
+
 STATUS_BADGE_CLASSES = {
     SessionStatus.PROPOSED: "text-bg-light border",
     SessionStatus.DRAFT: "text-bg-secondary",
     SessionStatus.INVITED: "text-bg-warning",
-    SessionStatus.CONFIRMED: "text-bg-info",
+    SessionStatus.CONFIRMED: CONFIRMED_BADGE,
     SessionStatus.SCHEDULED: "text-bg-primary",
     SessionStatus.PUBLISHED: "text-bg-success",
     SessionStatus.CANCELLED: "text-bg-dark",

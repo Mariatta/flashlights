@@ -50,7 +50,7 @@
                             · {{ profile.sponsorship_tier.name }}
                         {% endif %}
                         ·
-                        <span class="badge {% if profile.progress_status == 5 or profile.progress_status == 9 %}bg-success{% elif profile.progress_status == 6 or profile.progress_status == 7 %}bg-warning text-dark{% elif profile.progress_status == 4 or profile.progress_status == 8 %}bg-info text-dark{% elif profile.progress_status == 3 %}bg-danger{% else %}bg-secondary{% endif %}">{{ profile.get_progress_status_display }}</span>
+                        <span class="badge {% if profile.progress_status == 5 or profile.progress_status == 9 %}bg-success{% elif profile.progress_status == 6 or profile.progress_status == 7 %}text-bg-warning{% elif profile.progress_status == 4 or profile.progress_status == 8 %}text-bg-info{% elif profile.progress_status == 3 %}bg-danger{% else %}bg-secondary{% endif %}">{{ profile.get_progress_status_display }}</span>
                     </div>
                 </div>
             </div>
