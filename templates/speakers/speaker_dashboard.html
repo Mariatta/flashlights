@@ -47,8 +47,7 @@
             <span class="d-flex align-items-center gap-3">
                 {% if speaker_proposals_open %}
                     {# The one button a speaker looks for, on the page they land on. #}
-                    <a class="btn btn-sm btn-outline-primary"
-                       href="{% url 'speakers:propose' %}">
+                    <a class="btn btn-sm btn-primary" href="{% url 'speakers:propose' %}">
                         <i class="icon-send"></i> {% trans "Propose another session" %}
                     </a>
                 {% endif %}
