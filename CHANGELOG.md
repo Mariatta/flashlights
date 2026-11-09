@@ -22,9 +22,10 @@ for community apps is marked **Breaking**.
   counts (white on the accent, unreadable on a light accent), and a sponsor
   awaiting a response and the team's pending counts (white on orange). Each
   now has a text colour that reads on its background. A confirmed
-  session's badge is light green, the step before published, so it no
-  longer looks like a draft, and the shared media, volunteer application
-  and sponsor badges are outlined.
+  session's badge is light green, short of the solid green of a published
+  session, so it no longer looks like a draft. The shared media, volunteer
+  application and language badges, and an accepted or invoiced sponsor,
+  are outlined.
 
 ## 0.4.1 (2026-11-06)
 
