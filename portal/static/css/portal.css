@@ -387,30 +387,57 @@ a.card:hover {
     color: var(--paper) !important;
 }
 
-/* Bootstrap picks each tone's text colour for its own palette, black on
-   info and white on the rest, and the tokens above change the
-   backgrounds under it. Each tone gets a text colour that reads on its
-   token background (WCAG AA, 4.5:1 or better; the primary tone on every
-   accent preset), for the text-bg-* and the plain bg-* forms alike. */
-.badge.bg-primary,
-.badge.text-bg-primary {
+/* Bootstrap picks each tone's text colour for its own palette (black on
+   info, warning and light, white on the rest) and the tokens change the
+   backgrounds under it. The text-bg-* utilities get a text colour that
+   reads on the token background, on a badge, a card or a list item
+   alike; a plain bg-* badge sets the badge's own text colour, so a text-*
+   utility on the same badge still wins. WCAG AA (4.5:1) on every accent
+   preset; a custom BRAND_PRIMARY's text-on-accent is only promised at
+   3:1, so its primary tone can fall just short. */
+.text-bg-primary {
     color: var(--text-on-accent) !important;
 }
 
-.badge.bg-success,
-.badge.text-bg-success {
-    background-color: var(--ok-700) !important;
-    color: var(--white) !important;
+.badge.bg-primary {
+    --bs-badge-color: var(--text-on-accent);
 }
 
-.badge.bg-info,
-.badge.text-bg-info {
+/* White reads on OK 700, not OK 500. Changing the tone's RGB rather than
+   the background keeps the bg-opacity-* utilities working. */
+.text-bg-success,
+.badge.bg-success {
+    --bs-success-rgb: 20, 92, 52;
+}
+
+.text-bg-info {
     color: var(--paper) !important;
 }
 
-.badge.bg-warning,
-.badge.text-bg-warning {
+/* An info badge (a confirmed session, a volunteer application) is
+   outlined: Paper, a Night 600 edge and Night 700 text, so it stands
+   apart from the solid grey of a draft or a cancelled one. The fill
+   keeps --bs-bg-opacity, so bg-opacity-* still tints it. */
+.badge.text-bg-info,
+.badge.bg-info {
+    background-color: rgba(247, 245, 239, var(--bs-bg-opacity, 1)) !important;
+    border: 1px solid var(--night-600);
+}
+
+.badge.text-bg-info {
+    color: var(--night-700) !important;
+}
+
+.badge.bg-info {
+    --bs-badge-color: var(--night-700);
+}
+
+.text-bg-warning {
     color: var(--night-950) !important;
+}
+
+.badge.bg-warning {
+    --bs-badge-color: var(--night-950);
 }
 
 /* Alerts (Alert spec): a tinted block with a 2px edge in the status colour

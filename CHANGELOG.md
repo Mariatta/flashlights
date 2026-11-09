@@ -21,7 +21,8 @@ for community apps is marked **Breaking**.
   badges (white on green, just short of readable), scheduled and the team
   counts (white on the accent, unreadable on a light accent), and a sponsor
   awaiting a response and the team's pending counts (white on orange). Each
-  now has a text colour that reads on its background.
+  now has a text colour that reads on its background, and a confirmed
+  session's badge is outlined so it no longer looks like a draft.
 
 ## 0.4.1 (2026-11-06)
 
