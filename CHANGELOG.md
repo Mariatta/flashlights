@@ -32,9 +32,9 @@ for community apps is marked **Breaking**.
   application and language badges, and an accepted or invoiced sponsor,
   are outlined.
 - **"Propose another session" is a solid button.** On the speaker
-  dashboard and My sessions pages it was an outline button, easier to miss
-  than the filled "Open my checklist" on the dashboard. It is now filled
-  too.
+  dashboard and My sessions pages it was an outline button; on the
+  dashboard that made it easier to miss than the filled "Open my
+  checklist". It is now filled on both pages.
 
 ## 0.4.1 (2026-11-06)
 
