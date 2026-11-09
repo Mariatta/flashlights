@@ -198,8 +198,9 @@ class TestPortalIndex:
     def test_account_menu_reads_on_the_night_navbar(self, client, portal_user):
         """The username in the navbar takes the navbar's light link colour.
 
-        A body-emphasis link class there painted it in the body text colour,
-        dark on the dark bar, and its !important beat the navbar rule.
+        A body-emphasis link class there painted it in Bootstrap's emphasis
+        colour, black on the dark bar, and its !important beat the navbar
+        rule.
         """
         PortalProfile.objects.create(user=portal_user)
         client.force_login(portal_user)
