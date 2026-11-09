@@ -8,12 +8,13 @@ import re
 from pathlib import Path
 
 import pytest
+from django.conf import settings
 from django.contrib.staticfiles import finders
 from django.urls import reverse
 
 from portal import branding
 from speakers.constants import SessionStatus
-from speakers.tables import STATUS_BADGE_CLASSES
+from speakers.tables import CONFIRMED_BADGE, STATUS_BADGE_CLASSES
 
 TOKENS = Path(finders.find("css/tokens"))
 STYLESHEETS = [Path(finders.find("css/flashlights.css"))] + sorted(TOKENS.glob("*.css"))
@@ -290,18 +291,30 @@ def test_no_tone_badge_paints_its_text_over():
     """With the badge's text now set per tone, a text-dark or text-white
     beside a plain bg-* tone would win and undo it; such a badge uses the
     text-bg-* form instead."""
-    root = Path(finders.find("css")).parent.parent.parent
+    root = settings.BASE_DIR
     paired = re.compile(
         r'class="badge[^"]*\bbg-(?:primary|success|info|warning)\b[^"]*'
         r"\btext-(?:dark|white)\b"
     )
-    found = [
-        f"{path.relative_to(root)}: {match.group(0)!r}"
+    templates = [
+        path
         for folder in [root / "templates", *root.glob("*/templates")]
         for path in folder.rglob("*.html")
+    ]
+    assert templates, root
+    found = [
+        f"{path.relative_to(root)}: {match.group(0)!r}"
+        for path in templates
         for match in paired.finditer(path.read_text())
     ]
     assert found == []
+
+
+def test_a_speaker_sees_the_same_confirmed_badge_as_the_organizers():
+    """The speaker's own session status writes the classes out in the
+    template; they match the session table's."""
+    template = settings.BASE_DIR / "templates/speakers/_speaker_session_status.html"
+    assert f"'CONFIRMED' %}}{CONFIRMED_BADGE}{{%" in template.read_text()
 
 
 def test_no_font_awesome_remains():

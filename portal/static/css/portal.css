@@ -414,9 +414,9 @@ a.card:hover {
     color: var(--paper) !important;
 }
 
-/* An info badge (a confirmed session, a volunteer application) is
-   outlined: Paper, a Night 600 edge and Night 700 text, so it stands
-   apart from the solid grey of a draft or a cancelled one. The fill
+/* An info badge (a volunteer application, a language, a sponsor's
+   status, shared media) is outlined: Paper, a Night 600 edge and Night
+   700 text, so it stands apart from the solid greys. The fill
    keeps --bs-bg-opacity, so bg-opacity-* still tints it. */
 .badge.text-bg-info,
 .badge.bg-info {
