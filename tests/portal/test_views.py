@@ -195,6 +195,25 @@ class TestPortalIndex:
         response = client.get(reverse("index"))
         assertRedirects(response, reverse("volunteer:index"))
 
+    def test_account_menu_reads_on_the_night_navbar(self, client, portal_user):
+        """The username in the navbar takes the navbar's light link colour.
+
+        A body-emphasis link class there painted it in the body text colour,
+        dark on the dark bar, and its !important beat the navbar rule.
+        """
+        PortalProfile.objects.create(user=portal_user)
+        client.force_login(portal_user)
+        html = client.get(reverse("volunteer:index")).content.decode()
+
+        toggle = re.search(
+            r'<a href="#"\s+class="([^"]*)"[^>]*>\s*<span class="avatar-initial', html
+        )
+        assert toggle is not None
+        classes = toggle.group(1).split()
+        assert "nav-link" in classes
+        assert "link-body-emphasis" not in classes
+        assert portal_user.username in html
+
     def test_organizer_redirected_to_dashboard(self, client, admin_user, conference):
         PortalProfile.objects.create(user=admin_user)
         client.force_login(admin_user)
