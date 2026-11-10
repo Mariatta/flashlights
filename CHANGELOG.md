@@ -17,9 +17,10 @@ for community apps is marked **Breaking**.
   while the event takes neither proposals nor volunteer applications, gets
   a short page saying so instead of the volunteer hub.
 - **The proposal receipt is a copy of the proposal.** The email sent
-  when a session is proposed used to name only the title. It now carries
-  the session's details, what the speaker wrote and their answers to
-  public questions, and goes to everyone on the proposal. A co-presenter's
+  when a session is proposed used to name only the title and kind. It now
+  carries the session's details, what was written for the session and the
+  answers to public questions (each person's own, for questions about the
+  speaker), and goes to everyone on the proposal. A co-presenter's
   copy says who proposed it, under the subject "We have a proposal with
   you on it". Markdown is rendered in the HTML part and kept as typed in
   the plain-text part. Editing a submitted proposal sends nothing.
