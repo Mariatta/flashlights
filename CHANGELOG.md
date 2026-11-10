@@ -62,9 +62,9 @@ for community apps is marked **Breaking**.
   for an email address and 3 minutes for a sign-in code. A new verification
   code from the same page does not add time. Once a code has stopped
   working, the verification email says what gets a fresh one: signing in
-  again after sign-up, or Re-send Verification on the Email addresses page
-  for an address added later. The password reset code page and email, used
-  only on an instance that turns on reset by code, do the same.
+  again after sign-up, or adding the address again on the Email addresses
+  page for an address added later. The password reset code page and email,
+  used only on an instance that turns on reset by code, also give the time.
 - **Code lifetimes are settings.** `EMAIL_VERIFICATION_CODE_MINUTES`
   (default 15), `SIGN_IN_CODE_MINUTES` (default 3) and
   `PASSWORD_RESET_CODE_MINUTES` (default 3) set how long each emailed code
