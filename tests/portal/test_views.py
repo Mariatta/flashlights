@@ -339,6 +339,7 @@ class TestHomeOfSpeakersAndProposers:
         assert response.status_code == 200
         content = response.content.decode()
         assert self.GET_STARTED in content and self.JOIN in content
+        assert "How would you like to take part?" in content
         assert reverse("speakers:propose") in content
         assert reverse("volunteer:volunteer_profile_new") in content
 
@@ -355,6 +356,7 @@ class TestHomeOfSpeakersAndProposers:
         assert self.GET_STARTED in content
         assert reverse("speakers:propose") in content
         assert self.JOIN not in content
+        assert "How would you like to take part?" not in content
         assert "not taking new volunteer applications" not in content
         assert reverse("volunteer:volunteer_profile_new") not in content
 

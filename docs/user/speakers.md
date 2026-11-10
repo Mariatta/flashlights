@@ -104,7 +104,9 @@ volunteered with us in a previous year.
    instead and **My proposals** is in its menu. If you created the account but
    did not send a proposal that day, the home page offers to propose or to
    volunteer, whichever you came for. While we are not taking volunteer
-   applications it offers proposing alone.
+   applications it offers proposing alone. When we are taking neither
+   proposals nor volunteer applications, the home page of any account that
+   has not done either says so, with nothing to fill in yet.
 
 !!! tip "Already have a speaker profile this year?"
     If you already have a profile with us for this edition, because you sent a

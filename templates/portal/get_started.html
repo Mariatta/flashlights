@@ -4,10 +4,11 @@
 The home of an account that has not chosen yet: no volunteer application
 and no proposal, while the edition is taking proposals. The volunteer hub
 would greet them as a volunteer-to-be, which is wrong for the many who
-signed up from the proposal form and did not send one that day. Both ways
-in, side by side, nothing leading; the moment they take one, the home
-page follows it (portal.views.index). While the edition is not taking
-volunteer applications the page offers proposing alone.
+signed up from the proposal form and did not send one that day. While
+volunteer applications are open, both ways in, side by side, nothing
+leading; while they are closed, proposing alone, full width and with no
+question to answer. The moment they take one, the home page follows it
+(portal.views.index).
 {% endcomment %}
 {% block head_title %}
     {% trans "Get started" %}
@@ -16,10 +17,12 @@ volunteer applications the page offers proposing alone.
     <h1 class="h3 mb-2">
         {% blocktranslate with name=user.first_name|default:user.username %}Welcome, {{ name }}{% endblocktranslate %}
     </h1>
-    <p class="text-secondary mb-4">
-        {% trans "How would you like to take part?" %}
-    </p>
-    <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+    {% if active_conference.volunteer_application_open %}
+        <p class="text-secondary mb-4">
+            {% trans "How would you like to take part?" %}
+        </p>
+    {% endif %}
+    <div class="row row-cols-1 g-3 mb-4{% if active_conference.volunteer_application_open %} row-cols-md-2{% else %} mt-2{% endif %}">
         <div class="col">
             <div class="card h-100">
                 <div class="card-body d-flex flex-column gap-2">
