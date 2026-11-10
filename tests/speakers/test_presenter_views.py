@@ -1121,7 +1121,11 @@ class TestInvitationPreview:
             client.get(session.get_absolute_url())
         assert len(after) == len(before)
 
-    def test_live_preview_for_a_session(self, client, organizer, presenters):
+    def test_live_preview_for_a_session(
+        self, client, organizer, presenters, conference
+    ):
+        conference.website_url = "https://example.org/2026/"
+        conference.save()
         ada, session = presenters["ada"], presenters["session"]
         client.force_login(organizer)
         response = client.post(
@@ -1133,6 +1137,7 @@ class TestInvitationPreview:
         assert "Django 101" in content and "<em>glad</em>" in content
         assert "Subject:" in content and "personal-link" in content
         assert "<strong>Flashlights</strong> ·" in content  # the wrapper too
+        assert "Flashlights website: " in content  # with the edition's link
         assert "<strong>To:</strong> ada@example.com" in content
         assert Invitation.objects.count() == 0
 

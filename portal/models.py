@@ -189,9 +189,9 @@ class Conference(BaseModel):
         blank=True,
         default="",
         help_text="This edition's page on the community's main website, for "
-        "example https://example.org/2026/. Linked from every page and every "
-        "email. Starting the next year offers it again, to change there. "
-        "Leave blank for no link.",
+        "example https://example.org/2026/. While this event is active it is "
+        "linked from every page and every email. Starting the next year "
+        "offers it again, to change there. Leave blank for no link.",
     )
     coc_url = models.URLField(blank=True, null=True)
     donate_url = models.URLField(blank=True, null=True)

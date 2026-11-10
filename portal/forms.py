@@ -179,9 +179,9 @@ class StartNewYearForm(EditionDatesForm):
         required=False,
         label="Website",
         help_text="This edition's page on the community's main website, "
-        "linked from every page and every email. Filled in from the previous "
-        "edition: change it if this edition has a page of its own, or clear "
-        "it for no link.",
+        "linked from every page and every email while it is active. Change "
+        "it if this edition has a page of its own, or leave it blank for no "
+        "link.",
     )
     pretix_event_slug = forms.CharField(
         required=False, max_length=100, label="Pretix event slug"

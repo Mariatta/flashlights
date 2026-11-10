@@ -11,7 +11,7 @@ for community apps is marked **Breaking**.
 
 - **A link back to the community's website.** Each event has a new
   website field, for its page on the community's main website (for
-  example pycon.org/2026, then pycon.org/2027), set on the event's edit
+  example example.org/2026, then example.org/2027), set on the event's edit
   page or in the admin. For the active event, a "<short name> website"
   link appears in the navbar and the footer of every page, on the landing
   page and in the sign-off of every email. Blank, no link appears.

@@ -13,7 +13,7 @@ from django.core import signing
 from django.urls import reverse
 from django.utils import timezone
 
-from common.markdown_emails import MarkdownEmailRenderer
+from common.markdown_emails import MarkdownEmailRenderer, add_email_chrome
 from common.models import SentEmail, SentEmailStatus
 from common.permissions import users_with_perm
 from common.send_emails import send_email
@@ -196,9 +196,8 @@ def render_invitation_preview(invitation):
         ),
         expires_at=timezone.now() + type(invitation).TOKEN_MAX_AGE,
     )
-    context["current_site"] = Site.objects.get_current()
     # What render_markdown_email adds when the email is really sent.
-    context["brand"] = settings.BRAND
+    add_email_chrome(context)
     context["preview"] = True
     renderer = MarkdownEmailRenderer()
     body = renderer.render_template(INVITATION_TEMPLATE, context)

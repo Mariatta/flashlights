@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             field=models.URLField(
                 blank=True,
                 default="",
-                help_text="This edition's page on the community's main website, for example https://example.org/2026/. Linked from every page and every email. Starting the next year offers it again, to change there. Leave blank for no link.",
+                help_text="This edition's page on the community's main website, for example https://example.org/2026/. While this event is active it is linked from every page and every email. Starting the next year offers it again, to change there. Leave blank for no link.",
                 verbose_name="website",
             ),
         ),

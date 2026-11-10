@@ -5,6 +5,7 @@ import pytest
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
+from django.core import mail
 from django.template.loader import render_to_string
 from django.test import override_settings
 from django.urls import reverse
@@ -12,6 +13,7 @@ from pytest_django.asserts import assertRedirects
 
 from common.markdown_emails import render_markdown_email
 from portal import branding
+from portal.adapter import PortalAccountAdapter
 from portal.models import Conference, Venue
 from portal_account.models import PortalProfile
 from speakers.constants import EventFormat, ProposalDecision, Recordings
@@ -170,6 +172,22 @@ class TestPortalIndex:
         ) in html
         assert line in text
         assert line in account
+
+    def test_an_account_email_signs_off_with_the_edition_website(
+        self, conference, portal_user
+    ):
+        """Account emails go through the allauth adapter, which adds the
+        active edition for the sign-off."""
+        conference.website_url = "https://summit.test/2026/"
+        conference.save()
+        brand = branding.from_env({"SITE_SHORT_NAME": "Summit"})
+        with override_settings(BRAND=brand):
+            PortalAccountAdapter().send_mail(
+                "account/email/password_reset_key",
+                portal_user.email,
+                {"user": portal_user, "password_reset_url": "https://x.test/r/"},
+            )
+        assert "Summit website: https://summit.test/2026/" in mail.outbox[-1].body
 
     def test_landing_never_counts_signups(self, client, portal_user, conference):
         # The "join N volunteers who signed up" line was a PyLadiesCon
