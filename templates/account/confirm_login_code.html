@@ -1,6 +1,6 @@
 {% extends "account/base_confirm_code.html" %}
 {% load i18n %}
-{% load allauth account %}
+{% load allauth account portal_extras %}
 {% block head_title %}
     {% translate "Sign in" %}
 {% endblock head_title %}
@@ -17,6 +17,10 @@
 {% block action_url %}
     {% url "account_confirm_login_code" %}
 {% endblock action_url %}
+{% block expiry %}
+    {% code_lifetime_minutes "login" as minutes %}
+    {% blocktranslate count minutes=minutes %}The code works for {{ minutes }} minute, so please enter it soon.{% plural %}The code works for {{ minutes }} minutes, so please enter it soon.{% endblocktranslate %}
+{% endblock expiry %}
 {% block extra_tags %}
     login
 {% endblock extra_tags %}

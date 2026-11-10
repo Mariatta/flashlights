@@ -24,11 +24,16 @@ prominent,confirm,{{ extra_tags }}
 {% block recipient %}
 {% endblock recipient %}
 {% endsetvar %}
+{% setvar expiry %}
+{% block expiry %}
+    {% translate "The code expires shortly, so please enter it soon." %}
+{% endblock expiry %}
+{% endsetvar %}
 {% element h1 %}
 {{ title_ }}
 {% endelement %}
 {% element p %}
-{% blocktranslate %}We've sent a code to {{ recipient }}. The code expires shortly, so please enter it soon.{% endblocktranslate %}
+{% blocktranslate %}We've sent a code to {{ recipient }}.{% endblocktranslate %} {{ expiry }}
 {% endelement %}
 {% element form form=form method="post" action=action_url tags=form_tags %}
 {% slot body %}

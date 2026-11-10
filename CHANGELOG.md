@@ -44,16 +44,26 @@ for community apps is marked **Breaking**.
   that cancelling and signing in again sends a new code. The page now has
   **Send me a new code**, twice per code page, with the newest code the
   only one that works, and a line saying what else to try, which stays when
-  the button is gone. A request that one of allauth's rate limits refuses
-  outright, such as a new code within ten seconds of the last email, now
-  lands on a "Please wait a moment" page in the instance's own styling
-  instead of a bare "429 Too Many Requests". The [getting started guide](docs/user/get_started.md) says
-  what to do when the code does not arrive.
+  the button is gone. allauth sends one email per address every ten
+  seconds, so right after a code goes out the page says it was just sent
+  and counts down to when a new one can be asked for, with the button
+  disabled until then. A request that one of allauth's rate limits refuses
+  outright, such as a signup past its limit, or a new code asked for too
+  soon in a browser without JavaScript, now lands on a "Please wait a
+  moment" page in the instance's own styling instead of a bare "429 Too
+  Many Requests". The
+  [getting started guide](docs/user/get_started.md) says what to do when
+  the code does not arrive.
+- **Code pages say how long the code works.** The email verification and
+  sign-in code pages said only that the code "expires shortly". They now
+  give the time, read from the setting allauth enforces: 15 minutes from
+  the first email for an email address, 3 minutes for a sign-in code. The
+  password reset code page, shown only on an instance that turns on reset
+  by code, does the same.
 - **django-allauth 65.21.1.** The accounts library moves from 65.13.0, taking
   in its security fixes since, among them these. A rate limit with two
-  windows on one scope,
-  such as the signup limit of 5 an hour and 20 a day, no longer lets the
-  longer window be bypassed; cancelling a sign-in part way through now
+  windows on one scope, such as the signup limit of 5 an hour and 20 a
+  day, no longer lets the longer window be bypassed; cancelling a sign-in part way through now
   discards what it had collected, so the next sign-in in the same browser
   starts clean; rate-limit updates are serialised under concurrent
   requests; and codes typed by a person (email verification,

@@ -2,12 +2,20 @@
 the code page, instead of signing up again or writing to an organizer."""
 
 import re
+import time
 
 import pytest
 from django.core import mail
 from django.core.cache import cache
 from django.urls import reverse
 from pytest_django.asserts import assertContains, assertNotContains, assertTemplateUsed
+
+from portal.templatetags import portal_extras
+from portal.templatetags.portal_extras import (
+    code_lifetime_minutes,
+    minutes_seconds,
+    new_code_wait_seconds,
+)
 
 SIGNUP = {
     "username": "newuser",
@@ -121,3 +129,73 @@ def test_adding_an_address_while_signed_in_offers_no_sign_in_again(client, porta
     assertContains(response, "Check your spam folder")
     assertNotContains(response, "choose Cancel and sign in again")
     assertContains(response, f'href="{reverse("account_email")}"')
+
+
+def test_code_page_says_how_long_the_code_works(code_page, url):
+    assertContains(
+        code_page.get(url), "The code works for 15 minutes from the first email"
+    )
+
+
+def test_sign_in_code_page_says_how_long_the_code_works(client, portal_user):
+    client.post(reverse("account_request_login_code"), {"email": portal_user.email})
+    response = client.get(reverse("account_confirm_login_code"))
+    assertContains(response, "The code works for 3 minutes, so please")
+    assertNotContains(response, "expires shortly")
+
+
+def test_code_lifetime_follows_the_setting(settings):
+    settings.ACCOUNT_LOGIN_BY_CODE_TIMEOUT = 60
+    assert code_lifetime_minutes("login") == 1
+    settings.ACCOUNT_LOGIN_BY_CODE_TIMEOUT = 20
+    assert code_lifetime_minutes("login") == 1
+    settings.ACCOUNT_PASSWORD_RESET_BY_CODE_TIMEOUT = 600
+    assert code_lifetime_minutes("password_reset") == 10
+
+
+def test_right_after_an_email_the_page_counts_down(code_page, url):
+    response = code_page.get(url)
+    assertContains(response, "We sent a code just now.")
+    assertContains(response, "js/new-code-countdown.")
+    wait = int(re.search(r'data-new-code-wait="(\d+)"', response.text).group(1))
+    assert 1 <= wait <= 10
+    assertContains(response, f"<span data-new-code-clock>0:{wait:02d}</span>")
+
+
+def test_once_allauth_would_send_again_there_is_no_countdown(code_page, url):
+    cache.clear()
+    response = code_page.get(url)
+    assertNotContains(response, "data-new-code-wait")
+    assertNotContains(response, "We sent a code just now.")
+    assertContains(response, "Send me a new code")
+
+
+def test_no_countdown_once_the_new_codes_are_used_up(code_page, url):
+    for _ in range(2):
+        cache.clear()
+        assert code_page.post(url, {"action": "resend"}).status_code == 302
+    # The last email went out a moment ago, but there is no button to wait for.
+    assertNotContains(code_page.get(url), "data-new-code-wait")
+
+
+def test_wait_is_read_from_allauths_record(code_page, rf, monkeypatch):
+    context = {"request": rf.get("/")}
+    assert 1 <= new_code_wait_seconds(context, SIGNUP["email"]) <= 10
+    # The limit is per address, whatever the case it was typed in.
+    assert new_code_wait_seconds(context, SIGNUP["email"].upper()) >= 1
+    assert new_code_wait_seconds(context, "someone-else@example.com") == 0
+    later = time.time() + 11
+    monkeypatch.setattr(portal_extras.time, "time", lambda: later)
+    assert new_code_wait_seconds(context, SIGNUP["email"]) == 0
+
+
+def test_wait_needs_a_request_and_an_address():
+    assert new_code_wait_seconds({}, SIGNUP["email"]) == 0
+    assert new_code_wait_seconds({"request": object()}, "") == 0
+
+
+@pytest.mark.parametrize(
+    "seconds, clock", [(0, "0:00"), (8, "0:08"), (10, "0:10"), (150, "2:30")]
+)
+def test_minutes_seconds(seconds, clock):
+    assert minutes_seconds(seconds) == clock
