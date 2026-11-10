@@ -215,6 +215,25 @@ class TestPortalIndex:
         assert "link-body-emphasis" not in classes
         assert portal_user.username in html
 
+    def test_account_menu_sits_level_with_the_navbar_links(self, client, portal_user):
+        """The account toggle lays out like the other navbar links.
+
+        A display-block utility class on it beat the navbar's centred
+        64px link layout with !important, so the avatar and username sat at
+        the top of the bar, above the other links.
+        """
+        PortalProfile.objects.create(user=portal_user)
+        client.force_login(portal_user)
+        html = client.get(reverse("volunteer:index")).content.decode()
+
+        toggle = re.search(
+            r'<a href="#"\s+class="([^"]*)"[^>]*>\s*<span class="avatar-initial', html
+        )
+        assert toggle is not None
+        classes = toggle.group(1).split()
+        assert "nav-link" in classes
+        assert "d-block" not in classes
+
     def test_organizer_redirected_to_dashboard(self, client, admin_user, conference):
         PortalProfile.objects.create(user=admin_user)
         client.force_login(admin_user)
