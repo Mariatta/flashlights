@@ -96,6 +96,7 @@ class TestTheCopy:
         assert receipt.to == ["sam@example.com"]
         body = receipt.body
         assert "A talk about testing" in body
+        assert "Presenter: Sam Newcomer" in body
         assert "Kind: Talk" in body
         assert "Language: en" in body
         assert "minutes" in body
@@ -190,6 +191,9 @@ class TestWhoGetsIt:
         assert mine.subject.endswith("We have your proposal: Testing")
         assert theirs.subject.endswith("We have a proposal with you on it: Testing")
         assert "What testing is for." in theirs.body
+        # Both copies name everyone on the session, the proposer first.
+        assert "Presenters: Sam, Robin" in mine.body
+        assert "Presenters: Sam, Robin" in theirs.body
         # The proposer is the one who can change it, so only they get the link.
         assert MINE in mine.body
         assert MINE not in theirs.body

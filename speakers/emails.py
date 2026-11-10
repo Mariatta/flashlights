@@ -597,6 +597,14 @@ def send_proposal_received_email(proposal):
         if link.presenter_id != presenter.pk
     ]
     copy = proposal_copy(session)
+    # Who is on it, proposer first, so every copy shows the whole line-up.
+    copy["facts"].insert(
+        0,
+        {
+            "label": "Presenters" if len(presenters) > 1 else "Presenter",
+            "value": ", ".join(as_written(p.display_name) for p in presenters),
+        },
+    )
     session_answers = copied_answers(
         session.question_answers.select_related("question")
     )
