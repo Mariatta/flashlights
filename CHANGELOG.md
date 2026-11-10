@@ -54,12 +54,14 @@ for community apps is marked **Breaking**.
   Many Requests". The
   [getting started guide](docs/user/get_started.md) says what to do when
   the code does not arrive.
-- **Code pages say how long the code works.** The email verification and
-  sign-in code pages said only that the code "expires shortly". They now
-  give the time, read from the setting allauth enforces: 15 minutes from
-  the first email for an email address, 3 minutes for a sign-in code. The
-  password reset code page, shown only on an instance that turns on reset
-  by code, does the same.
+- **Code pages and emails say how long the code works.** The email
+  verification and sign-in code pages said only that the code "expires
+  shortly", and the emails carrying the codes said nothing, so a person who
+  opened the email late had no hint why the code no longer worked. Both now
+  give the time, read from the setting allauth enforces: 15 minutes from the
+  first email for an email address, 3 minutes for a sign-in code. The
+  password reset code page and email, used only on an instance that turns on
+  reset by code, do the same.
 - **django-allauth 65.21.1.** The accounts library moves from 65.13.0,
   taking in its security fixes since, among them these. A rate limit with
   two windows on one scope, such as the signup limit of 5 an hour and 20 a

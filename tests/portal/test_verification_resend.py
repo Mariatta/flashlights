@@ -237,3 +237,24 @@ def test_wait_needs_a_request_and_an_address():
 )
 def test_minutes_seconds(seconds, clock):
     assert minutes_seconds(seconds) == clock
+
+
+def test_verification_email_says_how_long_the_code_works(code_page):
+    assert (
+        "The code works for 15 minutes from the first verification email we sent you."
+        in mail.outbox[0].body
+    )
+
+
+def test_sign_in_code_email_says_how_long_the_code_works(client, portal_user):
+    client.post(reverse("account_request_login_code"), {"email": portal_user.email})
+    assert "The code works for 3 minutes." in mail.outbox[-1].body
+
+
+def test_password_reset_code_email_says_how_long_the_code_works(settings):
+    settings.ACCOUNT_PASSWORD_RESET_BY_CODE_TIMEOUT = 600
+    body = render_to_string(
+        "account/email/password_reset_code_message.txt", {"code": "ABCD-EFGH"}
+    )
+    assert "ABCD-EFGH" in body
+    assert "The code works for 10 minutes." in body
