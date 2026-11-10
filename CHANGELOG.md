@@ -16,6 +16,13 @@ for community apps is marked **Breaking**.
   speaker module on, an account that has neither proposed nor applied,
   while the event takes neither proposals nor volunteer applications, gets
   a short page saying so instead of the volunteer hub.
+- **The proposal receipt is a copy of the proposal.** The email sent
+  when a session is proposed used to name only the title. It now carries
+  the session's details, what the speaker wrote and their answers to
+  public questions, and goes to everyone on the proposal. A co-presenter's
+  copy says who proposed it, under the subject "We have a proposal with
+  you on it". Markdown is rendered in the HTML part and kept as typed in
+  the plain-text part. Editing a submitted proposal sends nothing.
 - **A link back to the community's website.** Each event has a new
   website field, for its page on the community's main website (for
   example example.org/2026, then example.org/2027), set on the event's edit
