@@ -10,6 +10,7 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from common.send_emails import edition_reply_to, send_email
+from portal.adapter import PortalAccountAdapter
 from portal.models import Conference
 from speakers.emails import team_reply_to
 from speakers.models import SpeakerSettings
@@ -56,7 +57,7 @@ class TestEditionReplyTo:
 
     def test_the_active_edition_is_looked_up_once_per_email(self, grouped):
         """The sign-off and the reply-to share one lookup of the active
-        edition, for the portal's emails and the account ones."""
+        edition."""
         with CaptureQueriesContext(connection) as queries:
             send(["a@x.org"])
         active = [
@@ -66,6 +67,25 @@ class TestEditionReplyTo:
         ]
         assert len(active) == 1
         assert mail.outbox[0].reply_to == [GROUP]
+
+    def test_an_account_email_reuses_the_active_edition(
+        self, grouped, django_user_model
+    ):
+        """The adapter's send_mail puts the active edition in the context;
+        render_mail takes the reply-to from it instead of looking again."""
+        user = django_user_model.objects.create_user("ada", "ada@x.org", "pw")
+        with CaptureQueriesContext(connection) as queries:
+            message = PortalAccountAdapter().render_mail(
+                "account/email/password_reset_key",
+                user.email,
+                {
+                    "user": user,
+                    "password_reset_url": "https://x.test/r/",
+                    "active_conference": grouped,
+                },
+            )
+        assert not [q for q in queries if 'FROM "portal_conference"' in q["sql"]]
+        assert message.reply_to == [GROUP]
 
     def test_a_caller_supplied_reply_to_still_wins(self, grouped):
         send(["a@x.org"], conference=grouped, reply_to=["desk@example.com"])
