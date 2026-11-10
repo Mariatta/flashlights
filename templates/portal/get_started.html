@@ -6,7 +6,8 @@ and no proposal, while the edition is taking proposals. The volunteer hub
 would greet them as a volunteer-to-be, which is wrong for the many who
 signed up from the proposal form and did not send one that day. Both ways
 in, side by side, nothing leading; the moment they take one, the home
-page follows it (portal.views.index).
+page follows it (portal.views.index). While the edition is not taking
+volunteer applications the page offers proposing alone.
 {% endcomment %}
 {% block head_title %}
     {% trans "Get started" %}
@@ -39,33 +40,28 @@ page follows it (portal.views.index).
                 </div>
             </div>
         </div>
-        <div class="col">
-            <div class="card h-100">
-                <div class="card-body d-flex flex-column gap-2">
-                    <div class="eyebrow">
-                        {% trans "Volunteering" %}
-                    </div>
-                    <h2 class="card-title h4 mb-0">
-                        {% trans "Join the team" %}
-                    </h2>
-                    <p class="text-secondary mb-0">
-                        {% trans "Create your volunteer profile and our team will review it, then match you to a team that needs help." %}
-                    </p>
-                    <div class="mt-auto pt-2">
-                        {% if active_conference.volunteer_application_open %}
+        {% if active_conference.volunteer_application_open %}
+            <div class="col">
+                <div class="card h-100">
+                    <div class="card-body d-flex flex-column gap-2">
+                        <div class="eyebrow">
+                            {% trans "Volunteering" %}
+                        </div>
+                        <h2 class="card-title h4 mb-0">
+                            {% trans "Join the team" %}
+                        </h2>
+                        <p class="text-secondary mb-0">
+                            {% trans "Create your volunteer profile and our team will review it, then match you to a team that needs help." %}
+                        </p>
+                        <div class="mt-auto pt-2">
                             <a href="{% url 'volunteer:volunteer_profile_new' %}"
                                class="btn btn-outline-primary">
                                 <i class="icon-user-plus" aria-hidden="true"></i> {% trans "Create my volunteer profile" %}
                             </a>
-                        {% else %}
-                            <p class="mb-0 text-secondary">
-                                <i class="icon-info" aria-hidden="true"></i>
-                                {% blocktranslate with year=active_conference.year %}We are not taking new volunteer applications for {{ year }} right now.{% endblocktranslate %}
-                            </p>
-                        {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        {% endif %}
     </div>
 {% endblock content %}

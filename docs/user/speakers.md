@@ -103,7 +103,8 @@ volunteered with us in a previous year.
    If you also volunteer with us this year, the volunteer hub is your home
    instead and **My proposals** is in its menu. If you created the account but
    did not send a proposal that day, the home page offers to propose or to
-   volunteer, whichever you came for.
+   volunteer, whichever you came for. While we are not taking volunteer
+   applications it offers proposing alone.
 
 !!! tip "Already have a speaker profile this year?"
     If you already have a profile with us for this edition, because you sent a
