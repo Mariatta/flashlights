@@ -63,7 +63,11 @@ def index(request):
       is what they came back to check.
     - An account that has done neither while proposals are open: a page
       that offers both, so a person who signed up to propose is not told
-      to volunteer.
+      to volunteer. While volunteer applications are closed it offers
+      proposing alone.
+    - An account that has done neither while proposals and volunteer
+      applications are both closed: a short page that says so, rather than
+      a volunteer hub with nothing to apply for.
     - Everyone else: the volunteer hub, or the public landing page when the
       instance does not run volunteering.
     """
@@ -92,12 +96,11 @@ def index(request):
                     conference=active, presenter__user=user
                 ).exists():
                     return redirect("speakers:my_proposals")
-                if (
-                    settings.VOLUNTEERING_ENABLED
-                    and proposals_open(active)
-                    and not applications.exists()
-                ):
-                    return render(request, "portal/get_started.html")
+                if settings.VOLUNTEERING_ENABLED and not applications.exists():
+                    if proposals_open(active):
+                        return render(request, "portal/get_started.html")
+                    if not active.volunteer_application_open:
+                        return render(request, "portal/nothing_open.html")
         if settings.VOLUNTEERING_ENABLED:
             return redirect("volunteer:index")
 

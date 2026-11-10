@@ -10,7 +10,7 @@ from django.core import mail
 from django.template.loader import render_to_string
 from django.test import override_settings
 from django.urls import reverse
-from pytest_django.asserts import assertRedirects
+from pytest_django.asserts import assertRedirects, assertTemplateUsed
 
 from common.markdown_emails import render_markdown_email
 from portal import branding
@@ -456,23 +456,64 @@ class TestHomeOfSpeakersAndProposers:
         assert response.status_code == 200
         content = response.content.decode()
         assert self.GET_STARTED in content and self.JOIN in content
+        assert "How would you like to take part?" in content
+        assert "row-cols-md-2" in content  # the two cards side by side
         assert reverse("speakers:propose") in content
         assert reverse("volunteer:volunteer_profile_new") in content
 
-    def test_the_offer_says_when_volunteer_applications_are_closed(
+    def test_the_offer_is_proposing_alone_while_volunteer_applications_are_closed(
         self, client, member, conference, open_call
     ):
+        """No volunteering card at all, not one that says it is closed."""
         conference.volunteer_application_open = False
         conference.save()
         client.force_login(member)
-        content = client.get(reverse("index")).content.decode()
-        assert "not taking new volunteer applications" in content
+        response = client.get(reverse("index"))
+        assertTemplateUsed(response, "portal/get_started.html")
+        content = response.content.decode()
+        assert self.GET_STARTED in content
+        assert reverse("speakers:propose") in content
+        assert self.JOIN not in content
+        assert "How would you like to take part?" not in content
+        assert "row-cols-md-2" not in content  # one card, full width
+        assert "not taking new volunteer applications" not in content
         assert reverse("volunteer:volunteer_profile_new") not in content
 
     def test_an_undecided_account_lands_on_the_hub_once_proposals_close(
         self, client, member, conference
     ):
         make_settings(conference, proposals_open=False)
+        client.force_login(member)
+        assertRedirects(client.get(reverse("index")), reverse("volunteer:index"))
+
+    def test_an_undecided_account_is_told_when_nothing_is_open(
+        self, client, member, conference
+    ):
+        """Proposals and volunteer applications both closed: a short page
+        that says so, with nothing to click, instead of the hub."""
+        make_settings(conference, proposals_open=False)
+        conference.volunteer_application_open = False
+        conference.save()
+        client.force_login(member)
+        response = client.get(reverse("index"))
+        assert response.status_code == 200
+        assertTemplateUsed(response, "portal/nothing_open.html")
+        content = response.content.decode()
+        assert (
+            "not taking session proposals or volunteer applications for "
+            f"{conference.year} right now" in content
+        )
+        assert reverse("speakers:propose") not in content
+        assert reverse("volunteer:volunteer_profile_new") not in content
+
+    def test_a_declined_volunteer_keeps_the_hub_when_nothing_is_open(
+        self, client, member, conference
+    ):
+        """The hub still has their answer to show them."""
+        make_settings(conference, proposals_open=False)
+        conference.volunteer_application_open = False
+        conference.save()
+        self.volunteer(conference, member, ApplicationStatus.REJECTED)
         client.force_login(member)
         assertRedirects(client.get(reverse("index")), reverse("volunteer:index"))
 

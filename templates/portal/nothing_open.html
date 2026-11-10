@@ -1,0 +1,19 @@
+{% extends "portal/base.html" %}
+{% load i18n %}
+{% comment %}
+The home of an account that has not chosen yet when the edition is taking
+neither proposals nor volunteer applications. Nothing to offer, so the
+page says so plainly instead of a volunteer hub with nothing to apply for
+(portal.views.index).
+{% endcomment %}
+{% block head_title %}
+    {% trans "Nothing open right now" %}
+{% endblock head_title %}
+{% block content %}
+    <h1 class="h3 mb-2">
+        {% blocktranslate with name=user.first_name|default:user.username %}Welcome, {{ name }}{% endblocktranslate %}
+    </h1>
+    <p class="text-secondary mb-0">
+        {% blocktranslate with year=active_conference.year %}We are not taking session proposals or volunteer applications for {{ year }} right now.{% endblocktranslate %}
+    </p>
+{% endblock content %}
