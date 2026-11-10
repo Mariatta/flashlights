@@ -1,5 +1,6 @@
 import re
 from datetime import date
+from html.parser import HTMLParser
 
 import pytest
 from django.conf import settings
@@ -30,6 +31,28 @@ from tests.ticketing_ids import make_ticketing
 from ticketing.models import TicketingSettings
 from volunteer.constants import ApplicationStatus
 from volunteer.models import Team, VolunteerProfile
+
+
+class _ElementAttrs(HTMLParser):
+    """Collects the attributes of the first element with a given id."""
+
+    def __init__(self, element_id):
+        super().__init__()
+        self.element_id = element_id
+        self.attrs = None
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if self.attrs is None and attrs.get("id") == self.element_id:
+            self.attrs = attrs
+
+
+def _attrs_of(html, element_id):
+    """Return the attributes of the element with this id, in any order."""
+    parser = _ElementAttrs(element_id)
+    parser.feed(html)
+    assert parser.attrs is not None, f"no element with id {element_id!r}"
+    return parser.attrs
 
 
 def title_of(html):
@@ -195,44 +218,26 @@ class TestPortalIndex:
         response = client.get(reverse("index"))
         assertRedirects(response, reverse("volunteer:index"))
 
-    def test_account_menu_reads_on_the_night_navbar(self, client, portal_user):
-        """The username in the navbar takes the navbar's light link colour.
+    def test_account_menu_lays_out_like_the_other_navbar_links(
+        self, client, portal_user
+    ):
+        """The account toggle carries only the classes the Community toggle has.
 
-        A body-emphasis link class there painted it in Bootstrap's emphasis
-        colour, black on the dark bar, and its !important beat the navbar
-        rule.
+        Utility classes on it have beaten the navbar's own link rules with
+        !important twice: a body-emphasis link class painted the username
+        black on the dark bar, and a display-block class lifted the avatar
+        and name above the centred 64px links. Holding the toggle to an
+        allowed set catches the next one, whatever its name.
         """
         PortalProfile.objects.create(user=portal_user)
         client.force_login(portal_user)
         html = client.get(reverse("volunteer:index")).content.decode()
 
-        toggle = re.search(
-            r'<a href="#"\s+class="([^"]*)"[^>]*>\s*<span class="avatar-initial', html
-        )
-        assert toggle is not None
-        classes = toggle.group(1).split()
-        assert "nav-link" in classes
-        assert "link-body-emphasis" not in classes
+        toggle = _attrs_of(html, "navUser")
+        assert set(toggle["class"].split()) == {"nav-link", "dropdown-toggle"}
+        assert toggle["role"] == "button"
+        assert 'aria-labelledby="navUser"' in html
         assert portal_user.username in html
-
-    def test_account_menu_sits_level_with_the_navbar_links(self, client, portal_user):
-        """The account toggle lays out like the other navbar links.
-
-        A display-block utility class on it beat the navbar's centred
-        64px link layout with !important, so the avatar and username sat at
-        the top of the bar, above the other links.
-        """
-        PortalProfile.objects.create(user=portal_user)
-        client.force_login(portal_user)
-        html = client.get(reverse("volunteer:index")).content.decode()
-
-        toggle = re.search(
-            r'<a href="#"\s+class="([^"]*)"[^>]*>\s*<span class="avatar-initial', html
-        )
-        assert toggle is not None
-        classes = toggle.group(1).split()
-        assert "nav-link" in classes
-        assert "d-block" not in classes
 
     def test_organizer_redirected_to_dashboard(self, client, admin_user, conference):
         PortalProfile.objects.create(user=admin_user)
