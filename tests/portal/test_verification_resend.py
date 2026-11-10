@@ -267,8 +267,8 @@ def test_adding_an_address_email_points_to_the_email_page(client, portal_user):
     session.save()
     expired = client.get(reverse("account_email_verification_sent"))
     assert expired.url == reverse("account_email")
-    # Stands for time passing: allauth's three-minute cooldown between emails
-    # to one address is long over once the 15-minute code has expired.
+    # Stands for time passing: allauth's ten-second limit on emails to one
+    # address in code mode is long over once the 15-minute code has expired.
     cache.clear()
     client.post(reverse("account_email"), add)
     assert len(mail.outbox) == 2
