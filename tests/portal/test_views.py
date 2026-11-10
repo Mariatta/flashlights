@@ -340,6 +340,7 @@ class TestHomeOfSpeakersAndProposers:
         content = response.content.decode()
         assert self.GET_STARTED in content and self.JOIN in content
         assert "How would you like to take part?" in content
+        assert "row-cols-md-2" in content  # the two cards side by side
         assert reverse("speakers:propose") in content
         assert reverse("volunteer:volunteer_profile_new") in content
 
@@ -357,6 +358,7 @@ class TestHomeOfSpeakersAndProposers:
         assert reverse("speakers:propose") in content
         assert self.JOIN not in content
         assert "How would you like to take part?" not in content
+        assert "row-cols-md-2" not in content  # one card, full width
         assert "not taking new volunteer applications" not in content
         assert reverse("volunteer:volunteer_profile_new") not in content
 
