@@ -612,16 +612,22 @@ def send_proposal_received_email(proposal):
         answers = session_answers + copied_answers(
             speaker_answers.get(recipient.pk, [])
         )
+        is_proposer = recipient.pk == presenter.pk
+        # Someone else sent it: "your proposal" would read as theirs alone.
+        subject = (
+            "We have your proposal"
+            if is_proposer
+            else "We have a proposal with you on it"
+        )
         send_email(
-            f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}We have your proposal: "
-            f"{session.title}",
+            f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}{subject}: {session.title}",
             [recipient.email],
             markdown_template=PROPOSAL_RECEIVED_TEMPLATE,
             context={
                 **context,
                 **copy,
                 "presenter": recipient,
-                "is_proposer": recipient.pk == presenter.pk,
+                "is_proposer": is_proposer,
                 "title": as_written(session.title),
                 "proposer": as_written(presenter.display_name),
                 "answers": answers,

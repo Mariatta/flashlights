@@ -47,7 +47,13 @@ def ask(conference, label, **kwargs):
 
 
 def receipts():
-    return [m for m in mail.outbox if "We have your proposal" in m.subject]
+    """The copies, the proposer's and any co-presenter's, in sending order."""
+    return [
+        m
+        for m in mail.outbox
+        if "We have your proposal" in m.subject
+        or "We have a proposal with you on it" in m.subject
+    ]
 
 
 def html(message):
@@ -181,6 +187,8 @@ class TestWhoGetsIt:
         mine, theirs = receipts()
         assert mine.to == ["sam@example.com"]
         assert theirs.to == [other.email]
+        assert mine.subject.endswith("We have your proposal: Testing")
+        assert theirs.subject.endswith("We have a proposal with you on it: Testing")
         assert "What testing is for." in theirs.body
         # The proposer is the one who can change it, so only they get the link.
         assert MINE in mine.body
