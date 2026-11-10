@@ -9,6 +9,12 @@ for community apps is marked **Breaking**.
 
 ## 0.5.0 (unreleased)
 
+- **Get started shows only what is open.** While volunteer applications
+  are closed, the Get started page shows only the Propose a session card,
+  at full width, with no Volunteering card in its place. An account that
+  has neither proposed nor applied, while the event takes neither
+  proposals nor volunteer applications, gets a short page saying so
+  instead of the volunteer hub.
 - **A link back to the community's website.** Each event has a new
   website field, for its page on the community's main website (for
   example example.org/2026, then example.org/2027), set on the event's edit
