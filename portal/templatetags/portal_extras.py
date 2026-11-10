@@ -99,9 +99,10 @@ CODE_LIFETIME_SETTINGS = {
 def code_lifetime_minutes(flow):
     """How many minutes a code sent for ``flow`` works, from allauth's own
     setting, so the code page's sentence and the expiry allauth enforces
-    cannot disagree. Never less than one."""
+    cannot disagree. Rounded down, so the page never promises more time
+    than allauth allows, and never less than one."""
     seconds = getattr(allauth_settings, CODE_LIFETIME_SETTINGS[flow])
-    return max(1, round(seconds / 60))
+    return max(1, math.floor(seconds / 60))
 
 
 @register.simple_tag(takes_context=True)
@@ -110,7 +111,10 @@ def new_code_wait_seconds(context, email):
     ``email``; 0 when it would send one now. Read from allauth's own record
     for its "confirm_email" limit (one email per address every ten seconds
     in code mode), so the code page's countdown and the limit agree and a
-    person who waits for it never meets the 429 page."""
+    person who waits for it never meets the 429 page. allauth has no public
+    API for the time left, so this uses its private ratelimit module and
+    the newest-first timestamps it caches; the tests catch a change there
+    on an allauth bump."""
     request = context.get("request")
     if request is None or not email:
         return 0

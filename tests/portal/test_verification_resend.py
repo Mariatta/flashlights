@@ -5,11 +5,15 @@ import re
 import time
 
 import pytest
+from allauth.account.forms import ConfirmPasswordResetCodeForm
+from django.contrib.auth.models import AnonymousUser
 from django.core import mail
 from django.core.cache import cache
-from django.urls import reverse
+from django.template.loader import render_to_string
+from django.urls import path, reverse
 from pytest_django.asserts import assertContains, assertNotContains, assertTemplateUsed
 
+from portal import urls as portal_urls
 from portal.templatetags import portal_extras
 from portal.templatetags.portal_extras import (
     code_lifetime_minutes,
@@ -151,6 +155,40 @@ def test_code_lifetime_follows_the_setting(settings):
     assert code_lifetime_minutes("login") == 1
     settings.ACCOUNT_PASSWORD_RESET_BY_CODE_TIMEOUT = 600
     assert code_lifetime_minutes("password_reset") == 10
+    # Part minutes round down: the page never promises more than allauth allows.
+    settings.ACCOUNT_LOGIN_BY_CODE_TIMEOUT = 150
+    assert code_lifetime_minutes("login") == 2
+    settings.ACCOUNT_LOGIN_BY_CODE_TIMEOUT = 90
+    assert code_lifetime_minutes("login") == 1
+
+
+#: The project's URLs plus the reset-code page, which allauth registers only
+#: when reset by code is on; Flashlights resets by link.
+urlpatterns = [
+    path(
+        "accounts/password/reset/code/confirm/",
+        lambda request: None,
+        name="account_confirm_password_reset_code",
+    ),
+    *portal_urls.urlpatterns,
+]
+
+
+@pytest.mark.urls(__name__)
+def test_password_reset_code_page_says_how_long_the_code_works(rf):
+    """An instance that turns on reset by code gets this template."""
+    request = rf.get("/")
+    request.user = AnonymousUser()
+    html = render_to_string(
+        "account/confirm_password_reset_code.html",
+        {
+            "form": ConfirmPasswordResetCodeForm(code="ABCD-EFGH"),
+            "email": "a@example.com",
+        },
+        request=request,
+    )
+    assert "The code works for 3 minutes, so please" in html
+    assert "expires shortly" not in html
 
 
 def test_right_after_an_email_the_page_counts_down(code_page, url):

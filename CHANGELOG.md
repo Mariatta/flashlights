@@ -60,19 +60,19 @@ for community apps is marked **Breaking**.
   the first email for an email address, 3 minutes for a sign-in code. The
   password reset code page, shown only on an instance that turns on reset
   by code, does the same.
-- **django-allauth 65.21.1.** The accounts library moves from 65.13.0, taking
-  in its security fixes since, among them these. A rate limit with two
-  windows on one scope, such as the signup limit of 5 an hour and 20 a
-  day, no longer lets the longer window be bypassed; cancelling a sign-in part way through now
-  discards what it had collected, so the next sign-in in the same browser
-  starts clean; rate-limit updates are serialised under concurrent
-  requests; and codes typed by a person (email verification,
+- **django-allauth 65.21.1.** The accounts library moves from 65.13.0,
+  taking in its security fixes since, among them these. A rate limit with
+  two windows on one scope, such as the signup limit of 5 an hour and 20 a
+  day, no longer lets the longer window be bypassed; cancelling a sign-in
+  part way through now discards what it had collected, so the next sign-in
+  in the same browser starts clean; rate-limit updates are serialised under
+  concurrent requests; and codes typed by a person (email verification,
   sign-in, password reset) are compared in constant time. Those codes are
   now eight characters in two groups of four, such as `LZTL-KPGV`, and a
   person may type them without the dash. On the change-password page the
   "Forgot your password?" link moves under the current-password field, and
-  the Confirm access page now shows it too, as the sign-in page already
-  did. Nothing changes for a deployment.
+  the Confirm access page now shows it too, as the sign-in page already did.
+  Nothing changes for a deployment.
 
 ## 0.4.1 (2026-11-06)
 
