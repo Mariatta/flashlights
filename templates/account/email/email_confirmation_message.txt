@@ -7,6 +7,6 @@
 
 {{ code }}
 
-{% code_lifetime_minutes "email_verification" as minutes %}{% blocktranslate count minutes=minutes %}The code works for up to {{ minutes }} minute. If it has stopped working, sign in again for a fresh one.{% plural %}The code works for up to {{ minutes }} minutes. If it has stopped working, sign in again for a fresh one.{% endblocktranslate %}{% else %}{% blocktranslate %}If that was you, confirm it by going to {{ activate_url }}{% endblocktranslate %}{% endif %}
+{% code_lifetime_minutes "email_verification" as minutes %}{% blocktranslate count minutes=minutes %}The code works for up to {{ minutes }} minute.{% plural %}The code works for up to {{ minutes }} minutes.{% endblocktranslate %} {% if signup %}{% blocktranslate %}If it has stopped working, sign in again for a fresh one.{% endblocktranslate %}{% else %}{% blocktranslate %}If it has stopped working, choose Re-send Verification on your Email addresses page for a fresh one.{% endblocktranslate %}{% endif %}{% else %}{% blocktranslate %}If that was you, confirm it by going to {{ activate_url }}{% endblocktranslate %}{% endif %}
 
 {% blocktranslate count days=unverified_account_retention_days %}If that was not you, no action is needed: an account that is not verified within {{ days }} day is deleted without notice.{% plural %}If that was not you, no action is needed: an account that is not verified within {{ days }} days is deleted without notice.{% endblocktranslate %}{% endautoescape %}{% endblock content %}

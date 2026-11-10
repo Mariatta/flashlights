@@ -247,6 +247,19 @@ def test_verification_email_says_how_long_the_code_works(code_page):
     )
 
 
+def test_adding_an_address_email_points_to_the_email_page(client, portal_user):
+    """Signing in again sends nothing for an address added while signed in;
+    allauth's Re-send Verification on the Email addresses page does."""
+    client.force_login(portal_user)
+    client.post(
+        reverse("account_email"), {"action_add": "", "email": "second@example.com"}
+    )
+    body = mail.outbox[-1].body
+    assert "The code works for up to 15 minutes." in body
+    assert "choose Re-send Verification on your Email addresses page" in body
+    assert "sign in again" not in body
+
+
 def test_sign_in_code_email_says_how_long_the_code_works(client, portal_user):
     client.post(reverse("account_request_login_code"), {"email": portal_user.email})
     assert "The code works for 3 minutes." in mail.outbox[-1].body
