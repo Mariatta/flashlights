@@ -77,6 +77,25 @@ class TestSwitch:
         assert boot.switch({}, "X", default="true")
 
 
+class TestMinutes:
+    def test_unset_or_blank_is_the_default(self):
+        assert boot.minutes({}, "SIGN_IN_CODE_MINUTES", 3) == 3
+        assert (
+            boot.minutes({"SIGN_IN_CODE_MINUTES": " "}, "SIGN_IN_CODE_MINUTES", 3) == 3
+        )
+
+    def test_a_whole_number_is_read(self):
+        assert (
+            boot.minutes({"SIGN_IN_CODE_MINUTES": " 10 "}, "SIGN_IN_CODE_MINUTES", 3)
+            == 10
+        )
+
+    @pytest.mark.parametrize("raw", ["0", "-5", "2.5", "ten"])
+    def test_anything_else_fails_naming_the_variable(self, raw):
+        with pytest.raises(ImproperlyConfigured, match="SIGN_IN_CODE_MINUTES"):
+            boot.minutes({"SIGN_IN_CODE_MINUTES": raw}, "SIGN_IN_CODE_MINUTES", 3)
+
+
 class TestEmailUrl:
     def test_starttls_with_credentials(self):
         assert boot.email_url(

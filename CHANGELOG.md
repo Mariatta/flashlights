@@ -62,6 +62,12 @@ for community apps is marked **Breaking**.
   first email for an email address, 3 minutes for a sign-in code. The
   password reset code page and email, used only on an instance that turns on
   reset by code, do the same.
+- **Code lifetimes are settings.** `EMAIL_VERIFICATION_CODE_MINUTES`
+  (default 15), `SIGN_IN_CODE_MINUTES` (default 3) and
+  `PASSWORD_RESET_CODE_MINUTES` (default 3) set how long each emailed code
+  works, so an instance can give people longer than allauth's defaults. A
+  value that is not a whole number of at least one stops the boot with the
+  variable's name. The code pages and emails quote whatever is set.
 - **django-allauth 65.21.1.** The accounts library moves from 65.13.0,
   taking in its security fixes since, among them these. A rate limit with
   two windows on one scope, such as the signup limit of 5 an hour and 20 a
