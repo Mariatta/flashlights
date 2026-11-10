@@ -175,6 +175,14 @@ class StartNewYearForm(EditionDatesForm):
     year = forms.IntegerField(min_value=2000, label="Year")
     name = forms.CharField(max_length=100, label="Name")
     slug = forms.SlugField(label="Slug")
+    website_url = forms.URLField(
+        required=False,
+        label="Website",
+        help_text="This edition's page on the community's main website, "
+        "linked from every page and every email. Filled in from the previous "
+        "edition: change it if this edition has a page of its own, or clear "
+        "it for no link.",
+    )
     pretix_event_slug = forms.CharField(
         required=False, max_length=100, label="Pretix event slug"
     )
@@ -317,6 +325,7 @@ class ConferenceForm(EditionDatesForm, forms.ModelForm):
             "reply_to_email",
             "banner_text",
             "sponsors_url",
+            "website_url",
             "coc_url",
             "donate_url",
             "schedule_url",

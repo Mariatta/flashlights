@@ -9,12 +9,14 @@ for community apps is marked **Breaking**.
 
 ## 0.5.0 (unreleased)
 
-- **A link back to the community's website.** A new `WEBSITE_URL` setting
-  points at the community's main website, for an instance that is one
-  part of a community with a home elsewhere. When it is set, a
-  "<short name> website" link appears in the navbar and the footer of
-  every page, on the landing page and in the sign-off of every email.
-  Unset, no link appears.
+- **A link back to the community's website.** Each event has a new
+  website field, for its page on the community's main website (for
+  example pycon.org/2026, then pycon.org/2027), set on the event's edit
+  page or in the admin. For the active event, a "<short name> website"
+  link appears in the navbar and the footer of every page, on the landing
+  page and in the sign-off of every email. Blank, no link appears.
+  Starting the next year shows the previous event's website on the form,
+  ready to change for the new event. A new migration adds the field.
 - **Affiliation rows fit their card.** On the speaker profile, proposal,
   volunteer profile and account profile forms, the Remove checkbox and its
   label spilled past the card border. They now sit in a column sized to

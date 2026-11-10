@@ -130,6 +130,31 @@ class TestStartNextYear:
         assert new.chat_name == "Zulip"
         assert new.chat_url == "https://example.zulipchat.com/"
 
+    def test_offers_the_website_link_to_edit(self, client, admin_user, conference):
+        """The form shows the previous edition's website, ready to change;
+        the new edition takes whatever the organizers submit."""
+        conference.website_url = "https://example.org/2026/"
+        conference.save()
+        client.force_login(admin_user)
+        page = client.get(reverse("start_new_year"))
+        assert page.context["form"].initial["website_url"] == (
+            "https://example.org/2026/"
+        )
+        assert 'value="https://example.org/2026/"' in page.content.decode()
+        client.post(
+            reverse("start_new_year"),
+            payload(website_url="https://example.org/2027/"),
+        )
+        new = Conference.objects.get(year=2027)
+        assert new.website_url == "https://example.org/2027/"
+
+    def test_a_cleared_website_link_stays_empty(self, client, admin_user, conference):
+        conference.website_url = "https://example.org/2026/"
+        conference.save()
+        client.force_login(admin_user)
+        client.post(reverse("start_new_year"), payload(website_url=""))
+        assert Conference.objects.get(year=2027).website_url == ""
+
     def test_copy_without_enabling(self, client, admin_user, source):
         client.force_login(admin_user)
         client.post(reverse("start_new_year"), payload(copy_speaker_setup="on"))

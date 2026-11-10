@@ -4,10 +4,13 @@ from datetime import date
 import pytest
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
+from django.template.loader import render_to_string
 from django.test import override_settings
 from django.urls import reverse
 from pytest_django.asserts import assertRedirects
 
+from common.markdown_emails import render_markdown_email
 from portal import branding
 from portal.models import Conference, Venue
 from portal_account.models import PortalProfile
@@ -115,32 +118,58 @@ class TestPortalIndex:
     def test_every_page_links_the_community_website(
         self, client, portal_user, conference
     ):
-        """WEBSITE_URL sits in the navbar and heads the footer's About group
-        on every page, and sits in the landing hero; unset, no link is
-        there."""
+        """The edition's website sits in the navbar and heads the footer's
+        About group on every page, and sits in the landing hero; blank, no
+        link is there."""
         conference.conference_date = None
+        conference.website_url = "https://summit.test/2026/"
         conference.save()
-        link = 'href="https://summit.test/">Summit website</a>'
+        link = 'href="https://summit.test/2026/">Summit website</a>'
         navbar = (
-            '<a class="nav-link" href="https://summit.test/">Summit website'
+            '<a class="nav-link" href="https://summit.test/2026/">Summit website'
             '<i class="icon-external-link ms-1" aria-hidden="true"></i></a>'
         )
-        brand = branding.from_env(
-            {"SITE_SHORT_NAME": "Summit", "WEBSITE_URL": "https://summit.test/"}
-        )
+        brand = branding.from_env({"SITE_SHORT_NAME": "Summit"})
         with override_settings(BRAND=brand):
             landing = client.get(reverse("index")).content.decode()
             client.force_login(portal_user)
             inner = client.get(reverse("portal_stats")).content.decode()
+            client.logout()
+            conference.website_url = ""
+            conference.save()
+            content = client.get(reverse("index")).content.decode()
         assert landing.count(link) == 2  # the hero and the footer
         assert "landing-where" in landing and "icon-globe" in landing
         assert inner.count(link) == 1
         assert landing.count(navbar) == inner.count(navbar) == 1
-        with override_settings(BRAND=branding.from_env({})):
-            content = client.get(reverse("index")).content.decode()
         assert "website</a>" not in content
         assert "icon-external-link" not in content
         assert "landing-where" not in content
+
+    def test_every_email_signs_off_with_the_edition_website(self, conference):
+        """The portal's emails and the account ones (sign-in codes, password
+        resets) end with the active edition's website, address included, so
+        the plain-text part keeps it too."""
+        conference.website_url = "https://summit.test/2026/"
+        conference.save()
+        brand = branding.from_env({"SITE_SHORT_NAME": "Summit"})
+        with override_settings(BRAND=brand):
+            markdown, html, text = render_markdown_email("emails/base_email.md", {})
+            account = render_to_string(
+                "account/email/base_message.txt",
+                {
+                    "brand": brand,
+                    "current_site": Site.objects.get_current(),
+                    "active_conference": Conference.get_active(),
+                },
+            )
+        line = "Summit website: https://summit.test/2026/"
+        assert "Summit website: <https://summit.test/2026/>" in markdown
+        assert (
+            '<a href="https://summit.test/2026/">https://summit.test/2026/</a>'
+        ) in html
+        assert line in text
+        assert line in account
 
     def test_landing_never_counts_signups(self, client, portal_user, conference):
         # The "join N volunteers who signed up" line was a PyLadiesCon

@@ -27,16 +27,16 @@ Sponsorship group with show_sponsorship.
                 </ul>
             </div>
         {% endif %}
-        {% if brand.website_url or active_conference.coc_url or brand.terms_url or brand.docs_url %}
+        {% if active_conference.website_url or active_conference.coc_url or brand.terms_url or brand.docs_url %}
             <div class="col">
                 <h3 class="h6 text-white-50 text-uppercase mb-3 footer-heading">
                     {% trans "About" %}
                 </h3>
                 <ul class="list-unstyled small mb-0">
-                    {% if brand.website_url %}
+                    {% if active_conference.website_url %}
                         <li class="mb-2">
                             <a class="link-light text-decoration-none"
-                               href="{{ brand.website_url }}">{% blocktrans with name=brand.short_name %}{{ name }} website{% endblocktrans %}</a>
+                               href="{{ active_conference.website_url }}">{% blocktrans with name=brand.short_name %}{{ name }} website{% endblocktrans %}</a>
                         </li>
                     {% endif %}
                     {% if active_conference.coc_url %}

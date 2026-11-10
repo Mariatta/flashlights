@@ -302,6 +302,15 @@ class StartNewYearView(UserPassesTestMixin, FormView):
     def _previous_edition(self):
         return Conference.objects.order_by("-year").first()
 
+    def get_initial(self):
+        """The website starts as the previous edition's, shown on the form
+        so the organizers change it when this edition has its own page."""
+        initial = super().get_initial()
+        source = self._previous_edition()
+        if source is not None:
+            initial["website_url"] = source.website_url
+        return initial
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["source"] = self._previous_edition()
@@ -316,7 +325,12 @@ class StartNewYearView(UserPassesTestMixin, FormView):
         data = form.cleaned_data
         source = self._previous_edition()
 
-        conference = Conference(year=data["year"], name=data["name"], slug=data["slug"])
+        conference = Conference(
+            year=data["year"],
+            name=data["name"],
+            slug=data["slug"],
+            website_url=data["website_url"],
+        )
         form.apply_dates(conference)
         if source:
             # A community keeps its chat from one edition to the next.

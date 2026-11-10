@@ -69,7 +69,6 @@ is in `docs/developer/environment.md`.
 | `BRAND_PRIMARY` | A custom `#rrggbb` accent; the ink on it (Night or white), its text shade on Paper and the hover and press shades are derived | unset |
 | `DOCS_URL` | The help links: your community's own docs when it has some, else the core docs for this image's version. The landing's team descriptions link and the volunteer resources card appear only when it is set | the core docs for this version |
 | `TERMS_URL` | The terms of service link; left out when unset | unset |
-| `WEBSITE_URL` | The community's main website: linked from every page's navbar and footer, the landing page and every email; left out when unset | unset |
 | `VOLUNTEERING_ENABLED` | `false` hides the Volunteer hub, its nav and organizer entries and the landing section; its pages answer 404 | `true` |
 | `SPONSORSHIP_ENABLED` | `false` hides sponsors, tiers, donations, their stats and dashboard tiles; its pages answer 404 | `true` |
 | `STATS_PUBLIC` | `false` takes the public stats pages (stats, year comparison, JSON) off the site | `true` |

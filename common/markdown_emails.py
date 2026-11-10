@@ -10,6 +10,7 @@ from typing import Any, Dict, Optional, Tuple
 
 import bleach
 import markdown
+from django.apps import apps
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.mail import EmailMultiAlternatives
@@ -146,6 +147,10 @@ def render_markdown_email(
     context["current_site"] = Site.objects.get_current()
     # The instance's name for greetings and sign-offs (portal/branding.py).
     context["brand"] = settings.BRAND
+    # The active edition, for the sign-off's link to the community website.
+    context.setdefault(
+        "active_conference", apps.get_model("portal", "Conference").get_active()
+    )
     renderer = MarkdownEmailRenderer()
     markdown_content = renderer.render_template(markdown_template, context)
     return (

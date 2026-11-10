@@ -180,6 +180,19 @@ class Conference(BaseModel):
     # Per-edition external links. Organizers set these per year; when blank the
     # templates fall back to a sensible default.
     sponsors_url = models.URLField(blank=True, null=True)
+    # The community's own page for this edition (pycon.org/2026, then
+    # pycon.org/2027): linked from the navbar, the footer, the landing page
+    # and every email, so a speaker who arrives here finds the community's
+    # home. Blank, no link anywhere.
+    website_url = models.URLField(
+        "website",
+        blank=True,
+        default="",
+        help_text="This edition's page on the community's main website, for "
+        "example https://example.org/2026/. Linked from every page and every "
+        "email. Starting the next year offers it again, to change there. "
+        "Leave blank for no link.",
+    )
     coc_url = models.URLField(blank=True, null=True)
     donate_url = models.URLField(blank=True, null=True)
     schedule_url = models.URLField(blank=True, null=True)
