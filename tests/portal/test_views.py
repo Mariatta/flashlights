@@ -239,6 +239,22 @@ class TestPortalIndex:
         assert 'aria-labelledby="navUser"' in html
         assert portal_user.username in html
 
+    def test_a_long_username_is_cut_and_shown_in_full_on_hover(self, client):
+        """The longest username Django allows stays on one line in the navbar.
+
+        The name is cut with an ellipsis so it cannot wrap out of the 64px
+        bar, and its title carries the full name for a pointer to show.
+        """
+        long_name = ("a_very_long_username_" * 8)[:150]
+        user = User.objects.create_user(username=long_name, password="pw")
+        PortalProfile.objects.create(user=user)
+        client.force_login(user)
+        html = client.get(reverse("volunteer:index")).content.decode()
+
+        name = _attrs_of(html, "navUserName")
+        assert {"navbar-username", "text-truncate"} <= set(name["class"].split())
+        assert name["title"] == long_name
+
     def test_organizer_redirected_to_dashboard(self, client, admin_user, conference):
         PortalProfile.objects.create(user=admin_user)
         client.force_login(admin_user)

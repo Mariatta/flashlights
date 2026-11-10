@@ -174,7 +174,7 @@
                                id="navUser"
                                role="button"
                                data-bs-toggle="dropdown"
-                               aria-expanded="false"><span class="avatar-initial me-2" aria-hidden="true">{{ user.username|first|upper }}</span><span class="navbar-username text-truncate">{{ user.username }}</span></a>
+                               aria-expanded="false"><span class="avatar-initial me-2" aria-hidden="true">{{ user.username|first|upper }}</span><span class="navbar-username text-truncate" id="navUserName" title="{{ user.username }}">{{ user.username }}</span></a>
                             <ul class="dropdown-menu dropdown-menu-end text-small"
                                 aria-labelledby="navUser">
                                 {# Admin Area is for whoever can use the Django admin: a staff #}
