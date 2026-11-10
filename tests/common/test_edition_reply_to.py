@@ -5,6 +5,8 @@ import pytest
 from allauth.account.models import EmailAddress
 from django.contrib.auth.models import User
 from django.core import mail
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from common.send_emails import edition_reply_to, send_email
@@ -51,6 +53,19 @@ class TestEditionReplyTo:
         assert edition_reply_to() is None
         send(["a@x.org"])
         assert mail.outbox[0].reply_to == ["noreply@example.com"]
+
+    def test_the_active_edition_is_looked_up_once_per_email(self, grouped):
+        """The sign-off and the reply-to share one lookup of the active
+        edition, for the portal's emails and the account ones."""
+        with CaptureQueriesContext(connection) as queries:
+            send(["a@x.org"])
+        active = [
+            q
+            for q in queries
+            if 'FROM "portal_conference"' in q["sql"] and '"is_active"' in q["sql"]
+        ]
+        assert len(active) == 1
+        assert mail.outbox[0].reply_to == [GROUP]
 
     def test_a_caller_supplied_reply_to_still_wins(self, grouped):
         send(["a@x.org"], conference=grouped, reply_to=["desk@example.com"])

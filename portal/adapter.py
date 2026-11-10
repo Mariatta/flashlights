@@ -32,7 +32,8 @@ class PortalAccountAdapter(DefaultAccountAdapter):
         """Account email replies where the rest of the portal's email does:
         the active edition's reply-to address, when it has one."""
         msg = super().render_mail(template_prefix, email, context, headers=headers)
-        reply_to = edition_reply_to()
+        # send_mail put the active edition in the context: reuse it.
+        reply_to = edition_reply_to(context.get("active_conference"))
         if reply_to:
             msg.reply_to = reply_to
         return msg

@@ -127,7 +127,9 @@ def send_email(
             recipient_list,
             html_content,
             text_content,
-            reply_to=reply_to or edition_reply_to(record.conference),
+            # The sign-off already looked up the active edition: reuse it.
+            reply_to=reply_to
+            or edition_reply_to(record.conference or context.get("active_conference")),
         )
     except Exception as exc:
         record.status = SentEmailStatus.FAILED

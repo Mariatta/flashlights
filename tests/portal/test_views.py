@@ -899,12 +899,14 @@ class TestConferenceCRUD:
                 "proposals_count": "0",
                 "chat_platform": "DISCORD",
                 "conference_date": "2025-11-15",
+                "website_url": "https://example.org/2025/",
             },
             follow=True,
         )
         assert response.status_code == 200
         conference.refresh_from_db()
         assert conference.name == "Renamed Edition"
+        assert conference.website_url == "https://example.org/2025/"
         assert str(conference.conference_date) == "2025-11-15"
 
     def test_switching_the_module_on_seeds_the_checklists(
