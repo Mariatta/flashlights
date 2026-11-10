@@ -18,7 +18,8 @@ for community apps is marked **Breaking**.
   a short page saying so instead of the volunteer hub.
 - **The proposal receipt is a copy of the proposal.** The email sent
   when a session is proposed used to name only the title and kind. It now
-  carries the session's details, what was written for the session and the
+  carries the session's details, starting with everyone presenting it
+  (the proposer first), what was written for the session and the
   answers to public questions (each person's own, for questions about the
   speaker), and goes to everyone on the proposal. A co-presenter's
   copy says who proposed it, under the subject "We have a proposal with

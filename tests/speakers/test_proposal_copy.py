@@ -177,7 +177,10 @@ class TestWhoGetsIt:
     ):
         proposal = proposed(conference, stranger)
         other = make_presenter(conference, display_name="Robin")
-        add_presenter(proposal.session, other)
+        # Robin comes first in the session's own order, so the copies'
+        # "proposer first" cannot pass by following that order alone.
+        proposal.session.session_presenters.update(order=1)
+        add_presenter(proposal.session, other, order=0)
         handle = ask(conference, "Handle", about=QuestionAbout.SPEAKER)
         ProposalAnswer.objects.create(
             question=handle, presenter=proposal.presenter, value="@sam"
