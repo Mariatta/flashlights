@@ -7,7 +7,7 @@ a change to the [public API](docs/developer/community_apps.md#public-api)
 for community apps is marked **Breaking**.
 [Releasing](docs/developer/releasing.md) says how a release is made.
 
-## 0.4.2 (unreleased)
+## 0.5.0 (unreleased)
 
 - **Affiliation rows fit their card.** On the speaker profile, proposal,
   volunteer profile and account profile forms, the Remove checkbox and its
@@ -39,6 +39,51 @@ for community apps is marked **Breaking**.
   dashboard and My sessions pages it was an outline button; on the
   dashboard that made it easier to miss than the filled "Open my
   checklist". It is now filled on both pages.
+- **A new verification code on request.** A person whose verification email
+  did not arrive saw only Confirm and Cancel on the code page; nothing said
+  that cancelling and signing in again sends a new code. The page now has
+  **Send me a new code**, twice per code page, with the newest code the
+  only one that works, and a line saying what else to try, which stays when
+  the button is gone. allauth sends one email per address every ten
+  seconds, so right after a code goes out the page says it was just sent
+  and counts down to when a new one can be asked for, with the button
+  disabled until then. A request that one of allauth's rate limits refuses
+  outright, such as a signup past its limit, or a new code asked for too
+  soon in a browser without JavaScript, now lands on a "Please wait a
+  moment" page in the instance's own styling instead of a bare "429 Too
+  Many Requests". The
+  [getting started guide](docs/user/get_started.md) says what to do when
+  the code does not arrive.
+- **Code pages and emails say how long the code works.** The email
+  verification and sign-in code pages said only that the code "expires
+  shortly", and the emails carrying the codes said nothing, so a person who
+  opened the email late had no hint why the code no longer worked. Both now
+  give the time, read from the setting allauth enforces: up to 15 minutes
+  for an email address and 3 minutes for a sign-in code. A new verification
+  code from the same page does not add time. Once a code has stopped
+  working, the verification email says what gets a fresh one: signing in
+  again after sign-up, or adding the address again on the Email addresses
+  page for an address added later. The password reset code page and email,
+  used only on an instance that turns on reset by code, also give the time.
+- **Code lifetimes are settings.** `EMAIL_VERIFICATION_CODE_MINUTES`
+  (default 15), `SIGN_IN_CODE_MINUTES` (default 3) and
+  `PASSWORD_RESET_CODE_MINUTES` (default 3) set how long each emailed code
+  works, so an instance can give people longer than allauth's defaults. A
+  value that is not a whole number of at least one stops the boot with the
+  variable's name. The code pages and emails quote whatever is set.
+- **django-allauth 65.21.1.** The accounts library moves from 65.13.0,
+  taking in its security fixes since, among them these. A rate limit with
+  two windows on one scope, such as the signup limit of 5 an hour and 20 a
+  day, no longer lets the longer window be bypassed; cancelling a sign-in
+  part way through now discards what it had collected, so the next sign-in
+  in the same browser starts clean; rate-limit updates are serialised under
+  concurrent requests; and codes typed by a person (email verification,
+  sign-in, password reset) are compared in constant time. Those codes are
+  now eight characters in two groups of four, such as `LZTL-KPGV`, and a
+  person may type them without the dash. On the change-password page the
+  "Forgot your password?" link moves under the current-password field, and
+  the Confirm access page now shows it too, as the sign-in page already did.
+  Nothing changes for a deployment.
 
 ## 0.4.1 (2026-11-06)
 

@@ -1,6 +1,6 @@
 {% extends "account/base_confirm_code.html" %}
-{% load i18n %}
-{% load allauth account %}
+{% load i18n static %}
+{% load allauth account portal_extras %}
 {% block head_title %}
     {% translate "Email verification" %}
 {% endblock head_title %}
@@ -13,6 +13,43 @@
 {% block action_url %}
     {% url "account_email_verification_sent" %}
 {% endblock action_url %}
+{% block help %}
+    {% comment %}
+    Shown with or without the button: once the two new codes are used up the
+    button is gone, and this is what still works. Signing in again sends a
+    code only after Cancel; while the code page is pending, allauth sends a
+    sign-in straight back to it. With a cancel_url the person is adding an
+    address while signed in, so only the spam folder applies.
+    {% endcomment %}
+    {% if can_resend %}
+        {% new_code_wait_seconds email as wait %}
+        {% if wait %}
+            {% comment %}
+            A code went out moments ago and allauth will not send another to
+            this address yet: say so, and count down to when it will. The
+            script disables the button until then.
+            {% endcomment %}
+            <p data-new-code-wait="{{ wait }}">
+                {% blocktranslate with clock=wait|minutes_seconds %}We sent a code just now. You can ask for a new one in <span data-new-code-clock>{{ clock }}</span>.{% endblocktranslate %}
+            </p>
+            <script src="{% static 'js/new-code-countdown.js' %}" defer></script>
+        {% endif %}
+    {% endif %}
+    {% element p %}
+    {% if can_resend %}
+        {% translate "Did not get it? Check your spam folder, or ask for a new code." %}
+    {% else %}
+        {% translate "Did not get it? Check your spam folder." %}
+    {% endif %}
+    {% if not cancel_url %}
+        {% translate "You can also choose Cancel and sign in again, which sends a new code." %}
+    {% endif %}
+{% endelement %}
+{% endblock help %}
+{% block expiry %}
+    {% code_lifetime_minutes "email_verification" as minutes %}
+    {% blocktranslate count minutes=minutes %}The code works for up to {{ minutes }} minute, so please enter it soon. A new code from this page does not add time.{% plural %}The code works for up to {{ minutes }} minutes, so please enter it soon. A new code from this page does not add time.{% endblocktranslate %}
+{% endblock expiry %}
 {% block extra_tags %}
     email,verification
 {% endblock extra_tags %}

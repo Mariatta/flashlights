@@ -374,6 +374,22 @@ STATS_PUBLIC = _switch("STATS_PUBLIC")
 
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
+# A person who did not get the code asks for a new one from the code page,
+# this many times per code page; after that, choosing Cancel and signing in
+# again sends a fresh one and starts a new code page. allauth spaces the
+# emails ten seconds apart; the code page counts down to the next one
+# (new_code_wait_seconds), and a faster request still gets templates/429.html.
+ACCOUNT_EMAIL_VERIFICATION_SUPPORTS_RESEND = 2
+# How long each emailed code works, set per instance in minutes. The
+# defaults are allauth's own. The code pages and emails quote these
+# (code_lifetime_minutes), so the sentence and the expiry always agree.
+ACCOUNT_EMAIL_VERIFICATION_BY_CODE_TIMEOUT = 60 * boot.minutes(
+    os.environ, "EMAIL_VERIFICATION_CODE_MINUTES", 15
+)
+ACCOUNT_LOGIN_BY_CODE_TIMEOUT = 60 * boot.minutes(os.environ, "SIGN_IN_CODE_MINUTES", 3)
+ACCOUNT_PASSWORD_RESET_BY_CODE_TIMEOUT = 60 * boot.minutes(
+    os.environ, "PASSWORD_RESET_CODE_MINUTES", 3
+)
 ACCOUNT_EMAIL_SUBJECT_PREFIX = f"[{BRAND.short_name}] "
 LOGIN_REDIRECT_URL = "/"
 ACCOUNT_LOGIN_METHODS = {"username"}

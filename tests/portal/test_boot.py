@@ -77,6 +77,25 @@ class TestSwitch:
         assert boot.switch({}, "X", default="true")
 
 
+class TestMinutes:
+    def test_unset_or_blank_is_the_default(self):
+        assert boot.minutes({}, "SIGN_IN_CODE_MINUTES", 3) == 3
+        assert (
+            boot.minutes({"SIGN_IN_CODE_MINUTES": " "}, "SIGN_IN_CODE_MINUTES", 3) == 3
+        )
+
+    def test_a_whole_number_is_read(self):
+        assert (
+            boot.minutes({"SIGN_IN_CODE_MINUTES": " 10 "}, "SIGN_IN_CODE_MINUTES", 3)
+            == 10
+        )
+
+    @pytest.mark.parametrize("raw", ["0", "-5", "2.5", "ten"])
+    def test_anything_else_fails_naming_the_variable(self, raw):
+        with pytest.raises(ImproperlyConfigured, match="SIGN_IN_CODE_MINUTES"):
+            boot.minutes({"SIGN_IN_CODE_MINUTES": raw}, "SIGN_IN_CODE_MINUTES", 3)
+
+
 class TestEmailUrl:
     def test_starttls_with_credentials(self):
         assert boot.email_url(
@@ -112,7 +131,8 @@ def settings_in_a_fresh_interpreter(**env):
         "import json; from django.conf import settings as s;"
         "print(json.dumps({k: getattr(s, k, None) for k in ("
         "'DEBUG','EMAIL_HOST','EMAIL_PORT','EMAIL_USE_TLS','USE_OBJECT_STORAGE',"
-        "'USE_SPACES','CELERY_BROKER_USE_SSL')}))"
+        "'USE_SPACES','CELERY_BROKER_USE_SSL','ACCOUNT_EMAIL_VERIFICATION_BY_CODE_TIMEOUT',"
+        "'ACCOUNT_LOGIN_BY_CODE_TIMEOUT','ACCOUNT_PASSWORD_RESET_BY_CODE_TIMEOUT')}))"
     )
     base = {
         "PATH": os.environ.get("PATH", ""),
@@ -164,6 +184,29 @@ class TestAtBoot:
     def test_debug_written_as_off_is_off(self, value):
         found = settings_in_a_fresh_interpreter(**FULL, DEBUG=value)
         assert found["DEBUG"] is False
+
+    def test_code_lifetimes_default_to_allauths(self):
+        found = settings_in_a_fresh_interpreter(**FULL)
+        assert found["ACCOUNT_EMAIL_VERIFICATION_BY_CODE_TIMEOUT"] == 900
+        assert found["ACCOUNT_LOGIN_BY_CODE_TIMEOUT"] == 180
+        assert found["ACCOUNT_PASSWORD_RESET_BY_CODE_TIMEOUT"] == 180
+
+    def test_each_code_lifetime_variable_sets_its_own_setting(self):
+        found = settings_in_a_fresh_interpreter(
+            **FULL,
+            EMAIL_VERIFICATION_CODE_MINUTES="10",
+            SIGN_IN_CODE_MINUTES="20",
+            PASSWORD_RESET_CODE_MINUTES="30",
+        )
+        assert found["ACCOUNT_EMAIL_VERIFICATION_BY_CODE_TIMEOUT"] == 600
+        assert found["ACCOUNT_LOGIN_BY_CODE_TIMEOUT"] == 1200
+        assert found["ACCOUNT_PASSWORD_RESET_BY_CODE_TIMEOUT"] == 1800
+
+    def test_a_bad_code_lifetime_stops_the_boot_even_in_debug(self):
+        found = settings_in_a_fresh_interpreter(
+            SECRET_KEY="s", DEBUG="1", SIGN_IN_CODE_MINUTES="0"
+        )
+        assert "SIGN_IN_CODE_MINUTES must be a whole number" in found["error"]
 
     def test_debug_zero_still_runs_the_production_check(self):
         found = settings_in_a_fresh_interpreter(SECRET_KEY="s", DEBUG="0")

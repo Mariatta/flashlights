@@ -74,6 +74,24 @@ def switch(env, *names, default="false"):
     return default == "true"
 
 
+def minutes(env, name, default):
+    """``name`` as a whole number of minutes, at least one; ``default``
+    when it is unset or empty. Anything else fails the boot naming the
+    variable, rather than starting with a code that expires at once."""
+    raw = env.get(name, "").strip()
+    if not raw:
+        return default
+    try:
+        value = int(raw)
+    except ValueError:
+        value = 0
+    if value < 1:
+        raise ImproperlyConfigured(
+            f"{name} must be a whole number of minutes, at least 1, not {raw!r}"
+        )
+    return value
+
+
 def email_url(url):
     """``smtp://user:password@host:port/?tls=true`` as Django email settings.
 

@@ -27,6 +27,14 @@ of your event, "the portal" is your instance of Flashlights.
 2. Choose a username, enter your email address and a password.
 3. We email you a verification code; enter it on the page to finish.
 
+If the code has not arrived after a few minutes, check your spam folder,
+then choose **Send me a new code** on the same page, up to twice. After
+that, choose **Cancel** and sign in again, which sends a new code. Only the
+newest code works. A code works for the time the page gives (15 minutes
+unless the organizers changed it), and a new code from the same page does
+not add time. If the code has stopped working, sign in again for a fresh
+one.
+
 If we invited you to speak, skip this: accepting the invitation creates
 your account.
 
