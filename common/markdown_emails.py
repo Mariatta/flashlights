@@ -6,7 +6,8 @@ converting them to both HTML and plain text formats for email delivery.
 
 import re
 from html import unescape
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Iterable, Optional, Tuple
+from uuid import uuid4
 
 import bleach
 import markdown
@@ -150,13 +151,38 @@ def add_email_chrome(context: Dict[str, Any]) -> Dict[str, Any]:
     return context
 
 
+def text_keeping_verbatim(
+    renderer: MarkdownEmailRenderer, markdown_content: str, verbatim: Iterable[str]
+) -> str:
+    """The plain-text part, with each string in ``verbatim`` exactly as written.
+
+    Someone's own Markdown (a session outline, say) is rendered in the HTML
+    part, but stripping it to text would drop its list bullets and the
+    addresses behind its links. Each string is swapped for a token that
+    Markdown leaves alone, the rest is converted as usual, and the tokens
+    are swapped back. Longest first, so a short string inside a longer one
+    does not split it.
+    """
+    tokens = {}
+    for text in sorted({t for t in verbatim if t.strip()}, key=len, reverse=True):
+        token = f"verbatim{uuid4().hex}"
+        markdown_content = markdown_content.replace(text, token)
+        tokens[token] = text
+    plain = renderer.markdown_to_text(markdown_content)
+    for token, text in tokens.items():
+        plain = plain.replace(token, text)
+    return plain
+
+
 def render_markdown_email(
-    markdown_template: str, context: Dict[str, Any]
+    markdown_template: str, context: Dict[str, Any], verbatim: Iterable[str] = ()
 ) -> Tuple[str, str, str]:
     """Render the template once; return the Markdown, the HTML and the text.
 
     The Markdown is the source of both parts, which is why the sent-email
-    record keeps it and nothing else.
+    record keeps it and nothing else. Strings in ``verbatim`` are rendered
+    in the HTML part and kept as written in the text part
+    (``text_keeping_verbatim``).
     """
     add_email_chrome(context)
     renderer = MarkdownEmailRenderer()
@@ -164,7 +190,7 @@ def render_markdown_email(
     return (
         markdown_content,
         renderer.markdown_to_html(markdown_content),
-        renderer.markdown_to_text(markdown_content),
+        text_keeping_verbatim(renderer, markdown_content, verbatim),
     )
 
 
