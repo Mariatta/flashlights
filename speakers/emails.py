@@ -196,7 +196,6 @@ def render_invitation_preview(invitation):
         ),
         expires_at=timezone.now() + type(invitation).TOKEN_MAX_AGE,
     )
-    # What render_markdown_email adds when the email is really sent.
     add_email_chrome(context)
     context["preview"] = True
     renderer = MarkdownEmailRenderer()

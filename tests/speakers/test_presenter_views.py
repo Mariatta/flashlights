@@ -1137,7 +1137,9 @@ class TestInvitationPreview:
         assert "Django 101" in content and "<em>glad</em>" in content
         assert "Subject:" in content and "personal-link" in content
         assert "<strong>Flashlights</strong> ·" in content  # the wrapper too
-        assert "Flashlights website: " in content  # with the edition's link
+        # The sign-off links the active edition's website.
+        assert "Flashlights website: " in content
+        assert "https://example.org/2026/" in content
         assert "<strong>To:</strong> ada@example.com" in content
         assert Invitation.objects.count() == 0
 
