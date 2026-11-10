@@ -1,12 +1,17 @@
 """The proposal receipt is a copy of the proposal: what the speaker wrote
 about the session and their public answers, to everyone on it, once."""
 
+from unittest.mock import patch
+
 import pytest
 from django.contrib.auth.models import User
 from django.core import mail
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from common.markdown_emails import MarkdownEmailRenderer, text_keeping_verbatim
+from common.send_emails import send_email
 from speakers.constants import AnswerVisibility, QuestionAbout, QuestionKind
 from speakers.emails import send_proposal_received_email
 from speakers.models import Proposal, ProposalAnswer, ProposalQuestion
@@ -204,6 +209,37 @@ class TestWhoGetsIt:
         )
         assert Proposal.objects.get().session.title == "Now retitled"
         assert mail.outbox == []
+
+    def test_queries_grow_only_by_the_cost_of_each_email(
+        self, conference, enabled, stranger
+    ):
+        """Another presenter adds one email's queries and nothing else.
+
+        The session's answers and every presenter's speaker answers are read
+        once, whoever is on the session; what each recipient adds is the
+        sending and its record, counted inside ``send_email``.
+        """
+        proposal = proposed(conference, stranger)
+        handle = ask(conference, "Handle", about=QuestionAbout.SPEAKER)
+        inside = []
+
+        def counted_send(*args, **kwargs):
+            with CaptureQueriesContext(connection) as captured:
+                send_email(*args, **kwargs)
+            inside.append(len(captured))
+
+        def queries_outside_the_emails():
+            other = make_presenter(conference, display_name="Robin")
+            add_presenter(proposal.session, other)
+            ProposalAnswer.objects.create(question=handle, presenter=other, value="@r")
+            inside.clear()
+            with CaptureQueriesContext(connection) as captured:
+                send_proposal_received_email(proposal)
+            return len(captured) - sum(inside)
+
+        with patch("speakers.emails.send_email", counted_send):
+            counts = [queries_outside_the_emails() for _ in range(3)]
+        assert counts[0] == counts[1] == counts[2]
 
 
 class TestTextKeepingVerbatim:

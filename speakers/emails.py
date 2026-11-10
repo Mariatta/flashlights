@@ -607,6 +607,7 @@ def send_proposal_received_email(proposal):
         presenter__in=presenters
     ).select_related("question"):
         speaker_answers.setdefault(answer.presenter_id, []).append(answer)
+    reply_to = team_reply_to(proposal.conference)
     for recipient in presenters:
         answers = session_answers + copied_answers(
             speaker_answers.get(recipient.pk, [])
@@ -627,7 +628,7 @@ def send_proposal_received_email(proposal):
             },
             verbatim=[section["text"] for section in copy["sections"]]
             + [answer["text"] for answer in answers if answer["verbatim"]],
-            reply_to=team_reply_to(proposal.conference),
+            reply_to=reply_to,
         )
     # With the presenter: an edition's team address does not include this
     # proposer's liaison, and the liaison is their person.
