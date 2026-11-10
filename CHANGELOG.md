@@ -23,6 +23,11 @@ for community apps is marked **Breaking**.
   showed the signed-in username in black on the dark navbar. It now uses
   the navbar's light link colour, like the other navbar links, and
   brightens on hover.
+- **The account menu lines up with the other navbar links.** The avatar
+  and username in the top right of the navbar sat higher than the other
+  links. They are now centred on the bar like the rest. A long username
+  stays on one line, cut with an ellipsis, and screen readers announce the
+  account menu as a button rather than a link.
 - **Status badges are readable.** A speaker's "Confirmed" session showed
   black text on dark grey. Four badge colours kept Bootstrap's text colour
   on the portal's own backgrounds: confirmed, shared and the volunteer

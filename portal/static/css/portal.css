@@ -643,6 +643,16 @@ a.card:hover {
     border: 2px solid var(--accent);
     color: var(--paper);
     font: var(--weight-bold) 13px/1 var(--font-body);
+    flex-shrink: 0;
+}
+
+/* A long username stays on one line inside the 64px bar, cut with an
+   ellipsis. Inline-block so the cut also applies below desktop width,
+   where the toggle is a plain block rather than a flex box. */
+.navbar-username {
+    display: inline-block;
+    max-width: 12rem;
+    vertical-align: middle;
 }
 
 .navbar-dark .navbar-brand {
