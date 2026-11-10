@@ -10,6 +10,7 @@ from typing import Any, Dict, Optional, Tuple
 
 import bleach
 import markdown
+from django.apps import apps
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.mail import EmailMultiAlternatives
@@ -135,6 +136,20 @@ class MarkdownEmailRenderer:
         return text.strip()
 
 
+def add_email_chrome(context: Dict[str, Any]) -> Dict[str, Any]:
+    """Add what every email's wrapper reads: the site, the instance's
+    name, and the active edition for the sign-off's website link. The
+    sender and the preview both call this, so the two cannot drift."""
+    context["current_site"] = Site.objects.get_current()
+    # The instance's name for greetings and sign-offs (portal/branding.py).
+    context["brand"] = settings.BRAND
+    if "active_conference" not in context:
+        context["active_conference"] = apps.get_model(
+            "portal", "Conference"
+        ).get_active()
+    return context
+
+
 def render_markdown_email(
     markdown_template: str, context: Dict[str, Any]
 ) -> Tuple[str, str, str]:
@@ -143,9 +158,7 @@ def render_markdown_email(
     The Markdown is the source of both parts, which is why the sent-email
     record keeps it and nothing else.
     """
-    context["current_site"] = Site.objects.get_current()
-    # The instance's name for greetings and sign-offs (portal/branding.py).
-    context["brand"] = settings.BRAND
+    add_email_chrome(context)
     renderer = MarkdownEmailRenderer()
     markdown_content = renderer.render_template(markdown_template, context)
     return (

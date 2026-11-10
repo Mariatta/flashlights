@@ -23,7 +23,7 @@
                     {{ brand.description }}
                 </p>
                 {% with next_date=active_conference.next_event_date where=active_conference.next_venue %}
-                    {% if next_date or active_conference.conference_date or where %}
+                    {% if next_date or active_conference.conference_date or where or active_conference.website_url %}
                         <p class="landing-where">
                             {% if next_date %}
                                 <span>
@@ -52,6 +52,12 @@
                                     {% else %}
                                         {{ where.name }}
                                     {% endif %}
+                                </span>
+                            {% endif %}
+                            {% if active_conference.website_url %}
+                                <span>
+                                    <i class="icon-globe" aria-hidden="true"></i>
+                                    <a href="{{ active_conference.website_url }}">{% blocktrans with name=brand.short_name %}{{ name }} website{% endblocktrans %}</a>
                                 </span>
                             {% endif %}
                         </p>
