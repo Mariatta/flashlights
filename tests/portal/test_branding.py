@@ -6,7 +6,9 @@ import tomllib
 import pytest
 import yaml
 from django.conf import settings
+from django.contrib.sites.models import Site
 from django.core.exceptions import ImproperlyConfigured
+from django.template.loader import render_to_string
 from django.test import override_settings
 from django.urls import reverse
 from PIL import Image
@@ -341,8 +343,14 @@ class TestEmailWording:
             {"SITE_SHORT_NAME": "Summit", "WEBSITE_URL": "https://summit.test/"}
         )
         with override_settings(BRAND=brand):
-            markdown, _, _ = render_markdown_email("emails/base_email.md", {})
-        assert (
-            "· [example.com](https://example.com) · "
-            "[Summit website](https://summit.test/)"
-        ) in markdown
+            markdown, html, text = render_markdown_email("emails/base_email.md", {})
+            allauth = render_to_string(
+                "account/email/base_message.txt",
+                {"brand": brand, "current_site": Site.objects.get_current()},
+            )
+        assert "Summit website: <https://summit.test/>" in markdown
+        assert '<a href="https://summit.test/">https://summit.test/</a>' in html
+        # The plain-text part keeps the address, not only the link's name.
+        assert "Summit website: https://summit.test/" in text
+        # The account emails (sign-in codes, password resets) sign off too.
+        assert "Summit website: https://summit.test/" in allauth

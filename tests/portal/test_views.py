@@ -122,8 +122,8 @@ class TestPortalIndex:
         conference.save()
         link = 'href="https://summit.test/">Summit website</a>'
         navbar = (
-            '<a class="nav-link" href="https://summit.test/">Summit website '
-            '<i class="icon-external-link" aria-hidden="true"></i></a>'
+            '<a class="nav-link" href="https://summit.test/">Summit website'
+            '<i class="icon-external-link ms-1" aria-hidden="true"></i></a>'
         )
         brand = branding.from_env(
             {"SITE_SHORT_NAME": "Summit", "WEBSITE_URL": "https://summit.test/"}

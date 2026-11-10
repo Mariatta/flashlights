@@ -168,9 +168,9 @@
                         {# is maintained for this instance: English only, for now. #}
                     </ul>
                     {% if brand.website_url %}
-                        <ul class="navbar-nav me-md-3">
+                        <ul class="navbar-nav me-md-3 mb-2 mb-md-0">
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ brand.website_url }}">{% blocktrans with name=brand.short_name %}{{ name }} website{% endblocktrans %} <i class="icon-external-link" aria-hidden="true"></i></a>
+                                <a class="nav-link" href="{{ brand.website_url }}">{% blocktrans with name=brand.short_name %}{{ name }} website{% endblocktrans %}<i class="icon-external-link ms-1" aria-hidden="true"></i></a>
                             </li>
                         </ul>
                     {% endif %}
