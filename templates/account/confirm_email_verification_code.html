@@ -48,7 +48,7 @@
 {% endblock help %}
 {% block expiry %}
     {% code_lifetime_minutes "email_verification" as minutes %}
-    {% blocktranslate count minutes=minutes %}The code works for {{ minutes }} minute from the first email we sent, so please enter it soon.{% plural %}The code works for {{ minutes }} minutes from the first email we sent, so please enter it soon.{% endblocktranslate %}
+    {% blocktranslate count minutes=minutes %}The code works for up to {{ minutes }} minute, so please enter it soon. A new code from this page does not add time.{% plural %}The code works for up to {{ minutes }} minutes, so please enter it soon. A new code from this page does not add time.{% endblocktranslate %}
 {% endblock expiry %}
 {% block extra_tags %}
     email,verification

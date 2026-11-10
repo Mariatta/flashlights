@@ -30,8 +30,10 @@ of your event, "the portal" is your instance of Flashlights.
 If the code has not arrived after a few minutes, check your spam folder,
 then choose **Send me a new code** on the same page, up to twice. After
 that, choose **Cancel** and sign in again, which sends a new code. Only the
-newest code works, and codes stop working after the time the page gives,
-counted from the first email: 15 minutes unless the organizers changed it.
+newest code works. A code works for the time the page gives (15 minutes
+unless the organizers changed it), and a new code from the same page does
+not add time. If the code has stopped working, sign in again for a fresh
+one.
 
 If we invited you to speak, skip this: accepting the invitation creates
 your account.

@@ -58,10 +58,11 @@ for community apps is marked **Breaking**.
   verification and sign-in code pages said only that the code "expires
   shortly", and the emails carrying the codes said nothing, so a person who
   opened the email late had no hint why the code no longer worked. Both now
-  give the time, read from the setting allauth enforces: 15 minutes from the
-  first email for an email address, 3 minutes for a sign-in code. The
-  password reset code page and email, used only on an instance that turns on
-  reset by code, do the same.
+  give the time, read from the setting allauth enforces: up to 15 minutes
+  for an email address, where a new code from the same page does not add
+  time and the email says to sign in again once it has stopped working, and
+  3 minutes for a sign-in code. The password reset code page and email, used
+  only on an instance that turns on reset by code, do the same.
 - **Code lifetimes are settings.** `EMAIL_VERIFICATION_CODE_MINUTES`
   (default 15), `SIGN_IN_CODE_MINUTES` (default 3) and
   `PASSWORD_RESET_CODE_MINUTES` (default 3) set how long each emailed code

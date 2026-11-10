@@ -133,7 +133,7 @@ theme's, so a community sets the same values for its public site.
 | `SPONSORSHIP_EMAIL` | No | none | The organisers' sponsorship address; receives the contract request (the sponsor never does) |
 | `ACCOUNTING_EMAIL` | No | none | Who issues invoices; also receives the contract request. With neither set, the request is not sent |
 | `GDRIVE_FOLDER_ID` | No | none | A shared Google Drive folder linked from the volunteer onboarding emails; the link is left out when unset |
-| `EMAIL_VERIFICATION_CODE_MINUTES` | No | 15 | Minutes an email verification code works, counted from the first email; the code page and email quote it |
+| `EMAIL_VERIFICATION_CODE_MINUTES` | No | 15 | Minutes an email verification code works; a new code from the same code page does not add time. The code page and email quote it |
 | `SIGN_IN_CODE_MINUTES` | No | 3 | Minutes a sign-in code works; the code page and email quote it |
 | `PASSWORD_RESET_CODE_MINUTES` | No | 3 | Minutes a password reset code works, on an instance that turns on reset by code |
 | `UNVERIFIED_ACCOUNT_RETENTION_DAYS` | No | 7 | Days before an account whose email address was never verified is deleted; the verification email quotes it |

@@ -137,7 +137,8 @@ def test_adding_an_address_while_signed_in_offers_no_sign_in_again(client, porta
 
 def test_code_page_says_how_long_the_code_works(code_page, url):
     assertContains(
-        code_page.get(url), "The code works for 15 minutes from the first email"
+        code_page.get(url),
+        "The code works for up to 15 minutes, so please enter it soon.",
     )
 
 
@@ -241,7 +242,7 @@ def test_minutes_seconds(seconds, clock):
 
 def test_verification_email_says_how_long_the_code_works(code_page):
     assert (
-        "The code works for 15 minutes from the first verification email we sent you."
+        "The code works for up to 15 minutes. If it has stopped working, sign in again"
         in mail.outbox[0].body
     )
 
