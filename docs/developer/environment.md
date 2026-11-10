@@ -122,6 +122,7 @@ theme's, so a community sets the same values for its public site.
 | `BRAND_PRIMARY` | No | none | A custom `#rrggbb` accent in place of the preset; the ink on it and its hover and press shades are derived |
 | `DOCS_URL` | No | the core docs for this version | Where the help links point: your community's own docs when it has some ([Adapting Flashlights](../user/adapting.md), "Documenting your customizations"), else `https://docs.flashlights.app/X.Y.Z/` for the image's version. The landing's team descriptions link and the volunteer resources card appear only when you set it |
 | `TERMS_URL` | No | none | The terms of service link; left out when unset |
+| `WEBSITE_URL` | No | none | Your community's main website, when Flashlights is one part of it: linked from the navbar and the footer of every page, the landing page and the sign-off of every email. Left out when unset |
 
 ## Features and contacts
 

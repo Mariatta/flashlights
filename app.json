@@ -98,6 +98,10 @@
       "description": "Your terms of service page.",
       "required": false
     },
+    "WEBSITE_URL": {
+      "description": "Your community's main website, linked from the navbar, the landing page, the footer and every email.",
+      "required": false
+    },
     "VOLUNTEERING_ENABLED": {
       "description": "false hides the Volunteer hub (the lite profile).",
       "value": "true"

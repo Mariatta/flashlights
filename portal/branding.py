@@ -6,8 +6,10 @@ for its public site and its Flashlights instance:
 
 ``SITE_TITLE``, ``SITE_SHORT_NAME``, ``SITE_DESCRIPTION``, ``SITE_LOGO``,
 ``SITE_FAVICON``, ``SITE_OG_IMAGE``, ``BRAND_PRESET``, ``BRAND_PRIMARY``,
-``DOCS_URL``, ``TERMS_URL``. ``DOCS_URL`` defaults to the core docs for this
-image's version; a community with docs of its own points it at them.
+``DOCS_URL``, ``TERMS_URL``, ``WEBSITE_URL``. ``DOCS_URL`` defaults to the
+core docs for this image's version; a community with docs of its own points
+it at them. ``WEBSITE_URL`` is the community's main website, for an instance
+that is one part of a community with a home elsewhere.
 
 Colours: the design system fixes the chrome (Night, Paper,
 type, spacing); the accent is the one instance colour. It comes from a
@@ -186,6 +188,10 @@ class Brand:
     #: descriptions, a new speaker guide's placeholder) reads this one.
     community_docs_url: str
     terms_url: str
+    #: The community's main website: linked from the navbar and footer of
+    #: every page, the landing page and every email, so a speaker who
+    #: arrives here can find the community's home. Empty, no link anywhere.
+    website_url: str
 
     @property
     def initial(self):
@@ -418,4 +424,5 @@ def from_env(environ=None):
         docs_url=community_docs_url or core_docs_url(),
         community_docs_url=community_docs_url,
         terms_url=env.get("TERMS_URL", "").strip(),
+        website_url=env.get("WEBSITE_URL", "").strip(),
     )

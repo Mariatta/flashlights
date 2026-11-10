@@ -167,6 +167,13 @@
                         {# The language switcher is off until a second translation #}
                         {# is maintained for this instance: English only, for now. #}
                     </ul>
+                    {% if brand.website_url %}
+                        <ul class="navbar-nav me-md-3">
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ brand.website_url }}">{% blocktrans with name=brand.short_name %}{{ name }} website{% endblocktrans %} <i class="icon-external-link" aria-hidden="true"></i></a>
+                            </li>
+                        </ul>
+                    {% endif %}
                     {% if user.is_authenticated %}
                         <div class="dropdown text-end navbar-nav">
                             <a href="#"

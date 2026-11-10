@@ -1085,7 +1085,8 @@ body > .container:has(> .landing-hero:last-child) {
 }
 
 .landing-where .icon-calendar,
-.landing-where .icon-map-pin {
+.landing-where .icon-map-pin,
+.landing-where .icon-globe {
     color: var(--accent);
     margin-right: 4px;
 }

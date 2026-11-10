@@ -30,7 +30,7 @@ class TestFromEnv:
         assert brand.accent_ink == "#7a5c00"
         assert brand.logo == brand.favicon == brand.og_image == ""
         assert brand.docs_url == branding.core_docs_url()
-        assert brand.community_docs_url == brand.terms_url == ""
+        assert brand.community_docs_url == brand.terms_url == brand.website_url == ""
 
     def test_the_help_links_default_to_the_core_docs_for_this_version(self):
         """A blank DOCS_URL means the default too; the base is the docs
@@ -60,6 +60,7 @@ class TestFromEnv:
                 "BRAND_PRESET": "copper",
                 "DOCS_URL": "https://docs.test/",
                 "TERMS_URL": "https://x.test/terms/",
+                "WEBSITE_URL": " https://x.test/ ",
             }
         )
         assert brand.title == "PyCon Maintainer Summit"
@@ -73,6 +74,7 @@ class TestFromEnv:
         assert brand.accent_ink == "#b45309"  # reads on Paper as it is
         assert brand.docs_url == brand.community_docs_url == "https://docs.test/"
         assert brand.terms_url == "https://x.test/terms/"
+        assert brand.website_url == "https://x.test/"
 
     def test_teal_keeps_its_shades_and_white_ink(self):
         brand = branding.from_env({"BRAND_PRESET": "teal"})
@@ -331,3 +333,16 @@ class TestEmailWording:
         assert "Hello from" not in markdown and "Thank you for using" not in markdown
         assert "**Flashlights** · [example.com](https://example.com)" in markdown
         assert "!" not in text
+
+    def test_sign_off_links_the_community_website(self, conference):
+        """With WEBSITE_URL set, every email's sign-off points the reader
+        at the community's main website too."""
+        brand = branding.from_env(
+            {"SITE_SHORT_NAME": "Summit", "WEBSITE_URL": "https://summit.test/"}
+        )
+        with override_settings(BRAND=brand):
+            markdown, _, _ = render_markdown_email("emails/base_email.md", {})
+        assert (
+            "· [example.com](https://example.com) · "
+            "[Summit website](https://summit.test/)"
+        ) in markdown

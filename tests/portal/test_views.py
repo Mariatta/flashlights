@@ -112,6 +112,36 @@ class TestPortalIndex:
         assert 'href="https://example.org/donate/">Donate</a>' in landing
         assert 'href="https://example.org/donate/">Donate</a>' not in inner
 
+    def test_every_page_links_the_community_website(
+        self, client, portal_user, conference
+    ):
+        """WEBSITE_URL sits in the navbar and heads the footer's About group
+        on every page, and sits in the landing hero; unset, no link is
+        there."""
+        conference.conference_date = None
+        conference.save()
+        link = 'href="https://summit.test/">Summit website</a>'
+        navbar = (
+            '<a class="nav-link" href="https://summit.test/">Summit website '
+            '<i class="icon-external-link" aria-hidden="true"></i></a>'
+        )
+        brand = branding.from_env(
+            {"SITE_SHORT_NAME": "Summit", "WEBSITE_URL": "https://summit.test/"}
+        )
+        with override_settings(BRAND=brand):
+            landing = client.get(reverse("index")).content.decode()
+            client.force_login(portal_user)
+            inner = client.get(reverse("portal_stats")).content.decode()
+        assert landing.count(link) == 2  # the hero and the footer
+        assert "landing-where" in landing and "icon-globe" in landing
+        assert inner.count(link) == 1
+        assert landing.count(navbar) == inner.count(navbar) == 1
+        with override_settings(BRAND=branding.from_env({})):
+            content = client.get(reverse("index")).content.decode()
+        assert "website</a>" not in content
+        assert "icon-external-link" not in content
+        assert "landing-where" not in content
+
     def test_landing_never_counts_signups(self, client, portal_user, conference):
         # The "join N volunteers who signed up" line was a PyLadiesCon
         # artifact: the landing does not advertise a running total.
