@@ -98,7 +98,8 @@ volunteered with us in a previous year.
 5. Choose **Send the proposal**.
 6. You land on **My proposals**, where your proposal shows as **Pending
    review**. From there you can **Edit** it or **Withdraw** it while nobody has
-   answered yet. We also email you a confirmation. Whenever you sign in again,
+   answered yet. We also email you a copy of what you sent, without the
+   answers only the organizers or reviewers read. Whenever you sign in again,
    the portal opens on this page, and a **Proposals** menu takes you back to it.
    If you also volunteer with us this year, the volunteer hub is your home
    instead and **My proposals** is in its menu. If you created the account but
