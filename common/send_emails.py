@@ -84,6 +84,7 @@ def send_email(
     session=None,
     secrets=(),
     reply_to=None,
+    verbatim=(),
 ):
     """Send an email from a Markdown template and record it.
 
@@ -106,10 +107,13 @@ def send_email(
         reply_to: Addresses replies go to; never a recipient, so never a
             copy. Left out, replies go to the edition's reply-to address
             (``edition_reply_to``), else to ``DEFAULT_FROM_EMAIL``.
+        verbatim: Strings of the rendered Markdown (someone's own Markdown
+            fields) that the plain-text part shows as written rather than
+            stripped of their markup.
     """
     context = context or {}
     markdown_content, html_content, text_content = render_markdown_email(
-        markdown_template, context
+        markdown_template, context, verbatim
     )
     record = describe(
         subject,

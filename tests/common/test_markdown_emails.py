@@ -179,7 +179,7 @@ class SendEmailCompatibilityTest(TestCase):
             context=self.context,
         )
 
-        mock_render.assert_called_once_with("test.md", self.context)
+        mock_render.assert_called_once_with("test.md", self.context, ())
         mock_deliver.assert_called_once_with(
             self.subject, self.recipients, "<h1>Hi</h1>", "Hi", reply_to=None
         )

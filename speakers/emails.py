@@ -18,8 +18,8 @@ from common.models import SentEmail, SentEmailStatus
 from common.permissions import users_with_perm
 from common.send_emails import send_email
 
-from .constants import MANAGE_PROGRAM, SessionStatus
-from .models import MediaAsset, SpeakerSettings
+from .constants import MANAGE_PROGRAM, AnswerVisibility, QuestionKind, SessionStatus
+from .models import MediaAsset, ProposalAnswer, SpeakerSettings
 from .people import user_label
 from .rooms import Locations
 
@@ -27,6 +27,7 @@ INVITATION_SALT = "speakers.invitation"
 INVITATION_TEMPLATE = "emails/speakers/invitation.md"
 ACCEPTED_TEMPLATE = "emails/speakers/accepted.md"
 ADDED_TO_SESSION_TEMPLATE = "emails/speakers/added_to_session.md"
+PROPOSAL_RECEIVED_TEMPLATE = "emails/speakers/proposal_received.md"
 PROPOSAL_APPROVED_TEMPLATE = "emails/speakers/proposal_approved.md"
 PROPOSAL_REJECTED_TEMPLATE = "emails/speakers/proposal_rejected.md"
 # The web and the worker keep their own clocks.
@@ -517,8 +518,71 @@ def presenter_email_context(presenter):
 # ---- Proposals --------------------------------------------------------------
 
 
+#: The session's own written fields, as the proposal copy prints them.
+PROPOSAL_SECTIONS = (
+    ("summary_md", "Summary"),
+    ("outline_md", "Outline"),
+    ("prerequisites_md", "Prerequisites"),
+    ("audience_md", "Audience"),
+)
+
+
+def as_typed(value):
+    """Text from a form, trimmed, with the browser's line endings made plain."""
+    return (value or "").replace("\r\n", "\n").strip()
+
+
+def proposal_copy(session):
+    """What the proposer wrote about the session, for the receipt.
+
+    Short facts (kind, level, language, duration) and the Markdown sections,
+    blanks left out. The team's internal notes are not the speaker's and
+    stay out.
+    """
+    facts = [("Kind", session.kind.name)]
+    if session.level:
+        facts.append(("Level", session.get_level_display()))
+    if session.language:
+        facts.append(("Language", session.language))
+    if session.duration_minutes:
+        facts.append(("Duration", f"{session.duration_minutes} minutes"))
+    sections = [
+        {"label": label, "text": as_typed(getattr(session, field))}
+        for field, label in PROPOSAL_SECTIONS
+    ]
+    return {
+        "facts": [{"label": label, "value": value} for label, value in facts],
+        "sections": [section for section in sections if section["text"]],
+    }
+
+
+def copied_answers(answers):
+    """Answers for the proposal copy: only those to public questions, so
+    nothing asked for the organizers' or reviewers' eyes alone (access
+    needs, travel) sits in an inbox. A long answer is the speaker's own
+    writing and is kept as typed; the rest are read inline as words."""
+    copied = []
+    for answer in answers:
+        if answer.question.visibility != AnswerVisibility.PUBLIC or answer.is_blank:
+            continue
+        long_text = answer.question.kind == QuestionKind.LONG_TEXT
+        copied.append(
+            {
+                "label": answer.question.label,
+                "text": (
+                    as_typed(answer.display)
+                    if long_text
+                    else as_written(answer.display)
+                ),
+                "verbatim": long_text,
+            }
+        )
+    return copied
+
+
 def send_proposal_received_email(proposal):
-    """Two emails at submission: a receipt, and a nudge to the organizers."""
+    """At submission: a copy of the proposal to everyone on it, and a nudge
+    to the organizers."""
     presenter, session = proposal.presenter, proposal.session
     context = {
         "presenter": presenter,
@@ -526,14 +590,60 @@ def send_proposal_received_email(proposal):
         "session": session,
         "proposals_url": absolute_url(reverse("speakers:my_proposals")),
     }
-    send_email(
-        f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}We have your proposal: "
-        f"{session.title}",
-        [presenter.email],
-        markdown_template="emails/speakers/proposal_received.md",
-        context=context,
-        reply_to=team_reply_to(proposal.conference),
+    # The proposer first, then anyone else already on the session.
+    presenters = [presenter] + [
+        link.presenter
+        for link in session.session_presenters.select_related("presenter")
+        if link.presenter_id != presenter.pk
+    ]
+    copy = proposal_copy(session)
+    # Who is on it, proposer first, so every copy shows the whole line-up.
+    copy["facts"].insert(
+        0,
+        {
+            "label": "Presenters" if len(presenters) > 1 else "Presenter",
+            "value": ", ".join(as_written(p.display_name) for p in presenters),
+        },
     )
+    session_answers = copied_answers(
+        session.question_answers.select_related("question")
+    )
+    # A speaker question is about the person: each copy carries the
+    # recipient's own answers and nobody else's.
+    speaker_answers = {}
+    for answer in ProposalAnswer.objects.filter(
+        presenter__in=presenters
+    ).select_related("question"):
+        speaker_answers.setdefault(answer.presenter_id, []).append(answer)
+    reply_to = team_reply_to(proposal.conference)
+    for recipient in presenters:
+        answers = session_answers + copied_answers(
+            speaker_answers.get(recipient.pk, [])
+        )
+        is_proposer = recipient.pk == presenter.pk
+        # Someone else sent it: "your proposal" would read as theirs alone.
+        subject = (
+            "We have your proposal"
+            if is_proposer
+            else "We have a proposal with you on it"
+        )
+        send_email(
+            f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}{subject}: {session.title}",
+            [recipient.email],
+            markdown_template=PROPOSAL_RECEIVED_TEMPLATE,
+            context={
+                **context,
+                **copy,
+                "presenter": recipient,
+                "is_proposer": is_proposer,
+                "title": as_written(session.title),
+                "proposer": as_written(presenter.display_name),
+                "answers": answers,
+            },
+            verbatim=[section["text"] for section in copy["sections"]]
+            + [answer["text"] for answer in answers if answer["verbatim"]],
+            reply_to=reply_to,
+        )
     # With the presenter: an edition's team address does not include this
     # proposer's liaison, and the liaison is their person.
     recipients = organizer_inbox(proposal.conference, presenter)
@@ -551,7 +661,7 @@ def send_proposal_received_email(proposal):
                 "proposer": as_written(presenter.display_name),
             },
         )
-    return len(recipients) + 1
+    return len(recipients) + len(presenters)
 
 
 def send_proposal_approved_email(proposal):
