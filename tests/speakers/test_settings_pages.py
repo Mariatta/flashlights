@@ -39,6 +39,7 @@ class TestSpeakerSettingsPage:
                 "proposals_intro_md": "Tell us about your project.",
                 "organizers_email": "",
                 "conference_timezone": "America/Los_Angeles",
+                "schedule_step_minutes": "5",
                 "default_premiere_location": "YOUTUBE",
                 "default_video_length_limit_minutes": "20",
                 "media_for_speakers": "on",
@@ -47,7 +48,43 @@ class TestSpeakerSettingsPage:
         assert response.status_code == 302
         row = SpeakerSettings.objects.get(conference=conference)
         assert row.proposals_open and row.conference_timezone == "America/Los_Angeles"
+        assert row.schedule_step_minutes == 5
         assert ActivityLog.objects.filter(action="speakers.settings_changed").exists()
+
+    def test_the_grid_step_divides_an_hour(self, client, conference):
+        row = make_settings(conference)
+        assert row.schedule_step_minutes == 15
+        client.force_login(lead_of_program())
+        page = client.get(SETTINGS)
+        field = page.context["form"].fields["schedule_step_minutes"]
+        assert [value for value, _ in field.choices] == [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            10,
+            12,
+            15,
+            20,
+            30,
+            60,
+        ]
+        assert "Schedule grid step" in page.content.decode()
+        response = client.post(
+            SETTINGS,
+            {
+                "organizers_email": "",
+                "conference_timezone": "UTC",
+                "schedule_step_minutes": "7",
+                "default_premiere_location": "YOUTUBE",
+            },
+        )
+        assert response.status_code == 200
+        assert "schedule_step_minutes" in response.context["form"].errors
+        row.refresh_from_db()
+        assert row.schedule_step_minutes == 15
 
     def test_only_what_the_edition_uses(self, client, conference):
         make_settings(

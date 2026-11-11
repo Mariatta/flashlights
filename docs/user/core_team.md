@@ -171,3 +171,12 @@ lanes a day by its venue: the rooms there, plus the rooms without a venue
 "Ballroom A" read apart, and the calendar feeds, the schedule emails and
 the public program say "Ballroom A, Hyatt" the same way. A room's name is
 unique within its venue, not across the event.
+
+The schedule editor's grid runs in 15-minute rows unless the edition
+picks another step under **Speaker settings**, **Schedule grid step**:
+any whole number of minutes that divides an hour, from 1 to 60. A slot
+is at least one step long, so an event with five-minute lightning talks
+sets a step of five minutes or less. A finer step makes the grid taller;
+the Compact and Fit views put more of the day on screen. A slot shorter
+than ten minutes shows only its title on the grid: hover over it for its
+times, or use its pencil to see or change them.

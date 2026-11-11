@@ -24,6 +24,16 @@ CHANGE_TEMPLATES = "speakers.change_checklisttemplate"
 CHANGE_HANDBOOK = "speakers.change_handbook"
 CHANGE_SETTINGS = "speakers.change_speakersettings"
 
+# The schedule editor's grid step: how many minutes one row holds. Any
+# whole number of minutes that divides an hour, so every hour starts a
+# row; 15 is what every edition had before it was a setting.
+SCHEDULE_STEPS = (1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30, 60)
+DEFAULT_SCHEDULE_STEP = 15
+SCHEDULE_STEP_CHOICES = [
+    (minutes, f"{minutes} minute" if minutes == 1 else f"{minutes} minutes")
+    for minutes in SCHEDULE_STEPS
+]
+
 
 class Delivery(models.TextChoices):
     LIVE = "LIVE", "Live"

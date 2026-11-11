@@ -1155,6 +1155,15 @@ installed; this app keeps small factory functions in `tests/speakers/factories.p
   grid. A drag can only reach an hour past the current window; the
   window grows after each change, so stretching further takes a few
   drags, or "Show the whole day".
+- The grid's rows are the edition's step,
+  `SpeakerSettings.schedule_step_minutes` (any whole number of minutes
+  that divides an hour; 15 by default), set on Speaker settings. A slot
+  is at least one step long, so a five-minute lightning talk needs a
+  step of five or less. A row finer than a quarter hour keeps the
+  quarter-hour height (a one-row card still has room for its title);
+  a coarser one grows, so an hour stays as tall. A one-row card, or a
+  slot under ten minutes, shows its title only, with the details in its
+  tooltip and behind its pencil.
 - The Presenters page has two views. The default is the basic list:
   name, email, sessions with roles (one line each), Discord username,
   the invitation's state, liaison. "Expand", or `?view=data`, is the

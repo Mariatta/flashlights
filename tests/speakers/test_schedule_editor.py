@@ -21,7 +21,9 @@ from speakers.schedule import (
     _window,
     day_bounds,
     grid_for_day,
+    row_scale,
     schedule_days,
+    step_minutes,
     timezone_options,
 )
 from tests.grants import on_team
@@ -969,3 +971,159 @@ class TestViewModeStickiness:
         ).content.decode()
         assert "schedule/publish/?day=2026-12-05&amp;wide=1" in content
         assert "schedule/clear/?day=2026-12-05&amp;wide=1" in content
+
+
+@pytest.mark.django_db
+class TestGridStep:
+    """The edition's grid step: 15 minutes until an organizer picks
+    another, so a five-minute lightning talk fits on a finer grid."""
+
+    def one_day(self, conference):
+        conference.start_date = conference.end_date = date(2026, 12, 5)
+        conference.save()
+
+    def test_an_edition_without_settings_gets_quarter_hours(self, conference):
+        assert step_minutes(conference) == 15
+        grid = grid_for_day(conference, date(2026, 12, 5), full_day=True)
+        assert grid["step_minutes"] == 15
+        assert grid["hour_rows"] == 4
+        assert len(grid["rows"]) == 96
+
+    def test_existing_editions_keep_their_grid(self, conference, enabled):
+        assert enabled.schedule_step_minutes == 15
+        session = make_session(conference)
+        make_slot(session, start_utc=T0, end_utc=T0 + timedelta(minutes=15))
+        grid = grid_for_day(conference, date(2026, 12, 5), full_day=True)
+        assert grid["row_scale"] == "1"
+        card = grid["cards"][0]
+        assert card["row"] == FIRST_TIME_ROW + 14 * 4
+        assert card["span"] == 1
+        assert card["is_tight"] is True
+
+    def test_a_five_minute_grid(self, conference, enabled):
+        enabled.schedule_step_minutes = 5
+        enabled.save()
+        talk = make_session(conference, title="Lightning")
+        make_slot(talk, start_utc=T0, end_utc=T0 + timedelta(minutes=5))
+        longer = make_session(conference, title="Ten")
+        make_slot(
+            longer,
+            start_utc=T0 + timedelta(minutes=5),
+            end_utc=T0 + timedelta(minutes=15),
+        )
+        grid = grid_for_day(conference, date(2026, 12, 5), full_day=True)
+        assert grid["hour_rows"] == 12
+        assert len(grid["rows"]) == 24 * 12
+        assert [row["is_hour"] for row in grid["rows"][:13]] == [True] + [
+            False
+        ] * 11 + [True]
+        by_title = {card["session"].title: card for card in grid["cards"]}
+        assert by_title["Lightning"]["row"] == FIRST_TIME_ROW + 14 * 12
+        assert by_title["Lightning"]["span"] == 1
+        assert by_title["Lightning"]["is_tight"] is True
+        assert by_title["Ten"]["row"] == FIRST_TIME_ROW + 14 * 12 + 1
+        assert by_title["Ten"]["span"] == 2
+        assert by_title["Ten"]["is_tight"] is False
+
+    def test_a_brief_slot_shows_its_title_only_on_a_fine_grid(
+        self, conference, enabled
+    ):
+        enabled.schedule_step_minutes = 1
+        enabled.save()
+        brief = make_session(conference, title="Nine")
+        make_slot(brief, start_utc=T0, end_utc=T0 + timedelta(minutes=9))
+        ten = make_session(conference, title="Ten")
+        make_slot(
+            ten,
+            start_utc=T0 + timedelta(minutes=9),
+            end_utc=T0 + timedelta(minutes=19),
+        )
+        grid = grid_for_day(conference, date(2026, 12, 5))
+        by_title = {card["session"].title: card for card in grid["cards"]}
+        assert by_title["Nine"]["span"] == 9
+        assert by_title["Nine"]["is_tight"] is True
+        assert by_title["Ten"]["is_tight"] is False
+
+    def test_a_coarse_row_grows_so_an_hour_keeps_its_height(self, conference, enabled):
+        enabled.schedule_step_minutes = 30
+        enabled.save()
+        make_slot(
+            make_session(conference),
+            start_utc=T0,
+            end_utc=T0 + timedelta(minutes=30),
+        )
+        grid = grid_for_day(conference, date(2026, 12, 5), full_day=True)
+        assert grid["row_scale"] == "2"
+        assert grid["hour_rows"] == 2
+        assert grid["cards"][0]["span"] == 1
+        assert grid["cards"][0]["is_tight"] is False
+
+    def test_row_scale(self):
+        assert row_scale(1) == "1"
+        assert row_scale(15) == "1"
+        assert row_scale(20) == "1.33333"
+        assert row_scale(60) == "4"
+
+    def test_the_page_carries_the_step(self, client, organizer, enabled, conference):
+        enabled.schedule_step_minutes = 5
+        enabled.save()
+        self.one_day(conference)
+        make_slot(
+            make_session(conference, title="Lightning"),
+            start_utc=T0,
+            end_utc=T0 + timedelta(minutes=5),
+        )
+        make_session(conference, title="Waiting")
+        client.force_login(organizer)
+        response = client.get(EDITOR, {"day": "2026-12-05"})
+        content = response.content.decode()
+        assert response.context["step_minutes"] == 5
+        assert 'data-step="5"' in content
+        assert "--schedule-row-scale: 1" in content
+        assert "span 12;" in content
+        assert 'step="300"' in content
+        assert 'min="5"' in content
+        assert "schedule-card-tight" in content
+
+    def test_every_day_of_the_all_days_view_carries_the_step(
+        self, client, organizer, enabled, conference
+    ):
+        enabled.schedule_step_minutes = 10
+        enabled.save()
+        conference.start_date = date(2026, 12, 5)
+        conference.end_date = date(2026, 12, 6)
+        conference.save()
+        client.force_login(organizer)
+        content = client.get(EDITOR, {"days": "all"}).content.decode()
+        assert content.count('data-step="10"') == 2
+        assert "span 6;" in content
+
+    def test_a_slot_is_at_least_one_step(self, client, organizer, enabled, conference):
+        session = make_session(conference)
+        make_slot(session, start_utc=T0)
+        client.force_login(organizer)
+        response = send(client, session, {"duration": 5})
+        assert response.status_code == 400
+        error = response.json()["errors"][0]
+        assert "at least 15 minutes" in error
+        assert "speaker settings" in error
+        enabled.schedule_step_minutes = 5
+        enabled.save()
+        assert send(client, session, {"duration": 5}).status_code == 200
+        slot = ScheduleSlot.objects.get(session=session)
+        assert slot.end_utc == T0 + timedelta(minutes=5)
+
+    def test_a_one_minute_grid_takes_one_minute(
+        self, client, organizer, enabled, conference
+    ):
+        enabled.schedule_step_minutes = 1
+        enabled.save()
+        session = make_session(conference)
+        make_slot(session, start_utc=T0)
+        client.force_login(organizer)
+        assert send(client, session, {"duration": 1}).status_code == 200
+        response = send(client, session, {"duration": 0})
+        assert response.status_code == 400
+        assert response.json()["errors"] == ["A slot is at least 1 minute long."]
+        response = send(client, session, {"duration": 1441})
+        assert response.json()["errors"] == ["A slot cannot run longer than a day."]

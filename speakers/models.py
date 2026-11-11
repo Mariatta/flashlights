@@ -34,12 +34,14 @@ from .constants import (
     CAN_BE_APPROVED,
     CHOICE_KINDS,
     DEFAULT_GUIDE_KEY,
+    DEFAULT_SCHEDULE_STEP,
     IDENTITY_LOCKED_STATUSES,
     LINK_KINDS,
     OFF_SCHEDULE_STATUSES,
     OPEN_ITEM_STATUSES,
     PROPOSER_CAN_EDIT,
     RESERVED_SLUGS,
+    SCHEDULE_STEP_CHOICES,
     SESSION_LANGUAGE,
     SLUG_BASE_LENGTH,
     SLUG_MAX_LENGTH,
@@ -279,6 +281,16 @@ class SpeakerSettings(TimestampedModel):
         validators=[validate_timezone],
         help_text="The organizers' default display timezone; the event "
         "itself has none.",
+    )
+    schedule_step_minutes = models.PositiveSmallIntegerField(
+        "schedule grid step",
+        choices=SCHEDULE_STEP_CHOICES,
+        default=DEFAULT_SCHEDULE_STEP,
+        db_default=DEFAULT_SCHEDULE_STEP,
+        help_text="How many minutes one row of the schedule editor's grid "
+        "holds. A slot is at least one step long, so a five-minute lightning "
+        "talk needs a step of five minutes or less. A smaller step makes "
+        "the grid taller.",
     )
     organizers_email = models.EmailField(
         blank=True,

@@ -28,8 +28,6 @@ from .forms import ProgramItemForm, RoomForm
 from .mixins import SpeakerOrganizerRequiredMixin
 from .models import ActivityLog, Room, ScheduleSlot, Session
 from .schedule import (
-    ROWS_PER_DAY,
-    STEP_MINUTES,
     also_in,
     day_bounds,
     event_tz,
@@ -37,15 +35,27 @@ from .schedule import (
     publish_schedule,
     schedule_changes,
     schedule_days,
+    step_minutes,
     timezone_options,
     unscheduled_sessions,
 )
 
-MAX_SLOT_MINUTES = ROWS_PER_DAY * STEP_MINUTES
+MAX_SLOT_MINUTES = 24 * 60
 
 
 class SlotError(Exception):
     """A slot mutation the endpoint refuses; the message goes to the page."""
+
+
+def _too_short(step):
+    """Why a length under one grid step was refused, and, when a finer
+    step would allow it, where to set one."""
+    if step == 1:
+        return "A slot is at least 1 minute long."
+    return (
+        f"A slot is at least {step} minutes long on this grid. For a shorter "
+        "one, pick a finer schedule grid step in the speaker settings."
+    )
 
 
 def _resolve_room(conference, value):
@@ -127,12 +137,16 @@ class ScheduleEditorView(
         full_day = bool(self.request.GET.get("full"))
         all_days = self.request.GET.get("days") == "all"
         wide = bool(self.request.GET.get("wide"))
+        step = step_minutes(self.conference)
         if all_days:
             context["day_grids"] = [
-                {"day": one, **grid_for_day(self.conference, one)} for one in days
+                {"day": one, **grid_for_day(self.conference, one, step=step)}
+                for one in days
             ]
         else:
-            context.update(grid_for_day(self.conference, day, full_day=full_day))
+            context.update(
+                grid_for_day(self.conference, day, full_day=full_day, step=step)
+            )
         context.update(
             {
                 "conference": self.conference,
@@ -157,7 +171,7 @@ class ScheduleEditorView(
                     }
                 ),
                 "unpublished_total": sum(counts.values()),
-                "step_minutes": STEP_MINUTES,
+                "step_minutes": step,
                 "program_item_form": kwargs.get("program_item_form")
                 or ProgramItemForm(conference=self.conference),
             }
@@ -422,10 +436,11 @@ class SlotView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, View):
                 minutes = int(payload["duration"])
             except (TypeError, ValueError):
                 minutes = 0
-            if not STEP_MINUTES <= minutes <= MAX_SLOT_MINUTES:
-                raise SlotError(
-                    f"A slot runs between {STEP_MINUTES} minutes and a day."
-                )
+            if minutes > MAX_SLOT_MINUTES:
+                raise SlotError("A slot cannot run longer than a day.")
+            step = step_minutes(self.conference)
+            if minutes < step:
+                raise SlotError(_too_short(step))
             slot.end_utc = slot.start_utc + timedelta(minutes=minutes)
         elif "end" in payload:
             slot.end_utc = (

@@ -1,11 +1,12 @@
 """Building the schedule editor's grid (design §10, task 4.2).
 
-Rooms across, 15-minute steps down, one day at a time. A day is the
-event's own (midnight to midnight in its timezone), so an evening social
-stays on its day; every moment is stored and sent as UTC, and the browser
-labels the times in whatever timezone the organizer picks, the event's by
-default (``static/js/schedule-editor.js`` reads the ``data-utc``
-attributes this module's cards carry).
+Rooms across, the edition's grid step down (15 minutes unless an
+organizer picks another in the speaker settings), one day at a time. A
+day is the event's own (midnight to midnight in its timezone), so an
+evening social stays on its day; every moment is stored and sent as
+UTC, and the browser labels the times in whatever timezone the organizer
+picks, the event's by default (``static/js/schedule-editor.js`` reads
+the ``data-utc`` attributes this module's cards carry).
 """
 
 from datetime import datetime, timedelta, timezone
@@ -15,7 +16,7 @@ from django.db.models import Q
 from django.utils import timezone as dj_timezone
 
 from .clock import today
-from .constants import OFF_SCHEDULE_STATUSES, SessionStatus
+from .constants import DEFAULT_SCHEDULE_STEP, OFF_SCHEDULE_STATUSES, SessionStatus
 from .models import (
     ActivityLog,
     ChecklistItem,
@@ -31,8 +32,9 @@ from .models import (
 from .readiness import refresh_readiness
 from .tasks import send_schedule_update_task
 
-STEP_MINUTES = 15
-ROWS_PER_DAY = 24 * 60 // STEP_MINUTES
+# A slot shorter than this shows its title only, whatever the step: the
+# times and the type are in its tooltip and behind its pencil.
+BRIEF_MINUTES = 10
 
 # The grid's first two columns: the hour gutter and the all-rooms lane
 # where the opening and the breaks go. Rooms start in the third.
@@ -40,7 +42,7 @@ GUTTER_COLUMN = 1
 ALL_ROOMS_COLUMN = 2
 FIRST_ROOM_COLUMN = 3
 
-# The header row is row 1; the day's first quarter hour is row 2.
+# The header row is row 1; the day's first step is row 2.
 FIRST_TIME_ROW = 2
 
 
@@ -83,9 +85,30 @@ def day_bounds(day, tz=timezone.utc):
     return start.astimezone(timezone.utc), end.astimezone(timezone.utc)
 
 
-def _row_of(moment, window_start, row_count):
+def step_minutes(conference):
+    """The edition's grid step, in minutes; the default without settings."""
+    step = (
+        SpeakerSettings.objects.filter(conference=conference)
+        .values_list("schedule_step_minutes", flat=True)
+        .first()
+    )
+    return step or DEFAULT_SCHEDULE_STEP
+
+
+def row_scale(step):
+    """How much taller than a quarter-hour row one row of ``step`` is.
+
+    A step finer than a quarter hour keeps the quarter-hour row height,
+    so even a one-minute card has room for its title; a coarser one
+    grows, so an hour stays as tall as it was. Formatted for an inline
+    style, never through the locale's decimal separator.
+    """
+    return f"{max(step, DEFAULT_SCHEDULE_STEP) / DEFAULT_SCHEDULE_STEP:g}"
+
+
+def _row_of(moment, window_start, row_count, step):
     """The grid row a UTC moment falls in, clamped to the window."""
-    offset = (moment - window_start).total_seconds() // (STEP_MINUTES * 60)
+    offset = (moment - window_start).total_seconds() // (step * 60)
     return FIRST_TIME_ROW + int(max(0, min(row_count, offset)))
 
 
@@ -98,7 +121,7 @@ def _hour_of(moment):
 def _window(day_start, day_end, slots, full_day):
     """The hours the grid renders: the program plus an hour each side.
 
-    A conference day occupies a fraction of its 96 quarter-hours; the
+    A conference day occupies a fraction of its hours; the
     page shows the part that matters (design §10.2) unless asked for the
     whole day, or when there is nothing placed yet to trim around.
     """
@@ -118,8 +141,15 @@ def _window(day_start, day_end, slots, full_day):
     return start, end
 
 
-def grid_for_day(conference, day, full_day=False):
-    """Everything the grid template needs for one day, in flat queries."""
+def grid_for_day(conference, day, full_day=False, step=None):
+    """Everything the grid template needs for one day, in flat queries.
+
+    ``step`` is the edition's grid step, read from its settings when not
+    given (the all-days view reads it once for every day).
+    """
+    if step is None:
+        step = step_minutes(conference)
+    hour_rows = 60 // step
     day_start, day_end = day_bounds(day, event_tz(conference))
     # The day's lanes are the rooms of its venue, plus the rooms without
     # one (online). A day with no venue shows every room.
@@ -165,7 +195,7 @@ def grid_for_day(conference, day, full_day=False):
     ]
     last_column = FIRST_ROOM_COLUMN + len(rooms)
     window_start, window_end = _window(day_start, day_end, slots, full_day)
-    row_count = int((window_end - window_start).total_seconds() // (STEP_MINUTES * 60))
+    row_count = int((window_end - window_start).total_seconds() // (step * 60))
     warnings = presenter_warnings(slots)
     published = {
         row.session_id: row
@@ -174,8 +204,9 @@ def grid_for_day(conference, day, full_day=False):
     column = {room.pk: FIRST_ROOM_COLUMN + i for i, room in enumerate(rooms)}
     cards = []
     for slot in slots:
-        row = _row_of(slot.start_utc, window_start, row_count)
-        span = max(1, _row_of(slot.end_utc, window_start, row_count) - row)
+        row = _row_of(slot.start_utc, window_start, row_count, step)
+        span = max(1, _row_of(slot.end_utc, window_start, row_count, step) - row)
+        minutes = int((slot.end_utc - slot.start_utc).total_seconds() // 60)
         if slot.room_id is None:
             start_column, end_column = ALL_ROOMS_COLUMN, last_column
         else:
@@ -190,7 +221,13 @@ def grid_for_day(conference, day, full_day=False):
                 "start_column": start_column,
                 "end_column": end_column,
                 "is_band": slot.room_id is None,
-                "minutes": int((slot.end_utc - slot.start_utc).total_seconds() // 60),
+                "minutes": minutes,
+                # Title only, on one clipped line: a card less than two
+                # quarter-hour rows tall, or a slot under ten minutes
+                # however many fine rows it spans.
+                "is_tight": span * max(step, DEFAULT_SCHEDULE_STEP)
+                < 2 * DEFAULT_SCHEDULE_STEP
+                or minutes < BRIEF_MINUTES,
                 # Only what a publish would carry is "unpublished"; a
                 # DRAFT or INVITED card is pencilled in and waits for
                 # its confirmation instead (review of #461).
@@ -206,8 +243,8 @@ def grid_for_day(conference, day, full_day=False):
     rows = [
         {
             "index": FIRST_TIME_ROW + i,
-            "utc": window_start + timedelta(minutes=STEP_MINUTES * i),
-            "is_hour": i % 4 == 0,
+            "utc": window_start + timedelta(minutes=step * i),
+            "is_hour": i % hour_rows == 0,
         }
         for i in range(row_count)
     ]
@@ -220,6 +257,9 @@ def grid_for_day(conference, day, full_day=False):
         "rows": rows,
         "cards": cards,
         "day_start": day_start,
+        "step_minutes": step,
+        "hour_rows": hour_rows,
+        "row_scale": row_scale(step),
     }
 
 
