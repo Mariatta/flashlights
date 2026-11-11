@@ -435,7 +435,7 @@ class SlotView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, View):
             try:
                 minutes = int(payload["duration"])
             except (TypeError, ValueError):
-                minutes = 0
+                raise SlotError("Give the length in whole minutes.")
             if minutes > MAX_SLOT_MINUTES:
                 raise SlotError("A slot cannot run longer than a day.")
             step = step_minutes(self.conference)

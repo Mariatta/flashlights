@@ -650,7 +650,7 @@ A timezone switcher on the grid shows the whole schedule as a specific presenter
 
 Three view-layer changes, no model impact:
 
-- **Trim the day to its active window.** The grid renders 96 quarter-hours; a conference day uses a fraction of them. The grid starts one hour before the first slot and ends one hour after the last (full day when empty), with "earlier / later" reveals at the edges, so the default page shows the program, not the empty night.
+- **Trim the day to its active window.** The grid renders the day's rows; a conference day uses a fraction of them. The grid starts one hour before the first slot and ends one hour after the last (full day when empty), with "earlier / later" reveals at the edges, so the default page shows the program, not the empty night.
 - **A density switch** beside the timezone switcher — Comfortable (today's 1.5rem rows), Compact (~0.6rem: one-line cards, details in the tooltip and the pencil), and **Fit**, which divides the viewport height by the trimmed window's rows and sets the row height to match, floor of a few pixels: the whole day on one screen, cards as colored blocks when they must be. Pure CSS variable plus a line of arithmetic, remembered per organizer like the timezone.
 - **Every day side by side** (later, if wanted): an "All days" tab laying the per-day grids out horizontally in Fit density — the spreadsheet's one-page view. Costs only template work once the density switch exists, so it is listed, not promised.
 

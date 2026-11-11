@@ -172,6 +172,8 @@ lanes a day by its venue: the rooms there, plus the rooms without a venue
 the public program say "Ballroom A, Hyatt" the same way. A room's name is
 unique within its venue, not across the event.
 
+### The schedule grid
+
 The schedule editor's grid runs in 15-minute rows unless the edition
 picks another step under **Speaker settings**, **Schedule grid step**:
 any whole number of minutes that divides an hour, from 1 to 60. A slot

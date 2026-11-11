@@ -344,7 +344,9 @@ class TestSlotPatch:
         make_slot(session, start_utc=T0)
         client.force_login(organizer)
         assert send(client, session, {"duration": 10}).status_code == 400
-        assert send(client, session, {"duration": "soon"}).status_code == 400
+        response = send(client, session, {"duration": "soon"})
+        assert response.status_code == 400
+        assert response.json()["errors"] == ["Give the length in whole minutes."]
 
     def test_explicit_end_and_recomputed_end(
         self, client, organizer, enabled, conference
