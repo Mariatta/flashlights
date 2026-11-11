@@ -135,6 +135,7 @@ from .models import (
     Proposal,
     ProposalQuestion,
     ReadinessGate,
+    ScheduleSlot,
     Session,
     SessionPresenter,
     SessionType,
@@ -554,7 +555,20 @@ class SessionUpdateView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, Updat
             self.request, form, ("title", "slug"), "session.identity_changed"
         )
         messages.success(self.request, f"Saved “{form.instance.title}”.")
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        slot = ScheduleSlot.objects.filter(session=self.object).first()
+        if "duration_minutes" in form.changed_data and slot is not None:
+            # The slot's end followed the new length, as a resize would.
+            ActivityLog.record(
+                self.conference,
+                "slot.moved",
+                target=self.object,
+                actor=self.request.user,
+                start=slot.start_utc.isoformat(),
+                end=slot.end_utc.isoformat(),
+                room=slot.room.name if slot.room_id else "all rooms",
+            )
+        return response
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

@@ -23,10 +23,10 @@ from django.views import View
 from django.views.generic import ListView, TemplateView
 from django.views.generic.edit import CreateView, UpdateView
 
-from .constants import OFF_SCHEDULE_STATUSES, SessionStatus
+from .constants import MAX_SLOT_MINUTES, OFF_SCHEDULE_STATUSES, SessionStatus
 from .forms import ProgramItemForm, RoomForm
 from .mixins import SpeakerOrganizerRequiredMixin
-from .models import ActivityLog, Room, ScheduleSlot, Session
+from .models import ActivityLog, Room, ScheduleSlot, Session, slot_too_short
 from .schedule import (
     also_in,
     day_bounds,
@@ -40,22 +40,9 @@ from .schedule import (
     unscheduled_sessions,
 )
 
-MAX_SLOT_MINUTES = 24 * 60
-
 
 class SlotError(Exception):
     """A slot mutation the endpoint refuses; the message goes to the page."""
-
-
-def _too_short(step):
-    """Why a length under one grid step was refused, and, when a finer
-    step would allow it, where to set one."""
-    if step == 1:
-        return "A slot is at least 1 minute long."
-    return (
-        f"A slot is at least {step} minutes long on this grid. For a shorter "
-        "one, pick a finer schedule grid step in the speaker settings."
-    )
 
 
 def _resolve_room(conference, value):
@@ -440,7 +427,7 @@ class SlotView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, View):
                 raise SlotError("A slot cannot run longer than a day.")
             step = step_minutes(self.conference)
             if minutes < step:
-                raise SlotError(_too_short(step))
+                raise SlotError(slot_too_short(step))
             slot.end_utc = slot.start_utc + timedelta(minutes=minutes)
         elif "end" in payload:
             slot.end_utc = (

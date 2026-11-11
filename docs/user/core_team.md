@@ -186,5 +186,8 @@ times, or use its pencil to see or change them.
 A session and its slot on the grid always have the same length.
 Resizing a slot, or changing its minutes from the pencil, changes the
 session's length; changing the session's length on its edit page moves
-the end of its slot. A new length that would run into the next slot in
-the same room is refused, with the slot it would overlap named.
+the end of its slot. On the session's page the grid's limits apply: a
+new length is refused when it is shorter than one grid step, longer than
+a day, or would run into the next slot in the same room (the slot it
+would overlap is named). A cancelled session's slot stays as a record
+and no longer follows the session.

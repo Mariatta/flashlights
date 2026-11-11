@@ -343,6 +343,31 @@ class TestSlugUrls:
         }
         assert entry.data["changes"]["slug"]["to"] == "late-rename"
 
+    def test_a_new_length_moves_the_slot_and_is_logged(
+        self, client, organizer, sessions
+    ):
+        session = sessions["mine"]
+        start = datetime(2026, 12, 5, 14, 0, tzinfo=timezone.utc)
+        make_slot(session, start_utc=start)
+        client.force_login(organizer)
+        url = reverse("speakers:session_edit", args=[session.slug])
+        base = {
+            "kind": session.kind_id,
+            "delivery": Delivery.LIVE,
+            "level": "BEGINNER",
+            "language": "en",
+            "title": session.title,
+            "slug": session.slug,
+        }
+        client.post(url, {**base, "duration_minutes": session.duration_minutes})
+        assert not ActivityLog.objects.filter(action="slot.moved").exists()
+        client.post(url, {**base, "duration_minutes": 45})
+        session.refresh_from_db()
+        assert session.slot.end_utc == start + timedelta(minutes=45)
+        entry = ActivityLog.objects.get(action="slot.moved")
+        assert entry.actor == organizer
+        assert entry.data["end"] == (start + timedelta(minutes=45)).isoformat()
+
     def test_same_title_gets_a_suffix_within_the_edition(self, conference, enabled):
         first = make_session(conference, title="Django 101")
         second = make_session(conference, title="Django 101")

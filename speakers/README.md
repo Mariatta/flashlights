@@ -1145,8 +1145,10 @@ installed; this app keeps small factory functions in `tests/speakers/factories.p
   the length) and DELETE removes it. A session and its slot share one
   length: `ScheduleSlot.save()` writes the slot's length back to
   `Session.duration_minutes`, and `Session.save()` moves the slot's end
-  when the duration changes (`Session.clean()` refuses a length that
-  would overlap another slot). Placing a CONFIRMED session calls
+  when the duration changes, in one transaction (`Session.clean()`
+  holds a changed length to the grid's bounds and refuses one that
+  would overlap another slot). Off-schedule sessions are left out: a
+  cancelled session's slot is a record. Placing a CONFIRMED session calls
   `Session.schedule()`; removing a SCHEDULED one calls `unschedule()`
   (back to CONFIRMED, which reopens the identity fields); a PUBLISHED
   session keeps its slot. Everything is UTC end to end: the browser only

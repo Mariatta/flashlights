@@ -9,9 +9,10 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 from django.core.exceptions import ValidationError
+from django.db.models.signals import post_save
 
 from portal.models import Conference
-from speakers.models import ScheduleSlot
+from speakers.models import ScheduleSlot, Session, SpeakerSettings
 
 from .factories import (
     add_presenter,
@@ -284,10 +285,113 @@ class TestOneLength:
             session.full_clean()
         assert "Next up" in str(excinfo.value)
 
-    def test_a_zero_length_leaves_the_slot_alone(self, conference):
+    def test_a_zero_length_is_refused_and_rolls_back(self, conference):
         session = make_session(conference)
         slot = place(session, length=15)
         session.duration_minutes = 0
+        with pytest.raises(ValidationError) as excinfo:
+            session.full_clean()
+        assert "at least 15 minutes" in str(excinfo.value)
+        with pytest.raises(ValidationError):
+            session.save()
+        session.refresh_from_db()
+        slot.refresh_from_db()
+        assert session.duration_minutes == 15
+        assert slot.end_utc == T0 + timedelta(minutes=15)
+
+    def test_a_slot_the_new_length_cannot_fit_keeps_the_old_length(self, conference):
+        room = make_room(conference)
+        session = make_session(conference)
+        place(session, length=30, room=room)
+        place(make_session(conference), minutes=30, room=room)
+        session.duration_minutes = 45
+        with pytest.raises(ValidationError):
+            session.save()
+        session.refresh_from_db()
+        assert session.duration_minutes == 30
+
+    def test_a_length_under_one_grid_step_is_refused(self, conference):
+        SpeakerSettings.objects.update_or_create(
+            conference=conference, defaults={"schedule_step_minutes": 5}
+        )
+        session = make_session(conference)
+        place(session, length=15)
+        session.duration_minutes = 4
+        with pytest.raises(ValidationError) as excinfo:
+            session.full_clean()
+        assert "finer schedule grid step" in str(excinfo.value)
+        session.duration_minutes = 5
+        session.full_clean()
+
+    def test_a_length_over_a_day_is_refused(self, conference):
+        session = make_session(conference)
+        place(session, length=15)
+        session.duration_minutes = 24 * 60 + 1
+        with pytest.raises(ValidationError) as excinfo:
+            session.full_clean()
+        assert "longer than a day" in str(excinfo.value)
+
+    def test_an_unchanged_length_is_not_checked(self, conference):
+        """A session whose slot already disagrees (data from before the two
+        were kept together) still saves its other fields."""
+        room = make_room(conference)
+        session = make_session(conference)
+        place(session, length=15, room=room)
+        place(make_session(conference), minutes=15, room=room)
+        Session.objects.filter(pk=session.pk).update(duration_minutes=30)
+        session.refresh_from_db()
+        session.title = "Renamed"
+        session.full_clean()
+
+    def test_a_cancelled_session_and_its_record_slot_stay_apart(self, conference):
+        room = make_room(conference)
+        session = make_session(conference)
+        slot = place(session, length=30, room=room)
+        session.cancel()
+        place(make_session(conference), minutes=30, room=room)
+        session.duration_minutes = 60
+        session.full_clean()
         session.save()
         slot.refresh_from_db()
-        assert slot.end_utc == T0 + timedelta(minutes=15)
+        assert slot.end_utc == T0 + timedelta(minutes=30)
+        slot.end_utc = T0 + timedelta(minutes=20)
+        slot.save()
+        session.refresh_from_db()
+        assert session.duration_minutes == 60
+
+    def test_a_resize_saves_the_session_so_its_signals_run(self, conference):
+        """Session's post_save is what refreshes the public program's
+        cache, so the length goes back through a save, not an update."""
+        session = make_session(conference)
+        slot = place(session, length=30)
+        heard = []
+
+        def spy(sender, instance, update_fields=None, **kwargs):
+            heard.append((instance.pk, update_fields))
+
+        post_save.connect(spy, sender=Session)
+        try:
+            slot.end_utc = T0 + timedelta(minutes=45)
+            slot.save()
+        finally:
+            post_save.disconnect(spy, sender=Session)
+        assert heard == [(session.pk, frozenset({"duration_minutes", "modified_date"}))]
+
+    def test_a_status_change_does_not_look_up_the_slot(
+        self, conference, django_assert_num_queries
+    ):
+        session = make_session(conference)
+        place(session, length=30)
+        with django_assert_num_queries(1):
+            session.save(update_fields=["title"])
+
+    def test_no_type_and_no_length_is_a_field_error(self, conference):
+        """A form posted without a type reaches clean() with neither a
+        length nor a type to take one from: the field error is the answer."""
+        session = make_session(conference)
+        place(session, length=15)
+        session.kind = None
+        session.duration_minutes = None
+        with pytest.raises(ValidationError) as excinfo:
+            session.full_clean()
+        assert "kind" in excinfo.value.message_dict

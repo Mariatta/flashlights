@@ -18,7 +18,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Value
 from django.urls import reverse
 from django.utils import timezone
@@ -37,6 +37,7 @@ from .constants import (
     DEFAULT_SCHEDULE_STEP,
     IDENTITY_LOCKED_STATUSES,
     LINK_KINDS,
+    MAX_SLOT_MINUTES,
     OFF_SCHEDULE_STATUSES,
     OPEN_ITEM_STATUSES,
     PROPOSER_CAN_EDIT,
@@ -1097,13 +1098,17 @@ class Session(TimestampedModel):
             self.slug = _unique_slug(
                 Session, self.conference, self.title, exclude_pk=self.pk
             )
-        slot = self._slot_at_new_length()
-        super().save(*args, **kwargs)
         update_fields = kwargs.get("update_fields")
-        if slot is not None and (
-            update_fields is None or "duration_minutes" in update_fields
-        ):
-            slot.save()
+        if update_fields is not None and "duration_minutes" not in update_fields:
+            super().save(*args, **kwargs)
+            return
+        slot = self._slot_at_new_length()
+        # One transaction, so a slot the new length cannot fit leaves the
+        # session's old length in place too.
+        with transaction.atomic():
+            super().save(*args, **kwargs)
+            if slot is not None:
+                slot.save()
 
     def _slot_at_new_length(self):
         """The session's slot, unsaved, ending at the session's length.
@@ -1111,14 +1116,16 @@ class Session(TimestampedModel):
         A session and its slot on the grid share one length: changing the
         session's length moves the end of its slot (and resizing the slot
         changes the session, in ``ScheduleSlot.save``). None when the
-        session is not on the grid or the lengths already agree.
+        session is not on the grid, is off the schedule (a cancelled
+        session's slot is a record, not a booking), or the lengths already
+        agree.
         """
-        if self.pk is None:
+        if self.pk is None or self.status in OFF_SCHEDULE_STATUSES:
             return None
         minutes = self.duration_minutes
         if minutes is None and self.kind_id:
             minutes = self.kind.default_duration_minutes
-        if not minutes:
+        if minutes is None:
             return None
         slot = ScheduleSlot.objects.filter(session_id=self.pk).first()
         if slot is None:
@@ -1151,8 +1158,20 @@ class Session(TimestampedModel):
                 raise ValidationError(
                     {"kind": f"A {self.kind.name} cannot have: {names}."}
                 )
-        slot = self._slot_at_new_length()
+        slot = self._slot_at_new_length() if self._length_changed() else None
         if slot is not None:
+            minutes = int((slot.end_utc - slot.start_utc).total_seconds() // 60)
+            if minutes > MAX_SLOT_MINUTES:
+                raise ValidationError(
+                    {"duration_minutes": "A slot cannot run longer than a day."}
+                )
+            step = (
+                SpeakerSettings.objects.filter(conference_id=self.conference_id)
+                .values_list("schedule_step_minutes", flat=True)
+                .first()
+            ) or DEFAULT_SCHEDULE_STEP
+            if minutes < step:
+                raise ValidationError({"duration_minutes": slot_too_short(step)})
             clash = slot.conflicts().first()
             if clash is not None:
                 raise ValidationError(
@@ -1165,6 +1184,19 @@ class Session(TimestampedModel):
                         )
                     }
                 )
+
+    def _length_changed(self):
+        """Whether the length differs from the stored one: only a change
+        is checked against the grid, so a session whose slot already
+        disagrees can still be saved for its other fields."""
+        if self.pk is None:
+            return False
+        stored = (
+            Session.objects.filter(pk=self.pk)
+            .values_list("duration_minutes", flat=True)
+            .first()
+        )
+        return stored != self.duration_minutes
 
     @property
     def is_content(self):
@@ -1746,6 +1778,17 @@ class SessionPresenter(TimestampedModel):
         self.save(update_fields=["confirmed_at"])
 
 
+def slot_too_short(step):
+    """Why a length under one grid step was refused, and, when a finer
+    step would allow it, where to set one."""
+    if step == 1:
+        return "A slot is at least 1 minute long."
+    return (
+        f"A slot is at least {step} minutes long on this grid. For a shorter "
+        "one, pick a finer schedule grid step in the speaker settings."
+    )
+
+
 class ScheduleSlot(TimestampedModel):
     """When and where a session happens (design §8.5).
 
@@ -1830,12 +1873,17 @@ class ScheduleSlot(TimestampedModel):
         self.conference_id = self.session.conference_id
         super().save(*args, **kwargs)
         # One length for both: a resize or a new end on the grid is the
-        # session's new length. A queryset update, so Session.save does
-        # not come back here.
+        # session's new length. A cancelled session's slot is a record and
+        # leaves the session alone. Saved, not updated, so the public
+        # program's cache hears of it; the session finds its slot already
+        # at that length and does not come back here.
         minutes = int((self.end_utc - self.start_utc).total_seconds() // 60)
-        if self.session.duration_minutes != minutes:
-            Session.objects.filter(pk=self.session_id).update(duration_minutes=minutes)
+        if (
+            self.session.status not in OFF_SCHEDULE_STATUSES
+            and self.session.duration_minutes != minutes
+        ):
             self.session.duration_minutes = minutes
+            self.session.save(update_fields=["duration_minutes", "modified_date"])
 
     def overlapping(self):
         """Other sessions' slots sharing any time with this one, this edition.
