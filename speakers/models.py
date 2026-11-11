@@ -1102,7 +1102,9 @@ class Session(TimestampedModel):
         if update_fields is not None and "duration_minutes" not in update_fields:
             super().save(*args, **kwargs)
             return
-        slot = self._slot_at_new_length()
+        # Only a changed length moves the slot, as in clean(): a session
+        # whose slot already disagrees keeps it where it is.
+        slot = self._slot_at_new_length() if self._length_changed() else None
         # One transaction, so a slot the new length cannot fit leaves the
         # session's old length in place too.
         with transaction.atomic():

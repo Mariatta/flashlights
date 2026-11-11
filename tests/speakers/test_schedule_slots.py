@@ -340,12 +340,15 @@ class TestOneLength:
         were kept together) still saves its other fields."""
         room = make_room(conference)
         session = make_session(conference)
-        place(session, length=15, room=room)
+        slot = place(session, length=15, room=room)
         place(make_session(conference), minutes=15, room=room)
         Session.objects.filter(pk=session.pk).update(duration_minutes=30)
         session.refresh_from_db()
         session.title = "Renamed"
         session.full_clean()
+        session.save()
+        slot.refresh_from_db()
+        assert slot.end_utc == T0 + timedelta(minutes=15)
 
     def test_a_cancelled_session_and_its_record_slot_stay_apart(self, conference):
         room = make_room(conference)

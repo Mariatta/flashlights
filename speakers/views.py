@@ -555,9 +555,16 @@ class SessionUpdateView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, Updat
             self.request, form, ("title", "slug"), "session.identity_changed"
         )
         messages.success(self.request, f"Saved “{form.instance.title}”.")
+        if "duration_minutes" not in form.changed_data:
+            return super().form_valid(form)
+        end_before = (
+            ScheduleSlot.objects.filter(session=form.instance)
+            .values_list("end_utc", flat=True)
+            .first()
+        )
         response = super().form_valid(form)
         slot = ScheduleSlot.objects.filter(session=self.object).first()
-        if "duration_minutes" in form.changed_data and slot is not None:
+        if slot is not None and slot.end_utc != end_before:
             # The slot's end followed the new length, as a resize would.
             ActivityLog.record(
                 self.conference,
