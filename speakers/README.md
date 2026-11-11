@@ -1142,7 +1142,11 @@ installed; this app keeps small factory functions in `tests/speakers/factories.p
   refresh) and ONE mutation endpoint, `sessions/<slug>/slot/`, where
   PATCH upserts the slot (a drag sends room and start, a resize sends
   duration, the keyboard form everything; a move without an end keeps
-  the length) and DELETE removes it. Placing a CONFIRMED session calls
+  the length) and DELETE removes it. A session and its slot share one
+  length: `ScheduleSlot.save()` writes the slot's length back to
+  `Session.duration_minutes`, and `Session.save()` moves the slot's end
+  when the duration changes (`Session.clean()` refuses a length that
+  would overlap another slot). Placing a CONFIRMED session calls
   `Session.schedule()`; removing a SCHEDULED one calls `unschedule()`
   (back to CONFIRMED, which reopens the identity fields); a PUBLISHED
   session keeps its slot. Everything is UTC end to end: the browser only

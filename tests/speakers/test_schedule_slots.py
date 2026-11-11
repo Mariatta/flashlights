@@ -207,3 +207,87 @@ class TestProposalsStayOffTheGrid:
         session.cancel()
         slot.save()
         assert ScheduleSlot.objects.filter(pk=slot.pk).exists()
+
+
+@pytest.mark.django_db
+class TestOneLength:
+    """A session and its slot on the grid share one length, both ways."""
+
+    def test_a_longer_slot_changes_the_session(self, conference):
+        session = make_session(conference)
+        slot = place(session, length=45)
+        session.refresh_from_db()
+        assert session.duration_minutes == 45
+        assert slot.session.duration_minutes == 45
+
+    def test_a_shorter_session_moves_the_slot_end(self, conference):
+        session = make_session(conference)
+        slot = place(session, length=15)
+        session.duration_minutes = 4
+        session.save()
+        slot.refresh_from_db()
+        assert slot.end_utc == T0 + timedelta(minutes=4)
+
+    def test_a_blank_length_takes_the_type_default_on_the_grid_too(self, conference):
+        session = make_session(conference)
+        slot = place(session, length=4)
+        session.duration_minutes = None
+        session.save()
+        slot.refresh_from_db()
+        minutes = session.kind.default_duration_minutes
+        assert slot.end_utc == T0 + timedelta(minutes=minutes)
+
+    def test_saving_other_fields_leaves_the_slot_alone(self, conference):
+        session = make_session(conference)
+        slot = place(session, length=15)
+        modified = slot.modified_date
+        session.title = "Renamed"
+        session.save()
+        session.duration_minutes = 4
+        session.save(update_fields=["title"])
+        slot.refresh_from_db()
+        assert slot.end_utc == T0 + timedelta(minutes=15)
+        assert slot.modified_date == modified
+
+    def test_an_unplaced_session_has_no_slot_to_move(self, conference):
+        session = make_session(conference)
+        session.duration_minutes = 4
+        session.save()
+        assert not ScheduleSlot.objects.exists()
+
+    def test_a_length_that_would_overlap_the_next_slot_is_refused(self, conference):
+        room = make_room(conference)
+        session = make_session(conference)
+        place(session, length=30, room=room)
+        place(make_session(conference, title="Next up"), minutes=30, room=room)
+        session.duration_minutes = 45
+        with pytest.raises(ValidationError) as excinfo:
+            session.full_clean()
+        assert "Next up" in str(excinfo.value)
+        assert "duration_minutes" in excinfo.value.message_dict
+
+    def test_a_length_with_room_to_spare_is_accepted(self, conference):
+        room = make_room(conference)
+        session = make_session(conference)
+        place(session, length=30, room=room)
+        place(make_session(conference), minutes=60, room=room)
+        session.duration_minutes = 60
+        session.full_clean()
+
+    def test_a_blank_length_is_checked_at_the_type_default(self, conference):
+        room = make_room(conference)
+        session = make_session(conference)
+        place(session, length=15, room=room)
+        place(make_session(conference, title="Next up"), minutes=15, room=room)
+        session.duration_minutes = None
+        with pytest.raises(ValidationError) as excinfo:
+            session.full_clean()
+        assert "Next up" in str(excinfo.value)
+
+    def test_a_zero_length_leaves_the_slot_alone(self, conference):
+        session = make_session(conference)
+        slot = place(session, length=15)
+        session.duration_minutes = 0
+        session.save()
+        slot.refresh_from_db()
+        assert slot.end_utc == T0 + timedelta(minutes=15)

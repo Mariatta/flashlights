@@ -357,10 +357,22 @@ class TestSlotPatch:
         end = T0 + timedelta(minutes=75)
         assert send(client, session, {"end": end.isoformat()}).status_code == 200
         assert ScheduleSlot.objects.get(session=session).end_utc == end
+        session.refresh_from_db()
+        assert session.duration_minutes == 75
+        # A cleared end recomputes from the session, which now shares the
+        # slot's length.
         assert send(client, session, {"end": None}).status_code == 200
-        assert ScheduleSlot.objects.get(session=session).end_utc == T0 + timedelta(
-            minutes=30
-        )
+        assert ScheduleSlot.objects.get(session=session).end_utc == end
+
+    def test_a_resize_is_the_sessions_new_length(
+        self, client, organizer, enabled, conference
+    ):
+        session = make_session(conference, kind="TALK")
+        make_slot(session, start_utc=T0)
+        client.force_login(organizer)
+        assert send(client, session, {"duration": 45}).status_code == 200
+        session.refresh_from_db()
+        assert session.duration_minutes == 45
 
     def test_room_changes_and_the_all_rooms_lane(
         self, client, organizer, enabled, conference

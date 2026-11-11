@@ -1097,7 +1097,38 @@ class Session(TimestampedModel):
             self.slug = _unique_slug(
                 Session, self.conference, self.title, exclude_pk=self.pk
             )
+        slot = self._slot_at_new_length()
         super().save(*args, **kwargs)
+        update_fields = kwargs.get("update_fields")
+        if slot is not None and (
+            update_fields is None or "duration_minutes" in update_fields
+        ):
+            slot.save()
+
+    def _slot_at_new_length(self):
+        """The session's slot, unsaved, ending at the session's length.
+
+        A session and its slot on the grid share one length: changing the
+        session's length moves the end of its slot (and resizing the slot
+        changes the session, in ``ScheduleSlot.save``). None when the
+        session is not on the grid or the lengths already agree.
+        """
+        if self.pk is None:
+            return None
+        minutes = self.duration_minutes
+        if minutes is None and self.kind_id:
+            minutes = self.kind.default_duration_minutes
+        if not minutes:
+            return None
+        slot = ScheduleSlot.objects.filter(session_id=self.pk).first()
+        if slot is None:
+            return None
+        end = slot.start_utc + timedelta(minutes=minutes)
+        if slot.end_utc == end:
+            return None
+        slot.end_utc = end
+        slot.session = self
+        return slot
 
     def clean(self):
         super().clean()
@@ -1119,6 +1150,20 @@ class Session(TimestampedModel):
                 )
                 raise ValidationError(
                     {"kind": f"A {self.kind.name} cannot have: {names}."}
+                )
+        slot = self._slot_at_new_length()
+        if slot is not None:
+            clash = slot.conflicts().first()
+            if clash is not None:
+                raise ValidationError(
+                    {
+                        "duration_minutes": (
+                            "At this length its slot on the schedule would "
+                            f'overlap "{clash.session.title}" '
+                            f"({clash.start_utc:%H:%M} to "
+                            f"{clash.end_utc:%H:%M} UTC)."
+                        )
+                    }
                 )
 
     @property
@@ -1784,6 +1829,13 @@ class ScheduleSlot(TimestampedModel):
         self.clean()
         self.conference_id = self.session.conference_id
         super().save(*args, **kwargs)
+        # One length for both: a resize or a new end on the grid is the
+        # session's new length. A queryset update, so Session.save does
+        # not come back here.
+        minutes = int((self.end_utc - self.start_utc).total_seconds() // 60)
+        if self.session.duration_minutes != minutes:
+            Session.objects.filter(pk=self.session_id).update(duration_minutes=minutes)
+            self.session.duration_minutes = minutes
 
     def overlapping(self):
         """Other sessions' slots sharing any time with this one, this edition.

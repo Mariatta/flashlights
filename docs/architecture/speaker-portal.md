@@ -316,7 +316,7 @@ An organizer invites a presenter to a specific session (or, for panelists, to th
 
 **Room** — `name`, `discord_id`, `url`, `kind` (`STAGE`, `VOICE`, `TEXT`, `FORUM`), `is_active`. Deliberately generic: for an online edition a room is typically a Discord channel, created on Discord by hand and recorded here, but nothing else in the portal cares where a room actually is.
 
-**ScheduleSlot** — one per session: `room` (nullable — null means *every room*, so the opening or a break spans the whole grid), `start_utc`, `end_utc`. `end_utc` defaults from the session duration.
+**ScheduleSlot**: one per session: `room` (nullable; null means *every room*, so the opening or a break spans the whole grid), `start_utc`, `end_utc`. `end_utc` defaults from the session duration, and the two stay equal: resizing the slot changes the session's duration, and changing the duration moves the slot's end.
 
 Validation: no two slots overlap in one room (an every-room slot conflicts with everything in its window, except other program-kind bands); a presenter in two overlapping slots is flagged as a warning, not blocked — a moderator moving between rooms is legitimate. A session still waiting for an answer (`PROPOSED`, `REJECTED`) cannot hold a slot at all, which is what makes it safe for the overlap rules to look through those statuses on the other side; a cancelled session keeps its slot as a record, freed for others. The checks are application-level: two organizers saving overlapping slots in the same instant can both pass and both commit. The database-level guarantee would be a Postgres exclusion constraint on (conference, room, `tstzrange(start_utc, end_utc)`) via `btree_gist` — worth adding once the editor makes concurrent edits plausible.
 
