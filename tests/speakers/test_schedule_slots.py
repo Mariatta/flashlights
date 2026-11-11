@@ -5,9 +5,11 @@ grid, except that two program-kind bands may coexist. A presenter booked
 twice at once is a warning, never an error.
 """
 
+import importlib
 from datetime import datetime, timedelta, timezone
 
 import pytest
+from django.apps import apps
 from django.core.exceptions import ValidationError
 from django.db.models.signals import post_save
 
@@ -23,6 +25,8 @@ from .factories import (
 )
 
 T0 = datetime(2026, 12, 5, 14, 0, tzinfo=timezone.utc)
+
+step_migration = importlib.import_module("speakers.migrations.0024_schedule_step")
 
 
 @pytest.fixture
@@ -395,3 +399,27 @@ class TestOneLength:
         with pytest.raises(ValidationError) as excinfo:
             session.full_clean()
         assert "kind" in excinfo.value.message_dict
+
+
+@pytest.mark.django_db
+class TestLengthsFromSlots:
+    """The one-time reconciliation: where a session and its slot already
+    disagree, the slot's length wins."""
+
+    def test_the_slot_wins_and_cancelled_sessions_are_left(self, conference):
+        room = make_room(conference)
+        placed = make_session(conference)
+        place(placed, length=15, room=room)
+        cancelled = make_session(conference)
+        place(cancelled, minutes=30, length=15, room=room)
+        cancelled.cancel()
+        agreeing = make_session(conference)
+        place(agreeing, minutes=60, length=20, room=room)
+        Session.objects.filter(pk__in=[placed.pk, cancelled.pk]).update(
+            duration_minutes=4
+        )
+        step_migration.lengths_from_slots(apps, None)
+        lengths = dict(Session.objects.values_list("pk", "duration_minutes"))
+        assert lengths[placed.pk] == 15
+        assert lengths[cancelled.pk] == 4
+        assert lengths[agreeing.pk] == 20

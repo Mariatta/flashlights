@@ -2,6 +2,27 @@
 
 from django.db import migrations, models
 
+# Off the schedule: proposals never hold a slot, and a cancelled
+# session's slot is a record that no longer follows the session.
+OFF_SCHEDULE = ("PROPOSED", "REJECTED", "CANCELLED")
+
+
+def lengths_from_slots(apps, schema_editor):
+    """A session and its slot now share one length. Where they already
+    disagree, the slot wins, so the grid looks exactly as it did."""
+    ScheduleSlot = apps.get_model("speakers", "ScheduleSlot")
+    Session = apps.get_model("speakers", "Session")
+    changed = []
+    slots = ScheduleSlot.objects.exclude(
+        session__status__in=OFF_SCHEDULE
+    ).select_related("session")
+    for slot in slots.iterator():
+        minutes = int((slot.end_utc - slot.start_utc).total_seconds() // 60)
+        if slot.session.duration_minutes != minutes:
+            slot.session.duration_minutes = minutes
+            changed.append(slot.session)
+    Session.objects.bulk_update(changed, ["duration_minutes"], batch_size=500)
+
 
 class Migration(migrations.Migration):
 
@@ -34,4 +55,6 @@ class Migration(migrations.Migration):
                 verbose_name="schedule grid step",
             ),
         ),
+        # The old lengths are not kept, so going back leaves them as set.
+        migrations.RunPython(lengths_from_slots, migrations.RunPython.noop),
     ]
