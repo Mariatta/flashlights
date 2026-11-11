@@ -7,7 +7,7 @@ a change to the [public API](docs/developer/community_apps.md#public-api)
 for community apps is marked **Breaking**.
 [Releasing](docs/developer/releasing.md) says how a release is made.
 
-## 0.5.0 (unreleased)
+## 0.5.0 (2026-11-11)
 
 - **Get started shows only what is open.** While volunteer applications
   are closed, the Get started page shows only the Propose a session card,
@@ -25,6 +25,13 @@ for community apps is marked **Breaking**.
   copy says who proposed it, under the subject "We have a proposal with
   you on it". Markdown is rendered in the HTML part and kept as typed in
   the plain-text part. Editing a submitted proposal sends nothing.
+- **A proposal has a page of its own.** It shows what was sent (the
+  description and the proposer's own answers), the answer once there is
+  one, and the same edit, withdraw and send-again actions as My proposals.
+  The session title and the "See the proposal" button on My sessions, and
+  the title and button (formerly Checklist) on the speaker home, now open
+  it, and so does the title on My proposals. A co-presenter on someone
+  else's proposal is still sent to My proposals.
 - **A link back to the community's website.** Each event has a new
   website field, for its page on the community's main website (for
   example example.org/2026, then example.org/2027), set on the event's edit
