@@ -124,6 +124,24 @@ CSRF_COOKIE_NAME = os.environ.get("CSRF_COOKIE_NAME", "flashlights_csrftoken")
 # refuse every form post. The web process is reachable only through the
 # proxy, so the header is trusted here.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+# The same proxy is the only one that knows the visitor's address. allauth
+# keys its rate limits on that address and refuses the request when it has
+# none, which is every request on Cabotage, where gunicorn listens on a unix
+# socket and REMOTE_ADDR is empty. Behind a router it is the router's
+# address, so every visitor would share one limit. allauth reads the address
+# from X-Forwarded-For only when told how many proxies append to it; it then
+# takes that many entries from the right, the one the outermost proxy added,
+# which a visitor cannot forge. A count above the real one is worse than one
+# below it: the visitor's own entries are read, or a short header is a 500.
+# Cabotage (ingress-nginx), Heroku (its router) and Azure Container Apps (its
+# ingress) are one proxy each; a CDN in front of any of them is one more.
+ALLAUTH_TRUSTED_PROXY_COUNT = boot.proxies(os.environ, "TRUSTED_PROXY_COUNT", 1)
+# A host that hands the address in a header of its own instead, such as
+# CF-Connecting-IP, names it here; X-Forwarded-For is then not read, and a
+# request without the header is refused like any with no address.
+ALLAUTH_TRUSTED_CLIENT_IP_HEADER = (
+    os.environ.get("TRUSTED_CLIENT_IP_HEADER", "").strip() or None
+)
 
 
 # Key for fields encrypted at rest (speakers.encryption.EncryptedTextField:
