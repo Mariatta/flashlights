@@ -1888,6 +1888,10 @@ class ScheduleSlot(TimestampedModel):
         while nothing in those statuses can reach the grid, and
         ``approve()`` would otherwise carry a quietly conflicting slot
         straight onto it.
+
+        A new slot, or a new length, is at least one grid step and at most
+        a day. A slot that keeps its length is not held to the step, so one
+        placed under an older, finer step can still be moved.
         """
         if self.session_id is None or self.start_utc is None:
             return

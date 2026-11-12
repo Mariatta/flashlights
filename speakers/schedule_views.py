@@ -423,10 +423,12 @@ class SlotView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, View):
                 minutes = int(payload["duration"])
             except (TypeError, ValueError):
                 raise SlotError("Give the length in whole minutes.")
-            # Checked here as well as in clean(): a huge number would
-            # overflow the date before clean() could refuse it.
+            # Checked here as well as in clean(): a huge number either way
+            # would overflow the date before clean() could refuse it.
             if minutes > MAX_SLOT_MINUTES:
                 raise SlotError("A slot cannot run longer than a day.")
+            if minutes < 0:
+                raise SlotError("The slot must end after it starts.")
             slot.end_utc = slot.start_utc + timedelta(minutes=minutes)
         elif "end" in payload:
             slot.end_utc = (

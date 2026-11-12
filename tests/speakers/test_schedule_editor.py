@@ -1209,3 +1209,6 @@ class TestGridStep:
         assert response.json()["errors"] == ["A slot is at least 1 minute long."]
         response = send(client, session, {"duration": 1441})
         assert response.json()["errors"] == ["A slot cannot run longer than a day."]
+        response = send(client, session, {"duration": -10000000000})
+        assert response.status_code == 400
+        assert response.json()["errors"] == ["The slot must end after it starts."]
