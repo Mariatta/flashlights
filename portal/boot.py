@@ -91,12 +91,13 @@ def _whole_number(env, name, default, minimum, what):
     raw = env.get(name, "").strip()
     if not raw:
         return default
+    problem = ImproperlyConfigured(f"{name} must be {what}, not {raw!r}")
     try:
         value = int(raw)
     except ValueError:
-        value = minimum - 1
+        raise problem from None
     if value < minimum:
-        raise ImproperlyConfigured(f"{name} must be {what}, not {raw!r}")
+        raise problem
     return value
 
 

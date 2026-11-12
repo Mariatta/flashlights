@@ -130,7 +130,9 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 # socket and REMOTE_ADDR is empty. Behind a router it is the router's
 # address, so every visitor would share one limit. allauth reads the address
 # from X-Forwarded-For only when told how many proxies append to it; it then
-# takes the entry the last of them added, which a visitor cannot forge.
+# takes that many entries from the right, the one the outermost proxy added,
+# which a visitor cannot forge. A count above the real one is worse than one
+# below it: the visitor's own entries are read, or a short header is a 500.
 # Cabotage (ingress-nginx) and Heroku (its router) are one proxy each.
 ALLAUTH_TRUSTED_PROXY_COUNT = boot.proxies(os.environ, "TRUSTED_PROXY_COUNT", 1)
 # A host that hands the address in a header of its own instead, such as
