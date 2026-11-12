@@ -12,7 +12,9 @@ import pytest
 from django.apps import apps
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
+from django.db import connection
 from django.db.models.signals import post_save
+from django.test.utils import CaptureQueriesContext
 
 from portal.models import Conference
 from speakers import api
@@ -404,6 +406,60 @@ class TestOneLength:
         with pytest.raises(ValidationError) as excinfo:
             session.full_clean()
         assert "kind" in excinfo.value.message_dict
+
+    def test_saving_reads_no_stored_length_back(self, conference):
+        """A loaded session remembers its stored length; a save that keeps
+        it reads neither the session nor its slot again."""
+        session = make_session(conference)
+        place(session, length=90)
+        session = Session.objects.get(pk=session.pk)
+        session.title = "Renamed"
+        with CaptureQueriesContext(connection) as queries:
+            session.save()
+        reads = [q["sql"] for q in queries if q["sql"].startswith("SELECT")]
+        assert not any('FROM "speakers_scheduleslot"' in sql for sql in reads)
+        assert not any(
+            '"speakers_session"."duration_minutes" FROM' in sql for sql in reads
+        )
+
+    def test_a_deferred_length_is_read_when_saving(self, conference):
+        session = make_session(conference)
+        slot = place(session, length=90)
+        deferred = Session.objects.defer("duration_minutes").get(pk=session.pk)
+        deferred.duration_minutes = 30
+        deferred.save()
+        slot.refresh_from_db()
+        assert slot.end_utc == T0 + timedelta(minutes=30)
+        assert deferred.moved_slot == slot
+
+    def test_a_length_read_on_demand_is_remembered(self, conference):
+        session = make_session(conference)
+        place(session, length=90)
+        deferred = Session.objects.defer("duration_minutes").get(pk=session.pk)
+        assert deferred.duration_minutes == 90
+        assert deferred._stored_minutes == 90
+        deferred.refresh_from_db(fields=["title"])
+        assert deferred._stored_minutes == 90
+
+    def test_a_slot_loaded_without_its_times_reads_them_back(self, conference):
+        session = make_session(conference)
+        place(session, length=90)
+        slot = ScheduleSlot.objects.only("id", "session").get(session=session)
+        slot.start_utc = T0
+        slot.end_utc = T0 + timedelta(minutes=5)
+        with pytest.raises(ValidationError, match="at least 15 minutes"):
+            slot.save()
+
+    def test_a_slot_with_no_stored_row_is_new(self, conference):
+        session = make_session(conference)
+        slot = ScheduleSlot(
+            pk=987654,
+            session=session,
+            start_utc=T0,
+            end_utc=T0 + timedelta(minutes=5),
+        )
+        with pytest.raises(ValidationError, match="at least 15 minutes"):
+            slot.save()
 
 
 @pytest.mark.django_db

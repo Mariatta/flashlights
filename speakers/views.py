@@ -135,7 +135,6 @@ from .models import (
     Proposal,
     ProposalQuestion,
     ReadinessGate,
-    ScheduleSlot,
     Session,
     SessionPresenter,
     SessionType,
@@ -555,26 +554,20 @@ class SessionUpdateView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, Updat
             self.request, form, ("title", "slug"), "session.identity_changed"
         )
         messages.success(self.request, f"Saved “{form.instance.title}”.")
-        if "duration_minutes" not in form.changed_data:
-            return super().form_valid(form)
-        end_before = (
-            ScheduleSlot.objects.filter(session=form.instance)
-            .values_list("end_utc", flat=True)
-            .first()
-        )
-        response = super().form_valid(form)
-        slot = ScheduleSlot.objects.filter(session=self.object).first()
-        if slot is not None and slot.end_utc != end_before:
-            # The slot's end followed the new length, as a resize would.
-            ActivityLog.record(
-                self.conference,
-                "slot.moved",
-                target=self.object,
-                actor=self.request.user,
-                start=slot.start_utc.isoformat(),
-                end=slot.end_utc.isoformat(),
-                room=slot.room.name if slot.room_id else "all rooms",
-            )
+        with transaction.atomic():
+            response = super().form_valid(form)
+            slot = self.object.moved_slot
+            if slot is not None:
+                # The slot's end followed the new length, as a resize would.
+                ActivityLog.record(
+                    self.conference,
+                    "slot.moved",
+                    target=self.object,
+                    actor=self.request.user,
+                    start=slot.start_utc.isoformat(),
+                    end=slot.end_utc.isoformat(),
+                    room=slot.room.name if slot.room_id else "all rooms",
+                )
         return response
 
     def get_context_data(self, **kwargs):

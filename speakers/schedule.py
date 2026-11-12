@@ -87,12 +87,7 @@ def day_bounds(day, tz=timezone.utc):
 
 def step_minutes(conference):
     """The edition's grid step, in minutes; the default without settings."""
-    step = (
-        SpeakerSettings.objects.filter(conference=conference)
-        .values_list("schedule_step_minutes", flat=True)
-        .first()
-    )
-    return step or DEFAULT_SCHEDULE_STEP
+    return SpeakerSettings.step_for(conference.pk)
 
 
 def slots_between_rows(conference, step):
