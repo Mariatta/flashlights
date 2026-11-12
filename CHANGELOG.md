@@ -7,7 +7,7 @@ a change to the [public API](docs/developer/community_apps.md#public-api)
 for community apps is marked **Breaking**.
 [Releasing](docs/developer/releasing.md) says how a release is made.
 
-## 0.5.1 (unreleased)
+## 0.5.1 (2026-11-11)
 
 - **Signing in works again behind a proxy.** django-allauth 65.21.1, from
   0.5.0, reads the visitor's address from `X-Forwarded-For` only when told
