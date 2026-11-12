@@ -28,6 +28,8 @@ boot.
 | `DEBUG` | No | off | Django's debug mode, for local development only. Leave it unset or off in production |
 | `BOOT_CHECK` | No | on | `0` turns the required-variable check off, for a one-off shell on a half-configured environment |
 | `PORT` | No | `8000` | The port the `web` process serves on; managed hosts set it |
+| `TRUSTED_PROXY_COUNT` | No | `1` | How many proxies in front of the `web` process add to `X-Forwarded-For`. The visitor's address is read from the entry the last of them added; it is what the sign-in and sign-up rate limits count. Cabotage and Heroku have one. Set `0` only when visitors reach the process directly. A whole number, 0 or more; any other value stops the boot |
+| `TRUSTED_CLIENT_IP_HEADER` | No | none | A header the host sets to the visitor's address, such as `CF-Connecting-IP`, read instead of `X-Forwarded-For`. Set it only when every request passes through that host, or a visitor can choose their own address |
 | `SESSION_COOKIE_NAME` | No | `flashlights_sessionid` | The session cookie's name. Browsers scope cookies by host, not port, so two Django apps on one host need different names |
 | `CSRF_COOKIE_NAME` | No | `flashlights_csrftoken` | The CSRF cookie's name, for the same reason |
 | `PORTAL_LOG_LEVEL` | No | `INFO` | The level of the apps' own log lines |
