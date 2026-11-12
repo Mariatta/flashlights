@@ -227,15 +227,15 @@ class TestOneLength:
 
     def test_a_shorter_session_moves_the_slot_end(self, conference):
         session = make_session(conference)
-        slot = place(session, length=15)
-        session.duration_minutes = 4
+        slot = place(session, length=30)
+        session.duration_minutes = 15
         session.save()
         slot.refresh_from_db()
-        assert slot.end_utc == T0 + timedelta(minutes=4)
+        assert slot.end_utc == T0 + timedelta(minutes=15)
 
     def test_a_blank_length_takes_the_type_default_on_the_grid_too(self, conference):
         session = make_session(conference)
-        slot = place(session, length=4)
+        slot = place(session, length=20)
         session.duration_minutes = None
         session.save()
         slot.refresh_from_db()

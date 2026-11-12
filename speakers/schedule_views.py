@@ -26,7 +26,7 @@ from django.views.generic.edit import CreateView, UpdateView
 from .constants import MAX_SLOT_MINUTES, OFF_SCHEDULE_STATUSES, SessionStatus
 from .forms import ProgramItemForm, RoomForm
 from .mixins import SpeakerOrganizerRequiredMixin
-from .models import ActivityLog, Room, ScheduleSlot, Session, slot_too_short
+from .models import ActivityLog, Room, ScheduleSlot, Session
 from .schedule import (
     also_in,
     day_bounds,
@@ -423,11 +423,10 @@ class SlotView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, View):
                 minutes = int(payload["duration"])
             except (TypeError, ValueError):
                 raise SlotError("Give the length in whole minutes.")
+            # Checked here as well as in clean(): a huge number would
+            # overflow the date before clean() could refuse it.
             if minutes > MAX_SLOT_MINUTES:
                 raise SlotError("A slot cannot run longer than a day.")
-            step = step_minutes(self.conference)
-            if minutes < step:
-                raise SlotError(slot_too_short(step))
             slot.end_utc = slot.start_utc + timedelta(minutes=minutes)
         elif "end" in payload:
             slot.end_utc = (
@@ -435,10 +434,7 @@ class SlotView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, View):
                 if payload["end"]
                 else None
             )
-        if slot.end_utc is not None and slot.end_utc - slot.start_utc > timedelta(
-            minutes=MAX_SLOT_MINUTES
-        ):
-            raise SlotError("A slot cannot run longer than a day.")
+        # The slot's own clean() holds every path to the grid's limits.
         slot.save()
         return slot, created
 

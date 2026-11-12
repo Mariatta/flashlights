@@ -354,6 +354,17 @@ class SpeakerSettings(TimestampedModel):
     def tzinfo(self):
         return zoneinfo.ZoneInfo(self.conference_timezone)
 
+    @classmethod
+    def step_for(cls, conference_id):
+        """An edition's schedule grid step in minutes, the default when it
+        has no settings."""
+        step = (
+            cls.objects.filter(conference_id=conference_id)
+            .values_list("schedule_step_minutes", flat=True)
+            .first()
+        )
+        return step or DEFAULT_SCHEDULE_STEP
+
     @property
     def api_origins(self):
         """The websites that may read the public API from the browser."""
@@ -1858,14 +1869,37 @@ class ScheduleSlot(TimestampedModel):
             self.end_utc = self.start_utc + timedelta(
                 minutes=self.session.duration_minutes
             )
-        if self.end_utc <= self.start_utc:
+        if self.end_utc < self.start_utc:
             raise ValidationError({"end_utc": "The slot must end after it starts."})
+        # A zero length is refused as too short.
+        if self._length_changed():
+            minutes = (self.end_utc - self.start_utc) // timedelta(minutes=1)
+            if minutes > MAX_SLOT_MINUTES:
+                raise ValidationError(
+                    {"end_utc": "A slot cannot run longer than a day."}
+                )
+            step = SpeakerSettings.step_for(self.session.conference_id)
+            if minutes < step:
+                raise ValidationError({"end_utc": slot_too_short(step)})
         clash = self.conflicts().first()
         if clash is not None:
             raise ValidationError(
                 f'This time overlaps "{clash.session.title}" '
                 f"({clash.start_utc:%H:%M} to {clash.end_utc:%H:%M} UTC)."
             )
+
+    def _length_changed(self):
+        """Whether the slot is new or its length differs from the stored
+        one. Only a new length is held to the grid's limits, so a slot
+        placed under an older, finer step can still be moved."""
+        if self.pk is None:
+            return True
+        stored = (
+            ScheduleSlot.objects.filter(pk=self.pk)
+            .values_list("start_utc", "end_utc")
+            .first()
+        )
+        return stored is None or stored[1] - stored[0] != self.end_utc - self.start_utc
 
     def save(self, *args, **kwargs):
         # Unconditional on purpose, so objects.create and the editor's

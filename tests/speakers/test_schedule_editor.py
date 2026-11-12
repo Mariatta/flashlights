@@ -1158,6 +1158,43 @@ class TestGridStep:
         slot = ScheduleSlot.objects.get(session=session)
         assert slot.end_utc == T0 + timedelta(minutes=5)
 
+    def test_every_way_onto_the_grid_holds_the_step(
+        self, client, organizer, enabled, conference
+    ):
+        """An end, or a session whose length was set under a finer step,
+        could save a slot shorter than one step: only a sent length was
+        checked."""
+        placed = make_session(conference)
+        make_slot(placed, start_utc=T0)
+        client.force_login(organizer)
+        response = send(
+            client, placed, {"end": (T0 + timedelta(minutes=3)).isoformat()}
+        )
+        assert response.status_code == 400
+        assert "at least 15 minutes" in response.json()["errors"][0]
+        brief = make_session(conference, title="Brief")
+        brief.duration_minutes = 5
+        brief.save()
+        response = send(client, brief, {"start": (T0 + timedelta(hours=2)).isoformat()})
+        assert response.status_code == 400
+        assert "at least 15 minutes" in response.json()["errors"][0]
+        assert not ScheduleSlot.objects.filter(session=brief).exists()
+
+    def test_a_slot_from_a_finer_step_can_still_move(
+        self, client, organizer, enabled, conference
+    ):
+        enabled.schedule_step_minutes = 5
+        enabled.save()
+        session = make_session(conference)
+        make_slot(session, start_utc=T0, end_utc=T0 + timedelta(minutes=5))
+        enabled.schedule_step_minutes = 15
+        enabled.save()
+        client.force_login(organizer)
+        later = T0 + timedelta(hours=1)
+        assert send(client, session, {"start": later.isoformat()}).status_code == 200
+        slot = ScheduleSlot.objects.get(session=session)
+        assert (slot.start_utc, slot.end_utc) == (later, later + timedelta(minutes=5))
+
     def test_a_one_minute_grid_takes_one_minute(
         self, client, organizer, enabled, conference
     ):
