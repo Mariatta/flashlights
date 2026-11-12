@@ -112,10 +112,15 @@ def _row_of(moment, window_start, row_count, step):
     return FIRST_TIME_ROW + int(max(0, min(row_count, offset)))
 
 
-def _hour_of(moment):
-    """The hour a moment falls in. Every row time derives from the
-    window's start, so a stray second here would shift the whole grid."""
-    return moment.replace(minute=0, second=0, microsecond=0)
+def _hour_of(moment, day_start):
+    """The start of the hour a moment falls in, counted in whole hours
+    from the day's local midnight. Every row time derives from the
+    window's start, so a stray second here would shift the whole grid;
+    and a UTC hour is not an event hour where the zone is offset by a
+    half or a quarter hour (India, Nepal), which would put every row of
+    a coarse step on the wrong minute."""
+    hours = (moment - day_start) // timedelta(hours=1)
+    return day_start + timedelta(hours=hours)
 
 
 def _window(day_start, day_end, slots, full_day):
@@ -129,9 +134,9 @@ def _window(day_start, day_end, slots, full_day):
         return day_start, day_end
     first = max(min(slot.start_utc for slot in slots), day_start)
     last = min(max(slot.end_utc for slot in slots), day_end)
-    start = max(day_start, _hour_of(first) - timedelta(hours=1))
-    end = _hour_of(last) + timedelta(hours=1)
-    if last != _hour_of(last):
+    start = max(day_start, _hour_of(first, day_start) - timedelta(hours=1))
+    end = _hour_of(last, day_start) + timedelta(hours=1)
+    if last != _hour_of(last, day_start):
         end += timedelta(hours=1)
     end = min(end, day_end)
     # A trim that saves less than two hours is a no-op with a toggle

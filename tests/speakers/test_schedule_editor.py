@@ -3,6 +3,7 @@
 import json
 from datetime import date, datetime, timedelta, timezone
 from types import SimpleNamespace
+from zoneinfo import ZoneInfo
 
 import pytest
 from django.contrib.auth.models import User
@@ -1071,6 +1072,36 @@ class TestGridStep:
         assert grid["hour_rows"] == 2
         assert grid["cards"][0]["span"] == 1
         assert grid["cards"][0]["is_tight"] is False
+
+    @pytest.mark.parametrize(
+        "zone, step", [("Asia/Kolkata", 60), ("Asia/Kathmandu", 30)]
+    )
+    def test_rows_start_on_the_events_hour_in_an_offset_zone(
+        self, conference, enabled, zone, step
+    ):
+        """A zone half or a quarter hour off UTC: the trimmed grid used to
+        start on a UTC hour, so a 60-minute step in India labelled its rows
+        08:30, 09:30 and drew a 09:00 talk in the 08:30 row."""
+        enabled.conference_timezone = zone
+        enabled.schedule_step_minutes = step
+        enabled.save()
+        tz = ZoneInfo(zone)
+        start = datetime(2026, 12, 5, 9, 0, tzinfo=tz).astimezone(timezone.utc)
+        make_slot(
+            make_session(conference),
+            start_utc=start,
+            end_utc=start + timedelta(minutes=60),
+        )
+        grid = grid_for_day(conference, date(2026, 12, 5))
+        assert grid["trimmed"] is True
+        local = [row["utc"].astimezone(tz) for row in grid["rows"]]
+        assert all(t.minute % step == 0 for t in local)
+        assert all(
+            t.minute == 0 for t, row in zip(local, grid["rows"]) if row["is_hour"]
+        )
+        card = grid["cards"][0]
+        drawn = grid["rows"][card["row"] - grid["rows"][0]["index"]]["utc"]
+        assert drawn == start
 
     def test_row_scale(self):
         assert row_scale(1) == "1"
