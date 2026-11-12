@@ -90,12 +90,11 @@ def step_minutes(conference):
     return SpeakerSettings.step_for(conference.pk)
 
 
-def slots_between_rows(conference, step):
+def slots_between_rows(conference, step, tz):
     """The edition's placed slots whose start falls between two rows of a
-    ``step`` grid, in the event's time zone, earliest first. The grid
-    draws such a slot in the row above, where it can share a cell with
-    the slot before it, as after a switch from 5 minutes to 15."""
-    tz = event_tz(conference)
+    ``step`` grid in time zone ``tz``, earliest first. The grid draws such
+    a slot in the row above, where it can share a cell with the slot
+    before it, as after a switch from 5 minutes to 15."""
     slots = (
         ScheduleSlot.objects.filter(conference=conference)
         .exclude(session__status__in=OFF_SCHEDULE_STATUSES)
@@ -111,12 +110,12 @@ def slots_between_rows(conference, step):
 
 
 def off_grid_warning(conference, step):
-    """What an organizer is told after picking a step that some slots do
-    not start on; None when every slot fits."""
-    off = slots_between_rows(conference, step)
+    """What an organizer is told after picking a step or a time zone that
+    some slots do not start on; None when every slot fits."""
+    tz = event_tz(conference)
+    off = slots_between_rows(conference, step, tz)
     if not off:
         return None
-    tz = event_tz(conference)
     named = ", ".join(
         f"“{slot.session.title}” ({slot.start_utc.astimezone(tz):%H:%M})"
         for slot in off[:3]
@@ -124,13 +123,13 @@ def off_grid_warning(conference, step):
     if len(off) > 3:
         named += f" and {len(off) - 3} more"
     if len(off) == 1:
-        count, verb, them = "1 slot starts", "is", "it"
+        count, verb, them, they = "1 slot starts", "is", "it", "it starts"
     else:
-        count, verb, them = f"{len(off)} slots start", "are", "them"
+        count, verb, them, they = f"{len(off)} slots start", "are", "them", "they start"
     return (
-        f"{count} between two rows of the new {step}-minute grid and {verb} "
+        f"{count} between two rows of the {step}-minute grid and {verb} "
         f"drawn in the row above: {named}. Move {them} onto the grid, or "
-        "pick a finer step."
+        f"pick a step {they} on."
     )
 
 

@@ -183,11 +183,14 @@ the Compact and Fit views put more of the day on screen. A slot shorter
 than ten minutes shows only its title on the grid: hover over it for its
 times, or use its pencil to see or change them.
 
-Switching to a coarser step, say from 5 minutes to 15, keeps the slots
-where they are. A slot that starts between two of the new rows is drawn
-in the row above, where it can share a cell with the slot before it, so
-saving the setting names those slots: move them onto the grid, or pick a
-finer step.
+Switching to a step that some slots do not start on, say from 5 minutes
+to 15, keeps the slots where they are and as long as they are, even
+those shorter than the new step. A slot that starts between two of the
+new rows is drawn in the row above, where it can share a cell with the
+slot before it, so saving the setting warns of them and names the first
+three: move them onto the grid, or pick a step they start on. Changing
+the event's time zone moves where every slot starts on the grid, and is
+checked the same way.
 
 A session and its slot on the grid always have the same length.
 Resizing a slot, or changing its minutes from the pencil, changes the

@@ -113,12 +113,51 @@ class TestSpeakerSettingsPage:
         assert row.schedule_step_minutes == 15
         shown = [str(m) for m in response.context["messages"]]
         assert shown[1] == (
-            "1 slot starts between two rows of the new 15-minute grid and is "
+            "1 slot starts between two rows of the 15-minute grid and is "
             "drawn in the row above: “Second” (10:05). Move it onto the "
-            "grid, or pick a finer step."
+            "grid, or pick a step it starts on."
         )
         response = client.post(
             SETTINGS, {**form, "schedule_step_minutes": "5"}, follow=True
+        )
+        assert [str(m) for m in response.context["messages"]] == [
+            "Saved the speaker settings."
+        ]
+
+    def test_a_new_time_zone_is_checked_too(self, client, conference):
+        """At a 60-minute step, a 10:00 UTC slot starts at 15:30 in India;
+        a cancelled slot is a record and is not named. A save that changes
+        neither the step nor the zone says nothing more."""
+        row = make_settings(conference, schedule_step_minutes=60)
+        ten = datetime(2026, 12, 5, 10, 0, tzinfo=timezone.utc)
+        make_slot(
+            make_session(conference, title="Talk"),
+            start_utc=ten,
+            end_utc=ten + timedelta(hours=1),
+        )
+        gone = make_session(conference, title="Gone")
+        make_slot(
+            gone, start_utc=ten + timedelta(hours=3), end_utc=ten + timedelta(hours=4)
+        )
+        gone.cancel()
+        client.force_login(lead_of_program())
+        form = {
+            "organizers_email": "",
+            "schedule_step_minutes": "60",
+            "default_premiere_location": "YOUTUBE",
+        }
+        response = client.post(
+            SETTINGS, {**form, "conference_timezone": "Asia/Kolkata"}, follow=True
+        )
+        row.refresh_from_db()
+        assert row.conference_timezone == "Asia/Kolkata"
+        shown = [str(m) for m in response.context["messages"]]
+        assert "“Talk” (15:30)" in shown[1]
+        assert "Gone" not in shown[1]
+        response = client.post(
+            SETTINGS,
+            {**form, "conference_timezone": "Asia/Kolkata", "proposals_open": "on"},
+            follow=True,
         )
         assert [str(m) for m in response.context["messages"]] == [
             "Saved the speaker settings."
@@ -136,7 +175,8 @@ class TestSpeakerSettingsPage:
         warning = off_grid_warning(conference, 15)
         assert warning.startswith("5 slots start between two rows")
         assert "are drawn in the row above" in warning
-        assert "“At 3” (10:03) and 2 more." in warning
+        assert "“At 3” (10:03) and 2 more. Move them onto the grid" in warning
+        assert warning.endswith("pick a step they start on.")
         assert off_grid_warning(conference, 1) is None
 
     def test_only_what_the_edition_uses(self, client, conference):

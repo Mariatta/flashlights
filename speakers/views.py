@@ -1836,7 +1836,9 @@ class SpeakerSettingsView(LoginRequiredMixin, SpeakerSettingsRequiredMixin, Upda
             fields=sorted(form.changed_data),
         )
         messages.success(self.request, "Saved the speaker settings.")
-        if "schedule_step_minutes" in form.changed_data:
+        # A new time zone moves every slot's local start as much as a new
+        # step moves the rows.
+        if {"schedule_step_minutes", "conference_timezone"} & set(form.changed_data):
             warning = off_grid_warning(
                 self.conference, self.object.schedule_step_minutes
             )
