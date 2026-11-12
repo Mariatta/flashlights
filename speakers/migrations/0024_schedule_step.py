@@ -9,7 +9,14 @@ OFF_SCHEDULE = ("PROPOSED", "REJECTED", "CANCELLED")
 
 def lengths_from_slots(apps, schema_editor):
     """A session and its slot now share one length. Where they already
-    disagree, the slot wins, so the grid looks exactly as it did."""
+    disagree, the slot wins, so the grid looks exactly as it did.
+
+    ``bulk_update`` sends no ``post_save``, which is what clears an
+    edition's cached public API responses; the editions whose lengths
+    changed are cleared here instead, so the program and API do not show
+    the old lengths until the cache expires."""
+    from speakers.api import invalidate
+
     ScheduleSlot = apps.get_model("speakers", "ScheduleSlot")
     Session = apps.get_model("speakers", "Session")
     changed = []
@@ -22,6 +29,8 @@ def lengths_from_slots(apps, schema_editor):
             slot.session.duration_minutes = minutes
             changed.append(slot.session)
     Session.objects.bulk_update(changed, ["duration_minutes"], batch_size=500)
+    for conference_id in {session.conference_id for session in changed}:
+        invalidate(conference_id)
 
 
 class Migration(migrations.Migration):

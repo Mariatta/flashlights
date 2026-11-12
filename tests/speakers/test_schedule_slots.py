@@ -10,10 +10,12 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 from django.apps import apps
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db.models.signals import post_save
 
 from portal.models import Conference
+from speakers import api
 from speakers.models import ScheduleSlot, Session, SpeakerSettings
 
 from .factories import (
@@ -421,7 +423,11 @@ class TestLengthsFromSlots:
         Session.objects.filter(pk__in=[placed.pk, cancelled.pk]).update(
             duration_minutes=4
         )
+        generation = api._generation_key(conference.pk)
+        before = cache.get(generation, 0)
         step_migration.lengths_from_slots(apps, None)
+        # The public API's cached responses go, as a save would clear them.
+        assert cache.get(generation) == before + 1
         lengths = dict(Session.objects.values_list("pk", "duration_minutes"))
         assert lengths[placed.pk] == 15
         assert lengths[cancelled.pk] == 4
