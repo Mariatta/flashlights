@@ -467,7 +467,9 @@ class TestLengthsFromSlots:
     """The one-time reconciliation: where a session and its slot already
     disagree, the slot's length wins."""
 
-    def test_the_slot_wins_and_cancelled_sessions_are_left(self, conference):
+    def test_the_slot_wins_and_cancelled_sessions_are_left(
+        self, conference, other_conference, django_capture_on_commit_callbacks
+    ):
         room = make_room(conference)
         placed = make_session(conference)
         place(placed, length=15, room=room)
@@ -479,11 +481,19 @@ class TestLengthsFromSlots:
         Session.objects.filter(pk__in=[placed.pk, cancelled.pk]).update(
             duration_minutes=4
         )
+        # The migration's own copy of the key must be the API's.
         generation = api._generation_key(conference.pk)
+        untouched = api._generation_key(other_conference.pk)
         before = cache.get(generation, 0)
-        step_migration.lengths_from_slots(apps, None)
-        # The public API's cached responses go, as a save would clear them.
+        with django_capture_on_commit_callbacks(execute=True) as callbacks:
+            step_migration.lengths_from_slots(apps, None)
+            # Not before the commit, so no request re-caches old lengths.
+            assert cache.get(generation, 0) == before
+        # The public API's cached responses go, as a save would clear them,
+        # for the edition whose lengths changed only.
+        assert len(callbacks) == 1
         assert cache.get(generation) == before + 1
+        assert cache.get(untouched) is None
         lengths = dict(Session.objects.values_list("pk", "duration_minutes"))
         assert lengths[placed.pk] == 15
         assert lengths[cancelled.pk] == 4
