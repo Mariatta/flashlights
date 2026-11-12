@@ -253,8 +253,26 @@
         });
     }
 
+    /* Where the last press began. Selecting text in a field by dragging
+     * and letting go outside it sends the click to an element around
+     * both points, outside the popover; a click whose press began in a
+     * popover or the cell panel is still a click inside it. */
+    var pressed = null;
+    document.addEventListener(
+        "pointerdown",
+        function (event) { pressed = event.target; },
+        true
+    );
+    function pressedInside(selector) {
+        return (pressed && pressed.closest && pressed.closest(selector)) ||
+            null;
+    }
+
     document.addEventListener("click", function (event) {
-        closeCardMenus(event.target.closest("details.schedule-card-menu"));
+        closeCardMenus(
+            event.target.closest("details.schedule-card-menu") ||
+            pressedInside("details.schedule-card-menu")
+        );
     });
 
     /* A card clips its own content (long titles), which would clip an
@@ -360,7 +378,11 @@
     document.addEventListener("click", function (event) {
         var panel = cellPanel();
         if (!panel) return;
-        if (event.target.closest("#schedule-cell-panel")) return;
+        if (event.target.closest("#schedule-cell-panel") ||
+                pressedInside("#schedule-cell-panel") ||
+                pressedInside("details.schedule-card-menu")) {
+            return;
+        }
         var cell = event.target.closest(".schedule-cell");
         if (!cell || event.target.closest(".schedule-card")) {
             hideCellPanel();
