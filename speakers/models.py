@@ -1119,7 +1119,12 @@ class Session(TimestampedModel):
         # Only a changed length moves the slot, as in clean(): a session
         # whose slot already disagrees keeps it where it is.
         changed = self._length_changed()
-        if update_fields is None and not changed and not self._state.adding:
+        if (
+            update_fields is None
+            and not changed
+            and self.pk is not None
+            and not self._state.adding
+        ):
             # Unchanged since this instance was loaded, so leave the column
             # alone: a length the slot gave the session meanwhile, through
             # another instance or request, is not written back over.

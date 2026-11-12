@@ -467,6 +467,23 @@ class TestOneLength:
         slot.refresh_from_db()
         assert slot.end_utc == T0 + timedelta(minutes=120)
 
+    def test_a_stale_session_given_the_slots_length_leaves_it(self, conference):
+        session = make_session(conference)
+        place(session, length=90)
+        stale = Session.objects.get(pk=session.pk)
+        slot = ScheduleSlot.objects.get(session_id=session.pk)
+        slot.end_utc = T0 + timedelta(minutes=120)
+        slot.save()
+        stale.duration_minutes = 120
+        stale.save()
+        assert stale.moved_slot is None
+
+    def test_a_slot_ending_before_it_starts_is_refused(self, conference):
+        slot = place(make_session(conference), length=90)
+        slot.end_utc = T0 - timedelta(minutes=30)
+        with pytest.raises(ValidationError, match="must end after it starts"):
+            slot.save()
+
     def test_a_resize_does_not_come_back_to_the_slot(self, conference):
         """The slot hands its length to the session, which saves it without
         reading the slot again."""
@@ -477,14 +494,15 @@ class TestOneLength:
         with CaptureQueriesContext(connection) as queries:
             slot.save()
         sqls = [q["sql"] for q in queries]
-        update = next(
-            i
-            for i, sql in enumerate(sqls)
-            if sql.startswith('UPDATE "speakers_session"')
-        )
+
+        def first(prefix):
+            return next(i for i, sql in enumerate(sqls) if sql.startswith(prefix))
+
+        slot_saved = first('UPDATE "speakers_scheduleslot"')
+        assert slot_saved < first('UPDATE "speakers_session"')
         assert not any(
             sql.startswith("SELECT") and 'FROM "speakers_scheduleslot"' in sql
-            for sql in sqls[update:]
+            for sql in sqls[slot_saved:]
         )
 
     def test_refreshing_other_fields_keeps_the_stored_length(self, conference):
