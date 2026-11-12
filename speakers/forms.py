@@ -1341,7 +1341,8 @@ class ProposalProfileForm(HandleFieldsMixin, forms.ModelForm):
 class SpeakerSettingsForm(forms.ModelForm):
     """The edition's speaker settings, in the portal rather than the Django
     admin: session proposals, where replies and reminders go, the
-    event's timezone, and the media switches the edition has use for."""
+    event's timezone, the schedule grid's step, and the media switches
+    the edition has use for."""
 
     conference_timezone = forms.ChoiceField(
         label="Event timezone",
@@ -1357,6 +1358,7 @@ class SpeakerSettingsForm(forms.ModelForm):
             "proposals_intro_md",
             "organizers_email",
             "conference_timezone",
+            "schedule_step_minutes",
             "default_premiere_location",
             "default_video_length_limit_minutes",
             "media_for_speakers",
@@ -1366,6 +1368,7 @@ class SpeakerSettingsForm(forms.ModelForm):
             "proposals_open": "Taking proposals",
             "proposals_intro_md": "Proposal form intro",
             "organizers_email": "Speaker team address",
+            "schedule_step_minutes": "Schedule grid step",
             "default_premiere_location": "Default premiere",
             "default_video_length_limit_minutes": "Default video length limit (minutes)",
             "media_for_speakers": "Speakers see their files",

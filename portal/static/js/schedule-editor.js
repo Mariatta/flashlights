@@ -9,12 +9,20 @@
 (function () {
     "use strict";
 
-    var STEP_MINUTES = 15;
+    var DEFAULT_STEP = 15;
     var dragged = null;
     var resizing = null;
 
     function board() {
         return document.getElementById("schedule-board");
+    }
+
+    /* The edition's grid step in minutes, from the grid an element sits
+     * in, or the board's first grid for the sidebar's forms. */
+    function stepOf(element) {
+        var grid = (element && element.closest(".schedule-grid")) ||
+            (board() && board().querySelector(".schedule-grid"));
+        return (grid && parseInt(grid.dataset.step, 10)) || DEFAULT_STEP;
     }
 
     function csrfToken() {
@@ -152,7 +160,7 @@
         cell.classList.add("schedule-drop");
         hideDropPreview();
         var ghost = dropPreview(cell.closest(".schedule-grid"));
-        var span = Math.max(1, Math.round(dragged.minutes / STEP_MINUTES));
+        var span = Math.max(1, Math.round(dragged.minutes / stepOf(cell)));
         ghost.style.gridRow = cell.style.gridRow + " / span " + span;
         ghost.style.gridColumn = cell.dataset.room
             ? cell.style.gridColumn
@@ -180,7 +188,7 @@
         dragged = null;
     });
 
-    /* Resizing: the handle at a card's bottom edge, in 15-minute steps. */
+    /* Resizing: the handle at a card's bottom edge, in grid steps. */
     document.addEventListener("pointerdown", function (event) {
         var handle = event.target.closest(".schedule-resize");
         if (!handle) return;
@@ -195,7 +203,8 @@
             row: parseInt(card.style.gridRow, 10),
             column: card.style.gridColumn,
             band: card.classList.contains("schedule-band"),
-            grid: grid
+            grid: grid,
+            step: stepOf(grid)
         };
         event.preventDefault();
     });
@@ -204,7 +213,7 @@
         var rows = Math.round(
             (event.clientY - resizing.startY) / resizing.rowHeight
         );
-        return Math.max(STEP_MINUTES, resizing.minutes + rows * STEP_MINUTES);
+        return Math.max(resizing.step, resizing.minutes + rows * resizing.step);
     }
     document.addEventListener("pointermove", function (event) {
         if (!resizing) return;
@@ -213,7 +222,7 @@
         var ghost = dropPreview(resizing.grid);
         ghost.style.gridRow =
             resizing.row + " / span " +
-            Math.max(1, Math.round(minutes / STEP_MINUTES));
+            Math.max(1, Math.round(minutes / resizing.step));
         ghost.style.gridColumn = resizing.column;
         ghost.classList.toggle("schedule-drop-band", resizing.band);
         ghost.querySelector(".schedule-drop-label").textContent =
@@ -244,14 +253,38 @@
         });
     }
 
+    /* Where the last press began. Selecting text in a field by dragging
+     * and letting go outside it sends the click to an element around
+     * both points, outside the popover. Only such a moved click is
+     * judged by where its press began: a plain click, or one from the
+     * keyboard, is judged by its own target. */
+    var pressed = null;
+    document.addEventListener(
+        "pointerdown",
+        function (event) { pressed = event.target; },
+        true
+    );
+    function pressedInside(event, selector) {
+        if (!pressed || pressed === event.target ||
+                !event.target.contains(pressed)) {
+            return null;
+        }
+        return pressed.closest(selector);
+    }
+
     document.addEventListener("click", function (event) {
-        closeCardMenus(event.target.closest("details.schedule-card-menu"));
+        closeCardMenus(
+            event.target.closest("details.schedule-card-menu") ||
+            pressedInside(event, "details.schedule-card-menu")
+        );
     });
 
     /* A card clips its own content (long titles), which would clip an
      * open popover to the card's height too; while a menu is open the
-     * card lifts the clipping and stacks above its neighbours. The
-     * toggle event does not bubble, so it is captured. */
+     * card lifts the clipping and stacks above its neighbours. It also
+     * stops being draggable, so selecting text in the form's fields
+     * selects text instead of dragging the card. The toggle event does
+     * not bubble, so it is captured. */
     document.addEventListener(
         "toggle",
         function (event) {
@@ -263,6 +296,7 @@
             var card = menu.closest(".schedule-card, .schedule-pending");
             if (card) {
                 card.classList.toggle("schedule-card-open", menu.open);
+                card.draggable = !menu.open;
             }
         },
         true
@@ -297,7 +331,7 @@
             room: value("room") || null,
             // The event's local time; the server knows the timezone.
             start: value("date") + "T" + time + ":00",
-            duration: parseInt(value("duration"), 10) || STEP_MINUTES
+            duration: parseInt(value("duration"), 10) || stepOf(form)
         });
     });
 
@@ -348,7 +382,11 @@
     document.addEventListener("click", function (event) {
         var panel = cellPanel();
         if (!panel) return;
-        if (event.target.closest("#schedule-cell-panel")) return;
+        if (event.target.closest("#schedule-cell-panel") ||
+                pressedInside(event, "#schedule-cell-panel") ||
+                pressedInside(event, "details.schedule-card-menu")) {
+            return;
+        }
         var cell = event.target.closest(".schedule-cell");
         if (!cell || event.target.closest(".schedule-card")) {
             hideCellPanel();
@@ -412,11 +450,17 @@
             if (select.value === "comfortable") {
                 grid.style.removeProperty("--schedule-row-height");
             } else if (select.value === "compact") {
-                grid.style.setProperty("--schedule-row-height", "0.55rem");
+                var scale = parseFloat(grid.dataset.rowScale) || 1;
+                grid.style.setProperty(
+                    "--schedule-row-height", 0.55 * scale + "rem"
+                );
             } else {
                 var rows = parseInt(grid.dataset.rows, 10) || 1;
                 var room = window.innerHeight - 120;
-                var height = Math.max(3, Math.floor(room / rows));
+                // The 3px floor is a quarter hour's; a row of another
+                // step gets it in proportion, so a fine grid still fits.
+                var floor = 3 * stepOf(grid) / DEFAULT_STEP;
+                var height = Math.max(floor, room / rows);
                 grid.style.setProperty(
                     "--schedule-row-height", height + "px"
                 );

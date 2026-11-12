@@ -18,7 +18,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Value
 from django.urls import reverse
 from django.utils import timezone
@@ -34,12 +34,15 @@ from .constants import (
     CAN_BE_APPROVED,
     CHOICE_KINDS,
     DEFAULT_GUIDE_KEY,
+    DEFAULT_SCHEDULE_STEP,
     IDENTITY_LOCKED_STATUSES,
     LINK_KINDS,
+    MAX_SLOT_MINUTES,
     OFF_SCHEDULE_STATUSES,
     OPEN_ITEM_STATUSES,
     PROPOSER_CAN_EDIT,
     RESERVED_SLUGS,
+    SCHEDULE_STEP_CHOICES,
     SESSION_LANGUAGE,
     SLUG_BASE_LENGTH,
     SLUG_MAX_LENGTH,
@@ -280,6 +283,16 @@ class SpeakerSettings(TimestampedModel):
         help_text="The organizers' default display timezone; the event "
         "itself has none.",
     )
+    schedule_step_minutes = models.PositiveSmallIntegerField(
+        "schedule grid step",
+        choices=SCHEDULE_STEP_CHOICES,
+        default=DEFAULT_SCHEDULE_STEP,
+        db_default=DEFAULT_SCHEDULE_STEP,
+        help_text="How many minutes one row of the schedule editor's grid "
+        "holds. A slot is at least one step long, so a five-minute lightning "
+        "talk needs a step of five minutes or less. A smaller step makes "
+        "the grid taller.",
+    )
     organizers_email = models.EmailField(
         blank=True,
         default="",
@@ -340,6 +353,17 @@ class SpeakerSettings(TimestampedModel):
     @property
     def tzinfo(self):
         return zoneinfo.ZoneInfo(self.conference_timezone)
+
+    @classmethod
+    def step_for(cls, conference_id):
+        """An edition's schedule grid step in minutes, the default when it
+        has no settings."""
+        step = (
+            cls.objects.filter(conference_id=conference_id)
+            .values_list("schedule_step_minutes", flat=True)
+            .first()
+        )
+        return step or DEFAULT_SCHEDULE_STEP
 
     @property
     def api_origins(self):
@@ -1076,16 +1100,114 @@ class Session(TimestampedModel):
     def __str__(self):
         return self.title
 
+    # The slot the last save moved, for the caller to log; None until then.
+    moved_slot = None
+
     def save(self, *args, **kwargs):
-        if self.duration_minutes is None:
-            self.duration_minutes = self.kind.default_duration_minutes
+        self.duration_minutes = self.length()
         if not self.delivery:
             self.delivery = self.kind.default_delivery
         if not self.slug:
             self.slug = _unique_slug(
                 Session, self.conference, self.title, exclude_pk=self.pk
             )
-        super().save(*args, **kwargs)
+        self.moved_slot = None
+        update_fields = kwargs.get("update_fields")
+        if update_fields is not None and "duration_minutes" not in update_fields:
+            super().save(*args, **kwargs)
+            return
+        # Only a changed length moves the slot, as in clean(): a session
+        # whose slot already disagrees keeps it where it is.
+        changed = self._length_changed()
+        if (
+            update_fields is None
+            and not changed
+            and self.pk is not None
+            and not self._state.adding
+        ):
+            # Unchanged since this instance was loaded, so leave the column
+            # alone: a length the slot gave the session meanwhile, through
+            # another instance or request, is not written back over.
+            kwargs["update_fields"] = [
+                field.attname
+                for field in self._meta.concrete_fields
+                if not field.primary_key
+                and field.attname != "duration_minutes"
+                and field.attname in self.__dict__
+            ]
+            super().save(*args, **kwargs)
+            return
+        slot = self._slot_at_new_length() if changed else None
+        # One transaction, so a slot the new length cannot fit leaves the
+        # session's old length in place too.
+        with transaction.atomic():
+            super().save(*args, **kwargs)
+            if slot is not None:
+                slot.save()
+        self._stored_minutes = self.duration_minutes
+        # What the caller may log: the slot this save moved, if any.
+        self.moved_slot = slot
+
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        instance = super().from_db(db, field_names, values)
+        instance._remember_length()
+        return instance
+
+    def refresh_from_db(self, *args, **kwargs):
+        super().refresh_from_db(*args, **kwargs)
+        fields = kwargs.get("fields")
+        if fields is None or "duration_minutes" in fields:
+            self._remember_length()
+
+    def _remember_length(self):
+        """Keep the stored length, so a save can tell a new length without
+        reading the row again. A load that defers it remembers nothing."""
+        if "duration_minutes" in self.__dict__:
+            self._stored_minutes = self.duration_minutes
+
+    def follow_slot(self, minutes):
+        """Take the length of the session's slot, which was just resized.
+
+        The slot already ends there, so the length is saved as the stored
+        one and ``save`` does not move the slot again. Saved, not updated,
+        so the public program's cache hears of it.
+        """
+        self.duration_minutes = minutes
+        self._stored_minutes = minutes
+        self.save(update_fields=["duration_minutes", "modified_date"])
+
+    def length(self):
+        """The session's length in minutes: its own, or its type's default
+        while it has none (``save`` fills that in). None without either."""
+        if self.duration_minutes is not None:
+            return self.duration_minutes
+        return self.kind.default_duration_minutes if self.kind_id else None
+
+    def _slot_at_new_length(self):
+        """The session's slot, unsaved, ending at the session's length.
+
+        A session and its slot on the grid share one length: changing the
+        session's length moves the end of its slot (and resizing the slot
+        changes the session, in ``ScheduleSlot.save``). None when the
+        session is not on the grid, is off the schedule (a cancelled
+        session's slot is a record, not a booking), or the lengths already
+        agree.
+        """
+        if self.pk is None or self.status in OFF_SCHEDULE_STATUSES:
+            return None
+        minutes = self.length()
+        if minutes is None:
+            return None
+        slot = ScheduleSlot.objects.filter(session_id=self.pk).first()
+        if slot is None:
+            return None
+        end = slot.start_utc + timedelta(minutes=minutes)
+        if slot.end_utc == end:
+            return None
+        slot.end_utc = end
+        slot.session = self
+        return slot
 
     def clean(self):
         super().clean()
@@ -1108,6 +1230,44 @@ class Session(TimestampedModel):
                 raise ValidationError(
                     {"kind": f"A {self.kind.name} cannot have: {names}."}
                 )
+        slot = self._slot_at_new_length() if self._length_changed() else None
+        if slot is not None:
+            minutes = self.length()
+            if minutes > MAX_SLOT_MINUTES:
+                raise ValidationError(
+                    {"duration_minutes": "A slot cannot run longer than a day."}
+                )
+            step = SpeakerSettings.step_for(self.conference_id)
+            if minutes < step:
+                raise ValidationError({"duration_minutes": slot_too_short(step)})
+            clash = slot.conflicts().first()
+            if clash is not None:
+                raise ValidationError(
+                    {
+                        "duration_minutes": (
+                            "At this length its slot on the schedule would "
+                            f'overlap "{clash.session.title}" '
+                            f"({clash.start_utc:%H:%M} to "
+                            f"{clash.end_utc:%H:%M} UTC)."
+                        )
+                    }
+                )
+
+    def _length_changed(self):
+        """Whether the length differs from the stored one: only a change
+        is checked against the grid, so a session whose slot already
+        disagrees can still be saved for its other fields."""
+        if self.pk is None:
+            return False
+        if hasattr(self, "_stored_minutes"):
+            stored = self._stored_minutes
+        else:
+            stored = (
+                Session.objects.filter(pk=self.pk)
+                .values_list("duration_minutes", flat=True)
+                .first()
+            )
+        return stored != self.length()
 
     @property
     def is_content(self):
@@ -1689,6 +1849,17 @@ class SessionPresenter(TimestampedModel):
         self.save(update_fields=["confirmed_at"])
 
 
+def slot_too_short(step):
+    """Why a length under one grid step was refused, and, when a finer
+    step would allow it, where to set one."""
+    if step == 1:
+        return "A slot is at least 1 minute long."
+    return (
+        f"A slot is at least {step} minutes long on this grid. For a shorter "
+        "one, pick a finer schedule grid step in the speaker settings."
+    )
+
+
 class ScheduleSlot(TimestampedModel):
     """When and where a session happens (design §8.5).
 
@@ -1738,6 +1909,10 @@ class ScheduleSlot(TimestampedModel):
         while nothing in those statuses can reach the grid, and
         ``approve()`` would otherwise carry a quietly conflicting slot
         straight onto it.
+
+        A new slot, or a new length, is at least one grid step and at most
+        a day. A slot that keeps its length is not held to the step, so one
+        placed under an older, finer step can still be moved.
         """
         if self.session_id is None or self.start_utc is None:
             return
@@ -1756,14 +1931,62 @@ class ScheduleSlot(TimestampedModel):
             self.end_utc = self.start_utc + timedelta(
                 minutes=self.session.duration_minutes
             )
-        if self.end_utc <= self.start_utc:
+        if self.end_utc < self.start_utc:
             raise ValidationError({"end_utc": "The slot must end after it starts."})
+        # A zero length is refused as too short.
+        if self._length_changed():
+            minutes = (self.end_utc - self.start_utc) // timedelta(minutes=1)
+            if minutes > MAX_SLOT_MINUTES:
+                raise ValidationError(
+                    {"end_utc": "A slot cannot run longer than a day."}
+                )
+            step = SpeakerSettings.step_for(self.session.conference_id)
+            if minutes < step:
+                raise ValidationError({"end_utc": slot_too_short(step)})
         clash = self.conflicts().first()
         if clash is not None:
             raise ValidationError(
                 f'This time overlaps "{clash.session.title}" '
                 f"({clash.start_utc:%H:%M} to {clash.end_utc:%H:%M} UTC)."
             )
+
+    def _length_changed(self):
+        """Whether the slot is new or its length differs from the stored
+        one. Only a new length is held to the grid's limits, so a slot
+        placed under an older, finer step can still be moved."""
+        if self.pk is None:
+            return True
+        stored = getattr(self, "_stored_length", None)
+        if stored is None:
+            row = (
+                ScheduleSlot.objects.filter(pk=self.pk)
+                .values_list("start_utc", "end_utc")
+                .first()
+            )
+            if row is None:
+                return True
+            stored = row[1] - row[0]
+        return stored != self.end_utc - self.start_utc
+
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        instance = super().from_db(db, field_names, values)
+        instance._remember_length()
+        return instance
+
+    def refresh_from_db(self, *args, **kwargs):
+        super().refresh_from_db(*args, **kwargs)
+        fields = kwargs.get("fields")
+        if fields is None or {"start_utc", "end_utc"} <= set(fields):
+            self._remember_length()
+
+    def _remember_length(self):
+        """Keep the stored length, so a save can tell a new length without
+        reading the row again. A load that defers a time remembers
+        nothing, nor a refresh of other fields, which would take the
+        unsaved times for stored ones."""
+        if {"start_utc", "end_utc"} <= self.__dict__.keys():
+            self._stored_length = self.end_utc - self.start_utc
 
     def save(self, *args, **kwargs):
         # Unconditional on purpose, so objects.create and the editor's
@@ -1772,6 +1995,16 @@ class ScheduleSlot(TimestampedModel):
         self.clean()
         self.conference_id = self.session.conference_id
         super().save(*args, **kwargs)
+        self._remember_length()
+        # One length for both: a resize or a new end on the grid is the
+        # session's new length. A cancelled session's slot is a record and
+        # leaves the session alone.
+        minutes = (self.end_utc - self.start_utc) // timedelta(minutes=1)
+        if (
+            self.session.status not in OFF_SCHEDULE_STATUSES
+            and self.session.duration_minutes != minutes
+        ):
+            self.session.follow_slot(minutes)
 
     def overlapping(self):
         """Other sessions' slots sharing any time with this one, this edition.

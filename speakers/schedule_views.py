@@ -23,13 +23,11 @@ from django.views import View
 from django.views.generic import ListView, TemplateView
 from django.views.generic.edit import CreateView, UpdateView
 
-from .constants import OFF_SCHEDULE_STATUSES, SessionStatus
+from .constants import MAX_SLOT_MINUTES, OFF_SCHEDULE_STATUSES, SessionStatus
 from .forms import ProgramItemForm, RoomForm
 from .mixins import SpeakerOrganizerRequiredMixin
 from .models import ActivityLog, Room, ScheduleSlot, Session
 from .schedule import (
-    ROWS_PER_DAY,
-    STEP_MINUTES,
     also_in,
     day_bounds,
     event_tz,
@@ -37,11 +35,10 @@ from .schedule import (
     publish_schedule,
     schedule_changes,
     schedule_days,
+    step_minutes,
     timezone_options,
     unscheduled_sessions,
 )
-
-MAX_SLOT_MINUTES = ROWS_PER_DAY * STEP_MINUTES
 
 
 class SlotError(Exception):
@@ -127,12 +124,16 @@ class ScheduleEditorView(
         full_day = bool(self.request.GET.get("full"))
         all_days = self.request.GET.get("days") == "all"
         wide = bool(self.request.GET.get("wide"))
+        step = step_minutes(self.conference)
         if all_days:
             context["day_grids"] = [
-                {"day": one, **grid_for_day(self.conference, one)} for one in days
+                {"day": one, **grid_for_day(self.conference, one, step=step)}
+                for one in days
             ]
         else:
-            context.update(grid_for_day(self.conference, day, full_day=full_day))
+            context.update(
+                grid_for_day(self.conference, day, full_day=full_day, step=step)
+            )
         context.update(
             {
                 "conference": self.conference,
@@ -157,7 +158,7 @@ class ScheduleEditorView(
                     }
                 ),
                 "unpublished_total": sum(counts.values()),
-                "step_minutes": STEP_MINUTES,
+                "step_minutes": step,
                 "program_item_form": kwargs.get("program_item_form")
                 or ProgramItemForm(conference=self.conference),
             }
@@ -421,11 +422,13 @@ class SlotView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, View):
             try:
                 minutes = int(payload["duration"])
             except (TypeError, ValueError):
-                minutes = 0
-            if not STEP_MINUTES <= minutes <= MAX_SLOT_MINUTES:
-                raise SlotError(
-                    f"A slot runs between {STEP_MINUTES} minutes and a day."
-                )
+                raise SlotError("Give the length in whole minutes.")
+            # Checked here as well as in clean(): a huge number either way
+            # would overflow the date before clean() could refuse it.
+            if minutes > MAX_SLOT_MINUTES:
+                raise SlotError("A slot cannot run longer than a day.")
+            if minutes < 0:
+                raise SlotError("The slot must end after it starts.")
             slot.end_utc = slot.start_utc + timedelta(minutes=minutes)
         elif "end" in payload:
             slot.end_utc = (
@@ -433,10 +436,7 @@ class SlotView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, View):
                 if payload["end"]
                 else None
             )
-        if slot.end_utc is not None and slot.end_utc - slot.start_utc > timedelta(
-            minutes=MAX_SLOT_MINUTES
-        ):
-            raise SlotError("A slot cannot run longer than a day.")
+        # The slot's own clean() holds every path to the grid's limits.
         slot.save()
         return slot, created
 

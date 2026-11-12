@@ -172,7 +172,7 @@ from .questions import (
 )
 from .readiness import apply_readiness, refresh_for_conference, refresh_readiness
 from .rules import evaluate_items
-from .schedule import presenter_schedule
+from .schedule import off_grid_warning, presenter_schedule
 from .seeds import seed_checklists
 from .services import (
     InvitationError,
@@ -550,11 +550,27 @@ class SessionUpdateView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, Updat
         return kwargs
 
     def form_valid(self, form):
-        _note_identity_change(
-            self.request, form, ("title", "slug"), "session.identity_changed"
-        )
-        messages.success(self.request, f"Saved “{form.instance.title}”.")
-        return super().form_valid(form)
+        # One transaction for the save and its log entries, and "Saved"
+        # only once it has.
+        with transaction.atomic():
+            _note_identity_change(
+                self.request, form, ("title", "slug"), "session.identity_changed"
+            )
+            response = super().form_valid(form)
+            slot = self.object.moved_slot
+            if slot is not None:
+                # The slot's end followed the new length, as a resize would.
+                ActivityLog.record(
+                    self.conference,
+                    "slot.moved",
+                    target=self.object,
+                    actor=self.request.user,
+                    start=slot.start_utc.isoformat(),
+                    end=slot.end_utc.isoformat(),
+                    room=slot.room.name if slot.room_id else "all rooms",
+                )
+        messages.success(self.request, f"Saved “{self.object.title}”.")
+        return response
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1822,6 +1838,14 @@ class SpeakerSettingsView(LoginRequiredMixin, SpeakerSettingsRequiredMixin, Upda
             fields=sorted(form.changed_data),
         )
         messages.success(self.request, "Saved the speaker settings.")
+        # A new time zone moves every slot's local start as much as a new
+        # step moves the rows.
+        if {"schedule_step_minutes", "conference_timezone"} & set(form.changed_data):
+            warning = off_grid_warning(
+                self.conference, self.object.schedule_step_minutes
+            )
+            if warning:
+                messages.warning(self.request, warning)
         return response
 
     def get_success_url(self):

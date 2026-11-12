@@ -11,7 +11,7 @@ Unscheduled list and its open popover goes with it.
                 <h2 class="h5 {% if not forloop.first %}mt-4{% endif %} mb-2">
                     {{ grid.day|date:"l j F" }}
                 </h2>
-                {% include "speakers/_schedule_grid.html" with rooms=grid.rooms lanes=grid.lanes rows=grid.rows cards=grid.cards trimmed=grid.trimmed has_slots=grid.has_slots day=grid.day days=days full_day=False %}
+                {% include "speakers/_schedule_grid.html" with rooms=grid.rooms lanes=grid.lanes rows=grid.rows cards=grid.cards step_minutes=grid.step_minutes hour_rows=grid.hour_rows row_scale=grid.row_scale trimmed=grid.trimmed has_slots=grid.has_slots day=grid.day days=days full_day=False %}
             {% endfor %}
         {% else %}
             {% include "speakers/_schedule_grid.html" %}
@@ -42,7 +42,7 @@ Unscheduled list and its open popover goes with it.
                                 </summary>
                                 <div class="schedule-card-popover card shadow">
                                     {% url 'speakers:session_slot' session.slug as slot_url %}
-                                    {% include "speakers/_slot_form.html" with url=slot_url lanes=lanes days=days sel_room="" sel_date=day|date:"Y-m-d" sel_time="14:00" tz_name=event_timezone minutes=session.duration_minutes removable=False only %}
+                                    {% include "speakers/_slot_form.html" with url=slot_url lanes=lanes days=days sel_room="" sel_date=day|date:"Y-m-d" sel_time="14:00" tz_name=event_timezone minutes=session.duration_minutes step=step_minutes removable=False only %}
                                 </div>
                             </details>
                         </div>

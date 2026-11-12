@@ -366,7 +366,7 @@ class TestScheduleSlotShell:
     def test_explicit_end_kept(self, conference):
         session = make_session(conference)
         slot = make_slot(session)
-        end = slot.start_utc + timedelta(minutes=10)
+        end = slot.start_utc + timedelta(minutes=20)
         slot.end_utc = end
         slot.save()
         assert ScheduleSlot.objects.get(pk=slot.pk).end_utc == end
