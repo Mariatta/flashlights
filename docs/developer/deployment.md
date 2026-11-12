@@ -502,6 +502,14 @@ give them `/_health/`.
 **Logs.** `heroku logs --tail --dyno worker` (or the host's equivalent)
 shows one process's output; all processes share one stream otherwise.
 
+**Proxies.** Heroku's router is one proxy, which matches the default
+`TRUSTED_PROXY_COUNT` of 1. A CDN in front of the host, such as Cloudflare,
+is one more. If every request passes through the CDN, set
+`TRUSTED_PROXY_COUNT=2`, or `TRUSTED_CLIENT_IP_HEADER` to the header it
+sets. While the app's own host name still answers directly, leave the
+count at 1: a request that skips the CDN would let a visitor choose their
+address, or fail with a server error.
+
 **Quirks.** Check the add-on's Postgres version is 15 or newer (Database,
 above). The Key-Value Store add-on requires TLS and presents a self-signed
 certificate: its `REDIS_URL` starts with `rediss://`, and for such a URL the
@@ -623,6 +631,10 @@ same image, with the line as the container's command. `web` serves on
 `X-Forwarded-Proto: https` (Caddy and nginx's `proxy_set_header` do), and
 `web` must not be reachable except through it: the portal trusts that
 header, and a request that reaches `web` directly can claim to be secure.
+It must also add the visitor's address to `X-Forwarded-For`, which the
+sign-in and sign-up rate limits count. Caddy does by default; nginx needs
+`proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`. Without
+it, every visitor shares the proxy's address and one rate limit.
 
 **Release step.** Run the release command yourself before starting the new
 containers: `docker compose run --rm web python manage.py createcachetable

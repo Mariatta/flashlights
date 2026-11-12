@@ -7,6 +7,21 @@ a change to the [public API](docs/developer/community_apps.md#public-api)
 for community apps is marked **Breaking**.
 [Releasing](docs/developer/releasing.md) says how a release is made.
 
+## 0.5.1 (unreleased)
+
+- **Signing in works again behind a proxy.** django-allauth 65.21.1, from
+  0.5.0, reads the visitor's address from `X-Forwarded-For` only when told
+  how many proxies add to it, and otherwise refuses the request when the
+  address is missing. On Cabotage, where the web process listens on a unix
+  socket, that was every sign-in, sign-up and password reset: each
+  answered 403. On a host with a router in front, such as Heroku, every
+  visitor shared the router's address, so one rate limit for everyone. The
+  instance now trusts one proxy, which is right for Cabotage, Heroku and
+  Azure Container Apps (a CDN in front adds one); `TRUSTED_PROXY_COUNT`
+  changes it, and `TRUSTED_CLIENT_IP_HEADER` names a header the host sets
+  instead. Both are in
+  [Environment variables](docs/developer/environment.md).
+
 ## 0.5.0 (2026-11-11)
 
 - **Get started shows only what is open.** While volunteer applications

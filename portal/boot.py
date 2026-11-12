@@ -78,17 +78,26 @@ def minutes(env, name, default):
     """``name`` as a whole number of minutes, at least one; ``default``
     when it is unset or empty. Anything else fails the boot naming the
     variable, rather than starting with a code that expires at once."""
+    return _whole_number(env, name, default, 1, "a whole number of minutes, at least 1")
+
+
+def proxies(env, name, default):
+    """``name`` as a count of proxies, zero or more; ``default`` when it is
+    unset or empty. Anything else fails the boot naming the variable."""
+    return _whole_number(env, name, default, 0, "a whole number, 0 or more")
+
+
+def _whole_number(env, name, default, minimum, what):
     raw = env.get(name, "").strip()
     if not raw:
         return default
+    problem = ImproperlyConfigured(f"{name} must be {what}, not {raw!r}")
     try:
         value = int(raw)
     except ValueError:
-        value = 0
-    if value < 1:
-        raise ImproperlyConfigured(
-            f"{name} must be a whole number of minutes, at least 1, not {raw!r}"
-        )
+        raise problem from None
+    if value < minimum:
+        raise problem
     return value
 
 

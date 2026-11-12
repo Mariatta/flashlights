@@ -96,6 +96,23 @@ class TestMinutes:
             boot.minutes({"SIGN_IN_CODE_MINUTES": raw}, "SIGN_IN_CODE_MINUTES", 3)
 
 
+class TestProxies:
+    def test_unset_or_blank_is_the_default(self):
+        assert boot.proxies({}, "TRUSTED_PROXY_COUNT", 1) == 1
+        assert boot.proxies({"TRUSTED_PROXY_COUNT": " "}, "TRUSTED_PROXY_COUNT", 1) == 1
+
+    @pytest.mark.parametrize("raw, value", [("0", 0), (" 2 ", 2)])
+    def test_zero_or_more_is_read(self, raw, value):
+        assert boot.proxies({"TRUSTED_PROXY_COUNT": raw}, "TRUSTED_PROXY_COUNT", 1) == (
+            value
+        )
+
+    @pytest.mark.parametrize("raw", ["-1", "1.5", "one"])
+    def test_anything_else_fails_naming_the_variable(self, raw):
+        with pytest.raises(ImproperlyConfigured, match="TRUSTED_PROXY_COUNT"):
+            boot.proxies({"TRUSTED_PROXY_COUNT": raw}, "TRUSTED_PROXY_COUNT", 1)
+
+
 class TestEmailUrl:
     def test_starttls_with_credentials(self):
         assert boot.email_url(
@@ -132,7 +149,8 @@ def settings_in_a_fresh_interpreter(**env):
         "print(json.dumps({k: getattr(s, k, None) for k in ("
         "'DEBUG','EMAIL_HOST','EMAIL_PORT','EMAIL_USE_TLS','USE_OBJECT_STORAGE',"
         "'USE_SPACES','CELERY_BROKER_USE_SSL','ACCOUNT_EMAIL_VERIFICATION_BY_CODE_TIMEOUT',"
-        "'ACCOUNT_LOGIN_BY_CODE_TIMEOUT','ACCOUNT_PASSWORD_RESET_BY_CODE_TIMEOUT')}))"
+        "'ACCOUNT_LOGIN_BY_CODE_TIMEOUT','ACCOUNT_PASSWORD_RESET_BY_CODE_TIMEOUT',"
+        "'ALLAUTH_TRUSTED_PROXY_COUNT','ALLAUTH_TRUSTED_CLIENT_IP_HEADER')}))"
     )
     base = {
         "PATH": os.environ.get("PATH", ""),
@@ -207,6 +225,20 @@ class TestAtBoot:
             SECRET_KEY="s", DEBUG="1", SIGN_IN_CODE_MINUTES="0"
         )
         assert "SIGN_IN_CODE_MINUTES must be a whole number" in found["error"]
+
+    def test_one_proxy_is_trusted_unless_told_otherwise(self):
+        found = settings_in_a_fresh_interpreter(**FULL)
+        assert found["ALLAUTH_TRUSTED_PROXY_COUNT"] == 1
+        assert found["ALLAUTH_TRUSTED_CLIENT_IP_HEADER"] is None
+        found = settings_in_a_fresh_interpreter(
+            **FULL, TRUSTED_PROXY_COUNT="2", TRUSTED_CLIENT_IP_HEADER="CF-Connecting-IP"
+        )
+        assert found["ALLAUTH_TRUSTED_PROXY_COUNT"] == 2
+        assert found["ALLAUTH_TRUSTED_CLIENT_IP_HEADER"] == "CF-Connecting-IP"
+
+    def test_a_bad_proxy_count_stops_the_boot(self):
+        found = settings_in_a_fresh_interpreter(**FULL, TRUSTED_PROXY_COUNT="-1")
+        assert "TRUSTED_PROXY_COUNT must be a whole number" in found["error"]
 
     def test_debug_zero_still_runs_the_production_check(self):
         found = settings_in_a_fresh_interpreter(SECRET_KEY="s", DEBUG="0")
