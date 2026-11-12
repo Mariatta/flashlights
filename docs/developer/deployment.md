@@ -502,10 +502,13 @@ give them `/_health/`.
 **Logs.** `heroku logs --tail --dyno worker` (or the host's equivalent)
 shows one process's output; all processes share one stream otherwise.
 
-**Proxies.** Heroku's router is one proxy, the default for
-`TRUSTED_PROXY_COUNT`. A CDN in front of the host, such as Cloudflare, is
-one more: set `TRUSTED_PROXY_COUNT=2`, or `TRUSTED_CLIENT_IP_HEADER` to the
-header the CDN sets if every request passes through it.
+**Proxies.** Heroku's router is one proxy, which matches the default
+`TRUSTED_PROXY_COUNT` of 1. A CDN in front of the host, such as Cloudflare,
+is one more. If every request passes through the CDN, set
+`TRUSTED_PROXY_COUNT=2`, or `TRUSTED_CLIENT_IP_HEADER` to the header it
+sets. While the app's own host name still answers directly, leave the
+count at 1: a request that skips the CDN would let a visitor choose their
+address, or fail with a server error.
 
 **Quirks.** Check the add-on's Postgres version is 15 or newer (Database,
 above). The Key-Value Store add-on requires TLS and presents a self-signed

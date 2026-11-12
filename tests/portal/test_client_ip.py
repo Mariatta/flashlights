@@ -18,9 +18,10 @@ CABOTAGE = {"REMOTE_ADDR": "", "HTTP_X_FORWARDED_FOR": "203.0.113.7"}
 
 @pytest.fixture
 def one_proxy(settings):
-    """The default, which tests/portal/test_boot.py checks in a fresh
-    process; pinned here so a TRUSTED_PROXY_COUNT in the shell does not
-    change these."""
+    """Pin the default count, so a TRUSTED_PROXY_COUNT in the shell cannot change these.
+
+    tests/portal/test_boot.py checks the default itself, in a fresh process.
+    """
     settings.ALLAUTH_TRUSTED_PROXY_COUNT = 1
 
 
