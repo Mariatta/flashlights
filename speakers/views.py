@@ -550,11 +550,12 @@ class SessionUpdateView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, Updat
         return kwargs
 
     def form_valid(self, form):
-        _note_identity_change(
-            self.request, form, ("title", "slug"), "session.identity_changed"
-        )
-        messages.success(self.request, f"Saved “{form.instance.title}”.")
+        # One transaction for the save and its log entries, and "Saved"
+        # only once it has.
         with transaction.atomic():
+            _note_identity_change(
+                self.request, form, ("title", "slug"), "session.identity_changed"
+            )
             response = super().form_valid(form)
             slot = self.object.moved_slot
             if slot is not None:
@@ -568,6 +569,7 @@ class SessionUpdateView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, Updat
                     end=slot.end_utc.isoformat(),
                     room=slot.room.name if slot.room_id else "all rooms",
                 )
+        messages.success(self.request, f"Saved “{self.object.title}”.")
         return response
 
     def get_context_data(self, **kwargs):

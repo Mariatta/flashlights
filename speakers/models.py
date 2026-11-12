@@ -1100,9 +1100,11 @@ class Session(TimestampedModel):
     def __str__(self):
         return self.title
 
+    # The slot the last save moved, for the caller to log; None until then.
+    moved_slot = None
+
     def save(self, *args, **kwargs):
-        if self.duration_minutes is None:
-            self.duration_minutes = self.kind.default_duration_minutes
+        self.duration_minutes = self.length()
         if not self.delivery:
             self.delivery = self.kind.default_delivery
         if not self.slug:
@@ -1116,7 +1118,21 @@ class Session(TimestampedModel):
             return
         # Only a changed length moves the slot, as in clean(): a session
         # whose slot already disagrees keeps it where it is.
-        slot = self._slot_at_new_length() if self._length_changed() else None
+        changed = self._length_changed()
+        if update_fields is None and not changed and not self._state.adding:
+            # Unchanged since this instance was loaded, so leave the column
+            # alone: a length the slot gave the session meanwhile, through
+            # another instance or request, is not written back over.
+            kwargs["update_fields"] = [
+                field.attname
+                for field in self._meta.concrete_fields
+                if not field.primary_key
+                and field.attname != "duration_minutes"
+                and field.attname in self.__dict__
+            ]
+            super().save(*args, **kwargs)
+            return
+        slot = self._slot_at_new_length() if changed else None
         # One transaction, so a slot the new length cannot fit leaves the
         # session's old length in place too.
         with transaction.atomic():
@@ -1211,7 +1227,7 @@ class Session(TimestampedModel):
                 )
         slot = self._slot_at_new_length() if self._length_changed() else None
         if slot is not None:
-            minutes = int((slot.end_utc - slot.start_utc).total_seconds() // 60)
+            minutes = self.length()
             if minutes > MAX_SLOT_MINUTES:
                 raise ValidationError(
                     {"duration_minutes": "A slot cannot run longer than a day."}
@@ -1955,12 +1971,15 @@ class ScheduleSlot(TimestampedModel):
 
     def refresh_from_db(self, *args, **kwargs):
         super().refresh_from_db(*args, **kwargs)
-        self._remember_length()
+        fields = kwargs.get("fields")
+        if fields is None or {"start_utc", "end_utc"} <= set(fields):
+            self._remember_length()
 
     def _remember_length(self):
         """Keep the stored length, so a save can tell a new length without
         reading the row again. A load that defers a time remembers
-        nothing."""
+        nothing, nor a refresh of other fields, which would take the
+        unsaved times for stored ones."""
         if {"start_utc", "end_utc"} <= self.__dict__.keys():
             self._stored_length = self.end_utc - self.start_utc
 

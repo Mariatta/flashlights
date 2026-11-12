@@ -450,6 +450,54 @@ class TestOneLength:
         with pytest.raises(ValidationError, match="at least 15 minutes"):
             slot.save()
 
+    def test_a_stale_session_does_not_undo_a_resize(self, conference):
+        """An instance loaded before its slot was resized elsewhere keeps
+        the old length in memory; saving its other fields must not write
+        that length back over the slot's."""
+        session = make_session(conference)
+        place(session, length=90)
+        stale = Session.objects.get(pk=session.pk)
+        slot = ScheduleSlot.objects.get(session_id=session.pk)
+        slot.end_utc = T0 + timedelta(minutes=120)
+        slot.save()
+        stale.title = "Renamed"
+        stale.save()
+        fresh = Session.objects.get(pk=session.pk)
+        assert (fresh.title, fresh.duration_minutes) == ("Renamed", 120)
+        slot.refresh_from_db()
+        assert slot.end_utc == T0 + timedelta(minutes=120)
+
+    def test_a_resize_does_not_come_back_to_the_slot(self, conference):
+        """The slot hands its length to the session, which saves it without
+        reading the slot again."""
+        session = make_session(conference)
+        place(session, length=90)
+        slot = ScheduleSlot.objects.get(session_id=session.pk)
+        slot.end_utc = T0 + timedelta(minutes=60)
+        with CaptureQueriesContext(connection) as queries:
+            slot.save()
+        sqls = [q["sql"] for q in queries]
+        update = next(
+            i
+            for i, sql in enumerate(sqls)
+            if sql.startswith('UPDATE "speakers_session"')
+        )
+        assert not any(
+            sql.startswith("SELECT") and 'FROM "speakers_scheduleslot"' in sql
+            for sql in sqls[update:]
+        )
+
+    def test_refreshing_other_fields_keeps_the_stored_length(self, conference):
+        session = make_session(conference)
+        place(session, length=90)
+        slot = ScheduleSlot.objects.get(session_id=session.pk)
+        slot.end_utc = T0 + timedelta(minutes=5)
+        slot.refresh_from_db(fields=["room"])
+        with pytest.raises(ValidationError, match="at least 15 minutes"):
+            slot.save()
+        slot.refresh_from_db(fields=["start_utc", "end_utc"])
+        assert slot._stored_length == timedelta(minutes=90)
+
     def test_a_slot_with_no_stored_row_is_new(self, conference):
         session = make_session(conference)
         slot = ScheduleSlot(
