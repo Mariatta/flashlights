@@ -173,7 +173,7 @@ from .questions import (
 )
 from .readiness import apply_readiness, refresh_for_conference, refresh_readiness
 from .rules import evaluate_items
-from .schedule import presenter_schedule
+from .schedule import off_grid_warning, presenter_schedule
 from .seeds import seed_checklists
 from .services import (
     InvitationError,
@@ -1843,6 +1843,12 @@ class SpeakerSettingsView(LoginRequiredMixin, SpeakerSettingsRequiredMixin, Upda
             fields=sorted(form.changed_data),
         )
         messages.success(self.request, "Saved the speaker settings.")
+        if "schedule_step_minutes" in form.changed_data:
+            warning = off_grid_warning(
+                self.conference, self.object.schedule_step_minutes
+            )
+            if warning:
+                messages.warning(self.request, warning)
         return response
 
     def get_success_url(self):

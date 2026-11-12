@@ -95,6 +95,50 @@ def step_minutes(conference):
     return step or DEFAULT_SCHEDULE_STEP
 
 
+def slots_between_rows(conference, step):
+    """The edition's placed slots whose start falls between two rows of a
+    ``step`` grid, in the event's time zone, earliest first. The grid
+    draws such a slot in the row above, where it can share a cell with
+    the slot before it, as after a switch from 5 minutes to 15."""
+    tz = event_tz(conference)
+    slots = (
+        ScheduleSlot.objects.filter(conference=conference)
+        .exclude(session__status__in=OFF_SCHEDULE_STATUSES)
+        .select_related("session")
+        .order_by("start_utc")
+    )
+    off = []
+    for slot in slots:
+        local = slot.start_utc.astimezone(tz)
+        if (local.hour * 60 + local.minute) % step:
+            off.append(slot)
+    return off
+
+
+def off_grid_warning(conference, step):
+    """What an organizer is told after picking a step that some slots do
+    not start on; None when every slot fits."""
+    off = slots_between_rows(conference, step)
+    if not off:
+        return None
+    tz = event_tz(conference)
+    named = ", ".join(
+        f"“{slot.session.title}” ({slot.start_utc.astimezone(tz):%H:%M})"
+        for slot in off[:3]
+    )
+    if len(off) > 3:
+        named += f" and {len(off) - 3} more"
+    if len(off) == 1:
+        count, verb, them = "1 slot starts", "is", "it"
+    else:
+        count, verb, them = f"{len(off)} slots start", "are", "them"
+    return (
+        f"{count} between two rows of the new {step}-minute grid and {verb} "
+        f"drawn in the row above: {named}. Move {them} onto the grid, or "
+        "pick a finer step."
+    )
+
+
 def row_scale(step):
     """How much taller than a quarter-hour row one row of ``step`` is.
 
