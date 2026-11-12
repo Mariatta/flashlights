@@ -255,23 +255,27 @@
 
     /* Where the last press began. Selecting text in a field by dragging
      * and letting go outside it sends the click to an element around
-     * both points, outside the popover; a click whose press began in a
-     * popover or the cell panel is still a click inside it. */
+     * both points, outside the popover. Only such a moved click is
+     * judged by where its press began: a plain click, or one from the
+     * keyboard, is judged by its own target. */
     var pressed = null;
     document.addEventListener(
         "pointerdown",
         function (event) { pressed = event.target; },
         true
     );
-    function pressedInside(selector) {
-        return (pressed && pressed.closest && pressed.closest(selector)) ||
-            null;
+    function pressedInside(event, selector) {
+        if (!pressed || pressed === event.target ||
+                !event.target.contains(pressed)) {
+            return null;
+        }
+        return pressed.closest(selector);
     }
 
     document.addEventListener("click", function (event) {
         closeCardMenus(
             event.target.closest("details.schedule-card-menu") ||
-            pressedInside("details.schedule-card-menu")
+            pressedInside(event, "details.schedule-card-menu")
         );
     });
 
@@ -379,8 +383,8 @@
         var panel = cellPanel();
         if (!panel) return;
         if (event.target.closest("#schedule-cell-panel") ||
-                pressedInside("#schedule-cell-panel") ||
-                pressedInside("details.schedule-card-menu")) {
+                pressedInside(event, "#schedule-cell-panel") ||
+                pressedInside(event, "details.schedule-card-menu")) {
             return;
         }
         var cell = event.target.closest(".schedule-cell");
