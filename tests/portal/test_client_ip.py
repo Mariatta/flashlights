@@ -8,10 +8,9 @@ socket, so ``REMOTE_ADDR`` is empty and the address is only in the
 
 import pytest
 from allauth.account.adapter import get_adapter
+from django.core.exceptions import PermissionDenied
 from django.test import RequestFactory, override_settings
 
-#: The default, which tests/portal/test_boot.py checks in a fresh process;
-#: pinned here so a TRUSTED_PROXY_COUNT in the shell does not change these.
 pytestmark = pytest.mark.usefixtures("one_proxy")
 
 CABOTAGE = {"REMOTE_ADDR": "", "HTTP_X_FORWARDED_FOR": "203.0.113.7"}
@@ -19,6 +18,9 @@ CABOTAGE = {"REMOTE_ADDR": "", "HTTP_X_FORWARDED_FOR": "203.0.113.7"}
 
 @pytest.fixture
 def one_proxy(settings):
+    """The default, which tests/portal/test_boot.py checks in a fresh
+    process; pinned here so a TRUSTED_PROXY_COUNT in the shell does not
+    change these."""
     settings.ALLAUTH_TRUSTED_PROXY_COUNT = 1
 
 
@@ -52,6 +54,20 @@ def test_a_named_header_wins_over_x_forwarded_for(factory):
         "/accounts/login/", HTTP_CF_CONNECTING_IP="192.0.2.44", **CABOTAGE
     )
     assert get_adapter(request).get_client_ip(request) == "192.0.2.44"
+
+
+def test_with_no_proxy_trusted_the_request_is_refused_as_in_0_5_0(factory, settings):
+    settings.ALLAUTH_TRUSTED_PROXY_COUNT = 0
+    request = factory.get("/accounts/login/", **CABOTAGE)
+    with pytest.raises(PermissionDenied):
+        get_adapter(request).get_client_ip(request)
+
+
+@override_settings(ALLAUTH_TRUSTED_CLIENT_IP_HEADER="CF-Connecting-IP")
+def test_a_named_header_that_is_missing_refuses_the_request(factory):
+    request = factory.get("/accounts/login/", **CABOTAGE)
+    with pytest.raises(PermissionDenied):
+        get_adapter(request).get_client_ip(request)
 
 
 @pytest.mark.django_db

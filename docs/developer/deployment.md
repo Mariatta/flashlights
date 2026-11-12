@@ -502,6 +502,11 @@ give them `/_health/`.
 **Logs.** `heroku logs --tail --dyno worker` (or the host's equivalent)
 shows one process's output; all processes share one stream otherwise.
 
+**Proxies.** Heroku's router is one proxy, the default for
+`TRUSTED_PROXY_COUNT`. A CDN in front of the host, such as Cloudflare, is
+one more: set `TRUSTED_PROXY_COUNT=2`, or `TRUSTED_CLIENT_IP_HEADER` to the
+header the CDN sets if every request passes through it.
+
 **Quirks.** Check the add-on's Postgres version is 15 or newer (Database,
 above). The Key-Value Store add-on requires TLS and presents a self-signed
 certificate: its `REDIS_URL` starts with `rediss://`, and for such a URL the

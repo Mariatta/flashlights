@@ -133,10 +133,12 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 # takes that many entries from the right, the one the outermost proxy added,
 # which a visitor cannot forge. A count above the real one is worse than one
 # below it: the visitor's own entries are read, or a short header is a 500.
-# Cabotage (ingress-nginx) and Heroku (its router) are one proxy each.
+# Cabotage (ingress-nginx), Heroku (its router) and Azure Container Apps (its
+# ingress) are one proxy each; a CDN in front of any of them is one more.
 ALLAUTH_TRUSTED_PROXY_COUNT = boot.proxies(os.environ, "TRUSTED_PROXY_COUNT", 1)
 # A host that hands the address in a header of its own instead, such as
-# CF-Connecting-IP, names it here; X-Forwarded-For is then not read.
+# CF-Connecting-IP, names it here; X-Forwarded-For is then not read, and a
+# request without the header is refused like any with no address.
 ALLAUTH_TRUSTED_CLIENT_IP_HEADER = (
     os.environ.get("TRUSTED_CLIENT_IP_HEADER", "").strip() or None
 )
