@@ -17,6 +17,7 @@ emptied; answered ones stay as the record.
     </h1>
     <p class="text-secondary">
         {% trans "Approving confirms the speaker on the session and starts their checklist, exactly as accepting an invitation does. Rejecting sends a short note with no reason, and can be revisited: if a slot opens up later, approve it from the answered list." %}
+        {% trans "Proposals a speaker withdrew are listed last." %}
     </p>
     <h2 class="h5 mt-4">
         {% trans "Waiting for an answer" %}
@@ -121,6 +122,29 @@ emptied; answered ones stay as the record.
                             </button>
                         </form>
                     {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    {% if withdrawn %}
+        <h2 class="h5 mt-4">
+            {% trans "Withdrawn" %}
+            <span class="badge text-bg-light border">{{ withdrawn|length }}</span>
+        </h2>
+        <p class="text-secondary">
+            {% trans "The speaker took these back before anyone answered. If they send one again, it moves back to Waiting for an answer." %}
+        </p>
+        <ul class="list-group">
+            {% for proposal in withdrawn %}
+                {# Title and name only: what they wrote is theirs until they send it again. #}
+                <li class="list-group-item d-flex flex-wrap align-items-center gap-2">
+                    <span class="flex-grow-1">
+                        {{ proposal.session.title }}
+                        <span class="small text-secondary">{{ proposal.presenter.display_name }}</span>
+                    </span>
+                    <span class="small text-secondary">
+                        {% blocktranslate with date=proposal.decided_at|date:"j M, H:i" %}withdrawn {{ date }} UTC{% endblocktranslate %}
+                    </span>
                 </li>
             {% endfor %}
         </ul>
