@@ -136,7 +136,7 @@ emptied; answered ones stay as the record.
         </p>
         <ul class="list-group">
             {% for proposal in withdrawn %}
-                {# Title and name only: what they wrote is theirs until they send it again. #}
+                {# Title and name only, no link. #}
                 <li class="list-group-item d-flex flex-wrap align-items-center gap-2">
                     <span class="flex-grow-1">
                         {{ proposal.session.title }}

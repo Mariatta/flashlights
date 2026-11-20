@@ -129,8 +129,8 @@ The organizers review proposals and answer each one by email.
   from us again.
 - **Withdrawn:** if you withdraw, your writing is kept. You can edit it and
   choose **Send it again** to put it back in the queue. Meanwhile the
-  organizers see only its title, your name and when you withdrew it, not
-  what you wrote.
+  organizers' list of proposals shows only its title, your name and when
+  you withdrew it.
 
 ## Flow 2: we invite you
 
