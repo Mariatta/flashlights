@@ -3604,12 +3604,22 @@ class ProposalQueueView(LoginRequiredMixin, ProposalReviewRequiredMixin, Templat
             proposal.affiliation_names = (
                 ", ".join(a.name for a in user.affiliations.all()) if user else ""
             )
+        # Taken back before anyone answered. Only the title and the name
+        # are shown, so these rows skip what the review needs.
+        withdrawn = (
+            Proposal.objects.filter(
+                conference=self.conference, decision=ProposalDecision.WITHDRAWN
+            )
+            .select_related("session", "presenter")
+            .order_by("-decided_at", "-id")
+        )
         context.update(
             {
                 "conference": self.conference,
                 "rail_active": "proposals",
                 "pending": [p for p in proposals if p.is_pending],
                 "answered": [p for p in proposals if not p.is_pending],
+                "withdrawn": withdrawn,
                 "can_decide": can_review_proposals(self.request.user),
             }
         )

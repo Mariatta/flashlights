@@ -7,6 +7,17 @@ a change to the [public API](docs/developer/community_apps.md#public-api)
 for community apps is marked **Breaking**.
 [Releasing](docs/developer/releasing.md) says how a release is made.
 
+## 0.6.0 (unreleased)
+
+- **Organizers see withdrawn proposals.** A speaker who withdrew a
+  proposal before anyone answered left no trace on the organizers' side:
+  the "New session proposal" email had arrived, and the proposal was no
+  longer under Waiting for an answer. The Proposals page now ends with a
+  **Withdrawn** list: the title, the speaker's name and when it was
+  withdrawn, with no link to what they wrote. A proposal sent again moves
+  back to Waiting for an answer. Withdrawing still sends the organizers
+  no email.
+
 ## 0.5.1 (2026-11-11)
 
 - **Signing in works again behind a proxy.** django-allauth 65.21.1, from

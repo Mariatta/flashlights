@@ -6,6 +6,7 @@ accepted invitation takes, which is what these tests check hardest.
 """
 
 import re
+from datetime import datetime, timezone
 
 import pytest
 from django.contrib.auth.models import User
@@ -14,6 +15,7 @@ from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
+from portal.models import Conference
 from speakers.constants import (
     MAX_PENDING_PROPOSALS,
     ItemOwner,
@@ -276,10 +278,11 @@ class TestProposing:
         propose(client, conference)
         proposal = Proposal.objects.get()
         client.post(reverse("speakers:proposal_withdraw", args=[proposal.pk]))
-        # It is out of the organizers' queue while it is withdrawn.
+        # It waits in the organizers' Withdrawn list, out of the other two.
         client.force_login(organizer)
         queue = client.get(QUEUE).context
         assert not queue["pending"] and not queue["answered"]
+        assert list(queue["withdrawn"]) == [proposal]
         client.force_login(stranger)
         client.post(
             reverse("speakers:proposal_edit", args=[proposal.pk]),
@@ -303,7 +306,8 @@ class TestProposing:
         assert any("We have your proposal" in m.subject for m in mail.outbox)
         assert any("New session proposal" in m.subject for m in mail.outbox)
         client.force_login(organizer)
-        assert client.get(QUEUE).context["pending"] == [proposal]
+        queue = client.get(QUEUE).context
+        assert queue["pending"] == [proposal] and not queue["withdrawn"]
 
     def test_a_withdrawn_proposal_does_not_count_towards_the_cap(
         self, client, conference, enabled, stranger
@@ -704,6 +708,89 @@ class TestDeciding:
         assert "A talk about testing" in content and "Approve" in content
         client.force_login(stranger)
         assert client.get(QUEUE).status_code == 403
+
+    def test_no_withdrawn_list_while_nothing_was_withdrawn(
+        self, client, conference, enabled, stranger, organizer
+    ):
+        client.force_login(stranger)
+        propose(client, conference)
+        client.force_login(organizer)
+        content = client.get(QUEUE).content.decode()
+        assert "The speaker took these back" not in content
+
+    def test_a_withdrawn_proposal_is_listed_by_title_and_name_only(
+        self, client, conference, enabled, stranger, organizer
+    ):
+        client.force_login(stranger)
+        propose(client, conference)
+        proposal = Proposal.objects.get()
+        withdraw_proposal(proposal, actor=stranger)
+        Proposal.objects.filter(pk=proposal.pk).update(
+            decided_at=datetime(2026, 11, 12, 14, 5, tzinfo=timezone.utc)
+        )
+        client.force_login(organizer)
+        content = client.get(QUEUE).content.decode()
+        assert "The speaker took these back" in content
+        assert "A talk about testing" in content and "Sam Newcomer" in content
+        assert "withdrawn 12 Nov, 14:05 UTC" in content
+        # No way into what they wrote, and nothing to decide.
+        assert proposal.session.get_absolute_url() not in content
+        assert "What testing is for." not in content
+        assert reverse("speakers:proposal_decide", args=[proposal.pk]) not in content
+
+    def test_the_latest_withdrawal_is_listed_first(
+        self, client, conference, enabled, organizer
+    ):
+        presenter = make_presenter(conference)
+        for n, day in enumerate([10, 12, 11]):
+            session = make_session(conference, title=f"Taken back {n}")
+            add_presenter(session, presenter)
+            withdraw_proposal(submit_proposal(presenter, session))
+            Proposal.objects.filter(session=session).update(
+                decided_at=datetime(2026, 11, day, tzinfo=timezone.utc)
+            )
+        client.force_login(organizer)
+        withdrawn = client.get(QUEUE).context["withdrawn"]
+        assert [p.session.title for p in withdrawn] == [
+            "Taken back 1",
+            "Taken back 2",
+            "Taken back 0",
+        ]
+
+    def test_another_edition_s_withdrawn_proposal_is_not_listed(
+        self, client, conference, enabled, organizer
+    ):
+        other = Conference.objects.create(year=2024, name="Old", slug="2024")
+        presenter = make_presenter(other)
+        session = make_session(other, title="Last year's second thoughts")
+        add_presenter(session, presenter)
+        withdraw_proposal(submit_proposal(presenter, session))
+        client.force_login(organizer)
+        response = client.get(QUEUE)
+        assert not response.context["withdrawn"]
+        assert "Last year's second thoughts" not in response.content.decode()
+
+    def test_withdrawn_rows_cost_no_query_each(
+        self, client, conference, enabled, organizer
+    ):
+        presenter = make_presenter(conference)
+
+        def withdraw_one(n):
+            session = make_session(conference, title=f"Taken back {n}")
+            add_presenter(session, presenter)
+            withdraw_proposal(submit_proposal(presenter, session))
+
+        def count():
+            with CaptureQueriesContext(connection) as context:
+                client.get(QUEUE)
+            return len(context)
+
+        client.force_login(organizer)
+        withdraw_one(0)
+        before = count()
+        for n in range(1, 4):
+            withdraw_one(n)
+        assert count() == before
 
 
 @pytest.mark.django_db
