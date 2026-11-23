@@ -1,8 +1,9 @@
 {% extends "speakers/_organize_shell.html" %}
-{% load i18n %}
+{% load i18n tz %}
 {% comment %}
 What people have proposed. Pending first, because the queue exists to be
-emptied; answered ones stay as the record.
+emptied; answered ones stay as the record. Proposals a speaker took back
+come last, the latest of them only, by title and name with no way in.
 {% endcomment %}
 {% block head_title %}
     {% trans "Proposals" %}
@@ -17,7 +18,9 @@ emptied; answered ones stay as the record.
     </h1>
     <p class="text-secondary">
         {% trans "Approving confirms the speaker on the session and starts their checklist, exactly as accepting an invitation does. Rejecting sends a short note with no reason, and can be revisited: if a slot opens up later, approve it from the answered list." %}
-        {% trans "Proposals a speaker withdrew are listed last." %}
+        {% if withdrawn %}
+            {% trans "Proposals a speaker withdrew are listed last." %}
+        {% endif %}
     </p>
     <h2 class="h5 mt-4">
         {% trans "Waiting for an answer" %}
@@ -129,10 +132,13 @@ emptied; answered ones stay as the record.
     {% if withdrawn %}
         <h2 class="h5 mt-4">
             {% trans "Withdrawn" %}
-            <span class="badge text-bg-light border">{{ withdrawn|length }}</span>
+            <span class="badge text-bg-light border">{{ withdrawn_count }}</span>
         </h2>
         <p class="text-secondary">
             {% trans "The speaker took these back before anyone answered. If they send one again, it moves back to Waiting for an answer." %}
+            {% if withdrawn_count > withdrawn|length %}
+                {% blocktranslate with shown=withdrawn|length %}Only the latest {{ shown }} are shown.{% endblocktranslate %}
+            {% endif %}
         </p>
         <ul class="list-group">
             {% for proposal in withdrawn %}
@@ -142,9 +148,11 @@ emptied; answered ones stay as the record.
                         {{ proposal.session.title }}
                         <span class="small text-secondary">{{ proposal.presenter.display_name }}</span>
                     </span>
-                    <span class="small text-secondary">
-                        {% blocktranslate with date=proposal.decided_at|date:"j M, H:i" %}withdrawn {{ date }} UTC{% endblocktranslate %}
-                    </span>
+                    {% if proposal.decided_at %}
+                        <span class="small text-secondary">
+                            {% blocktranslate with date=proposal.decided_at|utc|date:"j M Y, H:i" %}withdrawn {{ date }} UTC{% endblocktranslate %}
+                        </span>
+                    {% endif %}
                 </li>
             {% endfor %}
         </ul>

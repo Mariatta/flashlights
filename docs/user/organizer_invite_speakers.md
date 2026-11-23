@@ -147,7 +147,8 @@ A speaker can withdraw a proposal while nobody has answered it. No email is
 sent about that, so the proposal you were notified about is no longer under
 **Waiting for an answer**: look under **Withdrawn**, the last list on the
 page. It shows the title, the speaker's name and when it was withdrawn, with
-no link to the proposal. When they send it again, it moves back to
+no link to the proposal. The list shows the latest 50, and the number next
+to the heading counts them all. When they send it again, it moves back to
 **Waiting for an answer** and you get the usual notice.
 
 ## Tips

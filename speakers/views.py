@@ -52,6 +52,7 @@ from .constants import (
     MAX_PENDING_PROPOSALS,
     OPEN_ITEM_STATUSES,
     VIDEO_KINDS,
+    WITHDRAWN_PROPOSALS_SHOWN,
     AssigneeDefault,
     AutoRule,
     ChecklistScope,
@@ -3605,13 +3606,20 @@ class ProposalQueueView(LoginRequiredMixin, ProposalReviewRequiredMixin, Templat
                 ", ".join(a.name for a in user.affiliations.all()) if user else ""
             )
         # Taken back before anyone answered. Only the title and the name
-        # are shown, so these rows skip what the review needs.
-        withdrawn = (
-            Proposal.objects.filter(
-                conference=self.conference, decision=ProposalDecision.WITHDRAWN
-            )
-            .select_related("session", "presenter")
-            .order_by("-decided_at", "-id")
+        # are shown, so these rows skip what the review needs. One set in
+        # the admin has no time: it goes last, not first.
+        all_withdrawn = Proposal.objects.filter(
+            conference=self.conference, decision=ProposalDecision.WITHDRAWN
+        )
+        withdrawn = list(
+            all_withdrawn.select_related("session", "presenter").order_by(
+                F("decided_at").desc(nulls_last=True), "-id"
+            )[:WITHDRAWN_PROPOSALS_SHOWN]
+        )
+        withdrawn_count = (
+            all_withdrawn.count()
+            if len(withdrawn) == WITHDRAWN_PROPOSALS_SHOWN
+            else len(withdrawn)
         )
         context.update(
             {
@@ -3620,6 +3628,7 @@ class ProposalQueueView(LoginRequiredMixin, ProposalReviewRequiredMixin, Templat
                 "pending": [p for p in proposals if p.is_pending],
                 "answered": [p for p in proposals if not p.is_pending],
                 "withdrawn": withdrawn,
+                "withdrawn_count": withdrawn_count,
                 "can_decide": can_review_proposals(self.request.user),
             }
         )

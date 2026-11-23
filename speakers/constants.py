@@ -133,6 +133,10 @@ CAN_BE_APPROVED = frozenset({ProposalDecision.PENDING, ProposalDecision.REJECTED
 # Everyone proposes, whether or not they are already on the program.
 MAX_PENDING_PROPOSALS = 3
 
+# Withdrawn proposals do not count towards that cap, so their list on the
+# organizers' Proposals page could grow without end: it shows the latest.
+WITHDRAWN_PROPOSALS_SHOWN = 50
+
 
 class SessionLevel(models.TextChoices):
     ALL = "ALL", "All levels"

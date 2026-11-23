@@ -717,6 +717,7 @@ class TestDeciding:
         client.force_login(organizer)
         content = client.get(QUEUE).content.decode()
         assert "The speaker took these back" not in content
+        assert "are listed last" not in content
 
     def test_a_withdrawn_proposal_is_listed_by_title_and_name_only(
         self, client, conference, enabled, stranger, organizer
@@ -732,7 +733,7 @@ class TestDeciding:
         content = client.get(QUEUE).content.decode()
         assert "The speaker took these back" in content
         assert "A talk about testing" in content and "Sam Newcomer" in content
-        assert "withdrawn 12 Nov, 14:05 UTC" in content
+        assert "withdrawn 12 Nov 2026, 14:05 UTC" in content
         # No way into what they wrote, and nothing to decide.
         assert proposal.session.get_absolute_url() not in content
         assert "What testing is for." not in content
@@ -756,6 +757,63 @@ class TestDeciding:
             "Taken back 2",
             "Taken back 0",
         ]
+
+    def test_one_withdrawn_in_the_admin_has_no_time_and_goes_last(
+        self, client, conference, enabled, organizer
+    ):
+        presenter = make_presenter(conference)
+        for title in ("Set in the admin", "Taken back"):
+            session = make_session(conference, title=title)
+            add_presenter(session, presenter)
+            withdraw_proposal(submit_proposal(presenter, session))
+        Proposal.objects.filter(session__title="Set in the admin").update(
+            decided_at=None
+        )
+        client.force_login(organizer)
+        response = client.get(QUEUE)
+        assert [p.session.title for p in response.context["withdrawn"]] == [
+            "Taken back",
+            "Set in the admin",
+        ]
+        content = response.content.decode()
+        assert "are listed last" in content
+        # One time for two rows: the row without one says nothing.
+        assert len(re.findall(r"withdrawn [^<]*UTC", content)) == 1
+
+    def test_the_time_is_utc_whatever_zone_is_active(
+        self, client, conference, enabled, organizer, settings
+    ):
+        settings.TIME_ZONE = "America/Vancouver"
+        presenter = make_presenter(conference)
+        session = make_session(conference, title="Taken back")
+        add_presenter(session, presenter)
+        withdraw_proposal(submit_proposal(presenter, session))
+        Proposal.objects.update(
+            decided_at=datetime(2027, 1, 5, 3, 0, tzinfo=timezone.utc)
+        )
+        client.force_login(organizer)
+        assert "withdrawn 5 Jan 2027, 03:00 UTC" in client.get(QUEUE).content.decode()
+
+    def test_only_the_latest_withdrawals_are_shown_with_the_full_count(
+        self, client, conference, enabled, organizer, monkeypatch
+    ):
+        monkeypatch.setattr("speakers.views.WITHDRAWN_PROPOSALS_SHOWN", 2)
+        presenter = make_presenter(conference)
+        for n in range(3):
+            session = make_session(conference, title=f"Taken back {n}")
+            add_presenter(session, presenter)
+            withdraw_proposal(submit_proposal(presenter, session))
+            Proposal.objects.filter(session=session).update(
+                decided_at=datetime(2026, 11, 10 + n, tzinfo=timezone.utc)
+            )
+        client.force_login(organizer)
+        response = client.get(QUEUE)
+        assert [p.session.title for p in response.context["withdrawn"]] == [
+            "Taken back 2",
+            "Taken back 1",
+        ]
+        assert response.context["withdrawn_count"] == 3
+        assert "Only the latest 2 are shown." in response.content.decode()
 
     def test_another_edition_s_withdrawn_proposal_is_not_listed(
         self, client, conference, enabled, organizer
