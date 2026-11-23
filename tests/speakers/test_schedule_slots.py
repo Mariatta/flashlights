@@ -478,6 +478,72 @@ class TestOneLength:
         stale.save()
         assert stale.moved_slot is None
 
+    def test_a_new_length_writes_only_the_slots_end(self, conference):
+        """The slot is read under a lock inside the save's transaction and
+        only its end is written, so a move to another room or start that
+        lands at the same moment is not written back over."""
+        session = make_session(conference)
+        place(session, length=30)
+        heard = []
+
+        def spy(sender, instance, update_fields=None, **kwargs):
+            heard.append(update_fields)
+
+        post_save.connect(spy, sender=ScheduleSlot)
+        try:
+            session.duration_minutes = 45
+            with CaptureQueriesContext(connection) as queries:
+                session.save()
+        finally:
+            post_save.disconnect(spy, sender=ScheduleSlot)
+        assert heard == [frozenset({"end_utc", "modified_date"})]
+        reads = [
+            query["sql"]
+            for query in queries
+            if query["sql"].startswith("SELECT") and "FOR UPDATE" in query["sql"]
+        ]
+        assert len(reads) == 1 and "speakers_scheduleslot" in reads[0]
+        assert session.moved_slot.end_utc == T0 + timedelta(minutes=45)
+
+    def test_a_session_deleted_meanwhile_saves_as_a_plain_save_does(self, conference):
+        """Leaving the length column out makes the save an update of named
+        fields, which fails when the row is gone; a plain save writes the
+        row again, and so does this one."""
+        session = make_session(conference)
+        Session.objects.filter(pk=session.pk).delete()
+        session.title = "Renamed"
+        session.save()
+        assert Session.objects.get(pk=session.pk).title == "Renamed"
+
+    @pytest.mark.django_db(transaction=True)
+    def test_a_session_deleted_meanwhile_saves_outside_a_transaction(self):
+        conference = Conference.objects.create(
+            year=2031, name="Flashlights 2031", slug="2031"
+        )
+        session = make_session(conference)
+        Session.objects.filter(pk=session.pk).delete()
+        session.title = "Renamed"
+        session.save()
+        assert Session.objects.get(pk=session.pk).title == "Renamed"
+
+    def test_receivers_hear_fields_by_name(self, conference):
+        """A receiver that looks for ``kind`` in ``update_fields`` must
+        find it, not ``kind_id``."""
+        session = make_session(conference)
+        heard = []
+
+        def spy(sender, instance, update_fields=None, **kwargs):
+            heard.append(update_fields)
+
+        post_save.connect(spy, sender=Session)
+        try:
+            session.save()
+        finally:
+            post_save.disconnect(spy, sender=Session)
+        (fields,) = heard
+        assert {"kind", "conference", "title"} <= fields
+        assert not {"kind_id", "conference_id", "duration_minutes"} & fields
+
     def test_a_slot_ending_before_it_starts_is_refused(self, conference):
         slot = place(make_session(conference), length=90)
         slot.end_utc = T0 - timedelta(minutes=30)
@@ -564,3 +630,22 @@ class TestLengthsFromSlots:
         assert lengths[placed.pk] == 15
         assert lengths[cancelled.pk] == 4
         assert lengths[agreeing.pk] == 20
+
+    def test_an_unreachable_cache_does_not_fail_the_migration(
+        self, conference, django_capture_on_commit_callbacks, monkeypatch
+    ):
+        """The lengths are committed by the time the cache is cleared, so
+        a cache that is down is logged, not raised."""
+        session = make_session(conference)
+        place(session, length=15, room=make_room(conference))
+        Session.objects.filter(pk=session.pk).update(duration_minutes=4)
+
+        def down(key):
+            raise ConnectionError("the cache is down")
+
+        monkeypatch.setattr(step_migration.cache, "incr", down)
+        with django_capture_on_commit_callbacks(execute=True) as callbacks:
+            step_migration.lengths_from_slots(apps, None)
+        assert len(callbacks) == 1
+        session.refresh_from_db()
+        assert session.duration_minutes == 15

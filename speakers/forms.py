@@ -148,6 +148,10 @@ class SessionForm(EventTimeMixin, forms.ModelForm):
     # Declared here, so label and help text live here too: Meta.help_texts
     # applies only to fields Django generates from the model.
     slug = _slug_field("/speakers/sessions/django-101/", "title", "this session's")
+    # The length the page was opened with, sent back with the form: a
+    # length the organizer left alone is told from one they typed, even
+    # when a resize on the schedule changed it in between.
+    length_shown = forms.IntegerField(required=False, widget=forms.HiddenInput)
 
     class Meta:
         model = Session
@@ -221,6 +225,7 @@ class SessionForm(EventTimeMixin, forms.ModelForm):
             # Nobody uploads a video to fit a limit: the team records.
             del self.fields["video_length_limit_minutes"]
         self.use_event_tz(conference)
+        self.fields["length_shown"].initial = self.instance.duration_minutes
         self.fields["duration_minutes"].help_text = (
             "Leave blank to use the default for the type: "
             + ", ".join(
@@ -282,6 +287,16 @@ class SessionForm(EventTimeMixin, forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
+        # A length left as the page showed it is not a change: the session
+        # keeps the length it has now, so saving a page opened before a
+        # colleague's resize does not move the slot's end back.
+        shown = cleaned.get("length_shown")
+        if (
+            self.instance.pk
+            and shown is not None
+            and cleaned.get("duration_minutes") == shown
+        ):
+            cleaned["duration_minutes"] = self.instance.duration_minutes
         if self.in_person:
             cleaned["delivery"] = self.instance.delivery = Delivery.LIVE
         delivery = cleaned.get("delivery")

@@ -1147,7 +1147,12 @@ installed; this app keeps small factory functions in `tests/speakers/factories.p
   `Session.duration_minutes`, and `Session.save()` moves the slot's end
   when the duration changes, in one transaction (`Session.clean()`
   holds a changed length to the grid's bounds and refuses one that
-  would overlap another slot). Off-schedule sessions are left out: a
+  would overlap another slot; outside a form, `Session.save()` raises
+  that `ValidationError` itself and saves nothing). The slot is locked
+  for that save and only its end is written, so a move made at the same
+  moment keeps its room and start. The session edit form sends back the
+  length it was opened with (`length_shown`), so a page opened before a
+  resize does not put the old length back. Off-schedule sessions are left out: a
   cancelled session's slot is a record. Placing a CONFIRMED session calls
   `Session.schedule()`; removing a SCHEDULED one calls `unschedule()`
   (back to CONFIRMED, which reopens the identity fields); a PUBLISHED

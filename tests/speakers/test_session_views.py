@@ -368,6 +368,42 @@ class TestSlugUrls:
         assert entry.actor == organizer
         assert entry.data["end"] == (start + timedelta(minutes=45)).isoformat()
 
+    def test_a_page_opened_before_a_resize_does_not_undo_it(
+        self, client, organizer, sessions
+    ):
+        """The form sends back the length it was opened with. Saved after
+        a colleague resized the slot, a length nobody typed leaves the
+        slot alone; a typed one still moves it."""
+        session = sessions["mine"]
+        start = datetime(2026, 12, 5, 14, 0, tzinfo=timezone.utc)
+        slot = make_slot(session, start_utc=start)
+        client.force_login(organizer)
+        url = reverse("speakers:session_edit", args=[session.slug])
+        opened = client.get(url).context["form"]
+        shown = opened["length_shown"].value()
+        assert shown == session.duration_minutes
+        assert 'name="length_shown"' in client.get(url).content.decode()
+        base = {
+            "kind": session.kind_id,
+            "delivery": Delivery.LIVE,
+            "level": "BEGINNER",
+            "language": "en",
+            "title": "A typo fixed",
+            "slug": session.slug,
+            "length_shown": shown,
+        }
+        slot.end_utc = start + timedelta(minutes=shown + 15)
+        slot.save()
+        client.post(url, {**base, "duration_minutes": shown})
+        session.refresh_from_db()
+        assert session.title == "A typo fixed"
+        assert session.duration_minutes == shown + 15
+        assert session.slot.end_utc == start + timedelta(minutes=shown + 15)
+        assert not ActivityLog.objects.filter(action="slot.moved").exists()
+        client.post(url, {**base, "duration_minutes": shown + 30})
+        session.refresh_from_db()
+        assert session.slot.end_utc == start + timedelta(minutes=shown + 30)
+
     def test_a_cancelled_sessions_new_length_logs_no_move(
         self, client, organizer, sessions
     ):

@@ -18,7 +18,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
-from django.db import models, transaction
+from django.db import models, router, transaction
 from django.db.models import Value
 from django.urls import reverse
 from django.utils import timezone
@@ -1104,6 +1104,15 @@ class Session(TimestampedModel):
     moved_slot = None
 
     def save(self, *args, **kwargs):
+        """Save the session and, when its length changed, move the end of
+        its slot on the schedule.
+
+        Raises ``ValidationError`` when the slot cannot take the new
+        length (under one grid step, over a day, or into the next slot in
+        the room), as saving the slot itself does. Nothing is saved then.
+        A form has already refused such a length in ``clean``; a script
+        that sets one on a placed session has to catch it.
+        """
         self.duration_minutes = self.length()
         if not self.delivery:
             self.delivery = self.kind.default_delivery
@@ -1128,22 +1137,37 @@ class Session(TimestampedModel):
             # Unchanged since this instance was loaded, so leave the column
             # alone: a length the slot gave the session meanwhile, through
             # another instance or request, is not written back over.
-            kwargs["update_fields"] = [
-                field.attname
+            # Named as callers name them (``kind``, not ``kind_id``), which
+            # is what a ``post_save`` receiver looks for.
+            fields = [
+                field.name
                 for field in self._meta.concrete_fields
                 if not field.primary_key
-                and field.attname != "duration_minutes"
+                and field.name != "duration_minutes"
                 and field.attname in self.__dict__
             ]
-            super().save(*args, **kwargs)
+            try:
+                super().save(*args, **{**kwargs, "update_fields": fields})
+            except self.NotUpdated:
+                # The row went between the load and this save. A plain save
+                # writes it again, so this one does too. No query failed,
+                # so a transaction around this save is still good.
+                using = kwargs.get("using") or router.db_for_write(
+                    type(self), instance=self
+                )
+                if transaction.get_connection(using).in_atomic_block:
+                    transaction.set_rollback(False, using=using)
+                super().save(*args, **kwargs)
             return
-        slot = self._slot_at_new_length() if changed else None
         # One transaction, so a slot the new length cannot fit leaves the
-        # session's old length in place too.
+        # session's old length in place too. The slot is read inside it and
+        # locked, and only its end is written, so a move that lands
+        # meanwhile keeps its room and start.
         with transaction.atomic():
             super().save(*args, **kwargs)
+            slot = self._slot_at_new_length(lock=True) if changed else None
             if slot is not None:
-                slot.save()
+                slot.save(update_fields=["end_utc", "modified_date"])
         self._stored_minutes = self.duration_minutes
         # What the caller may log: the slot this save moved, if any.
         self.moved_slot = slot
@@ -1184,7 +1208,7 @@ class Session(TimestampedModel):
             return self.duration_minutes
         return self.kind.default_duration_minutes if self.kind_id else None
 
-    def _slot_at_new_length(self):
+    def _slot_at_new_length(self, lock=False):
         """The session's slot, unsaved, ending at the session's length.
 
         A session and its slot on the grid share one length: changing the
@@ -1192,14 +1216,17 @@ class Session(TimestampedModel):
         changes the session, in ``ScheduleSlot.save``). None when the
         session is not on the grid, is off the schedule (a cancelled
         session's slot is a record, not a booking), or the lengths already
-        agree.
+        agree. With ``lock``, the row is held until the transaction ends.
         """
         if self.pk is None or self.status in OFF_SCHEDULE_STATUSES:
             return None
         minutes = self.length()
         if minutes is None:
             return None
-        slot = ScheduleSlot.objects.filter(session_id=self.pk).first()
+        slots = ScheduleSlot.objects.filter(session_id=self.pk)
+        if lock:
+            slots = slots.select_for_update()
+        slot = slots.first()
         if slot is None:
             return None
         end = slot.start_utc + timedelta(minutes=minutes)

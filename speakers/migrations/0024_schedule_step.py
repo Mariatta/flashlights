@@ -28,7 +28,10 @@ def lengths_from_slots(apps, schema_editor):
     edition's cached public API responses; the editions whose lengths
     changed are cleared here instead, so the program and API do not show
     the old lengths until the cache expires. After the commit, as a save
-    would, so no request can cache the old lengths again in between."""
+    would, so no request can cache the old lengths again in between. By
+    then the lengths are saved, so a cache that cannot be reached is
+    logged and does not fail the migration: the old responses expire on
+    their own within minutes."""
 
     ScheduleSlot = apps.get_model("speakers", "ScheduleSlot")
     Session = apps.get_model("speakers", "Session")
@@ -43,7 +46,9 @@ def lengths_from_slots(apps, schema_editor):
             changed.append(slot.session)
     Session.objects.bulk_update(changed, ["duration_minutes"], batch_size=500)
     for conference_id in {session.conference_id for session in changed}:
-        transaction.on_commit(lambda pk=conference_id: clear_public_api(pk))
+        transaction.on_commit(
+            lambda pk=conference_id: clear_public_api(pk), robust=True
+        )
 
 
 class Migration(migrations.Migration):
