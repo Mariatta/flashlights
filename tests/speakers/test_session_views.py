@@ -394,15 +394,29 @@ class TestSlugUrls:
         }
         slot.end_utc = start + timedelta(minutes=shown + 15)
         slot.save()
-        client.post(url, {**base, "duration_minutes": shown})
+        response = client.post(url, {**base, "duration_minutes": shown}, follow=True)
+        # Never kept silently: the page says the length stayed.
+        said = [str(message) for message in response.context["messages"]]
+        assert any(f"stays at {shown + 15} minutes" in line for line in said)
         session.refresh_from_db()
         assert session.title == "A typo fixed"
         assert session.duration_minutes == shown + 15
         assert session.slot.end_utc == start + timedelta(minutes=shown + 15)
         assert not ActivityLog.objects.filter(action="slot.moved").exists()
-        client.post(url, {**base, "duration_minutes": shown + 30})
+        response = client.post(
+            url, {**base, "duration_minutes": shown + 30}, follow=True
+        )
+        said = [str(message) for message in response.context["messages"]]
+        assert not any("stays at" in line for line in said)
         session.refresh_from_db()
         assert session.slot.end_utc == start + timedelta(minutes=shown + 30)
+        # A mangled hidden value is no value: the length is taken as typed.
+        response = client.post(
+            url, {**base, "length_shown": "abc", "duration_minutes": shown}
+        )
+        assert response.status_code == 302
+        session.refresh_from_db()
+        assert session.slot.end_utc == start + timedelta(minutes=shown)
 
     def test_a_cancelled_sessions_new_length_logs_no_move(
         self, client, organizer, sessions

@@ -152,6 +152,9 @@ class SessionForm(EventTimeMixin, forms.ModelForm):
     # length the organizer left alone is told from one they typed, even
     # when a resize on the schedule changed it in between.
     length_shown = forms.IntegerField(required=False, widget=forms.HiddenInput)
+    #: The session's length when the form kept it over the one posted,
+    #: because it changed after the page was opened; None otherwise.
+    length_kept = None
 
     class Meta:
         model = Session
@@ -290,6 +293,9 @@ class SessionForm(EventTimeMixin, forms.ModelForm):
         # A length left as the page showed it is not a change: the session
         # keeps the length it has now, so saving a page opened before a
         # colleague's resize does not move the slot's end back.
+        # An unreadable value counts as none sent: the length is then
+        # taken as typed.
+        self.errors.pop("length_shown", None)
         shown = cleaned.get("length_shown")
         if (
             self.instance.pk
@@ -297,6 +303,9 @@ class SessionForm(EventTimeMixin, forms.ModelForm):
             and cleaned.get("duration_minutes") == shown
         ):
             cleaned["duration_minutes"] = self.instance.duration_minutes
+            if shown != self.instance.duration_minutes:
+                # For the view to say, so the length is never kept silently.
+                self.length_kept = self.instance.duration_minutes
         if self.in_person:
             cleaned["delivery"] = self.instance.delivery = Delivery.LIVE
         delivery = cleaned.get("delivery")

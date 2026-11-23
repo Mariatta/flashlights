@@ -1161,8 +1161,8 @@ class Session(TimestampedModel):
             return
         # One transaction, so a slot the new length cannot fit leaves the
         # session's old length in place too. The slot is read inside it and
-        # locked, and only its end is written, so a move that lands
-        # meanwhile keeps its room and start.
+        # locked, and only its end is written, so a move that landed
+        # since this session was loaded keeps its room and start.
         with transaction.atomic():
             super().save(*args, **kwargs)
             slot = self._slot_at_new_length(lock=True) if changed else None
