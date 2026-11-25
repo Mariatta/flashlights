@@ -26,6 +26,10 @@ for community apps is marked **Breaking**.
 - **The schedule's pencil flyout is easier to use.** Its buttons no
   longer run past its edge, and selecting text in its fields no longer
   drags the card or closes the flyout.
+- **Schedule times no longer run into the session label.** On a
+  speaker's Schedule page, the end of a time range such as 09:00–09:15
+  ran over the session's kind and room beside it. The time column now
+  fits the range.
 
 ## 0.5.1 (2026-11-11)
 
