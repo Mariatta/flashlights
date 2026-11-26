@@ -1154,12 +1154,13 @@ installed; this app keeps small factory functions in `tests/speakers/factories.p
   sends back the length it was opened with (`length_shown`), so a page
   opened before a resize does not put the old length back: the length
   stays as it is now, and the page says so. Off-schedule sessions are
-  left out: a cancelled session's slot is a record. Placing a CONFIRMED session calls
-  `Session.schedule()`; removing a SCHEDULED one calls `unschedule()`
-  (back to CONFIRMED, which reopens the identity fields); a PUBLISHED
-  session keeps its slot. Everything is UTC end to end: the browser only
-  relabels `data-utc` elements (`static/js/schedule-editor.js`), so the
-  timezone switcher never touches what is stored or sent.
+  left out: a cancelled session's slot is a record. Placing a CONFIRMED
+  session calls `Session.schedule()`; removing a SCHEDULED one calls
+  `unschedule()` (back to CONFIRMED, which reopens the identity fields);
+  a PUBLISHED session keeps its slot. Everything is UTC end to end: the
+  browser only relabels `data-utc` elements
+  (`static/js/schedule-editor.js`), so the timezone switcher never
+  touches what is stored or sent.
 - The grid shows a trimmed day (design §10.2): `schedule._window` renders
   the program plus an hour each side, always on whole hours, and
   `ScheduleSlot.clean()` stores whole minutes, because every row time is

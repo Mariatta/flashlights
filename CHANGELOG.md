@@ -20,8 +20,8 @@ for community apps is marked **Breaking**.
 - **A session and its slot on the schedule share one length.**
   Resizing a slot changes the session's length, and changing the
   session's length moves the end of its slot. On upgrade, a migration
-  gives each placed session its slot's length (a cancelled session's is
-  left alone). A session edit page opened before someone resized its
+  gives each placed session its slot's length (a cancelled session keeps
+  its own). A session edit page opened before someone resized its
   slot keeps the new length when its own is left as shown, and says so.
 - **The schedule's pencil flyout is easier to use.** Its buttons no
   longer run past its edge, and selecting text in its fields no longer
