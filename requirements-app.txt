@@ -8,7 +8,7 @@ packaging==24.2
 psycopg2-binary==2.9.13
 sqlparse==0.6.1
 django-bootstrap5==26.4
-whitenoise==6.9.0
+whitenoise==6.12.0
 dj-database-url==2.3.0
 boto3==1.38.5
 django-storages==1.14.6
