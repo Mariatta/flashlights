@@ -3,7 +3,7 @@
 The keyboard path onto the grid: pick a room, a day, a time and a
 length, no dragging needed. Params: url (the slot endpoint), lanes, days,
 sel_room, sel_date (Y-m-d) and sel_time (H:i) in tz_name (the event's
-timezone), minutes, removable.
+timezone), minutes, step (the grid step, in minutes), removable.
 The buttons are wired in static/js/schedule-editor.js.
 {% endcomment %}
 <div class="schedule-slot-form vstack gap-2 p-2"
@@ -38,7 +38,7 @@ The buttons are wired in static/js/schedule-editor.js.
         {% blocktrans %}Start ({{ tz_name }}){% endblocktrans %}
         <input class="form-control form-control-sm"
                type="time"
-               step="900"
+               step="{% widthratio step 1 60 %}"
                data-field="time"
                value="{{ sel_time }}" />
     </label>
@@ -46,12 +46,12 @@ The buttons are wired in static/js/schedule-editor.js.
         {% trans "Minutes" %}
         <input class="form-control form-control-sm"
                type="number"
-               min="15"
-               step="15"
+               min="{{ step }}"
+               step="{{ step }}"
                data-field="duration"
                value="{{ minutes }}" />
     </label>
-    <div class="d-flex gap-2">
+    <div class="d-flex flex-wrap gap-2">
         <button type="button" class="btn btn-primary btn-sm" data-action="slot-apply">
             {% trans "Place" %}
         </button>

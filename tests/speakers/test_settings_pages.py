@@ -1,15 +1,18 @@
 """Organizers open session proposals and list the websites that may
 show the program in the portal, not the Django admin."""
 
+from datetime import datetime, timedelta, timezone
+
 import pytest
 from django.contrib.auth.models import User
 from django.urls import reverse
 
 from speakers.constants import EventFormat, Recordings
 from speakers.models import ActivityLog, AllowedOrigin, SpeakerSettings
+from speakers.schedule import off_grid_warning
 from tests.grants import on_team
 
-from .factories import make_settings
+from .factories import make_session, make_settings, make_slot
 
 SETTINGS = reverse("speakers:speaker_settings")
 ORIGINS = reverse("speakers:allowed_origins")
@@ -39,6 +42,7 @@ class TestSpeakerSettingsPage:
                 "proposals_intro_md": "Tell us about your project.",
                 "organizers_email": "",
                 "conference_timezone": "America/Los_Angeles",
+                "schedule_step_minutes": "5",
                 "default_premiere_location": "YOUTUBE",
                 "default_video_length_limit_minutes": "20",
                 "media_for_speakers": "on",
@@ -47,7 +51,133 @@ class TestSpeakerSettingsPage:
         assert response.status_code == 302
         row = SpeakerSettings.objects.get(conference=conference)
         assert row.proposals_open and row.conference_timezone == "America/Los_Angeles"
+        assert row.schedule_step_minutes == 5
         assert ActivityLog.objects.filter(action="speakers.settings_changed").exists()
+
+    def test_the_grid_step_divides_an_hour(self, client, conference):
+        row = make_settings(conference)
+        assert row.schedule_step_minutes == 15
+        client.force_login(lead_of_program())
+        page = client.get(SETTINGS)
+        field = page.context["form"].fields["schedule_step_minutes"]
+        assert [value for value, _ in field.choices] == [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            10,
+            12,
+            15,
+            20,
+            30,
+            60,
+        ]
+        assert "Schedule grid step" in page.content.decode()
+        response = client.post(
+            SETTINGS,
+            {
+                "organizers_email": "",
+                "conference_timezone": "UTC",
+                "schedule_step_minutes": "7",
+                "default_premiere_location": "YOUTUBE",
+            },
+        )
+        assert response.status_code == 200
+        assert "schedule_step_minutes" in response.context["form"].errors
+        row.refresh_from_db()
+        assert row.schedule_step_minutes == 15
+
+    def test_a_coarser_step_warns_of_slots_between_its_rows(self, client, conference):
+        """From 5 to 15 minutes, a 10:05 slot is drawn in the 10:00 row with
+        the slot before it. The step is saved; the organizer is told."""
+        row = make_settings(conference, schedule_step_minutes=5)
+        ten = datetime(2026, 12, 5, 10, 0, tzinfo=timezone.utc)
+        for title, minute in (("First", 0), ("Second", 5)):
+            make_slot(
+                make_session(conference, title=title),
+                start_utc=ten + timedelta(minutes=minute),
+                end_utc=ten + timedelta(minutes=minute + 5),
+            )
+        client.force_login(lead_of_program())
+        form = {
+            "organizers_email": "",
+            "conference_timezone": "UTC",
+            "default_premiere_location": "YOUTUBE",
+        }
+        response = client.post(
+            SETTINGS, {**form, "schedule_step_minutes": "15"}, follow=True
+        )
+        row.refresh_from_db()
+        assert row.schedule_step_minutes == 15
+        shown = [str(m) for m in response.context["messages"]]
+        assert shown[1] == (
+            "1 slot starts between two rows of the 15-minute grid and is "
+            "drawn in the row above: “Second” (10:05). Move it onto the "
+            "grid, or pick a step it starts on."
+        )
+        response = client.post(
+            SETTINGS, {**form, "schedule_step_minutes": "5"}, follow=True
+        )
+        assert [str(m) for m in response.context["messages"]] == [
+            "Saved the speaker settings."
+        ]
+
+    def test_a_new_time_zone_is_checked_too(self, client, conference):
+        """At a 60-minute step, a 10:00 UTC slot starts at 15:30 in India;
+        a cancelled slot is a record and is not named. A save that changes
+        neither the step nor the zone says nothing more."""
+        row = make_settings(conference, schedule_step_minutes=60)
+        ten = datetime(2026, 12, 5, 10, 0, tzinfo=timezone.utc)
+        make_slot(
+            make_session(conference, title="Talk"),
+            start_utc=ten,
+            end_utc=ten + timedelta(hours=1),
+        )
+        gone = make_session(conference, title="Gone")
+        make_slot(
+            gone, start_utc=ten + timedelta(hours=3), end_utc=ten + timedelta(hours=4)
+        )
+        gone.cancel()
+        client.force_login(lead_of_program())
+        form = {
+            "organizers_email": "",
+            "schedule_step_minutes": "60",
+            "default_premiere_location": "YOUTUBE",
+        }
+        response = client.post(
+            SETTINGS, {**form, "conference_timezone": "Asia/Kolkata"}, follow=True
+        )
+        row.refresh_from_db()
+        assert row.conference_timezone == "Asia/Kolkata"
+        shown = [str(m) for m in response.context["messages"]]
+        assert "“Talk” (15:30)" in shown[1]
+        assert "Gone" not in shown[1]
+        response = client.post(
+            SETTINGS,
+            {**form, "conference_timezone": "Asia/Kolkata", "proposals_open": "on"},
+            follow=True,
+        )
+        assert [str(m) for m in response.context["messages"]] == [
+            "Saved the speaker settings."
+        ]
+
+    def test_the_warning_names_three_slots_at_most(self, conference):
+        make_settings(conference, schedule_step_minutes=1)
+        ten = datetime(2026, 12, 5, 10, 0, tzinfo=timezone.utc)
+        for minute in range(1, 6):
+            make_slot(
+                make_session(conference, title=f"At {minute}"),
+                start_utc=ten + timedelta(minutes=minute),
+                end_utc=ten + timedelta(minutes=minute + 1),
+            )
+        warning = off_grid_warning(conference, 15)
+        assert warning.startswith("5 slots start between two rows")
+        assert "are drawn in the row above" in warning
+        assert "“At 3” (10:03) and 2 more. Move them onto the grid" in warning
+        assert warning.endswith("pick a step they start on.")
+        assert off_grid_warning(conference, 1) is None
 
     def test_only_what_the_edition_uses(self, client, conference):
         make_settings(

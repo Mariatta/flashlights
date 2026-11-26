@@ -148,6 +148,13 @@ class SessionForm(EventTimeMixin, forms.ModelForm):
     # Declared here, so label and help text live here too: Meta.help_texts
     # applies only to fields Django generates from the model.
     slug = _slug_field("/speakers/sessions/django-101/", "title", "this session's")
+    # The length the page was opened with, sent back with the form: a
+    # length the organizer left alone is told from one they typed, even
+    # when a resize on the schedule changed it in between.
+    length_shown = forms.IntegerField(required=False, widget=forms.HiddenInput)
+    #: The session's length when the form kept it over the one posted,
+    #: because it changed after the page was opened; None otherwise.
+    length_kept = None
 
     class Meta:
         model = Session
@@ -221,6 +228,7 @@ class SessionForm(EventTimeMixin, forms.ModelForm):
             # Nobody uploads a video to fit a limit: the team records.
             del self.fields["video_length_limit_minutes"]
         self.use_event_tz(conference)
+        self.fields["length_shown"].initial = self.instance.duration_minutes
         self.fields["duration_minutes"].help_text = (
             "Leave blank to use the default for the type: "
             + ", ".join(
@@ -282,6 +290,22 @@ class SessionForm(EventTimeMixin, forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
+        # A length left as the page showed it is not a change: the session
+        # keeps the length it has now, so saving a page opened before a
+        # colleague's resize does not move the slot's end back.
+        # An unreadable value counts as none sent: the length is then
+        # taken as typed.
+        self.errors.pop("length_shown", None)
+        shown = cleaned.get("length_shown")
+        if (
+            self.instance.pk
+            and shown is not None
+            and cleaned.get("duration_minutes") == shown
+        ):
+            cleaned["duration_minutes"] = self.instance.duration_minutes
+            if shown != self.instance.duration_minutes:
+                # For the view to say, so the length is never kept silently.
+                self.length_kept = self.instance.duration_minutes
         if self.in_person:
             cleaned["delivery"] = self.instance.delivery = Delivery.LIVE
         delivery = cleaned.get("delivery")
@@ -1341,7 +1365,8 @@ class ProposalProfileForm(HandleFieldsMixin, forms.ModelForm):
 class SpeakerSettingsForm(forms.ModelForm):
     """The edition's speaker settings, in the portal rather than the Django
     admin: session proposals, where replies and reminders go, the
-    event's timezone, and the media switches the edition has use for."""
+    event's timezone, the schedule grid's step, and the media switches
+    the edition has use for."""
 
     conference_timezone = forms.ChoiceField(
         label="Event timezone",
@@ -1357,6 +1382,7 @@ class SpeakerSettingsForm(forms.ModelForm):
             "proposals_intro_md",
             "organizers_email",
             "conference_timezone",
+            "schedule_step_minutes",
             "default_premiere_location",
             "default_video_length_limit_minutes",
             "media_for_speakers",
@@ -1366,6 +1392,7 @@ class SpeakerSettingsForm(forms.ModelForm):
             "proposals_open": "Taking proposals",
             "proposals_intro_md": "Proposal form intro",
             "organizers_email": "Speaker team address",
+            "schedule_step_minutes": "Schedule grid step",
             "default_premiere_location": "Default premiere",
             "default_video_length_limit_minutes": "Default video length limit (minutes)",
             "media_for_speakers": "Speakers see their files",

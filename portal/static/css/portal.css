@@ -825,10 +825,11 @@ a.card:hover {
 
 /* Session cards on the schedule (SessionCard spec): a mono time column,
    the track and tags, the title; the session on stage now inverts to
-   Night with the accent live tag. */
+   Night with the accent live tag. The time column grows to fit the range,
+   which is the same length on every card, so the titles still line up. */
 .session-card {
     display: grid;
-    grid-template-columns: 96px minmax(0, 1fr);
+    grid-template-columns: minmax(96px, max-content) minmax(0, 1fr);
     gap: 16px;
     padding: 16px;
     background: var(--surface-card);
@@ -1850,9 +1851,11 @@ details.card[open] > summary.card-header::before {
     display: grid;
     grid-template-columns: 4.5rem 7rem repeat(var(--schedule-columns, 0), minmax(12rem, 1fr));
     /* Row 1 is the room headers: content-sized whatever the density,
-       so Compact and Fit shrink the quarter-hours, never the heading. */
+       so Compact and Fit shrink the steps, never the heading. A row is a
+       quarter hour's height, more for a step coarser than that
+       (--schedule-row-scale), so an hour keeps its height. */
     grid-template-rows: auto;
-    grid-auto-rows: var(--schedule-row-height, 1.5rem);
+    grid-auto-rows: var(--schedule-row-height, calc(1.5rem * var(--schedule-row-scale, 1)));
     position: relative;
 }
 .schedule-head {
@@ -1908,7 +1911,8 @@ details.card[open] > summary.card-header::before {
 }
 /* A card is as tall as its slot, so the title may wrap and use that
    height; the card's own overflow clips whatever still does not fit.
-   Only the quarter-hour card keeps the single clipped line. */
+   Only a one-row card, or a slot under ten minutes, keeps the single
+   clipped line. */
 .schedule-card-title {
     display: block;
     overflow-wrap: anywhere;
@@ -1932,8 +1936,9 @@ details.card[open] > summary.card-header::before {
     min-height: 0;
     margin: 0.1rem 0;
 }
-/* A quarter-hour card has one row of pixels: title only, on one line,
-   with the full text and times in the tooltip. */
+/* A one-row card, or a slot under ten minutes, has one line: title
+   only, with the full text and times in the tooltip and behind the
+   pencil. */
 .schedule-card-tight {
     padding-top: 0;
     padding-bottom: 0;

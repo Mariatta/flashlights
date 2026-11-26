@@ -343,6 +343,106 @@ class TestSlugUrls:
         }
         assert entry.data["changes"]["slug"]["to"] == "late-rename"
 
+    def test_a_new_length_moves_the_slot_and_is_logged(
+        self, client, organizer, sessions
+    ):
+        session = sessions["mine"]
+        start = datetime(2026, 12, 5, 14, 0, tzinfo=timezone.utc)
+        make_slot(session, start_utc=start)
+        client.force_login(organizer)
+        url = reverse("speakers:session_edit", args=[session.slug])
+        base = {
+            "kind": session.kind_id,
+            "delivery": Delivery.LIVE,
+            "level": "BEGINNER",
+            "language": "en",
+            "title": session.title,
+            "slug": session.slug,
+        }
+        client.post(url, {**base, "duration_minutes": session.duration_minutes})
+        assert not ActivityLog.objects.filter(action="slot.moved").exists()
+        client.post(url, {**base, "duration_minutes": 45})
+        session.refresh_from_db()
+        assert session.slot.end_utc == start + timedelta(minutes=45)
+        entry = ActivityLog.objects.get(action="slot.moved")
+        assert entry.actor == organizer
+        assert entry.data["end"] == (start + timedelta(minutes=45)).isoformat()
+
+    def test_a_page_opened_before_a_resize_does_not_undo_it(
+        self, client, organizer, sessions
+    ):
+        """The form sends back the length it was opened with. Saved after
+        a colleague resized the slot, a length nobody typed leaves the
+        slot alone; a typed one still moves it."""
+        session = sessions["mine"]
+        start = datetime(2026, 12, 5, 14, 0, tzinfo=timezone.utc)
+        slot = make_slot(session, start_utc=start)
+        client.force_login(organizer)
+        url = reverse("speakers:session_edit", args=[session.slug])
+        opened = client.get(url).context["form"]
+        shown = opened["length_shown"].value()
+        assert shown == session.duration_minutes
+        assert 'name="length_shown"' in client.get(url).content.decode()
+        base = {
+            "kind": session.kind_id,
+            "delivery": Delivery.LIVE,
+            "level": "BEGINNER",
+            "language": "en",
+            "title": "A typo fixed",
+            "slug": session.slug,
+            "length_shown": shown,
+        }
+        slot.end_utc = start + timedelta(minutes=shown + 15)
+        slot.save()
+        response = client.post(url, {**base, "duration_minutes": shown}, follow=True)
+        # Never kept silently: the page says the length stayed.
+        said = [str(message) for message in response.context["messages"]]
+        assert any(f"stays at {shown + 15} minutes" in line for line in said)
+        session.refresh_from_db()
+        assert session.title == "A typo fixed"
+        assert session.duration_minutes == shown + 15
+        assert session.slot.end_utc == start + timedelta(minutes=shown + 15)
+        assert not ActivityLog.objects.filter(action="slot.moved").exists()
+        response = client.post(
+            url, {**base, "duration_minutes": shown + 30}, follow=True
+        )
+        said = [str(message) for message in response.context["messages"]]
+        assert not any("stays at" in line for line in said)
+        session.refresh_from_db()
+        assert session.slot.end_utc == start + timedelta(minutes=shown + 30)
+        # A mangled hidden value is no value: the length is taken as typed.
+        response = client.post(
+            url, {**base, "length_shown": "abc", "duration_minutes": shown}
+        )
+        assert response.status_code == 302
+        session.refresh_from_db()
+        assert session.slot.end_utc == start + timedelta(minutes=shown)
+
+    def test_a_cancelled_sessions_new_length_logs_no_move(
+        self, client, organizer, sessions
+    ):
+        session = sessions["mine"]
+        start = datetime(2026, 12, 5, 14, 0, tzinfo=timezone.utc)
+        end = make_slot(session, start_utc=start).end_utc
+        session.cancel()
+        client.force_login(organizer)
+        url = reverse("speakers:session_edit", args=[session.slug])
+        client.post(
+            url,
+            {
+                "kind": session.kind_id,
+                "delivery": Delivery.LIVE,
+                "level": "BEGINNER",
+                "language": "en",
+                "title": session.title,
+                "slug": session.slug,
+                "duration_minutes": session.duration_minutes + 15,
+            },
+        )
+        session.refresh_from_db()
+        assert session.slot.end_utc == end
+        assert not ActivityLog.objects.filter(action="slot.moved").exists()
+
     def test_same_title_gets_a_suffix_within_the_edition(self, conference, enabled):
         first = make_session(conference, title="Django 101")
         second = make_session(conference, title="Django 101")

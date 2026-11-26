@@ -9,6 +9,27 @@ for community apps is marked **Breaking**.
 
 ## 0.6.0 (unreleased)
 
+- **The schedule grid step is a setting per edition.** On Speaker
+  settings, "Schedule grid step" takes any whole number of minutes from
+  1 to 60 that divides an hour, 15 by default, so a five-minute
+  lightning talk can be placed. A slot is at least one step long,
+  however it gets onto the schedule. Saving a step or a time zone that
+  leaves placed slots starting between the grid's rows says which (up
+  to three). A slot under ten minutes shows its title only, with its
+  times on hover and behind its pencil.
+- **A session and its slot on the schedule share one length.**
+  Resizing a slot changes the session's length, and changing the
+  session's length moves the end of its slot. On upgrade, a migration
+  gives each placed session its slot's length (a cancelled session keeps
+  its own). A session edit page opened before someone resized its
+  slot keeps the new length when its own is left as shown, and says so.
+- **The schedule's pencil flyout is easier to use.** Its buttons no
+  longer run past its edge, and selecting text in its fields no longer
+  drags the card or closes the flyout.
+- **Schedule times no longer run into the session label.** On a
+  speaker's Schedule page, the end of a time range such as 09:00–09:15
+  ran over the session's kind and room beside it. The time column now
+  fits the range.
 - **Organizers see withdrawn proposals.** A speaker who withdrew a
   proposal before anyone answered left no trace on the organizers' side:
   the "New session proposal" email had arrived, and the proposal was no
