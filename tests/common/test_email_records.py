@@ -9,7 +9,7 @@ import pytest
 from allauth.account.models import EmailAddress
 from django.apps import apps
 from django.contrib.auth.models import User
-from django.core import mail
+from django.core import mail, signing
 from django.core.management import call_command
 from django.urls import reverse
 from django.utils import timezone
@@ -193,9 +193,18 @@ class TestRecording:
         assert "example.com" in mail.outbox[0].body
         assert "example.com" not in record.body_md and WITHHELD in record.body_md
 
-    def test_invitation_accept_link_is_withheld(self, conference, presenter):
+    def test_invitation_accept_link_is_withheld(
+        self, conference, presenter, monkeypatch
+    ):
         """Opening the accept link signs its reader in as the presenter
-        (``InvitationView.post``), so the trail must not hold it."""
+        (``InvitationView.post``), so the trail must not hold it.
+
+        A signed token carries the second it was made in, so the signer's
+        clock is held still: the token signed here is then the one the
+        email carried, even when the send runs across a second's edge.
+        """
+        stamp = signing.b62_encode(int(timezone.now().timestamp()))
+        monkeypatch.setattr(signing.TimestampSigner, "timestamp", lambda self: stamp)
         invitation = make_invitation(presenter)
         invitation.issue_token()
         invitation.save()
