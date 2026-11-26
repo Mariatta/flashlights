@@ -5,7 +5,7 @@ resizes; the pencil opens the keyboard form. Params: card (schedule.py's
 dict), lanes, days.
 {% endcomment %}
 {# djlint:off #}
-<div class="schedule-card {% if card.is_band %}schedule-band{% endif %} {% if card.warnings %}schedule-warned{% endif %} {% if card.span < 2 %}schedule-card-tight{% endif %} {% if card.is_dirty %}schedule-card-dirty{% endif %} {% if card.is_pencilled %}schedule-card-pencilled{% endif %}"
+<div class="schedule-card {% if card.is_band %}schedule-band{% endif %} {% if card.warnings %}schedule-warned{% endif %} {% if card.is_tight %}schedule-card-tight{% endif %} {% if card.is_dirty %}schedule-card-dirty{% endif %} {% if card.is_pencilled %}schedule-card-pencilled{% endif %}"
      draggable="true"
      data-slot-url="{% url 'speakers:session_slot' card.session.slug %}"
      data-minutes="{{ card.minutes }}"
@@ -47,7 +47,7 @@ dict), lanes, days.
             </summary>
             <div class="schedule-card-popover card shadow">
                 {% url 'speakers:session_slot' card.session.slug as slot_url %}
-                {% include "speakers/_slot_form.html" with url=slot_url lanes=lanes days=days sel_room=card.slot.room_id|default_if_none:"" sel_date=card.slot.start_utc|timezone:event_timezone|date:"Y-m-d" sel_time=card.slot.start_utc|timezone:event_timezone|date:"H:i" tz_name=event_timezone minutes=card.minutes removable=True only %}
+                {% include "speakers/_slot_form.html" with url=slot_url lanes=lanes days=days sel_room=card.slot.room_id|default_if_none:"" sel_date=card.slot.start_utc|timezone:event_timezone|date:"Y-m-d" sel_time=card.slot.start_utc|timezone:event_timezone|date:"H:i" tz_name=event_timezone minutes=card.minutes step=step_minutes removable=True only %}
             </div>
         </details>
     </div>

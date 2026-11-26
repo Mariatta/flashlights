@@ -7,6 +7,26 @@ a change to the [public API](docs/developer/community_apps.md#public-api)
 for community apps is marked **Breaking**.
 [Releasing](docs/developer/releasing.md) says how a release is made.
 
+## 0.6.0 (unreleased)
+
+- **The schedule grid step is a setting per edition.** On Speaker
+  settings, "Schedule grid step" takes any whole number of minutes from
+  1 to 60 that divides an hour, 15 by default, so a five-minute
+  lightning talk can be placed. A slot is at least one step long,
+  however it gets onto the schedule. Saving a step or a time zone that
+  leaves placed slots starting between the grid's rows says which (up
+  to three). A slot under ten minutes shows its title only, with its
+  times on hover and behind its pencil.
+- **A session and its slot on the schedule share one length.**
+  Resizing a slot changes the session's length, and changing the
+  session's length moves the end of its slot. On upgrade, a migration
+  gives each placed session its slot's length (a cancelled session keeps
+  its own). A session edit page opened before someone resized its
+  slot keeps the new length when its own is left as shown, and says so.
+- **The schedule's pencil flyout is easier to use.** Its buttons no
+  longer run past its edge, and selecting text in its fields no longer
+  drags the card or closes the flyout.
+
 ## 0.5.1 (2026-11-11)
 
 - **Signing in works again behind a proxy.** django-allauth 65.21.1, from

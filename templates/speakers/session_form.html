@@ -29,6 +29,7 @@
     <form method="post" class="col-lg-9">
         {% csrf_token %}
         {% bootstrap_form_errors form type="non_fields" %}
+        {{ form.length_shown }}
         {% for group in form.field_groups %}
             <fieldset class="card mb-4{% if group.key == 'team_only' %} border-secondary{% endif %}">
                 <legend class="card-header h6 mb-0">

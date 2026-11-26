@@ -2,14 +2,18 @@
 {% comment %}
 The day's grid alone, so the page can refetch it after every change
 (?grid=1). Columns: hour gutter, the all-rooms lane, one per room.
-Rows: 15-minute steps across the event's day. Cells are drop targets; cards
-sit on top with inline grid positions computed in speakers/schedule.py.
+Rows: the edition's grid step (step_minutes; hour_rows to an hour, each
+row_scale quarter-hour rows tall) across the event's day. Cells are drop
+targets; cards sit on top with inline grid positions computed in
+speakers/schedule.py.
 {% endcomment %}
 <div class="schedule-scroll">
     {# djlint:off #}
     <div class="schedule-grid"
          data-rows="{{ rows|length }}"
-         style="--schedule-columns: {{ rooms|length }}">
+         data-step="{{ step_minutes }}"
+         data-row-scale="{{ row_scale }}"
+         style="--schedule-columns: {{ rooms|length }}; --schedule-row-scale: {{ row_scale }}">
         <div class="schedule-head" style="grid-column: 1">
         </div>
         {% for lane in lanes %}
@@ -21,7 +25,7 @@ sit on top with inline grid positions computed in speakers/schedule.py.
         {% for row in rows %}
             {% if row.is_hour %}
                 <div class="schedule-hour"
-                     style="grid-row: {{ row.index }} / span 4;
+                     style="grid-row: {{ row.index }} / span {{ hour_rows }};
                             grid-column: 1">
                     <span data-utc="{{ row.utc.isoformat }}">{{ row.utc|date:"H:i" }}</span>
                 </div>

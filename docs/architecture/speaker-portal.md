@@ -113,7 +113,7 @@ Checklists are templates the team edits in the portal — items can be renamed, 
 
 ### 3.4 Building the schedule
 
-A grid with the rooms as columns and 15-minute steps as rows. Unscheduled sessions wait on the side and are dragged in; a "+ program item" button drops an opening or break straight onto the grid, spanning every room. Conflicts — two sessions in one room, a presenter double-booked — are highlighted where they happen.
+A grid with the rooms as columns and the edition's grid step (15 minutes unless an organizer picks a finer or coarser one) as rows. Unscheduled sessions wait on the side and are dragged in; a "+ program item" button drops an opening or break straight onto the grid, spanning every room. Conflicts (two sessions in one room, a presenter double-booked) are highlighted where they happen.
 
 The timezone switcher shows the grid as a specific presenter would see it, which is how "we scheduled her at 3 a.m." gets caught before the confirmation email.
 
@@ -316,7 +316,7 @@ An organizer invites a presenter to a specific session (or, for panelists, to th
 
 **Room** — `name`, `discord_id`, `url`, `kind` (`STAGE`, `VOICE`, `TEXT`, `FORUM`), `is_active`. Deliberately generic: for an online edition a room is typically a Discord channel, created on Discord by hand and recorded here, but nothing else in the portal cares where a room actually is.
 
-**ScheduleSlot** — one per session: `room` (nullable — null means *every room*, so the opening or a break spans the whole grid), `start_utc`, `end_utc`. `end_utc` defaults from the session duration.
+**ScheduleSlot**: one per session: `room` (nullable; null means *every room*, so the opening or a break spans the whole grid), `start_utc`, `end_utc`. `end_utc` defaults from the session duration, and the two stay equal: resizing the slot changes the session's duration, and changing the duration moves the slot's end.
 
 Validation: no two slots overlap in one room (an every-room slot conflicts with everything in its window, except other program-kind bands); a presenter in two overlapping slots is flagged as a warning, not blocked — a moderator moving between rooms is legitimate. A session still waiting for an answer (`PROPOSED`, `REJECTED`) cannot hold a slot at all, which is what makes it safe for the overlap rules to look through those statuses on the other side; a cancelled session keeps its slot as a record, freed for others. The checks are application-level: two organizers saving overlapping slots in the same instant can both pass and both commit. The database-level guarantee would be a Postgres exclusion constraint on (conference, room, `tstzrange(start_utc, end_utc)`) via `btree_gist` — worth adding once the editor makes concurrent edits plausible.
 
@@ -610,7 +610,7 @@ A pre-recorded session still takes a schedule slot — the premiere or watch-par
 
 > **Partly built** (M3). The organizer editor below is built (4 October 2026): the grid, dragging, resizing, a keyboard form per card, the inline program item, the timezone switcher and the double-booking warnings, all through one slot endpoint per session (`PATCH`/`DELETE sessions/<slug>/slot/`, JSON errors). "Preview as public" waits for the public program work (§11). The presenter view below is built (5 October 2026): everything public plus their own unpublished sessions badged "not yet public", grouped by their local day; its calendar links are placeholders until the feeds (task 4.4).
 
-**Organizer editor** — a day-by-time grid: columns are the rooms, rows are 15-minute steps across the conference days. Unscheduled sessions wait in a sidebar and are dragged onto the grid; dragging moves a session, resizing changes its duration. A "+ program item" button on any cell creates an opening, break, or social inline, so the skeleton of a day is built without leaving the grid. Every-room slots render as full-width bands. Conflicts — room overlap, a presenter double-booked — are highlighted in place.
+**Organizer editor**: a day-by-time grid. Columns are the rooms, rows are the edition's grid step (15 minutes by default) across the conference days. Unscheduled sessions wait in a sidebar and are dragged onto the grid; dragging moves a session, resizing changes its duration. A "+ program item" button on any cell creates an opening, break, or social inline, so the skeleton of a day is built without leaving the grid. Every-room slots render as full-width bands. Conflicts (room overlap, a presenter double-booked) are highlighted in place.
 
 A timezone switcher on the grid shows the whole schedule as a specific presenter would see it. That is how the team catches "we scheduled her at 3 a.m." before sending the confirmation.
 
@@ -650,7 +650,7 @@ A timezone switcher on the grid shows the whole schedule as a specific presenter
 
 Three view-layer changes, no model impact:
 
-- **Trim the day to its active window.** The grid renders 96 quarter-hours; a conference day uses a fraction of them. The grid starts one hour before the first slot and ends one hour after the last (full day when empty), with "earlier / later" reveals at the edges, so the default page shows the program, not the empty night.
+- **Trim the day to its active window.** The grid renders the day's rows; a conference day uses a fraction of them. The grid starts one hour before the first slot and ends one hour after the last (full day when empty), with "earlier / later" reveals at the edges, so the default page shows the program, not the empty night.
 - **A density switch** beside the timezone switcher — Comfortable (today's 1.5rem rows), Compact (~0.6rem: one-line cards, details in the tooltip and the pencil), and **Fit**, which divides the viewport height by the trimmed window's rows and sets the row height to match, floor of a few pixels: the whole day on one screen, cards as colored blocks when they must be. Pure CSS variable plus a line of arithmetic, remembered per organizer like the timezone.
 - **Every day side by side** (later, if wanted): an "All days" tab laying the per-day grids out horizontally in Fit density — the spreadsheet's one-page view. Costs only template work once the density switch exists, so it is listed, not promised.
 

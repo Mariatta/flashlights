@@ -1142,12 +1142,25 @@ installed; this app keeps small factory functions in `tests/speakers/factories.p
   refresh) and ONE mutation endpoint, `sessions/<slug>/slot/`, where
   PATCH upserts the slot (a drag sends room and start, a resize sends
   duration, the keyboard form everything; a move without an end keeps
-  the length) and DELETE removes it. Placing a CONFIRMED session calls
-  `Session.schedule()`; removing a SCHEDULED one calls `unschedule()`
-  (back to CONFIRMED, which reopens the identity fields); a PUBLISHED
-  session keeps its slot. Everything is UTC end to end: the browser only
-  relabels `data-utc` elements (`static/js/schedule-editor.js`), so the
-  timezone switcher never touches what is stored or sent.
+  the length) and DELETE removes it. A session and its slot share one
+  length: `ScheduleSlot.save()` writes the slot's length back to
+  `Session.duration_minutes`, and `Session.save()` moves the slot's end
+  when the duration changes, in one transaction (`Session.clean()`
+  holds a changed length to the grid's bounds and refuses one that
+  would overlap another slot; outside a form, `Session.save()` raises
+  that `ValidationError` itself and saves nothing). The slot is locked
+  for that save and only its end is written, so a move that landed since
+  the session was loaded keeps its room and start. The session edit form
+  sends back the length it was opened with (`length_shown`), so a page
+  opened before a resize does not put the old length back: the length
+  stays as it is now, and the page says so. Off-schedule sessions are
+  left out: a cancelled session's slot is a record. Placing a CONFIRMED
+  session calls `Session.schedule()`; removing a SCHEDULED one calls
+  `unschedule()` (back to CONFIRMED, which reopens the identity fields);
+  a PUBLISHED session keeps its slot. Everything is UTC end to end: the
+  browser only relabels `data-utc` elements
+  (`static/js/schedule-editor.js`), so the timezone switcher never
+  touches what is stored or sent.
 - The grid shows a trimmed day (design §10.2): `schedule._window` renders
   the program plus an hour each side, always on whole hours, and
   `ScheduleSlot.clean()` stores whole minutes, because every row time is
@@ -1155,6 +1168,15 @@ installed; this app keeps small factory functions in `tests/speakers/factories.p
   grid. A drag can only reach an hour past the current window; the
   window grows after each change, so stretching further takes a few
   drags, or "Show the whole day".
+- The grid's rows are the edition's step,
+  `SpeakerSettings.schedule_step_minutes` (any whole number of minutes
+  that divides an hour; 15 by default), set on Speaker settings. A slot
+  is at least one step long, so a five-minute lightning talk needs a
+  step of five or less. A row finer than a quarter hour keeps the
+  quarter-hour height (a one-row card still has room for its title);
+  a coarser one grows, so an hour stays as tall. A one-row card, or a
+  slot under ten minutes, shows its title only, with the details in its
+  tooltip and behind its pencil.
 - The Presenters page has two views. The default is the basic list:
   name, email, sessions with roles (one line each), Discord username,
   the invitation's state, liaison. "Expand", or `?view=data`, is the

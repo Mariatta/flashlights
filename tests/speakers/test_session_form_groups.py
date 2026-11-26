@@ -32,7 +32,9 @@ class TestFieldGroups:
         make_settings(conference, event_format=fmt, recordings=mode)
         form, by_key = groups(conference)
         grouped = [name for names in by_key.values() for name in names]
-        assert sorted(grouped) == sorted(form.fields)
+        # Hidden fields are rendered beside the groups, not in one.
+        shown = [field.name for field in form.visible_fields()]
+        assert sorted(grouped) == sorted(shown)
 
     def test_the_video_link_is_public_once_published(self, conference):
         make_settings(conference)
