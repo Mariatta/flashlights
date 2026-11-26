@@ -825,10 +825,11 @@ a.card:hover {
 
 /* Session cards on the schedule (SessionCard spec): a mono time column,
    the track and tags, the title; the session on stage now inverts to
-   Night with the accent live tag. */
+   Night with the accent live tag. The time column grows to fit the range,
+   which is the same length on every card, so the titles still line up. */
 .session-card {
     display: grid;
-    grid-template-columns: 96px minmax(0, 1fr);
+    grid-template-columns: minmax(96px, max-content) minmax(0, 1fr);
     gap: 16px;
     padding: 16px;
     background: var(--surface-card);
