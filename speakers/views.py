@@ -574,8 +574,8 @@ class SessionUpdateView(LoginRequiredMixin, SpeakerOrganizerRequiredMixin, Updat
             messages.info(
                 self.request,
                 f"The length stays at {form.length_kept} minutes: it was "
-                "changed on the schedule after this page was opened. Edit "
-                "the session again to give it another length.",
+                "changed after this page was opened. Edit the session again "
+                "to give it another length.",
             )
         return response
 

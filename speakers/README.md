@@ -1153,8 +1153,8 @@ installed; this app keeps small factory functions in `tests/speakers/factories.p
   the session was loaded keeps its room and start. The session edit form
   sends back the length it was opened with (`length_shown`), so a page
   opened before a resize does not put the old length back: the length
-  stays as the schedule has it, and the page says so. Off-schedule sessions are left out: a
-  cancelled session's slot is a record. Placing a CONFIRMED session calls
+  stays as it is now, and the page says so. Off-schedule sessions are
+  left out: a cancelled session's slot is a record. Placing a CONFIRMED session calls
   `Session.schedule()`; removing a SCHEDULED one calls `unschedule()`
   (back to CONFIRMED, which reopens the identity fields); a PUBLISHED
   session keeps its slot. Everything is UTC end to end: the browser only
