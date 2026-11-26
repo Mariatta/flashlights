@@ -203,8 +203,8 @@ class TestRecording:
         clock is held still: the token signed here is then the one the
         email carried, even when the send runs across a second's edge.
         """
-        now = signing.b62_encode(int(timezone.now().timestamp()))
-        monkeypatch.setattr(signing.TimestampSigner, "timestamp", lambda self: now)
+        stamp = signing.b62_encode(int(timezone.now().timestamp()))
+        monkeypatch.setattr(signing.TimestampSigner, "timestamp", lambda self: stamp)
         invitation = make_invitation(presenter)
         invitation.issue_token()
         invitation.save()
