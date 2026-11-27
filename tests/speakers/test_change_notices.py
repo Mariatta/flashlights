@@ -71,7 +71,12 @@ class TestChangeNotices:
             due_date=date(2026, 12, 1),
         )
         changed = add_adhoc_item(
-            conference, "Send slides", ItemOwner.SPEAKER, presenter=ada
+            conference,
+            "Send slides",
+            ItemOwner.SPEAKER,
+            presenter=ada,
+            session=session,
+            due_date=date(2026, 12, 2),
         )
         ChecklistItem.objects.filter(pk=changed.pk).update(
             pending_notice=NoticeKind.CHANGED
@@ -79,6 +84,18 @@ class TestChangeNotices:
         lena = User.objects.create_user(username="lena", email="lena@example.com")
         add_adhoc_item(
             conference, "Promo", ItemOwner.ORGANIZER, presenter=ada, assignee=lena
+        )
+        moved = add_adhoc_item(
+            conference,
+            "Book room",
+            ItemOwner.ORGANIZER,
+            presenter=ada,
+            session=session,
+            assignee=lena,
+            due_date=date(2026, 12, 3),
+        )
+        ChecklistItem.objects.filter(pk=moved.pk).update(
+            pending_notice=NoticeKind.CHANGED
         )
         add_adhoc_item(conference, "Nobody's", ItemOwner.ORGANIZER, presenter=ada)
         mail.outbox.clear()
@@ -104,12 +121,19 @@ class TestChangeNotices:
             "Django 101" in speaker_mail.body
             and "Tuesday 1 December" in speaker_mail.body
         )
-        assert "\nChanged\n" in speaker_mail.body and "Send slides" in speaker_mail.body
+        assert "\nChanged\n" in speaker_mail.body
+        assert (
+            "Send slides, Django 101, now due Wednesday 2 December" in speaker_mail.body
+        )
         assert "Bring cookies, Django 101, due Tuesday 1 December" in speaker_mail.body
         assert "/speakers/me/" in speaker_mail.body
         organizer_mail = by_to[("lena@example.com",)]
         assert organizer_mail.subject.endswith("Update to your team todo list")
         assert "Promo, for Ada" in organizer_mail.body
+        assert (
+            "Book room, Django 101, for Ada, now due Thursday 3 December"
+            in organizer_mail.body
+        )
         assert "Thank you for being" not in organizer_mail.body
         assert (
             "Thank you for volunteering with us at Flashlights 2025"
