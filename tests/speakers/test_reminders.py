@@ -352,7 +352,7 @@ class TestFailureIsolation:
                 "Read",
                 ItemOwner.SPEAKER,
                 presenter=p,
-                due_date=date.today() + timedelta(days=1),
+                due_date=NOW.date() + timedelta(days=1),
             )
         calls = []
 
@@ -382,7 +382,7 @@ class TestFailureIsolation:
             ItemOwner.ORGANIZER,
             presenter=ada,
             assignee=lena,
-            due_date=date.today() + timedelta(days=1),
+            due_date=NOW.date() + timedelta(days=1),
         )
         with mock.patch(
             "speakers.reminders.send_email", side_effect=RuntimeError("smtp down")
