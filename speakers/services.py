@@ -36,6 +36,7 @@ from .models import (
     InvitationStatus,
     Presenter,
     Proposal,
+    PublishedSlot,
     ScheduleSlot,
     SessionPresenter,
     SessionType,
@@ -519,7 +520,8 @@ def cancel_session(session, actor=None, reason="", note="", notify=True):
     its speakers gets an email, with ``note`` when the organizer wrote one.
     ``reason`` is for the activity log, which only organizers read. The ids
     of the skipped items go on the entry, so a restore reopens exactly
-    those. The slot stays as a record and frees its time for others.
+    those, and the ids of the ones that were blocked, so they come back
+    blocked. The slot stays as a record and frees its time for others.
     """
     refusal = cancel_refusal(session)
     if refusal:
@@ -527,7 +529,13 @@ def cancel_session(session, actor=None, reason="", note="", notify=True):
     with transaction.atomic():
         previous_status, was_public = session.status, session.is_public
         session.cancel()
-        skipped = _skip_open_items(ChecklistItem.objects.filter(session=session), actor)
+        items = ChecklistItem.objects.filter(session=session)
+        blocked = list(
+            items.filter(status=ItemStatus.BLOCKED)
+            .order_by("id")
+            .values_list("pk", flat=True)
+        )
+        skipped = _skip_open_items(items, actor)
         told = [presenter.pk for presenter in session_speakers(session)]
         entry = ActivityLog.record(
             session.conference,
@@ -536,6 +544,7 @@ def cancel_session(session, actor=None, reason="", note="", notify=True):
             actor=actor,
             message=reason,
             skipped_item_ids=skipped,
+            blocked_item_ids=blocked,
             previous_status=previous_status,
             was_public=was_public,
             note=note,
@@ -553,10 +562,11 @@ def restore_session(session, actor=None, notify=True):
 
     It comes back as a draft and is confirmed again when nothing blocks
     that, the same check an acceptance runs. The items the cancellation
-    skipped are reopened if they are still skipped. Its slot is kept when
-    the time is still free, and dropped otherwise (``slot_dropped`` on the
-    entry says which). It is not public again until someone publishes it.
-    Its speakers get an email.
+    skipped are reopened if they are still skipped, blocked again if they
+    were. Its slot is kept when the time is still free, and dropped
+    otherwise, with the time the speakers were shown (``slot_dropped`` on
+    the entry says which). It is not public again until someone publishes
+    it. Its speakers get an email.
     """
     if session.status != SessionStatus.CANCELLED:
         raise SessionError("Only a cancelled session can be restored.")
@@ -564,7 +574,9 @@ def restore_session(session, actor=None, notify=True):
         cancelled = (
             ActivityLog.for_target(session).filter(action="session.cancelled").first()
         )
-        skipped = cancelled.data.get("skipped_item_ids", []) if cancelled else []
+        recorded = cancelled.data if cancelled else {}
+        skipped = recorded.get("skipped_item_ids", [])
+        blocked = set(recorded.get("blocked_item_ids", []))
         session.restore()
         reopened = list(
             ChecklistItem.objects.filter(
@@ -572,7 +584,8 @@ def restore_session(session, actor=None, notify=True):
             ).order_by("id")
         )
         for item in reopened:
-            set_item_status(item, ItemStatus.TODO, actor=actor, manual=False)
+            status = ItemStatus.BLOCKED if item.pk in blocked else ItemStatus.TODO
+            set_item_status(item, status, actor=actor, manual=False)
         # An item that completes itself is ticked again where its rule holds.
         evaluate_items(reopened)
         _confirm_restored(session, actor)
@@ -617,9 +630,11 @@ def _settle_restored_slot(session):
     """Keep the restored session's slot if its time is still free.
 
     While it was cancelled the slot freed its time, so something else may
-    sit there now; then the slot is deleted and this returns True. A kept
-    slot the speakers' schedule still carries makes the session scheduled
-    again, as it was.
+    sit there now; then the slot is deleted and this returns True. The
+    time the speakers were shown goes with it: their pages and calendars
+    read the published copy, which would still give the old time while
+    the restore email says there is none yet. A kept slot the speakers'
+    schedule still carries makes the session scheduled again, as it was.
     """
     slot = ScheduleSlot.objects.filter(session=session).first()
     if slot is None:
@@ -627,6 +642,10 @@ def _settle_restored_slot(session):
     slot.session = session
     if slot.conflicts().exists():
         slot.delete()
+        # One by one, not a queryset delete: the checklist rules listen
+        # for this row going.
+        for published in PublishedSlot.objects.filter(session=session):
+            published.delete()
         return True
     if session.status == SessionStatus.CONFIRMED and session.has_published_slot:
         session.schedule()

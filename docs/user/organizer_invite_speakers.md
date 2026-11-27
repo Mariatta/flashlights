@@ -176,12 +176,15 @@ log and shown on the cancelled session's page, never in the email.
 
 A cancelled session stays in the **Sessions** list with a **Cancelled**
 badge. To bring it back, open it and choose **Restore**. The items the
-cancellation skipped are opened again, the session is confirmed again
-when nothing blocks that (otherwise it is a draft), and its speakers get
-an email. Its slot is kept when the time is still free; when another
-session took it in the meantime the slot is removed, the page says so,
-and you place the session on the schedule again. A restored session is
-not public until you publish it again.
+cancellation skipped are opened again (one that was blocked comes back
+blocked), the session is confirmed again when nothing blocks that
+(otherwise it is a draft), and its speakers get an email. Its slot is
+kept when the time is still free; when another session took it in the
+meantime the slot is removed, the page says so, and you place the
+session on the schedule again. The speakers stop seeing the old time on
+their pages and in their calendars at once, and their email says a new
+time will follow; they are told the new one when you next publish the
+schedule. A restored session is not public until you publish it again.
 
 To take one person off a session and keep the session, use **Remove from
 session** next to their name instead. Their open checklist items for that

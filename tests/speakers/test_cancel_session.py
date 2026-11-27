@@ -12,7 +12,7 @@ from django.urls import reverse
 from pytest_django.asserts import assertRedirects
 
 from common.models import SentEmail
-from speakers.checklists import add_adhoc_item, complete_item, skip_item
+from speakers.checklists import add_adhoc_item, block_item, complete_item, skip_item
 from speakers.constants import (
     AutoRule,
     ItemOwner,
@@ -23,12 +23,14 @@ from speakers.constants import (
 from speakers.emails import (
     SESSION_CANCELLED_TEMPLATE,
     SESSION_RESTORED_TEMPLATE,
+    presenter_email_context,
     signed_invitation_token,
 )
 from speakers.feeds import presenter_feed_token
 from speakers.models import (
     ActivityLog,
     InvitationStatus,
+    PublishedSlot,
     ScheduleSlot,
     SpeakerSettings,
 )
@@ -502,6 +504,51 @@ class TestRestoreSession:
         assert ScheduleSlot.objects.filter(session=other).exists()
         assert session.status == SessionStatus.CONFIRMED
         assert "not scheduled yet" in mail.outbox[0].body
+
+    def test_a_dropped_slot_takes_its_time_off_the_speakers_pages(
+        self, client, conference, enabled, organizer
+    ):
+        """The email says it has no time yet, so nothing may show the old one."""
+        room = make_room(conference)
+        session = published_session(conference, room=room, title="Came back")
+        presenter = session.session_presenters.get().presenter
+        presenter.user = User.objects.create_user(
+            username="ada", email="ada@example.com"
+        )
+        presenter.save()
+        feed = reverse(
+            "speakers:presenter_feed", args=[presenter_feed_token(presenter)]
+        )
+        detail = reverse("speakers:my_session_detail", args=[session.slug])
+        client.force_login(presenter.user)
+        assert "14:00" in client.get(detail).content.decode()
+        assert "Came back" in client.get(feed).content.decode()
+        cancel_session(session, actor=organizer, notify=False)
+        other = confirmed_session(conference, title="Took its place", speakers=("Zed",))
+        make_slot(other, room=room, start_utc=T0)
+
+        restore_session(session, actor=organizer, notify=False)
+
+        assert not PublishedSlot.objects.filter(session=session).exists()
+        page = client.get(detail)
+        assert page.status_code == 200
+        assert "14:00" not in page.content.decode()
+        assert "Came back" not in client.get(feed).content.decode()
+        assert presenter_email_context(presenter)["sessions"][0]["starts"] is None
+
+    def test_a_blocked_item_comes_back_blocked(self, conference, enabled, organizer):
+        session = confirmed_session(conference)
+        waiting = item_for(session, "Sign the release")
+        block_item(waiting, "waiting on legal")
+        plain = item_for(session, "Send your slides")
+        entry = cancel_session(session, actor=organizer, notify=False)
+        assert entry.data["blocked_item_ids"] == [waiting.pk]
+        restore_session(session, actor=organizer, notify=False)
+        waiting.refresh_from_db()
+        plain.refresh_from_db()
+        assert waiting.status == ItemStatus.BLOCKED
+        assert waiting.note == "waiting on legal"
+        assert plain.status == ItemStatus.TODO
 
     def test_without_a_cancellation_on_record(self, conference, enabled, organizer):
         """Cancelled by hand in the admin: nothing to reopen, still restored."""
