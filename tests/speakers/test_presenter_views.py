@@ -14,11 +14,12 @@ from pytest_django.asserts import assertRedirects
 
 from portal.models import Conference
 from speakers.checklists import (
+    add_adhoc_item,
     block_item,
     complete_item,
     instantiate_presenter_checklist,
 )
-from speakers.constants import DueAnchor, ItemStatus, SessionStatus
+from speakers.constants import DueAnchor, ItemOwner, ItemStatus, SessionStatus
 from speakers.forms import PresenterForm, liaison_candidates
 from speakers.models import (
     ActivityLog,
@@ -28,6 +29,7 @@ from speakers.models import (
     SessionPresenter,
 )
 from speakers.program_types import presenter_role, session_type
+from speakers.reminders import send_checklist_digests
 from speakers.seeds import seed_checklists
 from speakers.services import (
     accept_invitation,
@@ -478,6 +480,49 @@ class TestSessionPresenterActions:
         assert ActivityLog.objects.filter(
             action="session.presenter_removed", data__presenter_id=ada.pk
         ).exists()
+
+    def test_remove_skips_their_open_items_for_that_session(
+        self, client, organizer, presenters, conference
+    ):
+        """Nobody is chased for a session they were taken off: their open
+        items for it are skipped, what they did stays done, and their
+        items elsewhere are untouched."""
+        session, ada = presenters["session"], presenters["ada"]
+        other = make_session(conference, title="Another session")
+        add_presenter(other, ada)
+        due = timezone.localdate() + timedelta(days=3)
+        chased = add_adhoc_item(
+            conference,
+            "Send your slides",
+            ItemOwner.SPEAKER,
+            presenter=ada,
+            session=session,
+            due_date=due,
+        )
+        done = add_adhoc_item(
+            conference, "Sign", ItemOwner.SPEAKER, presenter=ada, session=session
+        )
+        complete_item(done)
+        elsewhere = add_adhoc_item(
+            conference, "Bio", ItemOwner.SPEAKER, presenter=ada, session=other
+        )
+        general = add_adhoc_item(conference, "Guide", ItemOwner.SPEAKER, presenter=ada)
+        client.force_login(organizer)
+        link = session.session_presenters.get(presenter=ada)
+        client.post(
+            reverse("speakers:session_remove_presenter", args=[session.slug, link.pk])
+        )
+        for item in (chased, done, elsewhere, general):
+            item.refresh_from_db()
+        assert chased.status == ItemStatus.SKIPPED
+        assert done.status == ItemStatus.DONE
+        assert elsewhere.status == ItemStatus.TODO
+        assert general.status == ItemStatus.TODO
+        entry = ActivityLog.objects.get(action="session.presenter_removed")
+        assert entry.data["skipped_item_ids"] == [chased.pk]
+        mail.outbox.clear()
+        assert send_checklist_digests(conference) == 0
+        assert mail.outbox == []
 
     def test_remove_keeps_session_invited_while_others_are_pending(
         self, client, organizer, presenters, send

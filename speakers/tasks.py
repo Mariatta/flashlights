@@ -10,10 +10,12 @@ from common.tasks import email_task
 from portal.models import Conference
 from ticketing.models import TicketingSettings
 
-from .constants import ProposalDecision, ZipStatus
+from .constants import ProposalDecision, SessionStatus, ZipStatus
 from .emails import (
     PROPOSAL_APPROVED_TEMPLATE,
     PROPOSAL_REJECTED_TEMPLATE,
+    SESSION_CANCELLED_TEMPLATE,
+    SESSION_RESTORED_TEMPLATE,
     acceptance_email_recorded,
     added_to_session_email_recorded,
     invitation_email_recorded,
@@ -27,12 +29,16 @@ from .emails import (
     send_proposal_received_email,
     send_proposal_rejected_email,
     send_schedule_update_email,
+    send_session_cancelled_email,
+    send_session_restored_email,
     send_upload_notice_email,
+    session_notice_recorded,
     upload_notice_recorded,
 )
 from .exports import build_zip, expire_zips, zip_url
 from .media import expire_abandoned_uploads, uploading_presenter
 from .models import (
+    ActivityLog,
     Invitation,
     MediaAsset,
     MediaExport,
@@ -359,6 +365,49 @@ def _proposal(proposal_id, decision=None):
     if decision is not None:
         proposals = proposals.filter(decision=decision)
     return proposals.first()
+
+
+def _session_notice(session_id, presenter_id, entry_id):
+    """The session, the speaker and the activity entry an email is about,
+    or None when any of them is gone."""
+    session = Session.objects.filter(pk=session_id).select_related("conference").first()
+    presenter = Presenter.objects.filter(pk=presenter_id).first()
+    entry = ActivityLog.objects.filter(pk=entry_id).first()
+    if session is None or presenter is None or entry is None:
+        return None
+    return session, presenter, entry
+
+
+@email_task()
+def send_session_cancelled_email_task(session_id, presenter_id, entry_id):
+    """Tell one speaker their session was cancelled."""
+    found = _session_notice(session_id, presenter_id, entry_id)
+    if found is None:
+        return f"Nothing to send for session {session_id}"
+    session, presenter, entry = found
+    if session.status != SessionStatus.CANCELLED:
+        return f"Session {session_id} is no longer cancelled"
+    if session_notice_recorded(SESSION_CANCELLED_TEMPLATE, entry, presenter, session):
+        return f"Cancellation email for session {session_id} was already sent"
+    send_session_cancelled_email(session, presenter, note=entry.data.get("note", ""))
+    return f"Sent cancellation email for session {session_id}"
+
+
+@email_task()
+def send_session_restored_email_task(session_id, presenter_id, entry_id):
+    """Tell one speaker their cancelled session is back on."""
+    found = _session_notice(session_id, presenter_id, entry_id)
+    if found is None:
+        return f"Nothing to send for session {session_id}"
+    session, presenter, entry = found
+    if session.status == SessionStatus.CANCELLED:
+        return f"Session {session_id} was cancelled again"
+    if session_notice_recorded(SESSION_RESTORED_TEMPLATE, entry, presenter, session):
+        return f"Restore email for session {session_id} was already sent"
+    send_session_restored_email(
+        session, presenter, slot_dropped=entry.data.get("slot_dropped", False)
+    )
+    return f"Sent restore email for session {session_id}"
 
 
 @shared_task

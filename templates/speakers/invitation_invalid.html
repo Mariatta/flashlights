@@ -20,6 +20,8 @@
                 {% trans "This invitation was declined. Ask the organizers for a new one if you changed your mind." %}
             {% elif reason == "cancelled" %}
                 {% trans "This invitation was withdrawn by the organizers." %}
+            {% elif reason == "session_cancelled" %}
+                {% trans "The session this invitation was for has been cancelled, so there is nothing to answer for now. Ask the organizers if you have a question." %}
             {% else %}
                 {% trans "The link is not valid. Check that you copied the whole address from the email." %}
             {% endif %}

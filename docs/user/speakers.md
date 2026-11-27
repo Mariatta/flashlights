@@ -181,6 +181,9 @@ Once you are on the program, the **Speaking** menu opens your speaker area.
 - **Dashboard:** your sessions and their status, banners for anything that
   needs attention (such as a missing bio or photo), and how many to-dos are
   open and which one is due next.
+  If the team cancels one of your sessions you get an email at once, the
+  session shows as **Cancelled**, and its open to-dos are closed. If it is
+  brought back you get an email too, and those to-dos open again.
 - **My speaker checklist:** everything we need from you, and everything we are
   doing for you. See below.
 - **My speaker profile:** your display name, bio, headshot, location, timezone

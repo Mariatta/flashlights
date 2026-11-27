@@ -560,6 +560,25 @@ class InviteForm(forms.Form):
     )
 
 
+class SessionCancelForm(forms.Form):
+    """What an organizer may say when cancelling a session: why, for the
+    activity log, and a note that goes into the speakers' email."""
+
+    reason = forms.CharField(
+        label="Reason",
+        required=False,
+        max_length=500,
+        help_text="Kept in the session's activity log. Only organizers see it.",
+    )
+    note = forms.CharField(
+        label="Note to the speakers",
+        required=False,
+        max_length=2000,
+        widget=forms.Textarea(attrs={"rows": 4}),
+        help_text="Added to the email each speaker gets. " + MARKDOWN_HELP,
+    )
+
+
 class SpeakerProfileForm(HandleFieldsMixin, IdentityLockMixin, forms.ModelForm):
     """What a presenter edits about themselves. The handles
     are the person's: the same ones their volunteer profile shows.

@@ -65,9 +65,52 @@ open the tab their target lives in.
                    href="{% url 'speakers:session_edit' session.slug %}">
                     <i class="icon-pen"></i> {% trans "Edit" %}
                 </a>
+                {% if session.status != "CANCELLED" and not session.is_a_proposal %}
+                    <a class="btn btn-outline-danger"
+                       href="{% url 'speakers:session_cancel' session.slug %}">
+                        <i class="icon-ban"></i> {% trans "Cancel this session" %}
+                    </a>
+                {% endif %}
             </div>
         {% endif %}
     </div>
+    {% if session.status == "CANCELLED" %}
+        <div class="card border-dark-subtle mb-3" id="cancelled-notice">
+            <div class="card-body d-flex flex-wrap align-items-center gap-3">
+                <div class="flex-grow-1">
+                    <h2 class="h6 text-body-emphasis mb-1">
+                        <i class="icon-ban text-secondary"></i>
+                        {% trans "This session is cancelled" %}
+                    </h2>
+                    <p class="text-body-secondary mb-0 small">
+                        {% if cancellation %}
+                            {% if cancellation.actor %}
+                                {% blocktranslate with who=cancellation.actor|user_label when=cancellation.creation_date|date:"j M Y, H:i" %}Cancelled by {{ who }} on {{ when }}.{% endblocktranslate %}
+                            {% else %}
+                                {% blocktranslate with when=cancellation.creation_date|date:"j M Y, H:i" %}Cancelled on {{ when }}.{% endblocktranslate %}
+                            {% endif %}
+                            {% if cancellation.message %}
+                                {% blocktranslate with reason=cancellation.message %}Reason: {{ reason }}{% endblocktranslate %}
+                            {% endif %}
+                        {% endif %}
+                        {% trans "It is off the public schedule, the embed and the calendar feeds, and nobody is reminded about its checklist." %}
+                        {% if perms.speakers.manage_program %}
+                            {% trans "Restoring reopens the checklist items the cancellation skipped, keeps its slot if the time is still free, and emails its speakers." %}
+                        {% endif %}
+                    </p>
+                </div>
+                {% if perms.speakers.manage_program %}
+                    <form method="post"
+                          action="{% url 'speakers:session_restore' session.slug %}">
+                        {% csrf_token %}
+                        <button class="btn btn-sm btn-primary" type="submit">
+                            <i class="icon-rotate-ccw"></i> {% trans "Restore" %}
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
     {% if proposal %}
         <div class="card border-primary-subtle mb-3">
             <div class="card-body d-flex flex-wrap align-items-center gap-3">

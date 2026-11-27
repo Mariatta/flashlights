@@ -30,6 +30,8 @@ ADDED_TO_SESSION_TEMPLATE = "emails/speakers/added_to_session.md"
 PROPOSAL_RECEIVED_TEMPLATE = "emails/speakers/proposal_received.md"
 PROPOSAL_APPROVED_TEMPLATE = "emails/speakers/proposal_approved.md"
 PROPOSAL_REJECTED_TEMPLATE = "emails/speakers/proposal_rejected.md"
+SESSION_CANCELLED_TEMPLATE = "emails/speakers/session_cancelled.md"
+SESSION_RESTORED_TEMPLATE = "emails/speakers/session_restored.md"
 # The web and the worker keep their own clocks.
 RECORD_CLOCK_SLACK = timedelta(minutes=1)
 # Stands in for the signed token in a preview of an email not yet sent.
@@ -387,8 +389,8 @@ def send_schedule_update_email(presenter, session_changes, published_at):
                     "title": session.title,
                     "when": "",
                     "removed": True,
-                    # Cancelling sends nothing itself, so this line is how
-                    # the speaker hears; it must not promise a new time.
+                    # The cancellation sent its own email; this line must
+                    # agree with it and not promise a new time.
                     "cancelled": session.status == SessionStatus.CANCELLED,
                 }
             )
@@ -700,4 +702,53 @@ def send_proposal_rejected_email(proposal):
             "session": proposal.session,
         },
         reply_to=team_reply_to(proposal.conference),
+    )
+
+
+def session_notice_recorded(template, entry, presenter, session):
+    """Whether this speaker already has the email for this cancellation or
+    restore. The activity entry is the action, so its time is the anchor: a
+    session cancelled, restored and cancelled again mails each time."""
+    return email_recorded(
+        template, entry.creation_date, presenter=presenter, session=session
+    )
+
+
+def send_session_cancelled_email(session, presenter, note=""):
+    """The session is off the program. One speaker, told at once rather
+    than by the next schedule update, with the organizer's note if any."""
+    send_email(
+        f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}Your session was cancelled: "
+        f"{session.title}",
+        [presenter.email],
+        markdown_template=SESSION_CANCELLED_TEMPLATE,
+        context={
+            "presenter": presenter,
+            "conference": session.conference,
+            "session": session,
+            "note": note,
+            "dashboard_url": absolute_url(reverse("speakers:my_dashboard")),
+        },
+        reply_to=team_reply_to(session.conference),
+    )
+
+
+def send_session_restored_email(session, presenter, slot_dropped=False):
+    """The session is back on. ``slot_dropped`` says its earlier time went
+    to something else while it was cancelled."""
+    send_email(
+        f"{settings.ACCOUNT_EMAIL_SUBJECT_PREFIX}Your session is back on: "
+        f"{session.title}",
+        [presenter.email],
+        markdown_template=SESSION_RESTORED_TEMPLATE,
+        context={
+            "presenter": presenter,
+            "conference": session.conference,
+            "session": session,
+            "slot_dropped": slot_dropped,
+            "session_url": absolute_url(
+                reverse("speakers:my_session_detail", kwargs={"slug": session.slug})
+            ),
+        },
+        reply_to=team_reply_to(session.conference),
     )
