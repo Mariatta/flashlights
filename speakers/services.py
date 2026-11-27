@@ -500,7 +500,8 @@ def withdraw_proposal(proposal, actor=None):
     rather than "forget it": keeping the proposal lets them edit what
     they wrote and send it again, and it stops a mis-click destroying an
     afternoon's writing. The session stays in ``PROPOSED``, so it is on
-    nobody's program, and the organizers' queue leaves it out.
+    nobody's program, and the organizers' queue lists it apart, by title
+    and name only.
     """
     if not proposal.is_pending:
         raise ProposalError("That proposal has already been answered.")

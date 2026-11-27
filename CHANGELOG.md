@@ -30,6 +30,15 @@ for community apps is marked **Breaking**.
   speaker's Schedule page, the end of a time range such as 09:00–09:15
   ran over the session's kind and room beside it. The time column now
   fits the range.
+- **Organizers see withdrawn proposals.** A speaker who withdrew a
+  proposal before anyone answered left no trace on the organizers' side:
+  the "New session proposal" email had arrived, and the proposal was no
+  longer under Waiting for an answer. The Proposals page now ends with a
+  **Withdrawn** list: the title, the speaker's name and when it was
+  withdrawn, with no link to what they wrote. It shows the latest 50,
+  with the full count next to the heading. A proposal sent again moves
+  back to Waiting for an answer. Withdrawing still sends the organizers
+  no email.
 
 ## 0.5.1 (2026-11-11)
 
