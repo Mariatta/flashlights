@@ -134,12 +134,11 @@ come last, the latest of them only, by title and name with no way in.
             {% trans "Withdrawn" %}
             <span class="badge text-bg-light border">{{ withdrawn_count }}</span>
         </h2>
-        <p class="text-secondary">
-            {% trans "The speaker took these back before anyone answered. If they send one again, it moves back to Waiting for an answer." %}
-            {% if withdrawn_count > withdrawn|length %}
+        {% if withdrawn_count > withdrawn|length %}
+            <p class="text-secondary">
                 {% blocktranslate with shown=withdrawn|length %}Only the latest {{ shown }} are shown.{% endblocktranslate %}
-            {% endif %}
-        </p>
+            </p>
+        {% endif %}
         <ul class="list-group">
             {% for proposal in withdrawn %}
                 {# Title and name only, no link. #}

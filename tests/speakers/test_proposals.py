@@ -716,7 +716,6 @@ class TestDeciding:
         propose(client, conference)
         client.force_login(organizer)
         content = client.get(QUEUE).content.decode()
-        assert "The speaker took these back" not in content
         assert "are listed last" not in content
 
     def test_a_withdrawn_proposal_is_listed_by_title_and_name_only(
@@ -731,7 +730,6 @@ class TestDeciding:
         )
         client.force_login(organizer)
         content = client.get(QUEUE).content.decode()
-        assert "The speaker took these back" in content
         assert "A talk about testing" in content and "Sam Newcomer" in content
         assert "withdrawn 12 Nov 2026, 14:05 UTC" in content
         # No way into what they wrote, and nothing to decide.
