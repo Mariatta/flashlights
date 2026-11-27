@@ -142,9 +142,21 @@ def resolve_invitation(signed, conference):
         # A newer link was sent since this one.
         raise InvitationError("superseded")
     status = invitation.status
-    if status in (InvitationStatus.SENT, InvitationStatus.OPENED):
-        return invitation
-    raise InvitationError(status.lower())
+    if status not in (InvitationStatus.SENT, InvitationStatus.OPENED):
+        raise InvitationError(status.lower())
+    _refuse_cancelled_session(invitation)
+    return invitation
+
+
+def _refuse_cancelled_session(invitation):
+    """An invitation to a cancelled session cannot be answered.
+
+    It stays open, so the link works again if the session is restored;
+    until then, accepting would confirm someone on a session that is off.
+    """
+    session = invitation.session
+    if session is not None and session.status == SessionStatus.CANCELLED:
+        raise InvitationError("session_cancelled")
 
 
 def _unique_username(base):
@@ -220,7 +232,9 @@ def accept_invitation(invitation):
 
     Returns the user to log in. An invitation with no session (a general
     conference invitation) confirms every session the presenter is on.
+    An invitation to a cancelled session raises InvitationError.
     """
+    _refuse_cancelled_session(invitation)
     presenter = invitation.presenter
     # All or nothing: a receiver of ``invitation_accepted`` that fails must
     # not leave the account linked and the session half confirmed.

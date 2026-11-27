@@ -20,13 +20,24 @@ from speakers.constants import (
     ProgramVisibility,
     SessionStatus,
 )
-from speakers.emails import SESSION_CANCELLED_TEMPLATE, SESSION_RESTORED_TEMPLATE
+from speakers.emails import (
+    SESSION_CANCELLED_TEMPLATE,
+    SESSION_RESTORED_TEMPLATE,
+    signed_invitation_token,
+)
 from speakers.feeds import presenter_feed_token
-from speakers.models import ActivityLog, ScheduleSlot, SpeakerSettings
+from speakers.models import (
+    ActivityLog,
+    InvitationStatus,
+    ScheduleSlot,
+    SpeakerSettings,
+)
 from speakers.public import public_program
 from speakers.reminders import send_checklist_digests
 from speakers.services import (
+    InvitationError,
     SessionError,
+    accept_invitation,
     cancel_session,
     restore_session,
     send_invitation,
@@ -259,6 +270,59 @@ class TestCancelSession:
                 cancel_session(session, actor=organizer)
             counts.append(len(queries))
         assert counts[0] == counts[1]
+
+
+@pytest.mark.django_db
+class TestOpenInvitation:
+    """Someone invited who has not answered when the session is cancelled."""
+
+    @pytest.fixture
+    def invitation(self, conference, enabled):
+        session = make_session(conference, title="Invited", kind="PANEL")
+        presenter = make_presenter(conference, email="late@example.com")
+        add_presenter(session, presenter)
+        invitation = make_invitation(presenter, session)
+        send_invitation(invitation)
+        return invitation
+
+    def url(self, invitation):
+        return reverse(
+            "speakers:invitation", args=[signed_invitation_token(invitation)]
+        )
+
+    def test_the_link_says_the_session_is_cancelled(
+        self, client, invitation, organizer
+    ):
+        cancel_session(invitation.session, actor=organizer)
+        url = self.url(invitation)
+        page = client.get(url)
+        assert 'data-reason="session_cancelled"' in page.content.decode()
+        assert "has been cancelled" in page.content.decode()
+        page = client.post(url, {"action": "accept"})
+        assert 'data-reason="session_cancelled"' in page.content.decode()
+        invitation.refresh_from_db()
+        # Still open and unanswered: nobody was confirmed on a session
+        # that is off.
+        assert invitation.status == InvitationStatus.SENT
+        assert invitation.opened_at is None
+        link = invitation.session.session_presenters.get()
+        assert link.confirmed_at is None
+        assert not mail.outbox[1:]
+
+    def test_accepting_is_refused_whoever_calls(self, invitation, organizer):
+        cancel_session(invitation.session, actor=organizer)
+        with pytest.raises(InvitationError, match="session_cancelled"):
+            accept_invitation(invitation)
+        assert invitation.session.session_presenters.get().confirmed_at is None
+
+    def test_the_link_works_again_once_restored(self, client, invitation, organizer):
+        cancel_session(invitation.session, actor=organizer)
+        restore_session(invitation.session, actor=organizer)
+        response = client.post(self.url(invitation), {"action": "accept"})
+        assertRedirects(
+            response, reverse("speakers:index"), fetch_redirect_response=False
+        )
+        assert invitation.session.session_presenters.get().confirmed_at is not None
 
 
 @pytest.mark.django_db

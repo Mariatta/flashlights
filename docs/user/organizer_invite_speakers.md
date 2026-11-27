@@ -163,6 +163,9 @@ anything does:
   as cancelled.
 - Each speaker who had confirmed on it gets an email at once. You can add a
   **Note to the speakers**, which goes into that email.
+- Someone you invited who has not answered yet is not emailed. Their
+  invitation link says the session was cancelled and cannot be accepted;
+  it works again if you restore the session.
 - Its open checklist items are skipped, so nobody is reminded about them.
   Items already done stay done.
 - Its slot stays as a record and frees its time for another session, and
