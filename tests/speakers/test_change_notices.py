@@ -55,8 +55,8 @@ class TestChangeNotices:
         mail.outbox.clear()
         assert send_checklist_change_notices(conference) == 1
         body = mail.outbox[0].body
-        assert "Taken back (Talk, presenter) — withdrawn" in body
-        assert "Django 101 (Talk, presenter) — not scheduled yet" in body
+        assert "Taken back (Talk, presenter): withdrawn" in body
+        assert "Django 101 (Talk, presenter): not scheduled yet" in body
 
     def test_one_email_per_recipient_then_silence(self, conference, enabled):
         ada = make_presenter(conference, display_name="Ada", email="ada@example.com")

@@ -152,9 +152,9 @@ class TestSpeakerDigest:
         mail.outbox.clear()
         send_checklist_digests(conference, now=NOW)
         lines = dict(
-            line.split(" (Talk, presenter) — ")
+            line.split(" (Talk, presenter): ")
             for line in mail.outbox[0].body.splitlines()
-            if " (Talk, presenter) — " in line
+            if " (Talk, presenter): " in line
         )
         assert lines == {
             "Accepted talk": "not scheduled yet",
@@ -198,8 +198,8 @@ class TestSpeakerDigest:
         mail.outbox.clear()
         send_checklist_digests(conference, now=NOW)
         body = mail.outbox[0].body
-        assert "Pending (Talk, presenter) — waiting for an answer" in body
-        assert "Called off (Talk, presenter) — cancelled" in body
+        assert "Pending (Talk, presenter): waiting for an answer" in body
+        assert "Called off (Talk, presenter): cancelled" in body
         assert "Refused" not in body and "scheduled" not in body
 
     def test_preface_queries_do_not_grow_with_the_sessions(self, conference, enabled):

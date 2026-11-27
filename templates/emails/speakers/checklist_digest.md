@@ -15,7 +15,7 @@ These todos have deadlines coming up (dates in {{ timezone }}):
 {% if items %}
 
 {% for item in items %}
-- **{{ item.title }}**{% if item.session %} — {{ item.session.title }}{% endif %}{% if for_organizer and item.presenter %} — for {{ item.presenter.display_name }}{% endif %} — due {{ item.due_date|date:"l j F" }}{% if item.due_date < today %} (overdue){% endif %}
+- **{{ item.title }}**{% if item.session %}, {{ item.session.title }}{% endif %}{% if for_organizer and item.presenter %}, for {{ item.presenter.display_name }}{% endif %}, due {{ item.due_date|date:"l j F" }}{% if item.due_date < today %} (overdue){% endif %}
 {% endfor %}
 
 {% if for_organizer %}Go to your queue for more details: <{{ link }}>{% else %}To see more details about these action items, visit your speaker dashboard: <{{ link }}>{% endif %}
