@@ -39,6 +39,19 @@ for community apps is marked **Breaking**.
   with the full count next to the heading. A proposal sent again moves
   back to Waiting for an answer. Withdrawing still sends the organizers
   no email.
+- **Speaker emails say what each session's status is.** The list of
+  sessions that opens the checklist reminder and the todo list notice
+  called every session without a published time "not scheduled yet", so
+  a withdrawn proposal read as one still to be scheduled. It now marks
+  a withdrawn proposal "withdrawn", a proposal nobody has answered
+  "waiting for an answer" and a cancelled session "cancelled", and
+  leaves out a proposal that was not accepted. The speaker's dashboard
+  and My sessions use the same words, so a withdrawn proposal reads
+  "Withdrawn" there instead of "Waiting for an answer".
+- **Speaker emails no longer use em dashes.** The session lines in the
+  checklist reminder, the todo list notice and the "added to a session"
+  email put a colon before the status, and the checklist lines separate
+  the session, the person and the due date with commas.
 
 ## 0.5.1 (2026-11-11)
 
