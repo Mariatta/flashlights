@@ -78,7 +78,8 @@ class TestSpeakerDigest:
             "Django 101" in message.body
             and "todos have deadlines coming up" in message.body
         )
-        assert "Read the guide" in message.body and "Django 101" in message.body
+        assert "Read the guide, Django 101, due " in message.body
+        assert "—" not in message.body and "–" not in message.body
         assert "Tech check" not in message.body and "Whenever" not in message.body
         assert "/speakers/me/" in message.body
         assert "dates in UTC" in message.body
@@ -320,8 +321,9 @@ class TestOrganizerDigest:
         assert SentEmail.objects.get(to="lena@example.com").user == lena
         assert SentEmail.objects.get(to="team@example.com").user is None
         by_to = {tuple(m.to): m for m in mail.outbox}
-        assert "Promo" in by_to[("lena@example.com",)].body
-        assert "for Ada" in by_to[("lena@example.com",)].body
+        assert "Promo, for Ada, due " in by_to[("lena@example.com",)].body
+        for message in mail.outbox:
+            assert "—" not in message.body and "–" not in message.body
         team = by_to[("team@example.com",)]
         assert "Schedule mail" in team.body and "Nobody yet" in team.body
         assert "Thank you for volunteering with us at Flashlights 2025" in team.body

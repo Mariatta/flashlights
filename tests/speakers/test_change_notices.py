@@ -105,10 +105,11 @@ class TestChangeNotices:
             and "Tuesday 1 December" in speaker_mail.body
         )
         assert "\nChanged\n" in speaker_mail.body and "Send slides" in speaker_mail.body
+        assert "Bring cookies, Django 101, due Tuesday 1 December" in speaker_mail.body
         assert "/speakers/me/" in speaker_mail.body
         organizer_mail = by_to[("lena@example.com",)]
         assert organizer_mail.subject.endswith("Update to your team todo list")
-        assert "Promo" in organizer_mail.body and "for Ada" in organizer_mail.body
+        assert "Promo, for Ada" in organizer_mail.body
         assert "Thank you for being" not in organizer_mail.body
         assert (
             "Thank you for volunteering with us at Flashlights 2025"
@@ -117,6 +118,7 @@ class TestChangeNotices:
         assert "Go to your queue for more details" in organizer_mail.body
         for message in (speaker_mail, organizer_mail):
             assert "mark them as done and we won't bother you" in message.body
+            assert "—" not in message.body and "–" not in message.body
         assert "/speakers/checklists/queue/" in organizer_mail.body
         assert not ChecklistItem.objects.exclude(pending_notice="").exists()
         mail.outbox.clear()
