@@ -188,6 +188,7 @@ from .services import (
     presenter_added_to_session,
     proposals_open,
     reject_proposal,
+    remove_presenter,
     resolve_invitation,
     resubmit_proposal,
     send_invitation,
@@ -999,29 +1000,15 @@ class SessionEditPresenterView(OrganizerSessionActionMixin, View):
 class SessionRemovePresenterView(OrganizerSessionActionMixin, View):
     def post(self, request, slug, link_pk):
         session = self.get_session()
-        link = get_object_or_404(session.session_presenters, pk=link_pk)
-        name, presenter_id = link.presenter.display_name, link.presenter_id
-        with transaction.atomic():
-            link.delete()
-            # Their link must stop working: an open invitation to a session
-            # they are no longer on would still accept.
-            for invitation in Invitation.objects.filter(
-                presenter_id=presenter_id, session=session
-            ):
-                if invitation.is_open:
-                    cancel_invitation(invitation, actor=request.user)
-            if session.status == SessionStatus.INVITED and not any(
-                i.is_open for i in Invitation.objects.filter(session=session)
-            ):
-                session.back_to_draft()
-            ActivityLog.record(
-                self.conference,
-                "session.presenter_removed",
-                target=session,
-                actor=request.user,
-                presenter_id=presenter_id,
-            )
-        messages.success(request, f"Removed {name} from the session.")
+        link = get_object_or_404(
+            session.session_presenters.select_related("presenter"), pk=link_pk
+        )
+        name = link.presenter.display_name
+        skipped = remove_presenter(link, actor=request.user)
+        note = f"Removed {name} from the session."
+        if skipped:
+            note += f" {len(skipped)} open checklist item(s) of theirs skipped."
+        messages.success(request, note)
         return redirect(session.get_absolute_url())
 
 

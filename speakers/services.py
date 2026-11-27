@@ -17,11 +17,12 @@ from django.utils import timezone
 from common.tasks import enqueue
 from portal_account.handles import adopt_role_handles
 
-from .checklists import instantiate_presenter_checklist
+from .checklists import instantiate_presenter_checklist, set_item_status
 from .constants import (
     MAX_PENDING_PROPOSALS,
     OPEN_ITEM_STATUSES,
     ChecklistScope,
+    ItemStatus,
     ProposalDecision,
     SessionStatus,
 )
@@ -409,6 +410,55 @@ def _swap_role(link, role, old_role_id, old_role_name, is_required, actor):
             created_items=created,
         )
     return removed, created
+
+
+def _skip_open_items(items, actor):
+    """Skip the open ones of ``items``; returns their ids, in order.
+
+    The ids go on the activity entry of whatever closed them, so the same
+    items, and only those, can be opened again later.
+    """
+    skipped = []
+    for item in items.filter(status__in=list(OPEN_ITEM_STATUSES)).order_by("id"):
+        # Not a person's tick: an item still waiting to open, or one that
+        # completes itself, is closed all the same.
+        set_item_status(item, ItemStatus.SKIPPED, actor=actor, manual=False)
+        skipped.append(item.pk)
+    return skipped
+
+
+def remove_presenter(link, actor=None):
+    """Take one presenter off a session. Returns the ids of the items skipped.
+
+    Their link must stop working: an open invitation to a session they are
+    no longer on would still accept. Their open checklist items for this
+    session are skipped, so the reminders stop chasing them for it; what
+    they did stays done, and their items for other sessions are untouched.
+    """
+    session, presenter = link.session, link.presenter
+    with transaction.atomic():
+        link.delete()
+        for invitation in Invitation.objects.filter(
+            presenter=presenter, session=session
+        ):
+            if invitation.is_open:
+                cancel_invitation(invitation, actor=actor)
+        if session.status == SessionStatus.INVITED and not any(
+            i.is_open for i in Invitation.objects.filter(session=session)
+        ):
+            session.back_to_draft()
+        skipped = _skip_open_items(
+            ChecklistItem.objects.filter(session=session, presenter=presenter), actor
+        )
+        ActivityLog.record(
+            session.conference,
+            "session.presenter_removed",
+            target=session,
+            actor=actor,
+            presenter_id=presenter.pk,
+            skipped_item_ids=skipped,
+        )
+    return skipped
 
 
 # ---- Proposals: people asking to give a session -----------------------------
