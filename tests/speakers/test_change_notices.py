@@ -10,6 +10,7 @@ from speakers.checklists import add_adhoc_item
 from speakers.constants import ItemOwner, NoticeKind
 from speakers.models import ChecklistItem, SpeakerSettings
 from speakers.notices import send_checklist_change_notices
+from speakers.services import submit_proposal, withdraw_proposal
 from speakers.tasks import send_checklist_change_notices_task
 from volunteer.constants import ApplicationStatus
 from volunteer.models import Team, VolunteerProfile
@@ -43,6 +44,19 @@ class TestChangeNotices:
         assert "scheduled Saturday 5 December, 09:00 America/New_York" in (
             mail.outbox[0].body
         )
+
+    def test_preface_marks_a_withdrawn_proposal_as_withdrawn(self, conference, enabled):
+        ada = make_presenter(conference, email="ada@example.com")
+        add_presenter(make_session(conference, title="Django 101", kind="TALK"), ada)
+        taken_back = make_session(conference, title="Taken back", kind="TALK")
+        add_presenter(taken_back, ada)
+        withdraw_proposal(submit_proposal(ada, taken_back))
+        add_adhoc_item(conference, "Bring cookies", ItemOwner.SPEAKER, presenter=ada)
+        mail.outbox.clear()
+        assert send_checklist_change_notices(conference) == 1
+        body = mail.outbox[0].body
+        assert "Taken back (Talk, presenter) — withdrawn" in body
+        assert "Django 101 (Talk, presenter) — not scheduled yet" in body
 
     def test_one_email_per_recipient_then_silence(self, conference, enabled):
         ada = make_presenter(conference, display_name="Ada", email="ada@example.com")

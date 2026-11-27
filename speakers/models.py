@@ -1407,9 +1407,18 @@ class Session(TimestampedModel):
         speaker's question is whether it is happening, and whether anyone
         can see it yet.
         """
-        return SPEAKER_STATUS_LABELS.get(
-            SessionStatus(self.status), self.get_status_display()
-        )
+        return SPEAKER_STATUS_LABELS.get(self.speaker_state, self.get_status_display())
+
+    @property
+    def speaker_state(self):
+        """The key the speaker's word for the session is looked up by: the
+        status, except for a proposal its proposer took back, whose session
+        stays ``PROPOSED`` and would otherwise read as still waiting."""
+        if self.status == SessionStatus.PROPOSED:
+            proposal = getattr(self, "proposal", None)
+            if proposal is not None and proposal.is_withdrawn:
+                return ProposalDecision.WITHDRAWN
+        return SessionStatus(self.status)
 
     @property
     def is_a_proposal(self):

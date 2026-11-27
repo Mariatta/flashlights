@@ -66,21 +66,6 @@ UNACCEPTED_STATUSES = frozenset({SessionStatus.PROPOSED, SessionStatus.REJECTED}
 OFF_SCHEDULE_STATUSES = UNACCEPTED_STATUSES | {SessionStatus.CANCELLED}
 
 
-# What a session's status means to the person giving it. The organizers'
-# vocabulary (draft, invited, confirmed) is about their own work; a speaker
-# wants to know whether it is happening and whether anyone can see it.
-SPEAKER_STATUS_LABELS = {
-    SessionStatus.PROPOSED: "Waiting for an answer",
-    SessionStatus.REJECTED: "Not accepted",
-    SessionStatus.DRAFT: "Being arranged",
-    SessionStatus.INVITED: "Being arranged",
-    SessionStatus.CONFIRMED: "Confirmed",
-    SessionStatus.SCHEDULED: "Scheduled",
-    SessionStatus.PUBLISHED: "On the public schedule",
-    SessionStatus.CANCELLED: "Cancelled",
-}
-
-
 class QuestionAbout(models.TextChoices):
     """What a proposal question is about: the session being proposed, or
     the person proposing it. A speaker's answers are given once per
@@ -129,6 +114,37 @@ class ProposalDecision(models.TextChoices):
     # The proposer took it back before anyone answered. Kept, not deleted:
     # they can edit it and send it again.
     WITHDRAWN = "WITHDRAWN", "Withdrawn"
+
+
+# What a session's status means to the person giving it. The organizers'
+# vocabulary (draft, invited, confirmed) is about their own work; a speaker
+# wants to know whether it is happening and whether anyone can see it.
+SPEAKER_STATUS_LABELS = {
+    SessionStatus.PROPOSED: "Waiting for an answer",
+    SessionStatus.REJECTED: "Not accepted",
+    SessionStatus.DRAFT: "Being arranged",
+    SessionStatus.INVITED: "Being arranged",
+    SessionStatus.CONFIRMED: "Confirmed",
+    SessionStatus.SCHEDULED: "Scheduled",
+    SessionStatus.PUBLISHED: "On the public schedule",
+    SessionStatus.CANCELLED: "Cancelled",
+    # A proposal taken back keeps its session in PROPOSED, so the word is
+    # looked up by the decision instead (Session.speaker_state).
+    ProposalDecision.WITHDRAWN: "Withdrawn",
+}
+
+# The same words where an email lists a speaker's sessions, for the ones
+# that are not on the program. A session they are giving says when it is
+# scheduled instead, and a proposal that was not accepted is left out: the
+# answer already went to them, and nothing is asked of them for it.
+SPEAKER_EMAIL_STATES = {
+    state: SPEAKER_STATUS_LABELS[state].lower()
+    for state in (
+        SessionStatus.PROPOSED,
+        ProposalDecision.WITHDRAWN,
+        SessionStatus.CANCELLED,
+    )
+}
 
 
 # Decisions that are the proposer's own to change: they may edit these and

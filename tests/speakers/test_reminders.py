@@ -5,13 +5,17 @@ import pytest
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core import mail
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from common.models import SentEmail
 from speakers.checklists import add_adhoc_item, complete_item
-from speakers.constants import ItemOwner
+from speakers.constants import SPEAKER_STATUS_LABELS, ItemOwner, SessionStatus
+from speakers.emails import presenter_email_context
 from speakers.models import ReminderLog, SpeakerSettings
 from speakers.reminders import send_checklist_digests
+from speakers.services import reject_proposal, submit_proposal, withdraw_proposal
 from speakers.tasks import send_checklist_digests_task
 from volunteer.constants import ApplicationStatus
 from volunteer.models import Team, VolunteerProfile
@@ -131,6 +135,91 @@ class TestSpeakerDigest:
         mail.outbox.clear()
         send_checklist_digests(conference, now=NOW + timedelta(days=1))
         assert "Thank you for being a speaker" in mail.outbox[0].body
+
+    def test_preface_marks_a_withdrawn_proposal_as_withdrawn(self, conference, enabled):
+        """A speaker with an accepted session and a proposal they took back
+        reads "withdrawn" next to the second, not "not scheduled yet"."""
+        ada = make_presenter(conference, display_name="Ada")
+        accepted = make_session(conference, title="Accepted talk", kind="TALK")
+        add_presenter(accepted, ada, confirmed=True)
+        accepted.confirm()
+        taken_back = make_session(conference, title="Taken back", kind="TALK")
+        add_presenter(taken_back, ada)
+        withdraw_proposal(submit_proposal(ada, taken_back))
+        add_adhoc_item(
+            conference, "Bio", ItemOwner.SPEAKER, presenter=ada, due_date=days(2)
+        )
+        mail.outbox.clear()
+        send_checklist_digests(conference, now=NOW)
+        lines = dict(
+            line.split(" (Talk, presenter) — ")
+            for line in mail.outbox[0].body.splitlines()
+            if " (Talk, presenter) — " in line
+        )
+        assert lines == {
+            "Accepted talk": "not scheduled yet",
+            "Taken back": "withdrawn",
+        }
+
+    def test_preface_says_what_each_session_is_waiting_on(self, conference, enabled):
+        """The words are the dashboard's: a proposal nobody answered is
+        waiting, a cancelled session says so whatever slot it had, and one
+        that was not accepted is not listed at all."""
+        ada = make_presenter(conference, display_name="Ada")
+        pending = make_session(conference, title="Pending", kind="TALK")
+        add_presenter(pending, ada)
+        submit_proposal(ada, pending)
+        refused = make_session(conference, title="Refused", kind="TALK")
+        add_presenter(refused, ada)
+        reject_proposal(submit_proposal(ada, refused))
+        cancelled = make_session(conference, title="Called off", kind="TALK")
+        add_presenter(cancelled, ada, confirmed=True)
+        make_published_slot(cancelled)
+        cancelled.cancel()
+        # Marked a proposal by hand, with no proposal row behind it.
+        by_hand = make_session(
+            conference, title="By hand", kind="TALK", status=SessionStatus.PROPOSED
+        )
+        add_presenter(by_hand, ada)
+        sessions = presenter_email_context(ada)["sessions"]
+        assert {s["title"]: s["state"] for s in sessions} == {
+            "By hand": "waiting for an answer",
+            "Called off": "cancelled",
+            "Pending": "waiting for an answer",
+        }
+        for session in (pending, cancelled):
+            assert (
+                SPEAKER_STATUS_LABELS[session.speaker_state].lower()
+                == {s["title"]: s["state"] for s in sessions}[session.title]
+            )
+        add_adhoc_item(
+            conference, "Bio", ItemOwner.SPEAKER, presenter=ada, due_date=days(2)
+        )
+        mail.outbox.clear()
+        send_checklist_digests(conference, now=NOW)
+        body = mail.outbox[0].body
+        assert "Pending (Talk, presenter) — waiting for an answer" in body
+        assert "Called off (Talk, presenter) — cancelled" in body
+        assert "Refused" not in body and "scheduled" not in body
+
+    def test_preface_queries_do_not_grow_with_the_sessions(self, conference, enabled):
+        ada = make_presenter(conference, display_name="Ada")
+
+        def propose_and_withdraw(title):
+            session = make_session(conference, title=title, kind="TALK")
+            add_presenter(session, ada)
+            withdraw_proposal(submit_proposal(ada, session))
+
+        propose_and_withdraw("One")
+        with CaptureQueriesContext(connection) as few:
+            assert len(presenter_email_context(ada)["sessions"]) == 1
+        for title in ("Two", "Three", "Four"):
+            propose_and_withdraw(title)
+        with CaptureQueriesContext(connection) as many:
+            assert len(presenter_email_context(ada)["sessions"]) == 4
+        # The sessions with all that is said about them, and the site
+        # the dashboard link is built from.
+        assert len(few) == len(many) == 2
 
     def test_running_twice_on_the_same_day_sends_once(self, conference, enabled):
         ada = make_presenter(conference)
