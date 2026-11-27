@@ -50,8 +50,10 @@ for community apps is marked **Breaking**.
   "Withdrawn" there instead of "Waiting for an answer".
 - **Speaker emails no longer use em dashes.** The session lines in the
   checklist reminder, the todo list notice and the "added to a session"
-  email put a colon before the status, and the checklist lines separate
-  the session, the person and the due date with commas.
+  email put a colon before the status. The checklist lines separate
+  their parts with commas: the session and the due date, and in the
+  organizers' copies of the reminder and the notice, who the item is
+  for.
 
 ## 0.5.1 (2026-11-11)
 
