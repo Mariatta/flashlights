@@ -1535,6 +1535,14 @@ class Session(TimestampedModel):
         if save:
             self.save(update_fields=["status", "is_public"])
 
+    def restore(self):
+        """CANCELLED -> DRAFT, the way back in. Whatever confirmed it before
+        is checked again from there (``services.restore_session``), and it
+        stays off the public site until someone publishes it again."""
+        self._require_status(SessionStatus.CANCELLED)
+        self.status = SessionStatus.DRAFT
+        self.save(update_fields=["status"])
+
 
 class Proposal(TimestampedModel):
     """Someone's request to give a session, and the answer to it.

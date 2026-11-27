@@ -109,6 +109,16 @@ urlpatterns = [
         name="session_edit",
     ),
     path(
+        "sessions/<slug:slug>/cancel/",
+        views.SessionCancelView.as_view(),
+        name="session_cancel",
+    ),
+    path(
+        "sessions/<slug:slug>/restore/",
+        views.SessionRestoreView.as_view(),
+        name="session_restore",
+    ),
+    path(
         "sessions/<slug:slug>/video/",
         views.SessionVideoView.as_view(),
         name="session_video",

@@ -36,9 +36,11 @@ from .models import (
     InvitationStatus,
     Presenter,
     Proposal,
+    ScheduleSlot,
     SessionPresenter,
     SessionType,
     SpeakerSettings,
+    TransitionError,
 )
 from .rules import evaluate_items
 from .signals import invitation_accepted
@@ -49,6 +51,8 @@ from .tasks import (
     send_proposal_approved_email_task,
     send_proposal_received_email_task,
     send_proposal_rejected_email_task,
+    send_session_cancelled_email_task,
+    send_session_restored_email_task,
 )
 
 logger = logging.getLogger(__name__)
@@ -419,7 +423,11 @@ def _skip_open_items(items, actor):
     items, and only those, can be opened again later.
     """
     skipped = []
-    for item in items.filter(status__in=list(OPEN_ITEM_STATUSES)).order_by("id"):
+    for item in (
+        items.filter(status__in=list(OPEN_ITEM_STATUSES))
+        .select_related("session", "presenter", "conference")
+        .order_by("id")
+    ):
         # Not a person's tick: an item still waiting to open, or one that
         # completes itself, is closed all the same.
         set_item_status(item, ItemStatus.SKIPPED, actor=actor, manual=False)
@@ -459,6 +467,164 @@ def remove_presenter(link, actor=None):
             skipped_item_ids=skipped,
         )
     return skipped
+
+
+# ---- Cancelling a session, and bringing it back ------------------------------
+
+
+class SessionError(ValueError):
+    """A session that may not be cancelled or restored as it stands."""
+
+
+def cancel_refusal(session):
+    """Why this session cannot be cancelled, or an empty string when it can."""
+    if session.status == SessionStatus.CANCELLED:
+        return "This session is already cancelled."
+    if session.is_a_proposal:
+        return "This is still a proposal: answer it instead of cancelling it."
+    return ""
+
+
+def session_speakers(session):
+    """Who is told when the session is cancelled or restored: the presenters
+    who said yes. Someone added or invited who has not answered was never
+    told it was happening."""
+    return [
+        link.presenter
+        for link in session.session_presenters.filter(
+            confirmed_at__isnull=False
+        ).select_related("presenter")
+    ]
+
+
+def cancel_session(session, actor=None, reason="", note="", notify=True):
+    """Take a session off the program. Returns the activity entry.
+
+    It leaves the public pages, the embed and the feeds at once, its open
+    checklist items are skipped so nobody is chased for them, and each of
+    its speakers gets an email, with ``note`` when the organizer wrote one.
+    ``reason`` is for the activity log, which only organizers read. The ids
+    of the skipped items go on the entry, so a restore reopens exactly
+    those. The slot stays as a record and frees its time for others.
+    """
+    refusal = cancel_refusal(session)
+    if refusal:
+        raise SessionError(refusal)
+    with transaction.atomic():
+        previous_status, was_public = session.status, session.is_public
+        session.cancel()
+        skipped = _skip_open_items(ChecklistItem.objects.filter(session=session), actor)
+        told = [presenter.pk for presenter in session_speakers(session)]
+        entry = ActivityLog.record(
+            session.conference,
+            "session.cancelled",
+            target=session,
+            actor=actor,
+            message=reason,
+            skipped_item_ids=skipped,
+            previous_status=previous_status,
+            was_public=was_public,
+            note=note,
+            emailed=len(told) if notify else 0,
+        )
+        if notify:
+            _queue_session_emails(
+                send_session_cancelled_email_task, session, told, entry
+            )
+    return entry
+
+
+def restore_session(session, actor=None, notify=True):
+    """Bring a cancelled session back. Returns the activity entry.
+
+    It comes back as a draft and is confirmed again when nothing blocks
+    that, the same check an acceptance runs. The items the cancellation
+    skipped are reopened if they are still skipped. Its slot is kept when
+    the time is still free, and dropped otherwise (``slot_dropped`` on the
+    entry says which). It is not public again until someone publishes it.
+    Its speakers get an email.
+    """
+    if session.status != SessionStatus.CANCELLED:
+        raise SessionError("Only a cancelled session can be restored.")
+    with transaction.atomic():
+        cancelled = (
+            ActivityLog.for_target(session).filter(action="session.cancelled").first()
+        )
+        skipped = cancelled.data.get("skipped_item_ids", []) if cancelled else []
+        session.restore()
+        reopened = list(
+            ChecklistItem.objects.filter(
+                session=session, pk__in=skipped, status=ItemStatus.SKIPPED
+            ).order_by("id")
+        )
+        for item in reopened:
+            set_item_status(item, ItemStatus.TODO, actor=actor, manual=False)
+        # An item that completes itself is ticked again where its rule holds.
+        evaluate_items(reopened)
+        _confirm_restored(session, actor)
+        slot_dropped = _settle_restored_slot(session)
+        told = [presenter.pk for presenter in session_speakers(session)]
+        entry = ActivityLog.record(
+            session.conference,
+            "session.restored",
+            target=session,
+            actor=actor,
+            reopened_item_ids=[item.pk for item in reopened],
+            slot_dropped=slot_dropped,
+            emailed=len(told) if notify else 0,
+        )
+        if notify:
+            _queue_session_emails(
+                send_session_restored_email_task, session, told, entry
+            )
+    return entry
+
+
+def _confirm_restored(session, actor):
+    """Move a just-restored draft as far as it can go on its own."""
+    # A rule ticking a reopened item may already have confirmed it.
+    session.refresh_from_db(fields=["status"])
+    if session.status != SessionStatus.DRAFT:
+        return
+    if not session.is_content:
+        # An opening or a break has nobody to wait for: it is confirmed
+        # from the start, unless a required item of its own is open again.
+        try:
+            session.confirm()
+        except TransitionError:
+            pass
+        return
+    if any(i.is_open for i in Invitation.objects.filter(session=session)):
+        session.mark_invited()
+    confirm_session_if_ready(session, actor=actor)
+
+
+def _settle_restored_slot(session):
+    """Keep the restored session's slot if its time is still free.
+
+    While it was cancelled the slot freed its time, so something else may
+    sit there now; then the slot is deleted and this returns True. A kept
+    slot the speakers' schedule still carries makes the session scheduled
+    again, as it was.
+    """
+    slot = ScheduleSlot.objects.filter(session=session).first()
+    if slot is None:
+        return False
+    slot.session = session
+    if slot.conflicts().exists():
+        slot.delete()
+        return True
+    if session.status == SessionStatus.CONFIRMED and session.has_published_slot:
+        session.schedule()
+    return False
+
+
+def _queue_session_emails(task, session, presenter_ids, entry):
+    """One email per speaker, once the change is durably stored."""
+    for presenter_id in presenter_ids:
+        transaction.on_commit(
+            lambda p=presenter_id: enqueue(task, session.pk, p, entry.pk)
+        )
 
 
 # ---- Proposals: people asking to give a session -----------------------------

@@ -1,0 +1,61 @@
+{% extends "speakers/_organize_shell.html" %}
+{% load i18n tz %}
+{% load django_bootstrap5 %}
+{% block head_title %}
+    {% blocktranslate with title=session.title %}Cancel {{ title }}{% endblocktranslate %}
+{% endblock head_title %}
+{% block breadcrumb %}
+    {% url 'speakers:session_list' as bc_url %}
+    {% trans "Sessions" as bc_section %}
+    {% trans "Cancel" as bc_page %}
+    {% include "portal/_breadcrumbs.html" with section=bc_section section_url=bc_url page=bc_page %}
+{% endblock breadcrumb %}
+{% block content %}
+    <h1 class="h3 mb-1">
+        {% trans "Cancel this session?" %}
+    </h1>
+    <p class="text-body-secondary">
+        {{ session.title }} · {{ session.kind.name }} · {{ session.get_status_display }}
+    </p>
+    <div class="col-lg-8">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h2 class="h6">
+                    {% trans "What happens" %}
+                </h2>
+                <ul class="mb-0" id="cancel-effects">
+                    <li>
+                        {% trans "It leaves the public schedule, the embed and the calendar feeds right away." %}
+                    </li>
+                    <li>
+                        {% if speakers %}
+                            {% blocktranslate count counter=speakers|length %}{{ counter }} speaker is emailed now:{% plural %}{{ counter }} speakers are emailed now:{% endblocktranslate %}
+                            {{ speaker_names }}
+                        {% else %}
+                            {% trans "Nobody is emailed: no speaker has confirmed on it." %}
+                        {% endif %}
+                    </li>
+                    <li>
+                        {% blocktranslate count counter=open_items %}{{ counter }} open checklist item is skipped, so nobody is reminded about it.{% plural %}{{ counter }} open checklist items are skipped, so nobody is reminded about them.{% endblocktranslate %}
+                    </li>
+                    {% if slot %}
+                        <li>
+                            {% trans "Its slot stays as a record, and its time is free for another session." %}
+                        </li>
+                    {% endif %}
+                    <li>
+                        {% trans "Its files stay. You can restore the session later from its page." %}
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            {% bootstrap_form form %}
+            <button class="btn btn-danger" type="submit">
+                <i class="icon-ban"></i> {% trans "Cancel this session" %}
+            </button>
+            <a href="{{ session.get_absolute_url }}" class="btn btn-link">{% trans "Keep it" %}</a>
+        </form>
+    </div>
+{% endblock content %}

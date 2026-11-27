@@ -20,7 +20,7 @@ from django.utils import timezone
 from common.send_emails import send_email
 from volunteer.constants import ApplicationStatus
 
-from .constants import OPEN_ITEM_STATUSES, ItemOwner, MediaStatus
+from .constants import OPEN_ITEM_STATUSES, ItemOwner, MediaStatus, SessionStatus
 from .emails import (
     absolute_url,
     organizer_inbox,
@@ -123,7 +123,12 @@ def send_checklist_digests(conference, now=None):
             # Nobody is chased for an item they cannot start: a waiting
             # item has no reminder and no overdue line (design §9.3a).
             is_waiting=False,
-        ).select_related("presenter", "session", "assignee", "team")
+        )
+        # A cancelled session's open items are skipped when it is cancelled;
+        # one opened by hand afterwards is still nobody's to be chased for.
+        .exclude(session__status=SessionStatus.CANCELLED).select_related(
+            "presenter", "session", "assignee", "team"
+        )
     )
     emails = DigestCount(0)
     emails += _speaker_digests(conference, items, now, sent)

@@ -151,6 +151,41 @@ no link to the proposal. The list shows the latest 50, and the number next
 to the heading counts them all. When they send it again, it moves back to
 **Waiting for an answer** and you get the usual notice.
 
+## Cancelling a session, and bringing it back
+
+Whoever runs the program can cancel a session that is on it, whether the
+speaker asked by email or the team decided. Open the session and choose
+**Cancel this session**. The next page says what will happen before
+anything does:
+
+- The session leaves the public schedule, the embed and the calendar feeds
+  right away. A calendar that subscribed to a speaker's own feed shows it
+  as cancelled.
+- Each speaker who had confirmed on it gets an email at once. You can add a
+  **Note to the speakers**, which goes into that email.
+- Its open checklist items are skipped, so nobody is reminded about them.
+  Items already done stay done.
+- Its slot stays as a record and frees its time for another session, and
+  its files stay.
+
+The **Reason** is optional and is for the team: it is kept in the activity
+log and shown on the cancelled session's page, never in the email.
+
+A cancelled session stays in the **Sessions** list with a **Cancelled**
+badge. To bring it back, open it and choose **Restore**. The items the
+cancellation skipped are opened again, the session is confirmed again
+when nothing blocks that (otherwise it is a draft), and its speakers get
+an email. Its slot is kept when the time is still free; when another
+session took it in the meantime the slot is removed, the page says so,
+and you place the session on the schedule again. A restored session is
+not public until you publish it again.
+
+To take one person off a session and keep the session, use **Remove from
+session** next to their name instead. Their open checklist items for that
+session are skipped.
+
+A proposal is not cancelled: answer it on the **Proposals** page.
+
 ## Tips
 
 - Invite from the presenter page rather than typing addresses into the email

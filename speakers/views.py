@@ -86,6 +86,7 @@ from .forms import (
     ProposalQuestionForm,
     ProposalSessionForm,
     ReadinessGateForm,
+    SessionCancelForm,
     SessionForm,
     SessionPresenterForm,
     SessionPresenterRoleForm,
@@ -136,6 +137,7 @@ from .models import (
     Proposal,
     ProposalQuestion,
     ReadinessGate,
+    ScheduleSlot,
     Session,
     SessionPresenter,
     SessionType,
@@ -178,9 +180,12 @@ from .seeds import seed_checklists
 from .services import (
     InvitationError,
     ProposalError,
+    SessionError,
     accept_invitation,
     approve_proposal,
     cancel_invitation,
+    cancel_refusal,
+    cancel_session,
     change_presenter_role,
     decline_invitation,
     invitation_edition,
@@ -190,8 +195,10 @@ from .services import (
     reject_proposal,
     remove_presenter,
     resolve_invitation,
+    restore_session,
     resubmit_proposal,
     send_invitation,
+    session_speakers,
     submit_proposal,
     withdraw_proposal,
 )
@@ -375,6 +382,14 @@ class SessionDetailView(SessionScopedMixin, DetailView):
         context["presenter_links"] = self.object.presenter_links
         context["activity"] = ActivityLog.for_target(self.object)[:20]
         context["waiting_on"] = waiting_on_labels(self.object)
+        # Who cancelled it, when and why, for the notice on a cancelled one.
+        context["cancellation"] = (
+            ActivityLog.for_target(self.object)
+            .filter(action="session.cancelled")
+            .first()
+            if self.object.status == SessionStatus.CANCELLED
+            else None
+        )
         context["add_presenter_form"] = SessionPresenterForm(session=self.object)
         roles = list(
             self.object.kind.roles.filter(is_active=True).order_by("sort_order", "name")
@@ -1008,6 +1023,89 @@ class SessionRemovePresenterView(OrganizerSessionActionMixin, View):
         note = f"Removed {name} from the session."
         if skipped:
             note += f" {len(skipped)} open checklist item(s) of theirs skipped."
+        messages.success(request, note)
+        return redirect(session.get_absolute_url())
+
+
+class SessionCancelView(OrganizerSessionActionMixin, View):
+    """Cancel a session: a page saying what will happen, then the POST."""
+
+    template_name = "speakers/session_cancel.html"
+
+    def get(self, request, slug):
+        session = self.get_session()
+        refusal = cancel_refusal(session)
+        if refusal:
+            messages.error(request, refusal)
+            return redirect(session.get_absolute_url())
+        return self.render(session, SessionCancelForm())
+
+    def post(self, request, slug):
+        session = self.get_session()
+        form = SessionCancelForm(request.POST)
+        if not form.is_valid():
+            return self.render(session, form)
+        try:
+            entry = cancel_session(
+                session,
+                actor=request.user,
+                reason=form.cleaned_data["reason"],
+                note=form.cleaned_data["note"],
+            )
+        except SessionError as error:
+            messages.error(request, str(error))
+            return redirect(session.get_absolute_url())
+        emailed, skipped = entry.data["emailed"], len(entry.data["skipped_item_ids"])
+        messages.success(
+            request,
+            f"Cancelled “{session.title}”. It is off the public schedule, "
+            f"{emailed} speaker(s) are being emailed and {skipped} open "
+            "checklist item(s) were skipped.",
+        )
+        return redirect(session.get_absolute_url())
+
+    def render(self, session, form):
+        speakers = session_speakers(session)
+        return render(
+            self.request,
+            self.template_name,
+            {
+                "session": session,
+                "form": form,
+                "conference": self.conference,
+                "speakers": speakers,
+                "speaker_names": ", ".join(p.display_name for p in speakers),
+                "open_items": session.checklist_items.filter(
+                    status__in=list(OPEN_ITEM_STATUSES)
+                ).count(),
+                "slot": ScheduleSlot.objects.filter(session=session)
+                .select_related("room")
+                .first(),
+            },
+        )
+
+
+class SessionRestoreView(OrganizerSessionActionMixin, View):
+    """Bring a cancelled session back."""
+
+    def post(self, request, slug):
+        session = self.get_session()
+        try:
+            entry = restore_session(session, actor=request.user)
+        except SessionError as error:
+            messages.error(request, str(error))
+            return redirect(session.get_absolute_url())
+        note = (
+            f"Restored “{session.title}” as {session.get_status_display().lower()}. "
+            f"{len(entry.data['reopened_item_ids'])} checklist item(s) reopened "
+            f"and {entry.data['emailed']} speaker(s) are being emailed."
+        )
+        if entry.data["slot_dropped"]:
+            note += (
+                " Its earlier time is taken by another session now, so its "
+                "slot was removed: place it on the schedule again."
+            )
+        note += " It stays off the public schedule until it is published again."
         messages.success(request, note)
         return redirect(session.get_absolute_url())
 
