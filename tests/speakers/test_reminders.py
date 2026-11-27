@@ -352,7 +352,7 @@ class TestFailureIsolation:
                 "Read",
                 ItemOwner.SPEAKER,
                 presenter=p,
-                due_date=NOW.date() + timedelta(days=1),
+                due_date=days(1),
             )
         calls = []
 
@@ -368,7 +368,11 @@ class TestFailureIsolation:
         # the send), so it goes out next time; the delivered one is recorded.
         assert not ReminderLog.objects.filter(item__presenter=ada).exists()
         assert ReminderLog.objects.filter(item__presenter=bea).exists()
-        with mock.patch("speakers.reminders.send_email", side_effect=flaky):
+        # The task reads the clock itself, so it is held at the same moment.
+        with (
+            mock.patch("speakers.reminders.send_email", side_effect=flaky),
+            mock.patch("speakers.reminders.timezone.now", return_value=NOW),
+        ):
             calls.clear()
             result = send_checklist_digests_task()
         assert "(1 failed)" in result
@@ -382,7 +386,7 @@ class TestFailureIsolation:
             ItemOwner.ORGANIZER,
             presenter=ada,
             assignee=lena,
-            due_date=NOW.date() + timedelta(days=1),
+            due_date=days(1),
         )
         with mock.patch(
             "speakers.reminders.send_email", side_effect=RuntimeError("smtp down")
