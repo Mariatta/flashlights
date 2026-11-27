@@ -10,6 +10,7 @@ from speakers.checklists import add_adhoc_item
 from speakers.constants import ItemOwner, NoticeKind
 from speakers.models import ChecklistItem, SpeakerSettings
 from speakers.notices import send_checklist_change_notices
+from speakers.services import submit_proposal, withdraw_proposal
 from speakers.tasks import send_checklist_change_notices_task
 from volunteer.constants import ApplicationStatus
 from volunteer.models import Team, VolunteerProfile
@@ -44,6 +45,19 @@ class TestChangeNotices:
             mail.outbox[0].body
         )
 
+    def test_preface_marks_a_withdrawn_proposal_as_withdrawn(self, conference, enabled):
+        ada = make_presenter(conference, email="ada@example.com")
+        add_presenter(make_session(conference, title="Django 101", kind="TALK"), ada)
+        taken_back = make_session(conference, title="Taken back", kind="TALK")
+        add_presenter(taken_back, ada)
+        withdraw_proposal(submit_proposal(ada, taken_back))
+        add_adhoc_item(conference, "Bring cookies", ItemOwner.SPEAKER, presenter=ada)
+        mail.outbox.clear()
+        assert send_checklist_change_notices(conference) == 1
+        body = mail.outbox[0].body
+        assert "Taken back (Talk, presenter): withdrawn" in body
+        assert "Django 101 (Talk, presenter): not scheduled yet" in body
+
     def test_one_email_per_recipient_then_silence(self, conference, enabled):
         ada = make_presenter(conference, display_name="Ada", email="ada@example.com")
         session = make_session(conference, title="Django 101")
@@ -57,7 +71,12 @@ class TestChangeNotices:
             due_date=date(2026, 12, 1),
         )
         changed = add_adhoc_item(
-            conference, "Send slides", ItemOwner.SPEAKER, presenter=ada
+            conference,
+            "Send slides",
+            ItemOwner.SPEAKER,
+            presenter=ada,
+            session=session,
+            due_date=date(2026, 12, 2),
         )
         ChecklistItem.objects.filter(pk=changed.pk).update(
             pending_notice=NoticeKind.CHANGED
@@ -65,6 +84,18 @@ class TestChangeNotices:
         lena = User.objects.create_user(username="lena", email="lena@example.com")
         add_adhoc_item(
             conference, "Promo", ItemOwner.ORGANIZER, presenter=ada, assignee=lena
+        )
+        moved = add_adhoc_item(
+            conference,
+            "Book room",
+            ItemOwner.ORGANIZER,
+            presenter=ada,
+            session=session,
+            assignee=lena,
+            due_date=date(2026, 12, 3),
+        )
+        ChecklistItem.objects.filter(pk=moved.pk).update(
+            pending_notice=NoticeKind.CHANGED
         )
         add_adhoc_item(conference, "Nobody's", ItemOwner.ORGANIZER, presenter=ada)
         mail.outbox.clear()
@@ -90,11 +121,19 @@ class TestChangeNotices:
             "Django 101" in speaker_mail.body
             and "Tuesday 1 December" in speaker_mail.body
         )
-        assert "\nChanged\n" in speaker_mail.body and "Send slides" in speaker_mail.body
+        assert "\nChanged\n" in speaker_mail.body
+        assert (
+            "Send slides, Django 101, now due Wednesday 2 December" in speaker_mail.body
+        )
+        assert "Bring cookies, Django 101, due Tuesday 1 December" in speaker_mail.body
         assert "/speakers/me/" in speaker_mail.body
         organizer_mail = by_to[("lena@example.com",)]
         assert organizer_mail.subject.endswith("Update to your team todo list")
-        assert "Promo" in organizer_mail.body and "for Ada" in organizer_mail.body
+        assert "Promo, for Ada" in organizer_mail.body
+        assert (
+            "Book room, Django 101, for Ada, now due Thursday 3 December"
+            in organizer_mail.body
+        )
         assert "Thank you for being" not in organizer_mail.body
         assert (
             "Thank you for volunteering with us at Flashlights 2025"
@@ -103,6 +142,7 @@ class TestChangeNotices:
         assert "Go to your queue for more details" in organizer_mail.body
         for message in (speaker_mail, organizer_mail):
             assert "mark them as done and we won't bother you" in message.body
+            assert "—" not in message.body and "–" not in message.body
         assert "/speakers/checklists/queue/" in organizer_mail.body
         assert not ChecklistItem.objects.exclude(pending_notice="").exists()
         mail.outbox.clear()

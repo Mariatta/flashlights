@@ -515,6 +515,27 @@ class TestWhereProposalsLive:
             in client.get(reverse("speakers:my_dashboard")).content.decode()
         )
 
+    def test_a_withdrawn_proposal_says_withdrawn_not_waiting(
+        self, client, conference, enabled
+    ):
+        """A proposal taken back keeps its session's status, so the badge
+        would otherwise still say it is waiting for an answer."""
+        user = User.objects.create_user(username="ada", email="ada@example.com")
+        presenter = make_presenter(conference, display_name="Ada", user=user)
+        add_presenter(make_session(conference), presenter, confirmed=True)
+        taken_back = make_session(conference, title="Taken back")
+        add_presenter(taken_back, presenter)
+        withdraw_proposal(submit_proposal(presenter, taken_back))
+        assert taken_back.speaker_status == "Withdrawn"
+        client.force_login(user)
+        for name in ("speakers:my_sessions", "speakers:my_dashboard"):
+            content = client.get(reverse(name)).content.decode()
+            before, word, _ = content.split("Taken back</a>")[1].partition("Withdrawn")
+            badge = before.rsplit("<span", 1)[1]
+            assert word and "text-bg-secondary" in badge
+            assert "icon-hourglass" not in badge
+            assert "Waiting for an answer" not in content
+
     def test_talks_and_workshops_can_be_proposed(self, conference, enabled):
         """What people bring is proposable; the furniture of the program and
         the pre-recorded performance (opened per edition) are not."""

@@ -18,7 +18,13 @@ from common.models import SentEmail, SentEmailStatus
 from common.permissions import users_with_perm
 from common.send_emails import send_email
 
-from .constants import MANAGE_PROGRAM, AnswerVisibility, QuestionKind, SessionStatus
+from .constants import (
+    MANAGE_PROGRAM,
+    SPEAKER_EMAIL_STATES,
+    AnswerVisibility,
+    QuestionKind,
+    SessionStatus,
+)
 from .models import MediaAsset, ProposalAnswer, SpeakerSettings
 from .people import user_label
 from .rooms import Locations
@@ -487,12 +493,23 @@ def send_upload_notice_email(asset, presenter):
 
 def presenter_email_context(presenter):
     """The common preface for emails to a presenter: what to call them and
-    their sessions with the scheduled time in their timezone, if any."""
-    links = list(
-        presenter.session_presenters.select_related(
-            "session", "session__kind", "session__published_slot", "role"
+    their sessions, each with the scheduled time in their timezone, if any.
+
+    A session that is not on the program carries a ``state`` word instead
+    (waiting for an answer, withdrawn, cancelled), the same words as the
+    speaker's dashboard. A proposal that was not accepted is left out.
+    """
+    links = [
+        link
+        for link in presenter.session_presenters.select_related(
+            "session",
+            "session__kind",
+            "session__published_slot",
+            "session__proposal",
+            "role",
         ).order_by("session__title")
-    )
+        if link.session.status != SessionStatus.REJECTED
+    ]
     # Each role carries the word to call its people by (PresenterRole.
     # email_word), so a new role an organizer adds reads properly too.
     roles = {link.role.email_word or "speaker" for link in links}
@@ -505,6 +522,7 @@ def presenter_email_context(presenter):
                 "kind": link.session.kind.name,
                 "role": link.role.name.lower(),
                 "starts": slot.start_utc.astimezone(presenter.tzinfo) if slot else None,
+                "state": SPEAKER_EMAIL_STATES.get(link.session.speaker_state),
             }
         )
     return {

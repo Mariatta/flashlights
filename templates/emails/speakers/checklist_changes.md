@@ -15,7 +15,7 @@ Your todo list was updated:
 ## New
 
 {% for item in new_items %}
-- **{{ item.title }}**{% if item.session %} — {{ item.session.title }}{% endif %}{% if for_organizer and item.presenter %} — for {{ item.presenter.display_name }}{% endif %}{% if item.due_date %} — due {{ item.due_date|date:"l j F" }}{% endif %}
+- **{{ item.title }}**{% if item.session %}, {{ item.session.title }}{% endif %}{% if for_organizer and item.presenter %}, for {{ item.presenter.display_name }}{% endif %}{% if item.due_date %}, due {{ item.due_date|date:"l j F" }}{% endif %}
 {% endfor %}
 {% endif %}
 {% if changed_items %}
@@ -23,7 +23,7 @@ Your todo list was updated:
 ## Changed
 
 {% for item in changed_items %}
-- **{{ item.title }}**{% if item.session %} — {{ item.session.title }}{% endif %}{% if for_organizer and item.presenter %} — for {{ item.presenter.display_name }}{% endif %}{% if item.due_date %} — now due {{ item.due_date|date:"l j F" }}{% endif %}
+- **{{ item.title }}**{% if item.session %}, {{ item.session.title }}{% endif %}{% if for_organizer and item.presenter %}, for {{ item.presenter.display_name }}{% endif %}{% if item.due_date %}, now due {{ item.due_date|date:"l j F" }}{% endif %}
 {% endfor %}
 {% endif %}
 
